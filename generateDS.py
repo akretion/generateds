@@ -155,7 +155,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.8a'
+VERSION = '2.8b'
 ##VERSION##
 
 GenerateProperties = 0
@@ -2419,11 +2419,11 @@ def generateExportLiteralFn_2(wrt, child, name, fill):
     if childType == DateTimeType:
         wrt('%s        showIndent(outfile, level)\n' % fill)
         wrt("%s        outfile.write('%%s,\\n' %% self.gds_format_datetime("
-            "%s, input_name='%s'))\n" % (fill, name, name, ))
+            "%s_, input_name='%s'))\n" % (fill, name, name, ))
     elif childType == DateType:
         wrt('%s        showIndent(outfile, level)\n' % fill)
         wrt("%s        outfile.write('%%s,\\n' %% self.gds_format_date("
-            "%s, input_name='%s'))\n" % (fill, name, name, ))
+            "%s_, input_name='%s'))\n" % (fill, name, name, ))
     elif (childType in StringType or
         childType == TokenType or
         childType in DateTimeGroupType):
@@ -2436,17 +2436,17 @@ def generateExportLiteralFn_2(wrt, child, name, fill):
         childType == NegativeIntegerType or \
         childType == NonNegativeIntegerType:
         wrt('%s        showIndent(outfile, level)\n' % fill)
-        wrt("%s        outfile.write('%%d,\\n' %% %s)\n" % (fill, name))
+        wrt("%s        outfile.write('%%d,\\n' %% %s_)\n" % (fill, name))
     elif childType == BooleanType:
         wrt('%s        showIndent(outfile, level)\n' % fill)
-        wrt("%s        outfile.write('%%s,\\n' %% %s)\n" % (fill, name))
+        wrt("%s        outfile.write('%%s,\\n' %% %s_)\n" % (fill, name))
     elif childType == FloatType or \
         childType == DecimalType:
         wrt('%s        showIndent(outfile, level)\n' % fill)
         wrt("%s        outfile.write('%%f,\\n' %% %s_)\n" % (fill, name))
     elif childType == DoubleType:
         wrt('%s        showIndent(outfile, level)\n' % fill)
-        wrt("%s        outfile.write('%%e,\\n' %% %s)\n" % (fill, name))
+        wrt("%s        outfile.write('%%e,\\n' %% %s_)\n" % (fill, name))
     else:
         wrt('%s        showIndent(outfile, level)\n' % fill)
         name1 = mapName(cleanupName(child.getType()))

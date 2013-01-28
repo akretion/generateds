@@ -53,12 +53,14 @@ include tests/anysimpletype.xsd
 include tests/anysimpletype1_sup.py tests/anysimpletype1_sub.py
 include tests/anywildcard.xsd
 include tests/anywildcard1_sup.py tests/anywildcard1_sub.py
+include tests/anywildcard2_sup.py tests/anywildcard2_sub.py
 include tests/literal1.py
 include tests/valueof.xsd tests/valueof.xml
 include tests/groups.xsd tests/groups.xml
 include tests/annotations.xsd
 include tests/annotations1_sup.py tests/annotations1_sub.py
 include tests/annotations2_sup.py tests/annotations2_sub.py
+include tests/recursive_simpletype.xsd
 include tests/recursive_simpletype1_sup.py tests/recursive_simpletype1_sub.py
 include tests/recursive_simpletype2_sup.py tests/recursive_simpletype2_sub.py
 include tests/ipo.xml
@@ -75,6 +77,14 @@ include tests/people_procincl_b.xsd
 include tests/abstract_type.xsd
 include tests/abstract_type1_sup.py tests/abstract_type1_sub.py
 include tests/abstract_type2_sup.py tests/abstract_type2_sub.py
+
+include tests/simpletypes_other.xsd
+include tests/simpletypes_other1_sup.py tests/simpletypes1_other_sub.py
+include tests/simpletypes_other2_sup.py tests/simpletypes_other2_sub.py
+
+include tests/attr_groups.xsd
+include tests/attr_groups1_sup.py tests/attr_groups1_sub.py
+include tests/attr_groups2_sup.py tests/attr_groups2_sub.py
 
 include gui/generateds_gui.py
 include gui/generateds_gui.glade

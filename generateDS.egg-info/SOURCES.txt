@@ -79,6 +79,13 @@ tests/anysimpletype1_sup.py
 tests/anywildcard.xsd
 tests/anywildcard1_sub.py
 tests/anywildcard1_sup.py
+tests/anywildcard2_sub.py
+tests/anywildcard2_sup.py
+tests/attr_groups.xsd
+tests/attr_groups1_sub.py
+tests/attr_groups1_sup.py
+tests/attr_groups2_sub.py
+tests/attr_groups2_sup.py
 tests/extensions.xsd
 tests/extensions1_sub.py
 tests/extensions1_sup.py
@@ -106,6 +113,7 @@ tests/people_procincl2_sub.py
 tests/people_procincl2_sup.py
 tests/people_procincl_a.xsd
 tests/people_procincl_b.xsd
+tests/recursive_simpletype.xsd
 tests/recursive_simpletype1_sub.py
 tests/recursive_simpletype1_sup.py
 tests/recursive_simpletype2_sub.py
@@ -116,6 +124,10 @@ tests/simplecontent_restriction1_sup.py
 tests/simpletype_memberspecs.xsd
 tests/simpletype_memberspecs1_sub.py
 tests/simpletype_memberspecs1_sup.py
+tests/simpletypes_other.xsd
+tests/simpletypes_other1_sup.py
+tests/simpletypes_other2_sub.py
+tests/simpletypes_other2_sup.py
 tests/test.py
 tests/valueof.xml
 tests/valueof.xsd
