@@ -4,11 +4,12 @@
   xmlns:ipo="http://www.example.com/IPO"
   orderDate="1999-12-01">
 
-  <shipTo exportCode="1" xsi:type="ipo:UKAddress">
+  <shipTo category="1-a" exportCode="1" xsi:type="ipo:UKAddress">
     <name>Helen Zoe</name>
     <street>47 Eden Street</street>
     <city>Cambridge</city>
     <postcode>CB1 1JR</postcode>
+    <category>oneA</category>
   </shipTo>
 
   <billTo xsi:type="ipo:USAddress">

@@ -1114,7 +1114,7 @@ class XschemaElement(XschemaElementBase):
         attrDefs = self.getAttributeDefs()
         # Collect a list of child element names.
         #   Must do this for base (extension) elements also.
-        elementNames = []
+        elementNames = set()
         self.collectElementNames(elementNames, 0)
         replaced = []
         # Create the needed new attributes.
@@ -1122,9 +1122,11 @@ class XschemaElement(XschemaElementBase):
         for key in keys:
             attr = attrDefs[key]
             name = attr.getName()
-            if name in elementNames:
-                newName = name + '_attr'
+            mappedName = mapName(name)
+            if mappedName in elementNames:
+                newName = mappedName + '_attr'
                 newAttr = XschemaAttribute(newName)
+                newAttr.setOrig_name(name)
                 attrDefs[newName] = newAttr
                 replaced.append(name)
         # Remove the old (replaced) attributes.
@@ -1135,7 +1137,7 @@ class XschemaElement(XschemaElementBase):
 
     def collectElementNames(self, elementNames, count):
         for child in self.children:
-            elementNames.append(cleanupName(child.cleanName))
+            elementNames.add(mapName(cleanupName(child.cleanName)))
         base = self.getBase()
         if base and base in ElementDict:
             parent = ElementDict[base]
@@ -1223,6 +1225,9 @@ class XschemaAttribute:
         self.default = default
         # Enumeration values for the attribute.
         self.values = list()
+        # If we change the name, e.g. because an attribute and child have
+        # the same name, save the old name here.
+        self.orig_name = None
 
     def setName(self, name):
         self.name = name
@@ -1268,6 +1273,12 @@ class XschemaAttribute:
 
     def getDefault(self):
         return self.default
+
+    def setOrig_name(self, orig_name):
+        self.orig_name = orig_name
+
+    def getOrig_name(self):
+        return self.orig_name
 # end class XschemaAttribute
 
 
@@ -2052,6 +2063,9 @@ def generateExportAttributes(wrt, element, hasAttributes):
         for key in attrDefs.keys():
             attrDef = attrDefs[key]
             name = attrDef.getName()
+            orig_name = attrDef.getOrig_name()
+            if orig_name is None:
+                orig_name = name
             cleanName = mapName(cleanupName(name))
             if True:            # attrDef.getUse() == 'optional':
                 wrt("        if self.%s is not None and '%s' not in "
@@ -2067,11 +2081,11 @@ def generateExportAttributes(wrt, element, hasAttributes):
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_datetime(self.%s, ''' \
                     '''input_name='%s'))\n''' % (
-                    indent, name, cleanName, name)
+                    indent, orig_name, cleanName, name)
             elif attrDef.getType() == DateType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_date(self.%s, input_name='%s'))\n''' % (
-                    indent, name, cleanName, name)
+                    indent, orig_name, cleanName, name)
             elif (attrDefType in StringType or
                 attrDefType in IDTypes or
                 attrDefType == TokenType or
@@ -2080,7 +2094,7 @@ def generateExportAttributes(wrt, element, hasAttributes):
                     '''(self.gds_format_string(quote_attrib(''' \
                     '''self.%s).encode(''' \
                     '''ExternalEncoding), input_name='%s'), ))\n''' % \
-                    (indent, name, cleanName, name, )
+                    (indent, orig_name, cleanName, name, )
             elif (attrDefType in IntegerType or
                 attrDefType == PositiveIntegerType or
                 attrDefType == NonPositiveIntegerType or
@@ -2089,25 +2103,25 @@ def generateExportAttributes(wrt, element, hasAttributes):
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_integer(self.%s, ''' \
                     '''input_name='%s'))\n''' % (
-                    indent, name, cleanName, name, )
+                    indent, orig_name, cleanName, name, )
             elif attrDefType == BooleanType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_boolean(self.gds_str_lower(''' \
                     '''str(self.%s)), input_name='%s'))\n''' % (
-                    indent, name, cleanName, name, )
+                    indent, orig_name, cleanName, name, )
             elif attrDefType == FloatType or attrDefType == DecimalType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% self.''' \
                         '''gds_format_float(self.%s, input_name='%s'))\n''' % (
-                    indent, name, cleanName, name)
+                    indent, orig_name, cleanName, name)
             elif attrDefType == DoubleType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_double(self.%s, ''' \
                     '''input_name='%s'))\n''' % (
-                    indent, name, cleanName, name)
+                    indent, orig_name, cleanName, name)
             else:
                 s1 = '''%s        outfile.write(' %s=%%s' %% ''' \
                     '''(quote_attrib(self.%s), ))\n''' % (
-                    indent, name, cleanName, )
+                    indent, orig_name, cleanName, )
             wrt(s1)
     if element.getExtended():
         wrt("        if self.extensiontype_ is not None and 'xsi:type' "
@@ -2611,13 +2625,17 @@ def generateBuildAttributes(wrt, element, hasAttributes):
         attrDef = attrDefs[key]
         hasAttributes += 1
         name = attrDef.getName()
+        orig_name = attrDef.getOrig_name()
+        if orig_name is None:
+            orig_name = name
         cleanName = cleanupName(name)
         mappedName = mapName(cleanName)
         atype = attrDef.getType()
         if atype in SimpleTypeDict:
             atype = SimpleTypeDict[atype].getBase()
         if atype == DateTimeType:
-            wrt("        value = find_attr_value_('%s', node)\n" % (name, ))
+            wrt("        value = find_attr_value_('%s', node)\n" % (
+                orig_name, ))
             wrt("        if value is not None and '%s' not in "
                 "already_processed:\n" %
                 (name, ))
@@ -2631,7 +2649,8 @@ def generateBuildAttributes(wrt, element, hasAttributes):
                 "'Bad date-time attribute (%s): %%s' %% exp)\n" %
                 (name, ))
         elif atype == DateType:
-            wrt("        value = find_attr_value_('%s', node)\n" % (name, ))
+            wrt("        value = find_attr_value_('%s', node)\n" % (
+                orig_name, ))
             wrt("        if value is not None and '%s' not in "
                 "already_processed:\n" %
                 (name, ))
@@ -2649,7 +2668,8 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             atype == NonPositiveIntegerType or
             atype == NegativeIntegerType or
             atype == NonNegativeIntegerType):
-            wrt("        value = find_attr_value_('%s', node)\n" % (name, ))
+            wrt("        value = find_attr_value_('%s', node)\n" % (
+                orig_name, ))
             wrt("        if value is not None and '%s' not in "
                 "already_processed:\n" %
                 (name, ))
@@ -2676,7 +2696,8 @@ def generateBuildAttributes(wrt, element, hasAttributes):
                 wrt("                raise_parse_error("
                     "node, 'Invalid NonNegativeInteger')\n")
         elif atype == BooleanType:
-            wrt("        value = find_attr_value_('%s', node)\n" % (name, ))
+            wrt("        value = find_attr_value_('%s', node)\n" % (
+                orig_name, ))
             wrt("        if value is not None and '%s' not in "
                 "already_processed:\n" %
                 (name, ))
@@ -2689,7 +2710,8 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt("                raise_parse_error("
                 "node, 'Bad boolean attribute')\n")
         elif atype == FloatType or atype == DoubleType or atype == DecimalType:
-            wrt("        value = find_attr_value_('%s', node)\n" % (name, ))
+            wrt("        value = find_attr_value_('%s', node)\n" % (
+                orig_name, ))
             wrt("        if value is not None and '%s' not in "
                 "already_processed:\n" %
                 (name, ))
@@ -2702,7 +2724,8 @@ def generateBuildAttributes(wrt, element, hasAttributes):
                 "attribute (%s): %%s' %% exp)\n" %
                 (name, ))
         elif atype == TokenType:
-            wrt("        value = find_attr_value_('%s', node)\n" % (name, ))
+            wrt("        value = find_attr_value_('%s', node)\n" % (
+                orig_name, ))
             wrt("        if value is not None and '%s' not in "
                 "already_processed:\n" %
                 (name, ))
@@ -2712,7 +2735,8 @@ def generateBuildAttributes(wrt, element, hasAttributes):
                 (mappedName, mappedName, ))
         else:
             # Assume attr['type'] in StringType or attr['type'] == DateTimeType
-            wrt("        value = find_attr_value_('%s', node)\n" % (name, ))
+            wrt("        value = find_attr_value_('%s', node)\n" % (
+                orig_name, ))
             wrt("        if value is not None and '%s' not in "
                 "already_processed:\n" %
                 (name, ))
@@ -3966,7 +3990,10 @@ except ImportError, exp:
         def gds_validate_datetime(self, input_data, node, input_name=''):
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
-            _svalue = input_data.strftime('%%Y-%%m-%%dT%%H:%%M:%%S')
+            if input_data.microsecond == 0:
+                _svalue = input_data.strftime('%%Y-%%m-%%dT%%H:%%M:%%S')
+            else:
+                _svalue = input_data.strftime('%%Y-%%m-%%dT%%H:%%M:%%S.%%f')
             if input_data.tzinfo is not None:
                 tzoff = input_data.tzinfo.utcoffset(input_data)
                 if tzoff is not None:
@@ -3998,8 +4025,14 @@ except ImportError, exp:
                     tz = GeneratedsSuper._FixedOffsetTZ(
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
-            return datetime.strptime(input_data,
-                '%%Y-%%m-%%dT%%H:%%M:%%S').replace(tzinfo = tz)
+            if len(input_data.split('.')) > 1:
+                dt = datetime.strptime(
+                        input_data, '%%Y-%%m-%%dT%%H:%%M:%%S.%%f')
+            else:
+                dt = datetime.strptime(
+                        input_data, '%%Y-%%m-%%dT%%H:%%M:%%S')
+            return dt.replace(tzinfo = tz)
+
         def gds_validate_date(self, input_data, node, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
@@ -4999,11 +5032,9 @@ def makeFile(outFileName):
 
 
 def mapName(oldName):
-    global NameTable
     newName = oldName
-    if NameTable:
-        if oldName in NameTable:
-            newName = NameTable[oldName]
+    if oldName in NameTable:
+        newName = NameTable[oldName]
     return newName
 
 
@@ -5215,6 +5246,7 @@ def load_config():
         import generateds_config
         NameTable.update(generateds_config.NameTable)
         #print '2. updating NameTable'
+        #print '3. NameTable:', NameTable
     except ImportError:
         pass
 

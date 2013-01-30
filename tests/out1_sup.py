@@ -154,7 +154,10 @@ except ImportError, exp:
         def gds_validate_datetime(self, input_data, node, input_name=''):
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
-            _svalue = input_data.strftime('%Y-%m-%dT%H:%M:%S')
+            if input_data.microsecond == 0:
+                _svalue = input_data.strftime('%Y-%m-%dT%H:%M:%S')
+            else:
+                _svalue = input_data.strftime('%Y-%m-%dT%H:%M:%S.%f')
             if input_data.tzinfo is not None:
                 tzoff = input_data.tzinfo.utcoffset(input_data)
                 if tzoff is not None:
@@ -186,8 +189,14 @@ except ImportError, exp:
                     tz = GeneratedsSuper._FixedOffsetTZ(
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
-            return datetime.strptime(input_data,
-                '%Y-%m-%dT%H:%M:%S').replace(tzinfo = tz)
+            if len(input_data.split('.')) > 1:
+                dt = datetime.strptime(
+                        input_data, '%Y-%m-%dT%H:%M:%S.%f')
+            else:
+                dt = datetime.strptime(
+                        input_data, '%Y-%m-%dT%H:%M:%S')
+            return dt.replace(tzinfo = tz)
+
         def gds_validate_date(self, input_data, node, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):

@@ -154,7 +154,10 @@ except ImportError, exp:
         def gds_validate_datetime(self, input_data, node, input_name=''):
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
-            _svalue = input_data.strftime('%Y-%m-%dT%H:%M:%S')
+            if input_data.microsecond == 0:
+                _svalue = input_data.strftime('%Y-%m-%dT%H:%M:%S')
+            else:
+                _svalue = input_data.strftime('%Y-%m-%dT%H:%M:%S.%f')
             if input_data.tzinfo is not None:
                 tzoff = input_data.tzinfo.utcoffset(input_data)
                 if tzoff is not None:
@@ -186,8 +189,14 @@ except ImportError, exp:
                     tz = GeneratedsSuper._FixedOffsetTZ(
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
-            return datetime.strptime(input_data,
-                '%Y-%m-%dT%H:%M:%S').replace(tzinfo = tz)
+            if len(input_data.split('.')) > 1:
+                dt = datetime.strptime(
+                        input_data, '%Y-%m-%dT%H:%M:%S.%f')
+            else:
+                dt = datetime.strptime(
+                        input_data, '%Y-%m-%dT%H:%M:%S')
+            return dt.replace(tzinfo = tz)
+
         def gds_validate_date(self, input_data, node, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
@@ -922,15 +931,19 @@ class USAddress(Address):
 
 class UKAddress(Address):
     member_data_items_ = [
+        MemberSpec_('category_attr', 'xs:string', 0),
         MemberSpec_('exportCode', 'positiveInteger', 0),
         MemberSpec_('postcode', ['UKPostcode', 'string'], 0),
+        MemberSpec_('category', 'string', 0),
         ]
     subclass = None
     superclass = Address
-    def __init__(self, name=None, street=None, city=None, exportCode=None, postcode=None):
+    def __init__(self, name=None, street=None, city=None, category_attr=None, exportCode=None, postcode=None, category=None):
         super(UKAddress, self).__init__(name, street, city, )
+        self.category_attr = _cast(None, category_attr)
         self.exportCode = _cast(int, exportCode)
         self.postcode = postcode
+        self.category = category
     def factory(*args_, **kwargs_):
         if UKAddress.subclass:
             return UKAddress.subclass(*args_, **kwargs_)
@@ -942,6 +955,10 @@ class UKAddress(Address):
     def validate_UKPostcode(self, value):
         # Validate type UKPostcode, a restriction on string.
         pass
+    def get_category(self): return self.category
+    def set_category(self, category): self.category = category
+    def get_category_attr(self): return self.category_attr
+    def set_category_attr(self, category_attr): self.category_attr = category_attr
     def get_exportCode(self): return self.exportCode
     def set_exportCode(self, exportCode): self.exportCode = exportCode
     def export(self, outfile, level, namespace_='ipo:', name_='UKAddress', namespacedef_='', pretty_print=True):
@@ -962,6 +979,9 @@ class UKAddress(Address):
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='ipo:', name_='UKAddress'):
         super(UKAddress, self).exportAttributes(outfile, level, already_processed, namespace_, name_='UKAddress')
+        if self.category_attr is not None and 'category_attr' not in already_processed:
+            already_processed.append('category_attr')
+            outfile.write(' category=%s' % (quote_attrib(self.category_attr), ))
         if self.exportCode is not None and 'exportCode' not in already_processed:
             already_processed.append('exportCode')
             outfile.write(' exportCode="%s"' % self.gds_format_integer(self.exportCode, input_name='exportCode'))
@@ -974,9 +994,13 @@ class UKAddress(Address):
         if self.postcode is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%spostcode>%s</%spostcode>%s' % (namespace_, self.gds_format_string(quote_xml(self.postcode).encode(ExternalEncoding), input_name='postcode'), namespace_, eol_))
+        if self.category is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%scategory>%s</%scategory>%s' % (namespace_, self.gds_format_string(quote_xml(self.category).encode(ExternalEncoding), input_name='category'), namespace_, eol_))
     def hasContent_(self):
         if (
             self.postcode is not None or
+            self.category is not None or
             super(UKAddress, self).hasContent_()
             ):
             return True
@@ -988,6 +1012,10 @@ class UKAddress(Address):
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        if self.category_attr is not None and 'category_attr' not in already_processed:
+            already_processed.append('category_attr')
+            showIndent(outfile, level)
+            outfile.write('category_attr = %s,\n' % (self.category_attr,))
         if self.exportCode is not None and 'exportCode' not in already_processed:
             already_processed.append('exportCode')
             showIndent(outfile, level)
@@ -998,12 +1026,19 @@ class UKAddress(Address):
         if self.postcode is not None:
             showIndent(outfile, level)
             outfile.write('postcode=%s,\n' % quote_python(self.postcode).encode(ExternalEncoding))
+        if self.category is not None:
+            showIndent(outfile, level)
+            outfile.write('category=%s,\n' % quote_python(self.category).encode(ExternalEncoding))
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('category', node)
+        if value is not None and 'category_attr' not in already_processed:
+            already_processed.append('category_attr')
+            self.category_attr = value
         value = find_attr_value_('exportCode', node)
         if value is not None and 'exportCode' not in already_processed:
             already_processed.append('exportCode')
@@ -1020,6 +1055,10 @@ class UKAddress(Address):
             postcode_ = self.gds_validate_string(postcode_, node, 'postcode')
             self.postcode = postcode_
             self.validate_UKPostcode(self.postcode)    # validate type UKPostcode
+        elif nodeName_ == 'category':
+            category_ = child_.text
+            category_ = self.gds_validate_string(category_, node, 'category')
+            self.category = category_
         super(UKAddress, self).buildChildren(child_, node, nodeName_, True)
 # end class UKAddress
 

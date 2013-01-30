@@ -141,6 +141,19 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.8b (01/29/2013)
+  * Fixed missing underscore in reference to member names in
+    generateExportLiteralFn_2.  Thanks to Sergii Chernysh for
+    reporting this.
+  * Fixed use of NameTable for mapping names when an element has an
+    attribute and a child with the same name.  Needed to use correct
+    name (original name or mapped name) when doing (1)
+    fix_dup_names, (2) exportAttributes, and (3) buildAttributes.
+    Thanks to Mike Vella for reporting this.
+  * Fixed gds_parse_datetime so that it will handle fractional
+    seconds.  Thanks to Matt Hughes for providing this fix.
+  * Created a Mercurial repository for generateDS at Bitbucket.
+
 Version 2.8a (01/10/2013)
   * Fix to process_includes.py so as to remove the limitation on the
     number of unique names it can generate when raising anonymous

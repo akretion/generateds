@@ -118,13 +118,14 @@
 
     <person id="4" />
 
-    <python-programmer vegetable="tomato" fruit="peach" language="python" area="xml" nick-name="davy" id="232" ratio="8.7" value="abcd">
+    <python-programmer drcs="git" vegetable="tomato" fruit="peach" language="python" area="xml" nick-name="davy" id="232" ratio="8.7" value="abcd">
         <favorite-editor>jed</favorite-editor>
         <name>Darrel Dawson</name>
         <interest>hang gliding</interest>
         <category>3344</category>
         <description>An object-orientated programmer</description>
         <email>darrel@happyprogrammers.com</email>
+        <drcs>mercurial</drcs>
         <agent>
             <firstname>Harvey</firstname>
             <lastname>Hippolite</lastname>

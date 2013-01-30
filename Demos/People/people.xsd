@@ -166,8 +166,10 @@
                 <xs:sequence>
                     <xs:element name="favorite-editor" type="xs:string"/>
                     <xs:element name="flowvalue" type="FlowType"/>
+                    <xs:element name="drcs" type="xs:string"/>
                 </xs:sequence>
                 <xs:attribute name="nick-name"/>
+                <xs:attribute name="drcs" type="xs:string" />
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
