@@ -155,7 +155,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.8b'
+VERSION = '2.8c'
 ##VERSION##
 
 GenerateProperties = 0
@@ -2071,7 +2071,7 @@ def generateExportAttributes(wrt, element, hasAttributes):
                 wrt("        if self.%s is not None and '%s' not in "
                     "already_processed:\n" % (
                     cleanName, cleanName, ))
-                wrt("            already_processed.append('%s')\n" % (
+                wrt("            already_processed.add('%s')\n" % (
                     cleanName, ))
                 indent = "    "
             else:
@@ -2126,7 +2126,7 @@ def generateExportAttributes(wrt, element, hasAttributes):
     if element.getExtended():
         wrt("        if self.extensiontype_ is not None and 'xsi:type' "
             "not in already_processed:\n")
-        wrt("            already_processed.append('xsi:type')\n")
+        wrt("            already_processed.add('xsi:type')\n")
         wrt("            outfile.write("
             "' xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"')\n")
         wrt('''            outfile.write('''
@@ -2237,7 +2237,7 @@ def generateExportFn(wrt, prefix, element, namespace):
     wrt('        showIndent(outfile, level, pretty_print)\n')
     wrt("        outfile.write('<%s%s%s' % (namespace_, name_, "
         "namespacedef_ and ' ' + namespacedef_ or '', ))\n")
-    wrt("        already_processed = []\n")
+    wrt("        already_processed = set()\n")
     wrt("        self.exportAttributes(outfile, level, "
         "already_processed, namespace_, name_='%s')\n" %
         (name, ))
@@ -2286,14 +2286,14 @@ def generateExportFn(wrt, prefix, element, namespace):
                 name1 = name[len(xsinamespace2):]
                 name2 = '%s:%s' % (xsinamespaceprefix, name1, )
                 if name2 not in already_processed:
-                    already_processed.append(name2)
+                    already_processed.add(name2)
                     outfile.write(' %s=%s' % (name2, quote_attrib(value), ))
             else:
                 mo = re_.match(Namespace_extract_pat_, name)
                 if mo is not None:
                     namespace, name = mo.group(1, 2)
                     if name not in already_processed:
-                        already_processed.append(name)
+                        already_processed.add(name)
                         if namespace == 'http://www.w3.org/XML/1998/namespace':
                             outfile.write(' %s=%s' % (
                                 name, quote_attrib(value), ))
@@ -2305,7 +2305,7 @@ def generateExportFn(wrt, prefix, element, namespace):
                                 unique_counter, name, quote_attrib(value), ))
                 else:
                     if name not in already_processed:
-                        already_processed.append(name)
+                        already_processed.add(name)
                         outfile.write(' %s=%s' % (
                             name, quote_attrib(value), ))\n""")
     parentName, parent = getParentName(element)
@@ -2481,7 +2481,9 @@ def generateExportLiteralFn(wrt, prefix, element):
     wrt("    def exportLiteral(self, outfile, level, name_='%s'):\n" % (
         element.getName(), ))
     wrt("        level += 1\n")
-    wrt("        self.exportLiteralAttributes(outfile, level, [], name_)\n")
+    wrt("        already_processed = set()\n")
+    wrt("        self.exportLiteralAttributes(outfile, level, "
+        "already_processed, name_)\n")
     wrt("        if self.hasContent_():\n")
     wrt("            self.exportLiteralChildren(outfile, level, name_)\n")
     childCount = countChildren(element, 0)
@@ -2507,7 +2509,7 @@ def generateExportLiteralFn(wrt, prefix, element):
         wrt("        if self.%s is not None and '%s' not in "
             "already_processed:\n" % (
             mappedName, mappedName, ))
-        wrt("            already_processed.append('%s')\n" % (
+        wrt("            already_processed.add('%s')\n" % (
             mappedName, ))
         if (attrType in StringType or
             attrType in IDTypes or
@@ -2639,7 +2641,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt("        if value is not None and '%s' not in "
                 "already_processed:\n" %
                 (name, ))
-            wrt("            already_processed.append('%s')\n" % (name, ))
+            wrt("            already_processed.add('%s')\n" % (name, ))
             wrt('            try:\n')
             wrt("                self.%s = self.gds_parse_datetime("
                 "value, node, '%s')\n" %
@@ -2654,7 +2656,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt("        if value is not None and '%s' not in "
                 "already_processed:\n" %
                 (name, ))
-            wrt("            already_processed.append('%s')\n" % (name, ))
+            wrt("            already_processed.add('%s')\n" % (name, ))
             wrt('            try:\n')
             wrt("                self.%s = self.gds_parse_date("
                 "value, node, '%s')\n" %
@@ -2673,7 +2675,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt("        if value is not None and '%s' not in "
                 "already_processed:\n" %
                 (name, ))
-            wrt("            already_processed.append('%s')\n" % (name, ))
+            wrt("            already_processed.add('%s')\n" % (name, ))
             wrt('            try:\n')
             wrt("                self.%s = int(value)\n" % (mappedName, ))
             wrt('            except ValueError, exp:\n')
@@ -2701,7 +2703,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt("        if value is not None and '%s' not in "
                 "already_processed:\n" %
                 (name, ))
-            wrt("            already_processed.append('%s')\n" % (name, ))
+            wrt("            already_processed.add('%s')\n" % (name, ))
             wrt("            if value in ('true', '1'):\n")
             wrt("                self.%s = True\n" % mappedName)
             wrt("            elif value in ('false', '0'):\n")
@@ -2715,7 +2717,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt("        if value is not None and '%s' not in "
                 "already_processed:\n" %
                 (name, ))
-            wrt("            already_processed.append('%s')\n" % (name, ))
+            wrt("            already_processed.add('%s')\n" % (name, ))
             wrt('            try:\n')
             wrt("                self.%s = float(value)\n" %
                 (mappedName, ))
@@ -2729,7 +2731,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt("        if value is not None and '%s' not in "
                 "already_processed:\n" %
                 (name, ))
-            wrt("            already_processed.append('%s')\n" % (name, ))
+            wrt("            already_processed.add('%s')\n" % (name, ))
             wrt("            self.%s = value\n" % (mappedName, ))
             wrt("            self.%s = ' '.join(self.%s.split())\n" %
                 (mappedName, mappedName, ))
@@ -2740,7 +2742,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt("        if value is not None and '%s' not in "
                 "already_processed:\n" %
                 (name, ))
-            wrt("            already_processed.append('%s')\n" % (name, ))
+            wrt("            already_processed.add('%s')\n" % (name, ))
             wrt("            self.%s = value\n" % (mappedName, ))
         typeName = attrDef.getType()
         if typeName and typeName in SimpleTypeDict:
@@ -2758,7 +2760,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
         wrt("        value = find_attr_value_('xsi:type', node)\n")
         wrt("        if value is not None and 'xsi:type' not in "
             "already_processed:\n")
-        wrt("            already_processed.append('xsi:type')\n")
+        wrt("            already_processed.add('xsi:type')\n")
         wrt("            self.extensiontype_ = value\n")
     return hasAttributes
 # end generateBuildAttributes
@@ -3218,7 +3220,8 @@ def generateBuildStandard(wrt, prefix, element, keyword, delayed, hasChildren):
 def generateBuildFn(wrt, prefix, element, delayed):
     base = element.getBase()
     wrt('    def build(self, node):\n')
-    wrt('        self.buildAttributes(node, node.attrib, [])\n')
+    wrt('        already_processed = set()\n')
+    wrt('        self.buildAttributes(node, node.attrib, already_processed)\n')
     if element.isMixed() or element.getSimpleContent():
         wrt("        self.valueOf_ = get_all_text_(node)\n")
     if element.isMixed():

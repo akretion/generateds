@@ -532,7 +532,7 @@ class IdentifierType(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='IdentifierType')
         if self.hasContent_():
             outfile.write('>')
@@ -543,28 +543,28 @@ class IdentifierType(GeneratedsSuper):
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='IdentifierType'):
         if self.schemeDataURI is not None and 'schemeDataURI' not in already_processed:
-            already_processed.append('schemeDataURI')
+            already_processed.add('schemeDataURI')
             outfile.write(' schemeDataURI=%s' % (self.gds_format_string(quote_attrib(self.schemeDataURI).encode(ExternalEncoding), input_name='schemeDataURI'), ))
         if self.schemeID is not None and 'schemeID' not in already_processed:
-            already_processed.append('schemeID')
+            already_processed.add('schemeID')
             outfile.write(' schemeID=%s' % (self.gds_format_string(quote_attrib(self.schemeID).encode(ExternalEncoding), input_name='schemeID'), ))
         if self.schemeAgencyName is not None and 'schemeAgencyName' not in already_processed:
-            already_processed.append('schemeAgencyName')
+            already_processed.add('schemeAgencyName')
             outfile.write(' schemeAgencyName=%s' % (self.gds_format_string(quote_attrib(self.schemeAgencyName).encode(ExternalEncoding), input_name='schemeAgencyName'), ))
         if self.schemeAgencyID is not None and 'schemeAgencyID' not in already_processed:
-            already_processed.append('schemeAgencyID')
+            already_processed.add('schemeAgencyID')
             outfile.write(' schemeAgencyID=%s' % (self.gds_format_string(quote_attrib(self.schemeAgencyID).encode(ExternalEncoding), input_name='schemeAgencyID'), ))
         if self.schemeName is not None and 'schemeName' not in already_processed:
-            already_processed.append('schemeName')
+            already_processed.add('schemeName')
             outfile.write(' schemeName=%s' % (self.gds_format_string(quote_attrib(self.schemeName).encode(ExternalEncoding), input_name='schemeName'), ))
         if self.schemeVersionID is not None and 'schemeVersionID' not in already_processed:
-            already_processed.append('schemeVersionID')
+            already_processed.add('schemeVersionID')
             outfile.write(' schemeVersionID=%s' % (self.gds_format_string(quote_attrib(self.schemeVersionID).encode(ExternalEncoding), input_name='schemeVersionID'), ))
         if self.schemeURI is not None and 'schemeURI' not in already_processed:
-            already_processed.append('schemeURI')
+            already_processed.add('schemeURI')
             outfile.write(' schemeURI=%s' % (self.gds_format_string(quote_attrib(self.schemeURI).encode(ExternalEncoding), input_name='schemeURI'), ))
         if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
-            already_processed.append('xsi:type')
+            already_processed.add('xsi:type')
             outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
             outfile.write(' xsi:type="%s"' % self.extensiontype_)
     def exportChildren(self, outfile, level, namespace_='', name_='IdentifierType', fromsubclass_=False, pretty_print=True):
@@ -578,44 +578,46 @@ class IdentifierType(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='IdentifierType'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
         outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.schemeDataURI is not None and 'schemeDataURI' not in already_processed:
-            already_processed.append('schemeDataURI')
+            already_processed.add('schemeDataURI')
             showIndent(outfile, level)
             outfile.write('schemeDataURI = "%s",\n' % (self.schemeDataURI,))
         if self.schemeID is not None and 'schemeID' not in already_processed:
-            already_processed.append('schemeID')
+            already_processed.add('schemeID')
             showIndent(outfile, level)
             outfile.write('schemeID = "%s",\n' % (self.schemeID,))
         if self.schemeAgencyName is not None and 'schemeAgencyName' not in already_processed:
-            already_processed.append('schemeAgencyName')
+            already_processed.add('schemeAgencyName')
             showIndent(outfile, level)
             outfile.write('schemeAgencyName = "%s",\n' % (self.schemeAgencyName,))
         if self.schemeAgencyID is not None and 'schemeAgencyID' not in already_processed:
-            already_processed.append('schemeAgencyID')
+            already_processed.add('schemeAgencyID')
             showIndent(outfile, level)
             outfile.write('schemeAgencyID = "%s",\n' % (self.schemeAgencyID,))
         if self.schemeName is not None and 'schemeName' not in already_processed:
-            already_processed.append('schemeName')
+            already_processed.add('schemeName')
             showIndent(outfile, level)
             outfile.write('schemeName = "%s",\n' % (self.schemeName,))
         if self.schemeVersionID is not None and 'schemeVersionID' not in already_processed:
-            already_processed.append('schemeVersionID')
+            already_processed.add('schemeVersionID')
             showIndent(outfile, level)
             outfile.write('schemeVersionID = "%s",\n' % (self.schemeVersionID,))
         if self.schemeURI is not None and 'schemeURI' not in already_processed:
-            already_processed.append('schemeURI')
+            already_processed.add('schemeURI')
             showIndent(outfile, level)
             outfile.write('schemeURI = "%s",\n' % (self.schemeURI,))
     def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
@@ -623,35 +625,35 @@ class IdentifierType(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('schemeDataURI', node)
         if value is not None and 'schemeDataURI' not in already_processed:
-            already_processed.append('schemeDataURI')
+            already_processed.add('schemeDataURI')
             self.schemeDataURI = value
         value = find_attr_value_('schemeID', node)
         if value is not None and 'schemeID' not in already_processed:
-            already_processed.append('schemeID')
+            already_processed.add('schemeID')
             self.schemeID = value
         value = find_attr_value_('schemeAgencyName', node)
         if value is not None and 'schemeAgencyName' not in already_processed:
-            already_processed.append('schemeAgencyName')
+            already_processed.add('schemeAgencyName')
             self.schemeAgencyName = value
         value = find_attr_value_('schemeAgencyID', node)
         if value is not None and 'schemeAgencyID' not in already_processed:
-            already_processed.append('schemeAgencyID')
+            already_processed.add('schemeAgencyID')
             self.schemeAgencyID = value
         value = find_attr_value_('schemeName', node)
         if value is not None and 'schemeName' not in already_processed:
-            already_processed.append('schemeName')
+            already_processed.add('schemeName')
             self.schemeName = value
         value = find_attr_value_('schemeVersionID', node)
         if value is not None and 'schemeVersionID' not in already_processed:
-            already_processed.append('schemeVersionID')
+            already_processed.add('schemeVersionID')
             self.schemeVersionID = value
         value = find_attr_value_('schemeURI', node)
         if value is not None and 'schemeURI' not in already_processed:
-            already_processed.append('schemeURI')
+            already_processed.add('schemeURI')
             self.schemeURI = value
         value = find_attr_value_('xsi:type', node)
         if value is not None and 'xsi:type' not in already_processed:
-            already_processed.append('xsi:type')
+            already_processed.add('xsi:type')
             self.extensiontype_ = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
@@ -682,7 +684,7 @@ class BillOfResourcesIDType(IdentifierType):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='BillOfResourcesIDType')
         if self.hasContent_():
             outfile.write('>')
@@ -706,7 +708,8 @@ class BillOfResourcesIDType(IdentifierType):
             return False
     def exportLiteral(self, outfile, level, name_='BillOfResourcesIDType'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
@@ -717,7 +720,8 @@ class BillOfResourcesIDType(IdentifierType):
         super(BillOfResourcesIDType, self).exportLiteralChildren(outfile, level, name_)
         pass
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
@@ -753,7 +757,7 @@ class BillOfMaterialIDType(IdentifierType):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='BillOfMaterialIDType')
         if self.hasContent_():
             outfile.write('>')
@@ -777,7 +781,8 @@ class BillOfMaterialIDType(IdentifierType):
             return False
     def exportLiteral(self, outfile, level, name_='BillOfMaterialIDType'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
@@ -788,7 +793,8 @@ class BillOfMaterialIDType(IdentifierType):
         super(BillOfMaterialIDType, self).exportLiteralChildren(outfile, level, name_)
         pass
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]

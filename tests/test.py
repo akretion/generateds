@@ -228,7 +228,7 @@ class GenTest(unittest.TestCase):
         infile.close()
         self.failUnlessEqual(content1, content2)
 
-    def test_010_extensions(self):
+    def test_010_simplecontent_restriction(self):
         cmdTempl = ('python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '

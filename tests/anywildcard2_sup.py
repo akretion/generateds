@@ -509,7 +509,7 @@ class PlantType_single(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='PlantType_single')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -543,7 +543,8 @@ class PlantType_single(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='PlantType_single'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
@@ -565,7 +566,8 @@ class PlantType_single(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -623,7 +625,7 @@ class PlantType_multiple(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='PlantType_multiple')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -657,7 +659,8 @@ class PlantType_multiple(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='PlantType_multiple'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
@@ -681,7 +684,8 @@ class PlantType_multiple(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -731,7 +735,7 @@ class DescriptionType(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='DescriptionType')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -763,7 +767,8 @@ class DescriptionType(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='DescriptionType'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
@@ -776,7 +781,8 @@ class DescriptionType(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('size=%s,\n' % quote_python(self.size).encode(ExternalEncoding))
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -822,7 +828,7 @@ class CatalogType(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='CatalogType')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -854,7 +860,8 @@ class CatalogType(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='CatalogType'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
@@ -867,7 +874,8 @@ class CatalogType(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('catagory=%d,\n' % self.catagory)
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -912,7 +920,7 @@ class PlantType_single_nochild(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='PlantType_single_nochild')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -939,7 +947,8 @@ class PlantType_single_nochild(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='PlantType_single_nochild'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
@@ -952,7 +961,8 @@ class PlantType_single_nochild(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -993,7 +1003,7 @@ class PlantType_multiple_nochild(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='PlantType_multiple_nochild')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -1020,7 +1030,8 @@ class PlantType_multiple_nochild(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='PlantType_multiple_nochild'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
@@ -1035,7 +1046,8 @@ class PlantType_multiple_nochild(GeneratedsSuper):
         showIndent(outfile, level)
         outfile.write('],\n')
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)

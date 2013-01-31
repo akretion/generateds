@@ -77,6 +77,7 @@
         <elnonposint>0</elnonposint>
         <eldate>2005-04-26</eldate>
         <eldatetime>2005-04-26T10:11:12</eldatetime>
+        <eldatetime1>2006-05-27T10:11:12.40</eldatetime1>
         <eltoken>aa bb    cc	dd
             ee</eltoken>
         <elshort>123</elshort>

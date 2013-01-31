@@ -509,7 +509,7 @@ class PersonType(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='PersonType')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -545,7 +545,8 @@ class PersonType(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='PersonType'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
@@ -561,7 +562,8 @@ class PersonType(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('lname=%s,\n' % quote_python(self.lname).encode(ExternalEncoding))
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)

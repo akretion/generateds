@@ -533,7 +533,7 @@ class GetUserReq(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='GetUserReq')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -544,28 +544,28 @@ class GetUserReq(GeneratedsSuper):
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='GetUserReq'):
         if self.value04 is not None and 'value04' not in already_processed:
-            already_processed.append('value04')
+            already_processed.add('value04')
             outfile.write(' value04="%s"' % self.gds_format_integer(self.value04, input_name='value04'))
         if self.value05 is not None and 'value05' not in already_processed:
-            already_processed.append('value05')
+            already_processed.add('value05')
             outfile.write(' value05=%s' % (self.gds_format_string(quote_attrib(self.value05).encode(ExternalEncoding), input_name='value05'), ))
         if self.value06 is not None and 'value06' not in already_processed:
-            already_processed.append('value06')
+            already_processed.add('value06')
             outfile.write(' value06="%s"' % self.gds_format_integer(self.value06, input_name='value06'))
         if self.value07 is not None and 'value07' not in already_processed:
-            already_processed.append('value07')
+            already_processed.add('value07')
             outfile.write(' value07="%s"' % self.gds_format_integer(self.value07, input_name='value07'))
         if self.value01 is not None and 'value01' not in already_processed:
-            already_processed.append('value01')
+            already_processed.add('value01')
             outfile.write(' value01=%s' % (self.gds_format_string(quote_attrib(self.value01).encode(ExternalEncoding), input_name='value01'), ))
         if self.value02 is not None and 'value02' not in already_processed:
-            already_processed.append('value02')
+            already_processed.add('value02')
             outfile.write(' value02="%s"' % self.gds_format_integer(self.value02, input_name='value02'))
         if self.value03 is not None and 'value03' not in already_processed:
-            already_processed.append('value03')
+            already_processed.add('value03')
             outfile.write(' value03=%s' % (self.gds_format_string(quote_attrib(self.value03).encode(ExternalEncoding), input_name='value03'), ))
         if self.sequence is not None and 'sequence' not in already_processed:
-            already_processed.append('sequence')
+            already_processed.add('sequence')
             outfile.write(' sequence="%s"' % self.gds_format_integer(self.sequence, input_name='sequence'))
     def exportChildren(self, outfile, level, namespace_='', name_='GetUserReq', fromsubclass_=False, pretty_print=True):
         if pretty_print:
@@ -584,40 +584,41 @@ class GetUserReq(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='GetUserReq'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.value04 is not None and 'value04' not in already_processed:
-            already_processed.append('value04')
+            already_processed.add('value04')
             showIndent(outfile, level)
             outfile.write('value04 = %d,\n' % (self.value04,))
         if self.value05 is not None and 'value05' not in already_processed:
-            already_processed.append('value05')
+            already_processed.add('value05')
             showIndent(outfile, level)
             outfile.write('value05 = "%s",\n' % (self.value05,))
         if self.value06 is not None and 'value06' not in already_processed:
-            already_processed.append('value06')
+            already_processed.add('value06')
             showIndent(outfile, level)
             outfile.write('value06 = %d,\n' % (self.value06,))
         if self.value07 is not None and 'value07' not in already_processed:
-            already_processed.append('value07')
+            already_processed.add('value07')
             showIndent(outfile, level)
             outfile.write('value07 = %d,\n' % (self.value07,))
         if self.value01 is not None and 'value01' not in already_processed:
-            already_processed.append('value01')
+            already_processed.add('value01')
             showIndent(outfile, level)
             outfile.write('value01 = "%s",\n' % (self.value01,))
         if self.value02 is not None and 'value02' not in already_processed:
-            already_processed.append('value02')
+            already_processed.add('value02')
             showIndent(outfile, level)
             outfile.write('value02 = %d,\n' % (self.value02,))
         if self.value03 is not None and 'value03' not in already_processed:
-            already_processed.append('value03')
+            already_processed.add('value03')
             showIndent(outfile, level)
             outfile.write('value03 = "%s",\n' % (self.value03,))
         if self.sequence is not None and 'sequence' not in already_processed:
-            already_processed.append('sequence')
+            already_processed.add('sequence')
             showIndent(outfile, level)
             outfile.write('sequence = %d,\n' % (self.sequence,))
     def exportLiteralChildren(self, outfile, level, name_):
@@ -625,54 +626,55 @@ class GetUserReq(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('returnedTags=%s,\n' % quote_python(self.returnedTags).encode(ExternalEncoding))
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('value04', node)
         if value is not None and 'value04' not in already_processed:
-            already_processed.append('value04')
+            already_processed.add('value04')
             try:
                 self.value04 = int(value)
             except ValueError, exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
         value = find_attr_value_('value05', node)
         if value is not None and 'value05' not in already_processed:
-            already_processed.append('value05')
+            already_processed.add('value05')
             self.value05 = value
         value = find_attr_value_('value06', node)
         if value is not None and 'value06' not in already_processed:
-            already_processed.append('value06')
+            already_processed.add('value06')
             try:
                 self.value06 = int(value)
             except ValueError, exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
         value = find_attr_value_('value07', node)
         if value is not None and 'value07' not in already_processed:
-            already_processed.append('value07')
+            already_processed.add('value07')
             try:
                 self.value07 = int(value)
             except ValueError, exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
         value = find_attr_value_('value01', node)
         if value is not None and 'value01' not in already_processed:
-            already_processed.append('value01')
+            already_processed.add('value01')
             self.value01 = value
         value = find_attr_value_('value02', node)
         if value is not None and 'value02' not in already_processed:
-            already_processed.append('value02')
+            already_processed.add('value02')
             try:
                 self.value02 = int(value)
             except ValueError, exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
         value = find_attr_value_('value03', node)
         if value is not None and 'value03' not in already_processed:
-            already_processed.append('value03')
+            already_processed.add('value03')
             self.value03 = value
         value = find_attr_value_('sequence', node)
         if value is not None and 'sequence' not in already_processed:
-            already_processed.append('sequence')
+            already_processed.add('sequence')
             try:
                 self.sequence = int(value)
             except ValueError, exp:

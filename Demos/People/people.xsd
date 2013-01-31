@@ -94,6 +94,7 @@
                     <xs:element name="elnonnegint" type="xs:nonNegativeInteger"/>
                     <xs:element name="eldate" type="xs:date"/>
                     <xs:element name="eldatetime" type="xs:dateTime"/>
+                    <xs:element name="eldatetime1" type="xs:dateTime"/>
                     <xs:element name="eltoken" type="xs:token"/>
                     <xs:element name="elshort" type="xs:short"/>
                     <xs:element name="ellong" type="xs:long"/>

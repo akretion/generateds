@@ -16,10 +16,10 @@ document.  The class definitions contain:
 
 - Get and set methods for member variables.
 
-- A 'build' method used during parsing to populate and instance.
+- A 'build' method used during parsing to populate an instance.
 
-- An 'export' method that will re-create the XML element in an XML
-  document.
+- An 'export' method that will re-create (write out) the XML element
+  in an XML document.
 
 - An 'exportLiteral' method that will write out a text (literal)
   Python data structure that represents the content of the XML
@@ -140,6 +140,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --------------
 Change history
 --------------
+
+Version 2.8c (provisional) (01/30/2013)
+- Changed generated check for attributes that are already_processed
+  to use a set object rather than a list.  Since sets are hashed, I
+  believe that lookup is faster.
 
 Version 2.8b (01/30/2013)
 - Fixed missing underscore in reference to member names in

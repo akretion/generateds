@@ -30,7 +30,7 @@ from lxml import etree
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.8b'
+VERSION = '2.8c'
 ##VERSION##
 
 Namespaces = {'xs': 'http://www.w3.org/2001/XMLSchema'}

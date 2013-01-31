@@ -505,7 +505,7 @@ class SpecialDate(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='SpecialDate')
         if self.hasContent_():
             outfile.write('>')
@@ -516,7 +516,7 @@ class SpecialDate(GeneratedsSuper):
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='pl:', name_='SpecialDate'):
         if self.SpecialProperty is not None and 'SpecialProperty' not in already_processed:
-            already_processed.append('SpecialProperty')
+            already_processed.add('SpecialProperty')
             outfile.write(' SpecialProperty=%s' % (self.gds_format_string(quote_attrib(self.SpecialProperty).encode(ExternalEncoding), input_name='SpecialProperty'), ))
     def exportChildren(self, outfile, level, namespace_='pl:', name_='SpecialDate', fromsubclass_=False, pretty_print=True):
         pass
@@ -529,20 +529,22 @@ class SpecialDate(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='SpecialDate'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
         outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.SpecialProperty is not None and 'SpecialProperty' not in already_processed:
-            already_processed.append('SpecialProperty')
+            already_processed.add('SpecialProperty')
             showIndent(outfile, level)
             outfile.write('SpecialProperty = "%s",\n' % (self.SpecialProperty,))
     def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
@@ -550,7 +552,7 @@ class SpecialDate(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('SpecialProperty', node)
         if value is not None and 'SpecialProperty' not in already_processed:
-            already_processed.append('SpecialProperty')
+            already_processed.add('SpecialProperty')
             self.SpecialProperty = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
@@ -584,7 +586,7 @@ class ExtremeDate(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='ExtremeDate')
         if self.hasContent_():
             outfile.write('>')
@@ -595,7 +597,7 @@ class ExtremeDate(GeneratedsSuper):
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='pl:', name_='ExtremeDate'):
         if self.ExtremeProperty is not None and 'ExtremeProperty' not in already_processed:
-            already_processed.append('ExtremeProperty')
+            already_processed.add('ExtremeProperty')
             outfile.write(' ExtremeProperty=%s' % (self.gds_format_string(quote_attrib(self.ExtremeProperty).encode(ExternalEncoding), input_name='ExtremeProperty'), ))
     def exportChildren(self, outfile, level, namespace_='pl:', name_='ExtremeDate', fromsubclass_=False, pretty_print=True):
         pass
@@ -608,20 +610,22 @@ class ExtremeDate(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='ExtremeDate'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
         outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.ExtremeProperty is not None and 'ExtremeProperty' not in already_processed:
-            already_processed.append('ExtremeProperty')
+            already_processed.add('ExtremeProperty')
             showIndent(outfile, level)
             outfile.write('ExtremeProperty = "%s",\n' % (self.ExtremeProperty,))
     def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
@@ -629,7 +633,7 @@ class ExtremeDate(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('ExtremeProperty', node)
         if value is not None and 'ExtremeProperty' not in already_processed:
-            already_processed.append('ExtremeProperty')
+            already_processed.add('ExtremeProperty')
             self.ExtremeProperty = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass

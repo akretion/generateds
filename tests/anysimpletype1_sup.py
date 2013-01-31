@@ -505,7 +505,7 @@ class test1element(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='test1element')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -516,7 +516,7 @@ class test1element(GeneratedsSuper):
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='test1element'):
         if self.test1attribute is not None and 'test1attribute' not in already_processed:
-            already_processed.append('test1attribute')
+            already_processed.add('test1attribute')
             outfile.write(' test1attribute=%s' % (quote_attrib(self.test1attribute), ))
     def exportChildren(self, outfile, level, namespace_='', name_='test1element', fromsubclass_=False, pretty_print=True):
         if pretty_print:
@@ -534,12 +534,13 @@ class test1element(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='test1element'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.test1attribute is not None and 'test1attribute' not in already_processed:
-            already_processed.append('test1attribute')
+            already_processed.add('test1attribute')
             showIndent(outfile, level)
             outfile.write('test1attribute = %s,\n' % (self.test1attribute,))
     def exportLiteralChildren(self, outfile, level, name_):
@@ -550,14 +551,15 @@ class test1element(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('test1attribute', node)
         if value is not None and 'test1attribute' not in already_processed:
-            already_processed.append('test1attribute')
+            already_processed.add('test1attribute')
             self.test1attribute = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'test1member':
@@ -593,7 +595,7 @@ class cimAnySimpleType(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='cimAnySimpleType')
         if self.hasContent_():
             outfile.write('>')
@@ -612,14 +614,14 @@ class cimAnySimpleType(GeneratedsSuper):
                 name1 = name[len(xsinamespace2):]
                 name2 = '%s:%s' % (xsinamespaceprefix, name1, )
                 if name2 not in already_processed:
-                    already_processed.append(name2)
+                    already_processed.add(name2)
                     outfile.write(' %s=%s' % (name2, quote_attrib(value), ))
             else:
                 mo = re_.match(Namespace_extract_pat_, name)
                 if mo is not None:
                     namespace, name = mo.group(1, 2)
                     if name not in already_processed:
-                        already_processed.append(name)
+                        already_processed.add(name)
                         if namespace == 'http://www.w3.org/XML/1998/namespace':
                             outfile.write(' %s=%s' % (
                                 name, quote_attrib(value), ))
@@ -631,7 +633,7 @@ class cimAnySimpleType(GeneratedsSuper):
                                 unique_counter, name, quote_attrib(value), ))
                 else:
                     if name not in already_processed:
-                        already_processed.append(name)
+                        already_processed.add(name)
                         outfile.write(' %s=%s' % (
                             name, quote_attrib(value), ))
         pass
@@ -646,7 +648,8 @@ class cimAnySimpleType(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='cimAnySimpleType'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
@@ -658,7 +661,8 @@ class cimAnySimpleType(GeneratedsSuper):
     def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]

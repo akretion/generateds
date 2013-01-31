@@ -517,7 +517,7 @@ class PurchaseOrderType(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='PurchaseOrderType')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -528,7 +528,7 @@ class PurchaseOrderType(GeneratedsSuper):
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='ipo:', name_='PurchaseOrderType'):
         if self.orderDate is not None and 'orderDate' not in already_processed:
-            already_processed.append('orderDate')
+            already_processed.add('orderDate')
             outfile.write(' orderDate="%s"' % self.gds_format_date(self.orderDate, input_name='orderDate'))
     def exportChildren(self, outfile, level, namespace_='ipo:', name_='PurchaseOrderType', fromsubclass_=False, pretty_print=True):
         if pretty_print:
@@ -556,12 +556,13 @@ class PurchaseOrderType(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='PurchaseOrderType'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.orderDate is not None and 'orderDate' not in already_processed:
-            already_processed.append('orderDate')
+            already_processed.add('orderDate')
             showIndent(outfile, level)
             outfile.write('orderDate = "%s",\n' % (self.orderDate,))
     def exportLiteralChildren(self, outfile, level, name_):
@@ -587,14 +588,15 @@ class PurchaseOrderType(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('orderDate', node)
         if value is not None and 'orderDate' not in already_processed:
-            already_processed.append('orderDate')
+            already_processed.add('orderDate')
             try:
                 self.orderDate = self.gds_parse_date(value, node, 'orderDate')
             except ValueError, exp:
@@ -649,7 +651,7 @@ class Items(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='Items')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -676,7 +678,8 @@ class Items(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='Items'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
@@ -695,7 +698,8 @@ class Items(GeneratedsSuper):
         showIndent(outfile, level)
         outfile.write('],\n')
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -743,7 +747,7 @@ class Address(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='Address')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -754,7 +758,7 @@ class Address(GeneratedsSuper):
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='ipo:', name_='Address'):
         if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
-            already_processed.append('xsi:type')
+            already_processed.add('xsi:type')
             outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
             outfile.write(' xsi:type="%s"' % self.extensiontype_)
         pass
@@ -783,7 +787,8 @@ class Address(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='Address'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
@@ -799,14 +804,15 @@ class Address(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('city=%s,\n' % quote_python(self.city).encode(ExternalEncoding))
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('xsi:type', node)
         if value is not None and 'xsi:type' not in already_processed:
-            already_processed.append('xsi:type')
+            already_processed.add('xsi:type')
             self.extensiontype_ = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'name':
@@ -855,7 +861,7 @@ class USAddress(Address):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='USAddress')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -889,7 +895,8 @@ class USAddress(Address):
             return False
     def exportLiteral(self, outfile, level, name_='USAddress'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
@@ -903,7 +910,8 @@ class USAddress(Address):
             showIndent(outfile, level)
             outfile.write('zip=%d,\n' % self.zip)
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
@@ -968,7 +976,7 @@ class UKAddress(Address):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='UKAddress')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -980,10 +988,10 @@ class UKAddress(Address):
     def exportAttributes(self, outfile, level, already_processed, namespace_='ipo:', name_='UKAddress'):
         super(UKAddress, self).exportAttributes(outfile, level, already_processed, namespace_, name_='UKAddress')
         if self.category_attr is not None and 'category_attr' not in already_processed:
-            already_processed.append('category_attr')
+            already_processed.add('category_attr')
             outfile.write(' category=%s' % (quote_attrib(self.category_attr), ))
         if self.exportCode is not None and 'exportCode' not in already_processed:
-            already_processed.append('exportCode')
+            already_processed.add('exportCode')
             outfile.write(' exportCode="%s"' % self.gds_format_integer(self.exportCode, input_name='exportCode'))
     def exportChildren(self, outfile, level, namespace_='ipo:', name_='UKAddress', fromsubclass_=False, pretty_print=True):
         super(UKAddress, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
@@ -1008,16 +1016,17 @@ class UKAddress(Address):
             return False
     def exportLiteral(self, outfile, level, name_='UKAddress'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.category_attr is not None and 'category_attr' not in already_processed:
-            already_processed.append('category_attr')
+            already_processed.add('category_attr')
             showIndent(outfile, level)
             outfile.write('category_attr = %s,\n' % (self.category_attr,))
         if self.exportCode is not None and 'exportCode' not in already_processed:
-            already_processed.append('exportCode')
+            already_processed.add('exportCode')
             showIndent(outfile, level)
             outfile.write('exportCode = %d,\n' % (self.exportCode,))
         super(UKAddress, self).exportLiteralAttributes(outfile, level, already_processed, name_)
@@ -1030,18 +1039,19 @@ class UKAddress(Address):
             showIndent(outfile, level)
             outfile.write('category=%s,\n' % quote_python(self.category).encode(ExternalEncoding))
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('category', node)
         if value is not None and 'category_attr' not in already_processed:
-            already_processed.append('category_attr')
+            already_processed.add('category_attr')
             self.category_attr = value
         value = find_attr_value_('exportCode', node)
         if value is not None and 'exportCode' not in already_processed:
-            already_processed.append('exportCode')
+            already_processed.add('exportCode')
             try:
                 self.exportCode = int(value)
             except ValueError, exp:
@@ -1106,7 +1116,7 @@ class itemType(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='itemType')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -1117,7 +1127,7 @@ class itemType(GeneratedsSuper):
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='ipo:', name_='itemType'):
         if self.partNum is not None and 'partNum' not in already_processed:
-            already_processed.append('partNum')
+            already_processed.add('partNum')
             outfile.write(' partNum=%s' % (quote_attrib(self.partNum), ))
     def exportChildren(self, outfile, level, namespace_='ipo:', name_='itemType', fromsubclass_=False, pretty_print=True):
         if pretty_print:
@@ -1152,12 +1162,13 @@ class itemType(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='itemType'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         if self.partNum is not None and 'partNum' not in already_processed:
-            already_processed.append('partNum')
+            already_processed.add('partNum')
             showIndent(outfile, level)
             outfile.write('partNum = %s,\n' % (self.partNum,))
     def exportLiteralChildren(self, outfile, level, name_):
@@ -1177,14 +1188,15 @@ class itemType(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('shipDate=datetime_.strptime("%s", "%%Y-%%m-%%d"),\n' % self.gds_format_date(self.shipDate, input_name='shipDate'))
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('partNum', node)
         if value is not None and 'partNum' not in already_processed:
-            already_processed.append('partNum')
+            already_processed.add('partNum')
             self.partNum = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'productName':
@@ -1240,7 +1252,7 @@ class quantity(GeneratedsSuper):
             eol_ = ''
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = []
+        already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='quantity')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
@@ -1261,7 +1273,8 @@ class quantity(GeneratedsSuper):
             return False
     def exportLiteral(self, outfile, level, name_='quantity'):
         level += 1
-        self.exportLiteralAttributes(outfile, level, [], name_)
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
@@ -1269,7 +1282,8 @@ class quantity(GeneratedsSuper):
     def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
