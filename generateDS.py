@@ -2055,6 +2055,123 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
         wrt(s1)
 # end generateExportFn_3
 
+def generateToEtree(wrt, element, Targetnamespace):
+    childCount = countChildren(element, 0)
+    name = element.getName()
+    base = element.getBase()
+    wrt("    def to_etree(self, parent_element = None, name_='%s'):\n" % (name,))
+    wrt("        if parent_element is None:\n")
+    wrt("            element = etree_.Element('{%s}' + name_)\n" % (Targetnamespace,))
+    wrt("        else:\n")
+    wrt("            element = etree_.SubElement(parent_element, '{%s}' + name_)\n" % (Targetnamespace,))
+    generateToEtreeAttributes(wrt, element)
+    generateToEtreeChildren(wrt, element, Targetnamespace)
+    wrt("        return element\n")
+# end generateToEtree
+
+def generateToEtreeChildren(wrt, element, Targetnamespace):
+    if len(element.getChildren()) > 0:
+        if element.isMixed():
+            raise NotImplementedError("generateToEtree does not yet implement support for mixed content.")
+        else:
+            for child in element.getChildren():
+                unmappedName = child.getName()
+                name = mapName(cleanupName(child.getName()))
+                type_element = None
+                abstract_child = False
+                type_name = child.getAttrs().get('type')
+                child_type = child.getType()
+                if type_name:
+                    type_element = ElementDict.get(type_name)
+                if type_element and type_element.isAbstract():
+                    abstract_child = True
+                if child_type == AnyTypeIdentifier:
+                    if child.getMaxOccurs() > 1:
+                        wrt('        for obj_ in self.anytypeobjs_:\n')
+                        wrt("            obj_.to_etree(element)\n")
+                    else:
+                        wrt('        if self.anytypeobjs_ is not None:\n')
+                        wrt("            self.anytypeobjs_.to_etree(element)\n")
+                else:
+                    if child.getMaxOccurs() > 1:
+                        wrt("        for %s_ in self.get%s():\n" % (make_gs_name(name), make_gs_name(name),))
+                    else:
+                        wrt("        if self.%s is not None:\n" % (name,))
+                        wrt("            %s_ = self.%s\n" % (make_gs_name(name), name,))
+
+
+                    if child_type in StringType or \
+                            child_type == TokenType or \
+                            child_type == TimeType:
+                        wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_string(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                    elif child_type in IntegerType or \
+                            child_type == PositiveIntegerType or \
+                            child_type == NonPositiveIntegerType or \
+                            child_type == NegativeIntegerType or \
+                            child_type == NonNegativeIntegerType:
+                        if child.isListType():
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_integer_list(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                        else:
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_integer(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                    elif child_type == BooleanType:
+                        if child.isListType():
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_boolean_list(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                        else:
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_boolean(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                    elif child_type == FloatType or \
+                            child_type == DecimalType:
+                        if child.isListType():
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_float_list(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                        else:
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_float(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                    elif child_type == DoubleType:
+                        if child.isListType():
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_double_list(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                        else:
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_double(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                    elif child_type == Base64Type:
+                        wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_base64(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                    elif child_type == DateTimeType:
+                        wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_datetime(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                    elif child_type == DateType:
+                        wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_date(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                    else:
+                        wrt("            %s_.to_etree(element, name_='%s')\n" % (make_gs_name(name),name,))
+#end generateToEtreeChildren
+
+def generateToEtreeAttributes(wrt, element):
+    attrDefs = element.getAttributeDefs()
+    for key in attrDefs.keys():
+        attrDef = attrDefs[key]
+        name = attrDef.getName()
+        cleanName = mapName(cleanupName(name))
+        wrt("        if self.%s is not None:\n" % (cleanName, ))
+        if (attrDef.getType() in StringType or
+            attrDef.getType() in IDTypes or
+            attrDef.getType() == TokenType or
+            attrDef.getType() == TimeType):
+            s1 = '''            element.set('%s', self.gds_format_string(self.%s))\n''' % (name, cleanName, )
+        elif attrDef.getType() in IntegerType or \
+                attrDef.getType() == PositiveIntegerType or \
+                attrDef.getType() == NonPositiveIntegerType or \
+                attrDef.getType() == NegativeIntegerType or \
+                attrDef.getType() == NonNegativeIntegerType:
+            s1 = '''            element.set('%s', self.gds_format_integer(self.%s))\n''' % (name, cleanName, )
+        elif attrDef.getType() == BooleanType:
+            s1 = '''            element.set('%s', self.gds_format_boolean(self.gds_str_lower(str(self.%s))))\n''' % (name, cleanName, )
+        elif attrDef.getType() == FloatType or \
+                attrDef.getType() == DecimalType:
+            s1 = '''            element.set('%s', self.gds_format_float(self.%s))\n''' % (name, cleanName, )
+        elif attrDef.getType() == DoubleType:
+            s1 = '''            element.set('%s', self.gds_format_double(self.%s))\n''' % (name, cleanName, )
+        elif attrDef.getType() == DateTimeType:
+            s1 = '''            element.set('%s', self.gds_format_datetime(self.%s))\n''' % (name, cleanName, )
+        elif attrDef.getType() == DateType:
+            s1 = '''            element.set('%s', self.gds_format_date(self.%s))\n''' % (name, cleanName, )
+        else:
+            s1 = '''            element.set('%s', self.%s)\n''' % (name, cleanName, )
+        wrt(s1)
+# end generateToEtreeAttributes
 
 def generateExportAttributes(wrt, element, hasAttributes):
     if len(element.getAttributeDefs()) > 0:
@@ -3828,6 +3945,7 @@ def generateClasses(wrt, prefix, element, delayed):
     else:
         namespace = ''
     generateExportFn(wrt, prefix, element, namespace)
+    generateToEtree(wrt, element, Targetnamespace)
     generateExportLiteralFn(wrt, prefix, element)
     generateBuildFn(wrt, prefix, element, delayed)
     generateUserMethods(wrt, element)
