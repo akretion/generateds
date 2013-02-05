@@ -2094,49 +2094,58 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
                         wrt("            self.anytypeobjs_.to_etree(element)\n")
                 else:
                     if child.getMaxOccurs() > 1:
-                        wrt("        for %s_ in self.get%s():\n" % (make_gs_name(name), make_gs_name(name),))
+                        wrt("        for %s_ in self.%s:\n" % (name, name,))
                     else:
                         wrt("        if self.%s is not None:\n" % (name,))
-                        wrt("            %s_ = self.%s\n" % (make_gs_name(name), name,))
+                        wrt("            %s_ = self.%s\n" % (name, name,))
 
+                    if child_type == DateTimeType:
+                        wrt("            etree_.SubElement("
+                            "element, '{%s}dateTime').text = self."
+                            "gds_format_datetime(%s_)\n" % (Targetnamespace, name))
+                    elif child_type == DateType:
+                        wrt("            etree_.SubElement("
+                            "element, '{%s}date').text = self."
+                            "gds_format_date(%s_)\n" % (Targetnamespace, name))
 
-                    if child_type in StringType or \
-                            child_type == TokenType or \
-                            child_type == TimeType:
-                        wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_string(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                    elif (child_type in StringType or
+                        child_type == TokenType or
+                        child_type in DateTimeGroupType):
+                        wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_string(%s_)\n" % (Targetnamespace, name, name))
                     elif child_type in IntegerType or \
                             child_type == PositiveIntegerType or \
                             child_type == NonPositiveIntegerType or \
                             child_type == NegativeIntegerType or \
                             child_type == NonNegativeIntegerType:
                         if child.isListType():
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_integer_list(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_integer_list(%s_)\n" % (Targetnamespace, name, name))
                         else:
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_integer(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_integer(%s_)\n" % (Targetnamespace, name, name))
                     elif child_type == BooleanType:
                         if child.isListType():
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_boolean_list(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_boolean_list(%s_)\n" % (Targetnamespace, name, name))
                         else:
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_boolean(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_boolean(%s_)\n" % (Targetnamespace, name, name))
                     elif child_type == FloatType or \
                             child_type == DecimalType:
                         if child.isListType():
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_float_list(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_float_list(%s_)\n" % (Targetnamespace, name, name))
                         else:
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_float(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_float(%s_)\n" % (Targetnamespace, name, name))
                     elif child_type == DoubleType:
                         if child.isListType():
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_double_list(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_double_list(%s_)\n" % (Targetnamespace, name, name))
                         else:
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_double(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_double(%s_)\n" % (Targetnamespace, name, name))
                     elif child_type == Base64Type:
-                        wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_base64(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                        wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_base64(%s_)\n" % (Targetnamespace, name, name))
                     elif child_type == DateTimeType:
-                        wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_datetime(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                        wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_datetime(%s_)\n" % (Targetnamespace, name, name))
                     elif child_type == DateType:
-                        wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_date(%s_)\n" % (Targetnamespace, name, make_gs_name(name)))
+                        wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_date(%s_)\n" % (Targetnamespace, name, name))
                     else:
-                        wrt("            %s_.to_etree(element, name_='%s')\n" % (make_gs_name(name),name,))
+                        wrt("            %s_.to_etree(element, name_='%s')\n" % (
+                            name, name,))
 #end generateToEtreeChildren
 
 def generateToEtreeAttributes(wrt, element):
@@ -4487,6 +4496,25 @@ def parse(inFileName):
     return rootObj
 
 
+def parseEtree(inFileName):
+    doc = parsexml_(inFileName)
+    rootNode = doc.getroot()
+    rootTag, rootClass = get_root_tag(rootNode)
+    if rootClass is None:
+        rootTag = '%(name)s'
+        rootClass = %(prefix)s%(root)s
+    rootObj = rootClass.factory()
+    rootObj.build(rootNode)
+    # Enable Python to collect the space used by the DOM.
+    doc = None
+    rootElement = rootObj.to_etree(None, name_=rootTag)
+#silence#    sys.stdout.write('<?xml version="1.0" ?>\\n')
+#silence#    content = etree_.tostring(rootElement, pretty_print=True)
+#silence#    sys.stdout.write(content)
+#silence#    sys.stdout.write('\\n')
+    return rootObj, rootElement
+
+
 def parseString(inString):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
@@ -4884,8 +4912,26 @@ def parse(inFilename):
 #silence#    rootObj.export(sys.stdout, 0, name_=rootTag,
 #silence#        namespacedef_='%(namespacedef)s',
 #silence#        pretty_print=True)
-    doc = None
     return rootObj
+
+
+def parseEtree(inFilename):
+    doc = parsexml_(inFilename)
+    rootNode = doc.getroot()
+    rootTag, rootClass = get_root_tag(rootNode)
+    if rootClass is None:
+        rootTag = '%(name)s'
+        rootClass = supermod.%(root)s
+    rootObj = rootClass.factory()
+    rootObj.build(rootNode)
+    # Enable Python to collect the space used by the DOM.
+    doc = None
+    rootElement = rootObj.to_etree(None, name_=rootTag)
+#silence#    sys.stdout.write('<?xml version="1.0" ?>\\n')
+#silence#    content = etree_.tostring(rootElement, pretty_print=True)
+#silence#    sys.stdout.write(content)
+#silence#    sys.stdout.write('\\n')
+    return rootObj, rootElement
 
 
 def parseString(inString):
