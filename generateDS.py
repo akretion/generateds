@@ -2059,11 +2059,19 @@ def generateToEtree(wrt, element, Targetnamespace):
     childCount = countChildren(element, 0)
     name = element.getName()
     base = element.getBase()
-    wrt("    def to_etree(self, parent_element = None, name_='%s'):\n" % (name,))
-    wrt("        if parent_element is None:\n")
-    wrt("            element = etree_.Element('{%s}' + name_)\n" % (Targetnamespace,))
-    wrt("        else:\n")
-    wrt("            element = etree_.SubElement(parent_element, '{%s}' + name_)\n" % (Targetnamespace,))
+    wrt("    def to_etree(self, parent_element=None, name_='%s'):\n" % (name,))
+    parentName, parent = getParentName(element)
+    if parentName and not element.getRestrictionBaseObj():
+        elName = element.getCleanName()
+        wrt("        element = super(%s, self).to_etree("
+            "parent_element, name_)\n" % (elName, ))
+    else:
+        wrt("        if parent_element is None:\n")
+        wrt("            element = etree_.Element('{%s}' + name_)\n" % (
+            Targetnamespace,))
+        wrt("        else:\n")
+        wrt("            element = etree_.SubElement(parent_element, "
+            "'{%s}' + name_)\n" % (Targetnamespace,))
     generateToEtreeAttributes(wrt, element)
     generateToEtreeChildren(wrt, element, Targetnamespace)
     wrt("        return element\n")
