@@ -64,6 +64,15 @@ Options:
                              MemberSpec_ containing member name, type,
                              and array or not.  Allowed values are
                              "list" or "dict".  Default: do not generate.
+    --export=<export-list>   Specifies export functions to be generated.
+                             Value is a whitespace separated list of
+                             any of the following:
+                                 write -- write XML to file
+                                 literal -- write out python code
+                                 etree -- build element tree (can serialize
+                                     to XML)
+                             Example: "write etree"
+                             Default: "write"
     -q, --no-questions       Do not ask questions, for example,
                              force overwrite.
     --session=mysession.session
@@ -206,6 +215,9 @@ UserMethodsModule = None
 XsdNameSpace = ''
 CurrentNamespacePrefix = 'xs:'
 AnyTypeIdentifier = '__ANY__'
+ExportWrite = True
+ExportEtree = False
+ExportLiteral = False
 
 SchemaToPythonTypeMap = {}
 
@@ -2080,7 +2092,8 @@ def generateToEtree(wrt, element, Targetnamespace):
 def generateToEtreeChildren(wrt, element, Targetnamespace):
     if len(element.getChildren()) > 0:
         if element.isMixed():
-            raise NotImplementedError("generateToEtree does not yet implement support for mixed content.")
+            wrt("        for item_ in self.content_:\n")
+            wrt("            item_.to_etree(element)\n")
         else:
             for child in element.getChildren():
                 unmappedName = child.getName()
@@ -2468,8 +2481,6 @@ def generateExportFn(wrt, prefix, element, namespace):
     hasChildren += generateExportChildren(wrt, element, hasChildren, namespace)
     if childCount == 0:   # and not element.isMixed():
         wrt("        pass\n")
-    if True or hasChildren > 0 or element.isMixed():
-        generateHascontentMethod(wrt, element)
 # end generateExportFn
 
 
@@ -3961,9 +3972,13 @@ def generateClasses(wrt, prefix, element, delayed):
         namespace = NamespacesDict[Targetnamespace]
     else:
         namespace = ''
-    generateExportFn(wrt, prefix, element, namespace)
-    generateToEtree(wrt, element, Targetnamespace)
-    generateExportLiteralFn(wrt, prefix, element)
+    generateHascontentMethod(wrt, element)
+    if ExportWrite:
+        generateExportFn(wrt, prefix, element, namespace)
+    if ExportEtree:
+        generateToEtree(wrt, element, Targetnamespace)
+    if ExportLiteral:
+        generateExportLiteralFn(wrt, prefix, element)
     generateBuildFn(wrt, prefix, element, delayed)
     generateUserMethods(wrt, element)
     wrt('# end class %s\n' % name)
@@ -4405,6 +4420,39 @@ class MixedContainer:
         elif self.content_type == MixedContainer.TypeBase64:
             outfile.write('<%%s>%%s</%%s>' %%
                 (self.name, base64.b64encode(self.value), self.name))
+    def to_etree(self, element):
+        if self.category == MixedContainer.CategoryText:
+            # Prevent exporting empty content as empty lines.
+            if self.value.strip():
+                if len(element) > 0:
+                    if element[-1].tail is None:
+                        element[-1].tail = self.value
+                    else:
+                        element[-1].tail += self.value
+                else:
+                    if element.text is None:
+                        element.text = self.value
+                    else:
+                        element.text += self.value
+        elif self.category == MixedContainer.CategorySimple:
+            subelement = etree_.SubElement(element, '%%s' %% self.name)
+            subelement.text = self.to_etree_simple()
+        else:    # category == MixedContainer.CategoryComplex
+            self.value.to_etree(element)
+    def to_etree_simple(self):
+        if self.content_type == MixedContainer.TypeString:
+            text = self.value
+        elif (self.content_type == MixedContainer.TypeInteger or
+                self.content_type == MixedContainer.TypeBoolean):
+            text = '%%d' %% self.value
+        elif (self.content_type == MixedContainer.TypeFloat or
+                self.content_type == MixedContainer.TypeDecimal):
+            text = '%%f' %% self.value
+        elif self.content_type == MixedContainer.TypeDouble:
+            text = '%%g' %% self.value
+        elif self.content_type == MixedContainer.TypeBase64:
+            text = '%%s' %% base64.b64encode(self.value)
+        return text
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
@@ -4516,8 +4564,8 @@ def parseEtree(inFileName):
     # Enable Python to collect the space used by the DOM.
     doc = None
     rootElement = rootObj.to_etree(None, name_=rootTag)
-#silence#    sys.stdout.write('<?xml version="1.0" ?>\\n')
-#silence#    content = etree_.tostring(rootElement, pretty_print=True)
+#silence#    content = etree_.tostring(rootElement, pretty_print=True,
+#silence#        xml_declaration=True, encoding="utf-8")
 #silence#    sys.stdout.write(content)
 #silence#    sys.stdout.write('\\n')
     return rootObj, rootElement
@@ -4935,8 +4983,8 @@ def parseEtree(inFilename):
     # Enable Python to collect the space used by the DOM.
     doc = None
     rootElement = rootObj.to_etree(None, name_=rootTag)
-#silence#    sys.stdout.write('<?xml version="1.0" ?>\\n')
-#silence#    content = etree_.tostring(rootElement, pretty_print=True)
+#silence#    content = etree_.tostring(rootElement, pretty_print=True,
+#silence#        xml_declaration=True, encoding="utf-8")
 #silence#    sys.stdout.write(content)
 #silence#    sys.stdout.write('\\n')
     return rootObj, rootElement
@@ -5452,7 +5500,8 @@ def main():
         UserMethodsPath, XsdNameSpace, \
         Namespacedef, NoDates, NoVersion, \
         TEMPLATE_MAIN, TEMPLATE_SUBCLASS_FOOTER, Dirpath, \
-        ExternalEncoding, MemberSpecs, NoQuestions
+        ExternalEncoding, MemberSpecs, NoQuestions, \
+        ExportWrite, ExportEtree, ExportLiteral
     outputText = True
     args = sys.argv[1:]
     try:
@@ -5464,7 +5513,7 @@ def main():
             'namespacedef=', 'external-encoding=',
             'member-specs=', 'no-dates', 'no-versions',
             'no-questions', 'session=',
-            'version',
+            'version', 'export=',
             ])
     except getopt.GetoptError:
         usage()
@@ -5592,6 +5641,17 @@ def main():
             if MemberSpecs not in ('list', 'dict', ):
                 raise RuntimeError(
                     'Option --member-specs must be "list" or "dict".')
+        elif option[0] == '--export':
+            ExportWrite = False
+            ExportEtree = False
+            ExportLiteral = False
+            tmpoptions = option[1].split()
+            if 'write' in tmpoptions:
+                ExportWrite = True
+            if 'etree' in tmpoptions:
+                ExportEtree = True
+            if 'literal' in tmpoptions:
+                ExportLiteral = True
     if showVersion:
         print 'generateDS.py version %s' % VERSION
         sys.exit(0)
