@@ -1772,14 +1772,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean_list(self." \
-                "gds_str_lower(str(self.%s)), input_name='%s'), " \
+                "(namespace_, self.gds_format_boolean_list(self.%s, input_name='%s'), " \
                 "namespace_, eol_))\n" % \
                 (fill, name, name, mappedName, name, )
         else:
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean(self.gds_str_lower" \
-                "(str(self.%s)), input_name='%s'), namespace_, eol_))\n" % \
+                "(namespace_, self.gds_format_boolean(self.%s, input_name='%s'), namespace_, eol_))\n" % \
                 (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == FloatType or \
@@ -1883,14 +1881,12 @@ def generateExportFn_2(wrt, child, name, namespace, fill):
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean_list(" \
-                "self.gds_str_lower(str(%s_)), input_name='%s'), " \
+                "(namespace_, self.gds_format_boolean_list(%s_, input_name='%s'), " \
                 "namespace_, eol_))\n" % \
                 (fill, name, name, cleanName, name, )
         else:
             s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean(" \
-                "self.gds_str_lower(str(%s_)), input_name='%s'), " \
+                "(namespace_, self.gds_format_boolean(%s_, input_name='%s'), " \
                 "namespace_, eol_))\n" % \
                 (fill, name, name, cleanName, name, )
         wrt(s1)
@@ -2005,14 +2001,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean_list(" \
-                "self.gds_str_lower(str(self.%s)), input_name='%s'), " \
+                "(namespace_, self.gds_format_boolean_list(self.%s, input_name='%s'), " \
                 "namespace_, eol_))\n" % \
                 (fill, name, name, mappedName, name)
         else:
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean(" \
-                "self.gds_str_lower(str(self.%s)), input_name='%s'), " \
+                "(namespace_, self.gds_format_boolean(self.%s, input_name='%s'), " \
                 "namespace_, eol_))\n" % \
                 (fill, name, name, mappedName, name)
         wrt(s1)
@@ -2188,7 +2182,7 @@ def generateToEtreeAttributes(wrt, element):
                 attrDef.getType() == NonNegativeIntegerType:
             s1 = '''            element.set('%s', self.gds_format_integer(self.%s))\n''' % (name, cleanName, )
         elif attrDef.getType() == BooleanType:
-            s1 = '''            element.set('%s', self.gds_format_boolean(self.gds_str_lower(str(self.%s))))\n''' % (name, cleanName, )
+            s1 = '''            element.set('%s', self.gds_format_boolean(self.%s))\n''' % (name, cleanName, )
         elif attrDef.getType() == FloatType or \
                 attrDef.getType() == DecimalType:
             s1 = '''            element.set('%s', self.gds_format_float(self.%s))\n''' % (name, cleanName, )
@@ -2253,8 +2247,7 @@ def generateExportAttributes(wrt, element, hasAttributes):
                     indent, orig_name, cleanName, name, )
             elif attrDefType == BooleanType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
-                    '''self.gds_format_boolean(self.gds_str_lower(''' \
-                    '''str(self.%s)), input_name='%s'))\n''' % (
+                    '''self.gds_format_boolean(self.%s, input_name='%s'))\n''' % (
                     indent, orig_name, cleanName, name, )
             elif attrDefType == FloatType or attrDefType == DecimalType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% self.''' \
@@ -4127,7 +4120,7 @@ except ImportError, exp:
                     raise_parse_error(node, 'Requires sequence of doubles')
             return input_data
         def gds_format_boolean(self, input_data, input_name=''):
-            return '%%s' %% input_data
+            return ('%%s' %% input_data).lower()
         def gds_validate_boolean(self, input_data, node, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
