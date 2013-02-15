@@ -11,7 +11,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.8c
+:revision: 2.9a
 
 .. version
 
@@ -261,6 +261,18 @@ Here is the usage message displayed by ``generateDS.py``::
                                  MemberSpec_ containing member name, type,
                                  and array or not.  Allowed values are
                                  "list" or "dict".  Default: None.
+        --export=<export-list>   Specifies export functions to be generated.
+                                 Value is a whitespace separated list of
+                                 any of the following:
+                                     write -- write XML to file
+                                     literal -- write out python code
+                                     etree -- build element tree (can serialize
+                                         to XML)
+                                 Examples: --export="write etree"
+                                           --export="write"
+                                 Default: --export="write literal"
+        -q, --no-questions       Do not ask questions, for example,
+                                 force overwrite.
         --session=mysession.session
                                  Load and use options from session file. You can
                                  create session file in generateds_gui.py.
@@ -421,6 +433,34 @@ member-specs
     section for more information about ``MemberSpec_``.  Allowed
     values are "list" or "dict".  Default: do *not* generate member
     specifications (unless --user-methods specified).
+
+export
+    Specify which of the export related member methods are to be
+    generated.  The value is a whitespace separated list of any of the following:
+
+    - write -- Generate methods ``export``, ``exportAttributes``,
+      and ``exportChildren``.  These methods write XML to a file.
+
+    - literal -- Generate methods ``exportLiteral``,
+      ``exportLiteralAttributes`` and ``exportLiteralChildren``.
+      These methods write out python code.
+
+    - etree -- Generate method ``to_etree``.  This method builds an
+      lxml element tree, which can, for example, be serialized to
+      XML using lxml's ``tostring`` function and searched with the
+      lxml xpath capability.  You can also iterate over nodes in the
+      tree with the node's ``getiterator``, ``iterchildren``, etc,
+      and use any of lxml's other capabilities.
+
+    For example: ``--export="write etree"`` and ``--export="write"``.  The
+    default is: ``--export="write literal"``.
+
+q, no-questions
+    Do not ask questions.  For example, if the "-f" command line
+    option is omitted and the ouput file exists, then generateDS.py
+    will not ask whether the file should be overwritten.  (In this
+    case, when "-q" is used, the "-f" must be used to force the
+    output file to be written.
 
 session=mysession.session
     Load and use options from session file. You can create a

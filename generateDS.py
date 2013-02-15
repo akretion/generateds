@@ -164,7 +164,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.8c'
+VERSION = '2.9a'
 ##VERSION##
 
 GenerateProperties = 0
@@ -217,7 +217,7 @@ CurrentNamespacePrefix = 'xs:'
 AnyTypeIdentifier = '__ANY__'
 ExportWrite = True
 ExportEtree = False
-ExportLiteral = False
+ExportLiteral = True
 
 SchemaToPythonTypeMap = {}
 
@@ -1091,27 +1091,26 @@ class XschemaElement(XschemaElementBase):
             self.replace_attributeGroup_names_1(groupName)
 
     def replace_attributeGroup_names_1(self, groupName):
-            key = None
-            if groupName in AttributeGroups:
-                key = groupName
-            else:
-                # Looking for name space prefix
-                keyList = groupName.split(':')
-                if len(keyList) > 1:
-                    key1 = keyList[1]
-                    if key1 in AttributeGroups:
-                        key = key1
-            if key is not None:
-                attrGroup = AttributeGroups[key]
-                for name in attrGroup.getKeys():
-                    if name in AttributeGroups:
-                        self.replace_attributeGroup_names_1(name)
-                    else:
-                        attr = attrGroup.get(name)
-                        self.attributeDefs[name] = attr
-            else:
-                err_msg('*** Error. attributeGroup %s not defined.\n' % (
-                    groupName, ))
+        key = None
+        if groupName in AttributeGroups:
+            key = groupName
+        else:
+            # Looking for name space prefix
+            key1 = strip_namespace(groupName)
+            if key1 != groupName and key1 in AttributeGroups:
+                key = key1
+        if key is not None:
+            attrGroup = AttributeGroups[key]
+            for name in attrGroup.getKeys():
+                if (name in AttributeGroups or
+                    strip_namespace(name) in AttributeGroups):
+                    self.replace_attributeGroup_names_1(name)
+                else:
+                    attr = attrGroup.get(name)
+                    self.attributeDefs[name] = attr
+        else:
+            err_msg('*** Error. attributeGroup %s not defined.\n' % (
+                groupName, ))
 
     def __str__(self):
         s1 = '<XschemaElement name: "%s" type: "%s">' % \

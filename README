@@ -141,7 +141,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version 2.9a (02/10/2013)
+Version 2.9a (02/18/2013)
 - Added support for exporting to an Lxml element tree.  The element
   tree can then be serialized to XML, e.g. using Lxml
   etree.tostring().  This innovation is by Logan Owen, who also did
@@ -153,7 +153,15 @@ Version 2.9a (02/10/2013)
   export, export to etree (lxml element tree), or export to literal
   python code.  This will enable users to reduce bulk in their
   generated files when any or all of these are not needed.  The
-  default is "write", i.e. normal export methods.
+  default is "write literal", i.e. the normal export methods that we
+  are used to.  Use the --help command line option or read the doc
+  for a description of this option.
+- Fixed a bug that occurs when a schema has an attributeGroup
+  referenced with a name that includes a namespace prefix but the
+  attributeGroup is defined with a name that does *not* have the
+  namespace prefix.  Thanks to Mike Detecca for reporting this and
+  for nudging me in the right direction when I, initially, made the
+  wrong fix.
 
 Version 2.8c (provisional) (01/30/2013)
 - Changed generated check for attributes that are already_processed

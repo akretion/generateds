@@ -225,7 +225,7 @@ They are used by updateversion.py. -->
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">date:</th><td class="field-body">January 31, 2013</td>
+<tr class="field"><th class="field-name">date:</th><td class="field-body">February 15, 2013</td>
 </tr>
 </tbody>
 </table>
@@ -553,6 +553,18 @@ Options:
                              MemberSpec_ containing member name, type,
                              and array or not.  Allowed values are
                              &quot;list&quot; or &quot;dict&quot;.  Default: None.
+    --export=&lt;export-list&gt;   Specifies export functions to be generated.
+                             Value is a whitespace separated list of
+                             any of the following:
+                                 write -- write XML to file
+                                 literal -- write out python code
+                                 etree -- build element tree (can serialize
+                                     to XML)
+                             Examples: --export=&quot;write etree&quot;
+                                       --export=&quot;write&quot;
+                             Default: --export=&quot;write literal&quot;
+    -q, --no-questions       Do not ask questions, for example,
+                             force overwrite.
     --session=mysession.session
                              Load and use options from session file. You can
                              create session file in generateds_gui.py.
@@ -697,6 +709,31 @@ member name, type, and array or not.  See <a class="reference internal" href="#u
 section for more information about <tt class="docutils literal">MemberSpec_</tt>.  Allowed
 values are &quot;list&quot; or &quot;dict&quot;.  Default: do <em>not</em> generate member
 specifications (unless --user-methods specified).</dd>
+<dt>export</dt>
+<dd><p class="first">Specify which of the export related member methods are to be
+generated.  The value is a whitespace separated list of any of the following:</p>
+<ul class="simple">
+<li>write -- Generate methods <tt class="docutils literal">export</tt>, <tt class="docutils literal">exportAttributes</tt>,
+and <tt class="docutils literal">exportChildren</tt>.  These methods write XML to a file.</li>
+<li>literal -- Generate methods <tt class="docutils literal">exportLiteral</tt>,
+<tt class="docutils literal">exportLiteralAttributes</tt> and <tt class="docutils literal">exportLiteralChildren</tt>.
+These methods write out python code.</li>
+<li>etree -- Generate method <tt class="docutils literal">to_etree</tt>.  This method builds an
+lxml element tree, which can, for example, be serialized to
+XML using lxml's <tt class="docutils literal">tostring</tt> function and searched with the
+lxml xpath capability.  You can also iterate over nodes in the
+tree with the node's <tt class="docutils literal">getiterator</tt>, <tt class="docutils literal">iterchildren</tt>, etc,
+and use any of lxml's other capabilities.</li>
+</ul>
+<p class="last">For example: <tt class="docutils literal"><span class="pre">--export=&quot;write</span> etree&quot;</tt> and <tt class="docutils literal"><span class="pre">--export=&quot;write&quot;</span></tt>.  The
+default is: <tt class="docutils literal"><span class="pre">--export=&quot;write</span> literal&quot;</tt>.</p>
+</dd>
+<dt>q, no-questions</dt>
+<dd>Do not ask questions.  For example, if the &quot;-f&quot; command line
+option is omitted and the ouput file exists, then generateDS.py
+will not ask whether the file should be overwritten.  (In this
+case, when &quot;-q&quot; is used, the &quot;-f&quot; must be used to force the
+output file to be written.</dd>
 <dt>session=mysession.session</dt>
 <dd>Load and use options from session file. You can create a
 session file in generateds_gui.py, the graphical front-end for
