@@ -162,6 +162,7 @@ Version 2.9a (02/18/2013)
   namespace prefix.  Thanks to Mike Detecca for reporting this and
   for nudging me in the right direction when I, initially, made the
   wrong fix.
+- Added unit test for export to etree.
 
 Version 2.8c (provisional) (01/30/2013)
 - Changed generated check for attributes that are already_processed

@@ -436,7 +436,8 @@ member-specs
 
 export
     Specify which of the export related member methods are to be
-    generated.  The value is a whitespace separated list of any of the following:
+    generated.  The value is a whitespace separated list of any of
+    the following:
 
     - write -- Generate methods ``export``, ``exportAttributes``,
       and ``exportChildren``.  These methods write XML to a file.
