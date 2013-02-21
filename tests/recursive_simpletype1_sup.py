@@ -138,7 +138,7 @@ except ImportError, exp:
                     raise_parse_error(node, 'Requires sequence of doubles')
             return input_data
         def gds_format_boolean(self, input_data, input_name=''):
-            return '%s' % input_data
+            return ('%s' % input_data).lower()
         def gds_validate_boolean(self, input_data, node, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
@@ -431,6 +431,39 @@ class MixedContainer:
         elif self.content_type == MixedContainer.TypeBase64:
             outfile.write('<%s>%s</%s>' %
                 (self.name, base64.b64encode(self.value), self.name))
+    def to_etree(self, element):
+        if self.category == MixedContainer.CategoryText:
+            # Prevent exporting empty content as empty lines.
+            if self.value.strip():
+                if len(element) > 0:
+                    if element[-1].tail is None:
+                        element[-1].tail = self.value
+                    else:
+                        element[-1].tail += self.value
+                else:
+                    if element.text is None:
+                        element.text = self.value
+                    else:
+                        element.text += self.value
+        elif self.category == MixedContainer.CategorySimple:
+            subelement = etree_.SubElement(element, '%s' % self.name)
+            subelement.text = self.to_etree_simple()
+        else:    # category == MixedContainer.CategoryComplex
+            self.value.to_etree(element)
+    def to_etree_simple(self):
+        if self.content_type == MixedContainer.TypeString:
+            text = self.value
+        elif (self.content_type == MixedContainer.TypeInteger or
+                self.content_type == MixedContainer.TypeBoolean):
+            text = '%d' % self.value
+        elif (self.content_type == MixedContainer.TypeFloat or
+                self.content_type == MixedContainer.TypeDecimal):
+            text = '%f' % self.value
+        elif self.content_type == MixedContainer.TypeDouble:
+            text = '%g' % self.value
+        elif self.content_type == MixedContainer.TypeBase64:
+            text = '%s' % base64.b64encode(self.value)
+        return text
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
@@ -502,6 +535,15 @@ class PersonType(GeneratedsSuper):
     def set_fname(self, fname): self.fname = fname
     def get_lname(self): return self.lname
     def set_lname(self, lname): self.lname = lname
+    def hasContent_(self):
+        if (
+            self.personId is not None or
+            self.fname is not None or
+            self.lname is not None
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='PersonType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -534,15 +576,6 @@ class PersonType(GeneratedsSuper):
         if self.lname is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%slname>%s</%slname>%s' % (namespace_, self.gds_format_string(quote_xml(self.lname).encode(ExternalEncoding), input_name='lname'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.personId is not None or
-            self.fname is not None or
-            self.lname is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='PersonType'):
         level += 1
         already_processed = set()
@@ -627,6 +660,25 @@ def parse(inFileName):
 ##         namespacedef_='',
 ##         pretty_print=True)
     return rootObj
+
+
+def parseEtree(inFileName):
+    doc = parsexml_(inFileName)
+    rootNode = doc.getroot()
+    rootTag, rootClass = get_root_tag(rootNode)
+    if rootClass is None:
+        rootTag = 'person'
+        rootClass = PersonType
+    rootObj = rootClass.factory()
+    rootObj.build(rootNode)
+    # Enable Python to collect the space used by the DOM.
+    doc = None
+    rootElement = rootObj.to_etree(None, name_=rootTag)
+##     content = etree_.tostring(rootElement, pretty_print=True,
+##         xml_declaration=True, encoding="utf-8")
+##     sys.stdout.write(content)
+##     sys.stdout.write('\n')
+    return rootObj, rootElement
 
 
 def parseString(inString):

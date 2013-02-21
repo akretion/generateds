@@ -138,7 +138,7 @@ except ImportError, exp:
                     raise_parse_error(node, 'Requires sequence of doubles')
             return input_data
         def gds_format_boolean(self, input_data, input_name=''):
-            return '%s' % input_data
+            return ('%s' % input_data).lower()
         def gds_validate_boolean(self, input_data, node, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
@@ -431,6 +431,39 @@ class MixedContainer:
         elif self.content_type == MixedContainer.TypeBase64:
             outfile.write('<%s>%s</%s>' %
                 (self.name, base64.b64encode(self.value), self.name))
+    def to_etree(self, element):
+        if self.category == MixedContainer.CategoryText:
+            # Prevent exporting empty content as empty lines.
+            if self.value.strip():
+                if len(element) > 0:
+                    if element[-1].tail is None:
+                        element[-1].tail = self.value
+                    else:
+                        element[-1].tail += self.value
+                else:
+                    if element.text is None:
+                        element.text = self.value
+                    else:
+                        element.text += self.value
+        elif self.category == MixedContainer.CategorySimple:
+            subelement = etree_.SubElement(element, '%s' % self.name)
+            subelement.text = self.to_etree_simple()
+        else:    # category == MixedContainer.CategoryComplex
+            self.value.to_etree(element)
+    def to_etree_simple(self):
+        if self.content_type == MixedContainer.TypeString:
+            text = self.value
+        elif (self.content_type == MixedContainer.TypeInteger or
+                self.content_type == MixedContainer.TypeBoolean):
+            text = '%d' % self.value
+        elif (self.content_type == MixedContainer.TypeFloat or
+                self.content_type == MixedContainer.TypeDecimal):
+            text = '%f' % self.value
+        elif self.content_type == MixedContainer.TypeDouble:
+            text = '%g' % self.value
+        elif self.content_type == MixedContainer.TypeBase64:
+            text = '%s' % base64.b64encode(self.value)
+        return text
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
@@ -535,6 +568,17 @@ class people(GeneratedsSuper):
     def set_java_programmer(self, java_programmer): self.java_programmer = java_programmer
     def add_java_programmer(self, value): self.java_programmer.append(value)
     def insert_java_programmer(self, index, value): self.java_programmer[index] = value
+    def hasContent_(self):
+        if (
+            self.comments or
+            self.person or
+            self.programmer or
+            self.python_programmer or
+            self.java_programmer
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='people', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -568,17 +612,6 @@ class people(GeneratedsSuper):
             python_programmer_.export(outfile, level, namespace_, name_='python-programmer', pretty_print=pretty_print)
         for java_programmer_ in self.java_programmer:
             java_programmer_.export(outfile, level, namespace_, name_='java-programmer', pretty_print=pretty_print)
-    def hasContent_(self):
-        if (
-            self.comments or
-            self.person or
-            self.programmer or
-            self.python_programmer or
-            self.java_programmer
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='people'):
         level += 1
         already_processed = set()
@@ -767,6 +800,14 @@ class comments(GeneratedsSuper):
     def insert_emp(self, index, value): self.emp[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            self.emp or
+            self.valueOf_
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='comments', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -789,14 +830,6 @@ class comments(GeneratedsSuper):
         if not fromsubclass_:
             for item_ in self.content_:
                 item_.export(outfile, level, item_.name, namespace_, pretty_print=pretty_print)
-    def hasContent_(self):
-        if (
-            self.emp or
-            self.valueOf_
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='comments'):
         level += 1
         already_processed = set()
@@ -961,6 +994,18 @@ class person(GeneratedsSuper):
     def set_value(self, value): self.value = value
     def get_extensiontype_(self): return self.extensiontype_
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+    def hasContent_(self):
+        if (
+            self.name is not None or
+            self.interest or
+            self.category is not None or
+            self.agent or
+            self.promoter or
+            self.description is not None
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='person', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1018,18 +1063,6 @@ class person(GeneratedsSuper):
         if self.description is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sdescription>%s</%sdescription>%s' % (namespace_, self.gds_format_string(quote_xml(self.description).encode(ExternalEncoding), input_name='description'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.name is not None or
-            self.interest or
-            self.category is not None or
-            self.agent or
-            self.promoter or
-            self.description is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='person'):
         level += 1
         already_processed = set()
@@ -1306,6 +1339,25 @@ class programmer(person):
     def set_attrnonposint(self, attrnonposint): self.attrnonposint = attrnonposint
     def get_extensiontype_(self): return self.extensiontype_
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+    def hasContent_(self):
+        if (
+            self.email is not None or
+            self.elposint is not None or
+            self.elnonposint is not None or
+            self.elnegint is not None or
+            self.elnonnegint is not None or
+            self.eldate is not None or
+            self.eldatetime is not None or
+            self.eltoken is not None or
+            self.elshort is not None or
+            self.ellong is not None or
+            self.elparam is not None or
+            self.elarraytypes is not None or
+            super(programmer, self).hasContent_()
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='programmer', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1387,25 +1439,6 @@ class programmer(person):
         if self.elarraytypes is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%selarraytypes>%s</%selarraytypes>%s' % (namespace_, self.gds_format_string(quote_xml(self.elarraytypes).encode(ExternalEncoding), input_name='elarraytypes'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.email is not None or
-            self.elposint is not None or
-            self.elnonposint is not None or
-            self.elnegint is not None or
-            self.elnonnegint is not None or
-            self.eldate is not None or
-            self.eldatetime is not None or
-            self.eltoken is not None or
-            self.elshort is not None or
-            self.ellong is not None or
-            self.elparam is not None or
-            self.elarraytypes is not None or
-            super(programmer, self).hasContent_()
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='programmer'):
         level += 1
         already_processed = set()
@@ -1710,6 +1743,13 @@ class param(GeneratedsSuper):
     def set_id(self, id): self.id = id
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            self.valueOf_
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='param', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1747,13 +1787,6 @@ class param(GeneratedsSuper):
             outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='param', fromsubclass_=False, pretty_print=True):
         pass
-    def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='param'):
         level += 1
         already_processed = set()
@@ -1894,6 +1927,14 @@ class python_programmer(programmer):
     def set_favorite_editor(self, favorite_editor): self.favorite_editor = favorite_editor
     def get_nick_name(self): return self.nick_name
     def set_nick_name(self, nick_name): self.nick_name = nick_name
+    def hasContent_(self):
+        if (
+            self.favorite_editor is not None or
+            super(python_programmer, self).hasContent_()
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='python-programmer', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1924,14 +1965,6 @@ class python_programmer(programmer):
         if self.favorite_editor is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sfavorite-editor>%s</%sfavorite-editor>%s' % (namespace_, self.gds_format_string(quote_xml(self.favorite_editor).encode(ExternalEncoding), input_name='favorite-editor'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.favorite_editor is not None or
-            super(python_programmer, self).hasContent_()
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='python-programmer'):
         level += 1
         already_processed = set()
@@ -2041,6 +2074,14 @@ class java_programmer(programmer):
     def set_status(self, status): self.status = status
     def get_nick_name(self): return self.nick_name
     def set_nick_name(self, nick_name): self.nick_name = nick_name
+    def hasContent_(self):
+        if (
+            self.favorite_editor is not None or
+            super(java_programmer, self).hasContent_()
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='java-programmer', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -2074,14 +2115,6 @@ class java_programmer(programmer):
         if self.favorite_editor is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sfavorite-editor>%s</%sfavorite-editor>%s' % (namespace_, self.gds_format_string(quote_xml(self.favorite_editor).encode(ExternalEncoding), input_name='favorite-editor'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.favorite_editor is not None or
-            super(java_programmer, self).hasContent_()
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='java-programmer'):
         level += 1
         already_processed = set()
@@ -2202,6 +2235,16 @@ class agent(GeneratedsSuper):
     def set_priority(self, priority): self.priority = priority
     def get_info(self): return self.info
     def set_info(self, info): self.info = info
+    def hasContent_(self):
+        if (
+            self.firstname is not None or
+            self.lastname is not None or
+            self.priority is not None or
+            self.info is not None
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='agent', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -2236,16 +2279,6 @@ class agent(GeneratedsSuper):
             outfile.write('<%spriority>%s</%spriority>%s' % (namespace_, self.gds_format_float(self.priority, input_name='priority'), namespace_, eol_))
         if self.info is not None:
             self.info.export(outfile, level, namespace_, name_='info', pretty_print=pretty_print)
-    def hasContent_(self):
-        if (
-            self.firstname is not None or
-            self.lastname is not None or
-            self.priority is not None or
-            self.info is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='agent'):
         level += 1
         already_processed = set()
@@ -2376,6 +2409,16 @@ class special_agent(GeneratedsSuper):
     def set_priority(self, priority): self.priority = priority
     def get_info(self): return self.info
     def set_info(self, info): self.info = info
+    def hasContent_(self):
+        if (
+            self.firstname is not None or
+            self.lastname is not None or
+            self.priority is not None or
+            self.info is not None
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='special-agent', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -2410,16 +2453,6 @@ class special_agent(GeneratedsSuper):
             outfile.write('<%spriority>%s</%spriority>%s' % (namespace_, self.gds_format_float(self.priority, input_name='priority'), namespace_, eol_))
         if self.info is not None:
             self.info.export(outfile, level, namespace_, name_='info', pretty_print=pretty_print)
-    def hasContent_(self):
-        if (
-            self.firstname is not None or
-            self.lastname is not None or
-            self.priority is not None or
-            self.info is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='special-agent'):
         level += 1
         already_processed = set()
@@ -2577,6 +2610,19 @@ class booster(GeneratedsSuper):
     def set_client_handler(self, client_handler): self.client_handler = client_handler
     def add_client_handler(self, value): self.client_handler.append(value)
     def insert_client_handler(self, index, value): self.client_handler[index] = value
+    def hasContent_(self):
+        if (
+            self.firstname is not None or
+            self.lastname is not None or
+            self.other_name is not None or
+            self.classxx is not None or
+            self.other_value or
+            self.type_ or
+            self.client_handler
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='booster', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -2620,19 +2666,6 @@ class booster(GeneratedsSuper):
             outfile.write('<%stype>%s</%stype>%s' % (namespace_, self.gds_format_float(type_, input_name='type'), namespace_, eol_))
         for client_handler_ in self.client_handler:
             client_handler_.export(outfile, level, namespace_, name_='client-handler', pretty_print=pretty_print)
-    def hasContent_(self):
-        if (
-            self.firstname is not None or
-            self.lastname is not None or
-            self.other_name is not None or
-            self.classxx is not None or
-            self.other_value or
-            self.type_ or
-            self.client_handler
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='booster'):
         level += 1
         already_processed = set()
@@ -2811,6 +2844,13 @@ class info(GeneratedsSuper):
     def set_type(self, type_): self.type_ = type_
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
+    def hasContent_(self):
+        if (
+
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='info', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -2838,13 +2878,6 @@ class info(GeneratedsSuper):
             outfile.write(' name=%s' % (self.gds_format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='info', fromsubclass_=False, pretty_print=True):
         pass
-    def hasContent_(self):
-        if (
-
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='info'):
         level += 1
         already_processed = set()
@@ -2962,6 +2995,14 @@ class client_handlerType(GeneratedsSuper):
     def set_fullname(self, fullname): self.fullname = fullname
     def get_refid(self): return self.refid
     def set_refid(self, refid): self.refid = refid
+    def hasContent_(self):
+        if (
+            self.fullname is not None or
+            self.refid is not None
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='client-handlerType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -2991,14 +3032,6 @@ class client_handlerType(GeneratedsSuper):
         if self.refid is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%srefid>%s</%srefid>%s' % (namespace_, self.gds_format_integer(self.refid, input_name='refid'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.fullname is not None or
-            self.refid is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='client-handlerType'):
         level += 1
         already_processed = set()
@@ -3124,6 +3157,25 @@ def parse(inFileName):
         namespacedef_='',
         pretty_print=True)
     return rootObj
+
+
+def parseEtree(inFileName):
+    doc = parsexml_(inFileName)
+    rootNode = doc.getroot()
+    rootTag, rootClass = get_root_tag(rootNode)
+    if rootClass is None:
+        rootTag = 'people'
+        rootClass = people
+    rootObj = rootClass.factory()
+    rootObj.build(rootNode)
+    # Enable Python to collect the space used by the DOM.
+    doc = None
+    rootElement = rootObj.to_etree(None, name_=rootTag)
+    content = etree_.tostring(rootElement, pretty_print=True,
+        xml_declaration=True, encoding="utf-8")
+    sys.stdout.write(content)
+    sys.stdout.write('\n')
+    return rootObj, rootElement
 
 
 def parseString(inString):

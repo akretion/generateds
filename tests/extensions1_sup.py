@@ -138,7 +138,7 @@ except ImportError, exp:
                     raise_parse_error(node, 'Requires sequence of doubles')
             return input_data
         def gds_format_boolean(self, input_data, input_name=''):
-            return '%s' % input_data
+            return ('%s' % input_data).lower()
         def gds_validate_boolean(self, input_data, node, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
@@ -431,6 +431,39 @@ class MixedContainer:
         elif self.content_type == MixedContainer.TypeBase64:
             outfile.write('<%s>%s</%s>' %
                 (self.name, base64.b64encode(self.value), self.name))
+    def to_etree(self, element):
+        if self.category == MixedContainer.CategoryText:
+            # Prevent exporting empty content as empty lines.
+            if self.value.strip():
+                if len(element) > 0:
+                    if element[-1].tail is None:
+                        element[-1].tail = self.value
+                    else:
+                        element[-1].tail += self.value
+                else:
+                    if element.text is None:
+                        element.text = self.value
+                    else:
+                        element.text += self.value
+        elif self.category == MixedContainer.CategorySimple:
+            subelement = etree_.SubElement(element, '%s' % self.name)
+            subelement.text = self.to_etree_simple()
+        else:    # category == MixedContainer.CategoryComplex
+            self.value.to_etree(element)
+    def to_etree_simple(self):
+        if self.content_type == MixedContainer.TypeString:
+            text = self.value
+        elif (self.content_type == MixedContainer.TypeInteger or
+                self.content_type == MixedContainer.TypeBoolean):
+            text = '%d' % self.value
+        elif (self.content_type == MixedContainer.TypeFloat or
+                self.content_type == MixedContainer.TypeDecimal):
+            text = '%f' % self.value
+        elif self.content_type == MixedContainer.TypeDouble:
+            text = '%g' % self.value
+        elif self.content_type == MixedContainer.TypeBase64:
+            text = '%s' % base64.b64encode(self.value)
+        return text
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
@@ -498,6 +531,13 @@ class SpecialDate(GeneratedsSuper):
     def set_SpecialProperty(self, SpecialProperty): self.SpecialProperty = SpecialProperty
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            self.valueOf_
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='SpecialDate', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -520,13 +560,6 @@ class SpecialDate(GeneratedsSuper):
             outfile.write(' SpecialProperty=%s' % (self.gds_format_string(quote_attrib(self.SpecialProperty).encode(ExternalEncoding), input_name='SpecialProperty'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='SpecialDate', fromsubclass_=False, pretty_print=True):
         pass
-    def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='SpecialDate'):
         level += 1
         already_processed = set()
@@ -579,6 +612,13 @@ class ExtremeDate(GeneratedsSuper):
     def set_ExtremeProperty(self, ExtremeProperty): self.ExtremeProperty = ExtremeProperty
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            self.valueOf_
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='ExtremeDate', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -601,13 +641,6 @@ class ExtremeDate(GeneratedsSuper):
             outfile.write(' ExtremeProperty=%s' % (self.gds_format_string(quote_attrib(self.ExtremeProperty).encode(ExternalEncoding), input_name='ExtremeProperty'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='ExtremeDate', fromsubclass_=False, pretty_print=True):
         pass
-    def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='ExtremeDate'):
         level += 1
         already_processed = set()
@@ -660,6 +693,13 @@ class singleExtremeDate(GeneratedsSuper):
     def set_ExtremeProperty(self, ExtremeProperty): self.ExtremeProperty = ExtremeProperty
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            self.valueOf_
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='singleExtremeDate', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -682,13 +722,6 @@ class singleExtremeDate(GeneratedsSuper):
             outfile.write(' ExtremeProperty=%s' % (self.gds_format_string(quote_attrib(self.ExtremeProperty).encode(ExternalEncoding), input_name='ExtremeProperty'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='singleExtremeDate', fromsubclass_=False, pretty_print=True):
         pass
-    def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='singleExtremeDate'):
         level += 1
         already_processed = set()
@@ -746,6 +779,14 @@ class containerType(GeneratedsSuper):
     def insert_simplefactoid(self, index, value): self.simplefactoid[index] = value
     def get_mixedfactoid(self): return self.mixedfactoid
     def set_mixedfactoid(self, mixedfactoid): self.mixedfactoid = mixedfactoid
+    def hasContent_(self):
+        if (
+            self.simplefactoid or
+            self.mixedfactoid is not None
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='containerType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -773,14 +814,6 @@ class containerType(GeneratedsSuper):
             simplefactoid_.export(outfile, level, namespace_, name_='simplefactoid', pretty_print=pretty_print)
         if self.mixedfactoid is not None:
             self.mixedfactoid.export(outfile, level, namespace_, name_='mixedfactoid', pretty_print=pretty_print)
-    def hasContent_(self):
-        if (
-            self.simplefactoid or
-            self.mixedfactoid is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='containerType'):
         level += 1
         already_processed = set()
@@ -847,6 +880,13 @@ class simpleFactoidType(GeneratedsSuper):
     def validate_RelationType(self, value):
         # Validate type RelationType, a restriction on RelationType2.
         pass
+    def hasContent_(self):
+        if (
+            self.relation is not None
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='simpleFactoidType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -873,13 +913,6 @@ class simpleFactoidType(GeneratedsSuper):
         if self.relation is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%srelation>%s</%srelation>%s' % (namespace_, self.gds_format_string(quote_xml(self.relation).encode(ExternalEncoding), input_name='relation'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.relation is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='simpleFactoidType'):
         level += 1
         already_processed = set()
@@ -941,6 +974,14 @@ class mixedFactoidType(GeneratedsSuper):
         pass
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            self.relation is not None or
+            self.valueOf_
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='mixedFactoidType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -963,14 +1004,6 @@ class mixedFactoidType(GeneratedsSuper):
         if not fromsubclass_:
             for item_ in self.content_:
                 item_.export(outfile, level, item_.name, namespace_, pretty_print=pretty_print)
-    def hasContent_(self):
-        if (
-            self.relation is not None or
-            self.valueOf_
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='mixedFactoidType'):
         level += 1
         already_processed = set()
@@ -1042,6 +1075,13 @@ class BaseType(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def get_extensiontype_(self): return self.extensiontype_
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+    def hasContent_(self):
+        if (
+            self.valueOf_
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='BaseType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1071,13 +1111,6 @@ class BaseType(GeneratedsSuper):
             outfile.write(' xsi:type="%s"' % self.extensiontype_)
     def exportChildren(self, outfile, level, namespace_='', name_='BaseType', fromsubclass_=False, pretty_print=True):
         pass
-    def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='BaseType'):
         level += 1
         already_processed = set()
@@ -1147,6 +1180,14 @@ class DerivedType(BaseType):
     def set_DerivedProperty2(self, DerivedProperty2): self.DerivedProperty2 = DerivedProperty2
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            self.valueOf_ or
+            super(DerivedType, self).hasContent_()
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='DerivedType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1174,14 +1215,6 @@ class DerivedType(BaseType):
     def exportChildren(self, outfile, level, namespace_='', name_='DerivedType', fromsubclass_=False, pretty_print=True):
         super(DerivedType, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
         pass
-    def hasContent_(self):
-        if (
-            self.valueOf_ or
-            super(DerivedType, self).hasContent_()
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='DerivedType'):
         level += 1
         already_processed = set()
@@ -1245,6 +1278,13 @@ class MyInteger(GeneratedsSuper):
     def set_MyAttr(self, MyAttr): self.MyAttr = MyAttr
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            self.valueOf_
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='MyInteger', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1267,13 +1307,6 @@ class MyInteger(GeneratedsSuper):
             outfile.write(' MyAttr=%s' % (self.gds_format_string(quote_attrib(self.MyAttr).encode(ExternalEncoding), input_name='MyAttr'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='MyInteger', fromsubclass_=False, pretty_print=True):
         pass
-    def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='MyInteger'):
         level += 1
         already_processed = set()
@@ -1326,6 +1359,13 @@ class MyBoolean(GeneratedsSuper):
     def set_MyAttr(self, MyAttr): self.MyAttr = MyAttr
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            self.valueOf_
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='MyBoolean', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1348,13 +1388,6 @@ class MyBoolean(GeneratedsSuper):
             outfile.write(' MyAttr=%s' % (self.gds_format_string(quote_attrib(self.MyAttr).encode(ExternalEncoding), input_name='MyAttr'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='MyBoolean', fromsubclass_=False, pretty_print=True):
         pass
-    def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='MyBoolean'):
         level += 1
         already_processed = set()
@@ -1407,6 +1440,13 @@ class MyFloat(GeneratedsSuper):
     def set_MyAttr(self, MyAttr): self.MyAttr = MyAttr
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            self.valueOf_
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='MyFloat', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1429,13 +1469,6 @@ class MyFloat(GeneratedsSuper):
             outfile.write(' MyAttr=%s' % (self.gds_format_string(quote_attrib(self.MyAttr).encode(ExternalEncoding), input_name='MyAttr'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='MyFloat', fromsubclass_=False, pretty_print=True):
         pass
-    def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='MyFloat'):
         level += 1
         already_processed = set()
@@ -1488,6 +1521,13 @@ class MyDouble(GeneratedsSuper):
     def set_MyAttr(self, MyAttr): self.MyAttr = MyAttr
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            self.valueOf_
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='MyDouble', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1510,13 +1550,6 @@ class MyDouble(GeneratedsSuper):
             outfile.write(' MyAttr=%s' % (self.gds_format_string(quote_attrib(self.MyAttr).encode(ExternalEncoding), input_name='MyAttr'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='MyDouble', fromsubclass_=False, pretty_print=True):
         pass
-    def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='MyDouble'):
         level += 1
         already_processed = set()
@@ -1589,6 +1622,25 @@ def parse(inFileName):
 ##         namespacedef_='',
 ##         pretty_print=True)
     return rootObj
+
+
+def parseEtree(inFileName):
+    doc = parsexml_(inFileName)
+    rootNode = doc.getroot()
+    rootTag, rootClass = get_root_tag(rootNode)
+    if rootClass is None:
+        rootTag = 'container'
+        rootClass = containerType
+    rootObj = rootClass.factory()
+    rootObj.build(rootNode)
+    # Enable Python to collect the space used by the DOM.
+    doc = None
+    rootElement = rootObj.to_etree(None, name_=rootTag)
+##     content = etree_.tostring(rootElement, pretty_print=True,
+##         xml_declaration=True, encoding="utf-8")
+##     sys.stdout.write(content)
+##     sys.stdout.write('\n')
+    return rootObj, rootElement
 
 
 def parseString(inString):

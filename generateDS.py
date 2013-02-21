@@ -2077,6 +2077,11 @@ def generateToEtree(wrt, element, Targetnamespace):
         wrt("        else:\n")
         wrt("            element = etree_.SubElement(parent_element, "
             "'{%s}' + name_)\n" % (Targetnamespace,))
+    if element.getExtended():
+        wrt("        if self.extensiontype_ is not None:\n")
+        wrt("            element.set("
+            "'{http://www.w3.org/2001/XMLSchema-instance}type', "
+            "self.extensiontype_)\n")
     generateToEtreeAttributes(wrt, element)
     generateToEtreeChildren(wrt, element, Targetnamespace)
     wrt("        return element\n")
@@ -2112,7 +2117,6 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
                     else:
                         wrt("        if self.%s is not None:\n" % (name,))
                         wrt("            %s_ = self.%s\n" % (name, name,))
-
                     if child_type == DateTimeType:
                         wrt("            etree_.SubElement("
                             "element, '{%s}%s').text = self."
@@ -2156,7 +2160,7 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
                         wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_base64(%s_)\n" % (Targetnamespace, unmappedName, name))
                     else:
                         wrt("            %s_.to_etree(element, name_='%s')\n" % (
-                            name, name,))
+                            name, unmappedName,))
 #end generateToEtreeChildren
 
 def generateToEtreeAttributes(wrt, element):

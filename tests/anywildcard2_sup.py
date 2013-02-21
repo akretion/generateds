@@ -138,7 +138,7 @@ except ImportError, exp:
                     raise_parse_error(node, 'Requires sequence of doubles')
             return input_data
         def gds_format_boolean(self, input_data, input_name=''):
-            return '%s' % input_data
+            return ('%s' % input_data).lower()
         def gds_validate_boolean(self, input_data, node, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
@@ -431,6 +431,39 @@ class MixedContainer:
         elif self.content_type == MixedContainer.TypeBase64:
             outfile.write('<%s>%s</%s>' %
                 (self.name, base64.b64encode(self.value), self.name))
+    def to_etree(self, element):
+        if self.category == MixedContainer.CategoryText:
+            # Prevent exporting empty content as empty lines.
+            if self.value.strip():
+                if len(element) > 0:
+                    if element[-1].tail is None:
+                        element[-1].tail = self.value
+                    else:
+                        element[-1].tail += self.value
+                else:
+                    if element.text is None:
+                        element.text = self.value
+                    else:
+                        element.text += self.value
+        elif self.category == MixedContainer.CategorySimple:
+            subelement = etree_.SubElement(element, '%s' % self.name)
+            subelement.text = self.to_etree_simple()
+        else:    # category == MixedContainer.CategoryComplex
+            self.value.to_etree(element)
+    def to_etree_simple(self):
+        if self.content_type == MixedContainer.TypeString:
+            text = self.value
+        elif (self.content_type == MixedContainer.TypeInteger or
+                self.content_type == MixedContainer.TypeBoolean):
+            text = '%d' % self.value
+        elif (self.content_type == MixedContainer.TypeFloat or
+                self.content_type == MixedContainer.TypeDecimal):
+            text = '%f' % self.value
+        elif self.content_type == MixedContainer.TypeDouble:
+            text = '%g' % self.value
+        elif self.content_type == MixedContainer.TypeBase64:
+            text = '%s' % base64.b64encode(self.value)
+        return text
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
@@ -502,6 +535,15 @@ class PlantType_single(GeneratedsSuper):
     def set_anytypeobjs_(self, anytypeobjs_): self.anytypeobjs_ = anytypeobjs_
     def get_description(self): return self.description
     def set_description(self, description): self.description = description
+    def hasContent_(self):
+        if (
+            self.name is not None or
+            self.anytypeobjs_ is not None or
+            self.description is not None
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='PlantType_single', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -532,15 +574,6 @@ class PlantType_single(GeneratedsSuper):
             self.description.export(outfile, level, namespace_, name_='description', pretty_print=pretty_print)
         if self.anytypeobjs_ is not None:
             self.anytypeobjs_.export(outfile, level, namespace_, pretty_print=pretty_print)
-    def hasContent_(self):
-        if (
-            self.name is not None or
-            self.anytypeobjs_ is not None or
-            self.description is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='PlantType_single'):
         level += 1
         already_processed = set()
@@ -618,6 +651,15 @@ class PlantType_multiple(GeneratedsSuper):
     def insert_anytypeobjs_(self, index, value): self._anytypeobjs_[index] = value
     def get_description(self): return self.description
     def set_description(self, description): self.description = description
+    def hasContent_(self):
+        if (
+            self.name is not None or
+            self.anytypeobjs_ or
+            self.description is not None
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='PlantType_multiple', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -648,15 +690,6 @@ class PlantType_multiple(GeneratedsSuper):
             self.description.export(outfile, level, namespace_, name_='description', pretty_print=pretty_print)
         for obj_ in self.anytypeobjs_:
             obj_.export(outfile, level, namespace_, pretty_print=pretty_print)
-    def hasContent_(self):
-        if (
-            self.name is not None or
-            self.anytypeobjs_ or
-            self.description is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='PlantType_multiple'):
         level += 1
         already_processed = set()
@@ -728,6 +761,14 @@ class DescriptionType(GeneratedsSuper):
     def set_name(self, name): self.name = name
     def get_size(self): return self.size
     def set_size(self, size): self.size = size
+    def hasContent_(self):
+        if (
+            self.name is not None or
+            self.size is not None
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='DescriptionType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -757,14 +798,6 @@ class DescriptionType(GeneratedsSuper):
         if self.size is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%ssize>%s</%ssize>%s' % (namespace_, self.gds_format_string(quote_xml(self.size).encode(ExternalEncoding), input_name='size'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.name is not None or
-            self.size is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='DescriptionType'):
         level += 1
         already_processed = set()
@@ -821,6 +854,14 @@ class CatalogType(GeneratedsSuper):
     def set_name(self, name): self.name = name
     def get_catagory(self): return self.catagory
     def set_catagory(self, catagory): self.catagory = catagory
+    def hasContent_(self):
+        if (
+            self.name is not None or
+            self.catagory is not None
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='CatalogType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -850,14 +891,6 @@ class CatalogType(GeneratedsSuper):
         if self.catagory is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%scatagory>%s</%scatagory>%s' % (namespace_, self.gds_format_integer(self.catagory, input_name='catagory'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.name is not None or
-            self.catagory is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='CatalogType'):
         level += 1
         already_processed = set()
@@ -913,6 +946,13 @@ class PlantType_single_nochild(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_anytypeobjs_(self): return self.anytypeobjs_
     def set_anytypeobjs_(self, anytypeobjs_): self.anytypeobjs_ = anytypeobjs_
+    def hasContent_(self):
+        if (
+            self.anytypeobjs_ is not None
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='PlantType_single_nochild', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -938,13 +978,6 @@ class PlantType_single_nochild(GeneratedsSuper):
             eol_ = ''
         if self.anytypeobjs_ is not None:
             self.anytypeobjs_.export(outfile, level, namespace_, pretty_print=pretty_print)
-    def hasContent_(self):
-        if (
-            self.anytypeobjs_ is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='PlantType_single_nochild'):
         level += 1
         already_processed = set()
@@ -996,6 +1029,13 @@ class PlantType_multiple_nochild(GeneratedsSuper):
     def set_anytypeobjs_(self, anytypeobjs_): self.anytypeobjs_ = anytypeobjs_
     def add_anytypeobjs_(self, value): self.anytypeobjs_.append(value)
     def insert_anytypeobjs_(self, index, value): self._anytypeobjs_[index] = value
+    def hasContent_(self):
+        if (
+            self.anytypeobjs_
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='PlantType_multiple_nochild', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1021,13 +1061,6 @@ class PlantType_multiple_nochild(GeneratedsSuper):
             eol_ = ''
         for obj_ in self.anytypeobjs_:
             obj_.export(outfile, level, namespace_, pretty_print=pretty_print)
-    def hasContent_(self):
-        if (
-            self.anytypeobjs_
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='PlantType_multiple_nochild'):
         level += 1
         already_processed = set()
@@ -1098,6 +1131,25 @@ def parse(inFileName):
 ##         namespacedef_='',
 ##         pretty_print=True)
     return rootObj
+
+
+def parseEtree(inFileName):
+    doc = parsexml_(inFileName)
+    rootNode = doc.getroot()
+    rootTag, rootClass = get_root_tag(rootNode)
+    if rootClass is None:
+        rootTag = 'PlantType_single'
+        rootClass = PlantType_single
+    rootObj = rootClass.factory()
+    rootObj.build(rootNode)
+    # Enable Python to collect the space used by the DOM.
+    doc = None
+    rootElement = rootObj.to_etree(None, name_=rootTag)
+##     content = etree_.tostring(rootElement, pretty_print=True,
+##         xml_declaration=True, encoding="utf-8")
+##     sys.stdout.write(content)
+##     sys.stdout.write('\n')
+    return rootObj, rootElement
 
 
 def parseString(inString):

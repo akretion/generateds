@@ -138,7 +138,7 @@ except ImportError, exp:
                     raise_parse_error(node, 'Requires sequence of doubles')
             return input_data
         def gds_format_boolean(self, input_data, input_name=''):
-            return '%s' % input_data
+            return ('%s' % input_data).lower()
         def gds_validate_boolean(self, input_data, node, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
@@ -431,6 +431,39 @@ class MixedContainer:
         elif self.content_type == MixedContainer.TypeBase64:
             outfile.write('<%s>%s</%s>' %
                 (self.name, base64.b64encode(self.value), self.name))
+    def to_etree(self, element):
+        if self.category == MixedContainer.CategoryText:
+            # Prevent exporting empty content as empty lines.
+            if self.value.strip():
+                if len(element) > 0:
+                    if element[-1].tail is None:
+                        element[-1].tail = self.value
+                    else:
+                        element[-1].tail += self.value
+                else:
+                    if element.text is None:
+                        element.text = self.value
+                    else:
+                        element.text += self.value
+        elif self.category == MixedContainer.CategorySimple:
+            subelement = etree_.SubElement(element, '%s' % self.name)
+            subelement.text = self.to_etree_simple()
+        else:    # category == MixedContainer.CategoryComplex
+            self.value.to_etree(element)
+    def to_etree_simple(self):
+        if self.content_type == MixedContainer.TypeString:
+            text = self.value
+        elif (self.content_type == MixedContainer.TypeInteger or
+                self.content_type == MixedContainer.TypeBoolean):
+            text = '%d' % self.value
+        elif (self.content_type == MixedContainer.TypeFloat or
+                self.content_type == MixedContainer.TypeDecimal):
+            text = '%f' % self.value
+        elif self.content_type == MixedContainer.TypeDouble:
+            text = '%g' % self.value
+        elif self.content_type == MixedContainer.TypeBase64:
+            text = '%s' % base64.b64encode(self.value)
+        return text
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
@@ -498,6 +531,13 @@ class test1element(GeneratedsSuper):
     def set_test1member(self, test1member): self.test1member = test1member
     def get_test1attribute(self): return self.test1attribute
     def set_test1attribute(self, test1attribute): self.test1attribute = test1attribute
+    def hasContent_(self):
+        if (
+            self.test1member is not None
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='test1element', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -525,13 +565,6 @@ class test1element(GeneratedsSuper):
             eol_ = ''
         if self.test1member is not None:
             self.test1member.export(outfile, level, namespace_, name_='test1member', pretty_print=pretty_print)
-    def hasContent_(self):
-        if (
-            self.test1member is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='test1element'):
         level += 1
         already_processed = set()
@@ -588,6 +621,13 @@ class cimAnySimpleType(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def get_anyAttributes_(self): return self.anyAttributes_
     def set_anyAttributes_(self, anyAttributes_): self.anyAttributes_ = anyAttributes_
+    def hasContent_(self):
+        if (
+            self.valueOf_
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='cimAnySimpleType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -639,13 +679,6 @@ class cimAnySimpleType(GeneratedsSuper):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='cimAnySimpleType', fromsubclass_=False, pretty_print=True):
         pass
-    def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='cimAnySimpleType'):
         level += 1
         already_processed = set()
@@ -715,6 +748,25 @@ def parse(inFileName):
 ##         namespacedef_='',
 ##         pretty_print=True)
     return rootObj
+
+
+def parseEtree(inFileName):
+    doc = parsexml_(inFileName)
+    rootNode = doc.getroot()
+    rootTag, rootClass = get_root_tag(rootNode)
+    if rootClass is None:
+        rootTag = 'test1element'
+        rootClass = test1element
+    rootObj = rootClass.factory()
+    rootObj.build(rootNode)
+    # Enable Python to collect the space used by the DOM.
+    doc = None
+    rootElement = rootObj.to_etree(None, name_=rootTag)
+##     content = etree_.tostring(rootElement, pretty_print=True,
+##         xml_declaration=True, encoding="utf-8")
+##     sys.stdout.write(content)
+##     sys.stdout.write('\n')
+    return rootObj, rootElement
 
 
 def parseString(inString):

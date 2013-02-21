@@ -138,7 +138,7 @@ except ImportError, exp:
                     raise_parse_error(node, 'Requires sequence of doubles')
             return input_data
         def gds_format_boolean(self, input_data, input_name=''):
-            return '%s' % input_data
+            return ('%s' % input_data).lower()
         def gds_validate_boolean(self, input_data, node, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
@@ -431,6 +431,39 @@ class MixedContainer:
         elif self.content_type == MixedContainer.TypeBase64:
             outfile.write('<%s>%s</%s>' %
                 (self.name, base64.b64encode(self.value), self.name))
+    def to_etree(self, element):
+        if self.category == MixedContainer.CategoryText:
+            # Prevent exporting empty content as empty lines.
+            if self.value.strip():
+                if len(element) > 0:
+                    if element[-1].tail is None:
+                        element[-1].tail = self.value
+                    else:
+                        element[-1].tail += self.value
+                else:
+                    if element.text is None:
+                        element.text = self.value
+                    else:
+                        element.text += self.value
+        elif self.category == MixedContainer.CategorySimple:
+            subelement = etree_.SubElement(element, '%s' % self.name)
+            subelement.text = self.to_etree_simple()
+        else:    # category == MixedContainer.CategoryComplex
+            self.value.to_etree(element)
+    def to_etree_simple(self):
+        if self.content_type == MixedContainer.TypeString:
+            text = self.value
+        elif (self.content_type == MixedContainer.TypeInteger or
+                self.content_type == MixedContainer.TypeBoolean):
+            text = '%d' % self.value
+        elif (self.content_type == MixedContainer.TypeFloat or
+                self.content_type == MixedContainer.TypeDecimal):
+            text = '%f' % self.value
+        elif self.content_type == MixedContainer.TypeDouble:
+            text = '%g' % self.value
+        elif self.content_type == MixedContainer.TypeBase64:
+            text = '%s' % base64.b64encode(self.value)
+        return text
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
@@ -499,6 +532,13 @@ class simpleTypeTestsType(GeneratedsSuper):
     def set_simpleTypeTest(self, simpleTypeTest): self.simpleTypeTest = simpleTypeTest
     def add_simpleTypeTest(self, value): self.simpleTypeTest.append(value)
     def insert_simpleTypeTest(self, index, value): self.simpleTypeTest[index] = value
+    def hasContent_(self):
+        if (
+            self.simpleTypeTest
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='simpleTypeTestsType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -525,13 +565,6 @@ class simpleTypeTestsType(GeneratedsSuper):
         for simpleTypeTest_ in self.simpleTypeTest:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%ssimpleTypeTest>%s</%ssimpleTypeTest>%s' % (namespace_, self.gds_format_string(quote_xml(simpleTypeTest_).encode(ExternalEncoding), input_name='simpleTypeTest'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.simpleTypeTest
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='simpleTypeTestsType'):
         level += 1
         already_processed = set()
@@ -702,6 +735,33 @@ class simpleTypeTest(GeneratedsSuper):
     def set_dateTimeVal2(self, dateTimeVal2): self.dateTimeVal2 = dateTimeVal2
     def add_dateTimeVal2(self, value): self.dateTimeVal2.append(value)
     def insert_dateTimeVal2(self, index, value): self.dateTimeVal2[index] = value
+    def hasContent_(self):
+        if (
+            self.datetime1 is not None or
+            self.datetime2 is not None or
+            self.datetime3 is not None or
+            self.datetime4 is not None or
+            self.datetime5 is not None or
+            self.integerVal1 is not None or
+            self.integerVal2 or
+            self.stringVal1 is not None or
+            self.stringVal2 or
+            self.booleanVal1 is not None or
+            self.booleanVal2 or
+            self.decimalVal1 is not None or
+            self.decimalVal2 or
+            self.doubleVal1 is not None or
+            self.doubleVal2 or
+            self.floatVal1 is not None or
+            self.floatVal2 or
+            self.dateVal1 is not None or
+            self.dateVal2 or
+            self.dateTimeVal1 is not None or
+            self.dateTimeVal2
+            ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='', name_='simpleTypeTest', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -754,10 +814,10 @@ class simpleTypeTest(GeneratedsSuper):
             outfile.write('<%sstringVal2>%s</%sstringVal2>%s' % (namespace_, self.gds_format_string(quote_xml(stringVal2_).encode(ExternalEncoding), input_name='stringVal2'), namespace_, eol_))
         if self.booleanVal1 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sbooleanVal1>%s</%sbooleanVal1>%s' % (namespace_, self.gds_format_boolean(self.gds_str_lower(str(self.booleanVal1)), input_name='booleanVal1'), namespace_, eol_))
+            outfile.write('<%sbooleanVal1>%s</%sbooleanVal1>%s' % (namespace_, self.gds_format_boolean(self.booleanVal1, input_name='booleanVal1'), namespace_, eol_))
         for booleanVal2_ in self.booleanVal2:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sbooleanVal2>%s</%sbooleanVal2>%s' % (namespace_, self.gds_format_boolean(self.gds_str_lower(str(booleanVal2_)), input_name='booleanVal2'), namespace_, eol_))
+            outfile.write('<%sbooleanVal2>%s</%sbooleanVal2>%s' % (namespace_, self.gds_format_boolean(booleanVal2_, input_name='booleanVal2'), namespace_, eol_))
         if self.decimalVal1 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sdecimalVal1>%s</%sdecimalVal1>%s' % (namespace_, self.gds_format_float(self.decimalVal1, input_name='decimalVal1'), namespace_, eol_))
@@ -788,33 +848,6 @@ class simpleTypeTest(GeneratedsSuper):
         for dateTimeVal2_ in self.dateTimeVal2:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sdateTimeVal2>%s</%sdateTimeVal2>%s' % (namespace_, self.gds_format_datetime(dateTimeVal2_, input_name='dateTimeVal2'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.datetime1 is not None or
-            self.datetime2 is not None or
-            self.datetime3 is not None or
-            self.datetime4 is not None or
-            self.datetime5 is not None or
-            self.integerVal1 is not None or
-            self.integerVal2 or
-            self.stringVal1 is not None or
-            self.stringVal2 or
-            self.booleanVal1 is not None or
-            self.booleanVal2 or
-            self.decimalVal1 is not None or
-            self.decimalVal2 or
-            self.doubleVal1 is not None or
-            self.doubleVal2 or
-            self.floatVal1 is not None or
-            self.floatVal2 or
-            self.dateVal1 is not None or
-            self.dateVal2 or
-            self.dateTimeVal1 is not None or
-            self.dateTimeVal2
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='simpleTypeTest'):
         level += 1
         already_processed = set()
@@ -1113,6 +1146,25 @@ def parse(inFileName):
 ##         namespacedef_='',
 ##         pretty_print=True)
     return rootObj
+
+
+def parseEtree(inFileName):
+    doc = parsexml_(inFileName)
+    rootNode = doc.getroot()
+    rootTag, rootClass = get_root_tag(rootNode)
+    if rootClass is None:
+        rootTag = 'simpleTypeTests'
+        rootClass = simpleTypeTestsType
+    rootObj = rootClass.factory()
+    rootObj.build(rootNode)
+    # Enable Python to collect the space used by the DOM.
+    doc = None
+    rootElement = rootObj.to_etree(None, name_=rootTag)
+##     content = etree_.tostring(rootElement, pretty_print=True,
+##         xml_declaration=True, encoding="utf-8")
+##     sys.stdout.write(content)
+##     sys.stdout.write('\n')
+    return rootObj, rootElement
 
 
 def parseString(inString):

@@ -141,7 +141,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version 2.9a (02/18/2013)
+Version 2.9a (02/21/2013)
 - Added support for exporting to an Lxml element tree.  The element
   tree can then be serialized to XML, e.g. using Lxml
   etree.tostring().  This innovation is by Logan Owen, who also did
@@ -163,6 +163,14 @@ Version 2.9a (02/18/2013)
   for nudging me in the right direction when I, initially, made the
   wrong fix.
 - Added unit test for export to etree.
+- Various fixes to the to_etree (export to Lxml element tree)
+  capability: (1) fix to preserve names that contain special
+  characters (e.g. "-" and "."); (2) fix to preserve the type
+  attribute (xsi:type) for abstract types that whose type is set
+  explicitly.  Round turn (XML --> gDS object tree --> lxml element
+  tree --> gDS --> lxml ...) now seems to work reasonably well,
+  although I'm guessing that there are still bits missing (in
+  particular, support for xs:anyAttribute).
 
 Version 2.8c (provisional) (01/30/2013)
 - Changed generated check for attributes that are already_processed

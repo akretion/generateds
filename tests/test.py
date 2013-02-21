@@ -4,6 +4,7 @@ import sys
 import subprocess
 import getopt
 import unittest
+from lxml import etree
 
 
 class GenTest(unittest.TestCase):
@@ -380,6 +381,34 @@ class GenTest(unittest.TestCase):
         result, err = self.execute(cmd)
         self.check_result(result, err, ('sys.stdout.write',))
         cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ())
+
+    def test_019_to_etree(self):
+        cmdTempl = ('python generateDS.py --no-dates --no-versions '
+            '--silence --member-specs=list -f '
+            '-o tests/%s2_sup.py -s tests/%s2_sub.py '
+            '--export="etree" --silence '
+            '--super=%s2_sup '
+            'tests/%s.xsd'
+            )
+        t_ = 'to_etree'
+        cmd = cmdTempl % (t_, t_, t_, t_, )
+        result, _ = self.execute(cmd, cwd='..')
+        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ('sys.stdout.write',))
+        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ())
+        import to_etree2_sup
+        rootObj, rootElement = to_etree2_sup.parseEtree('to_etree.xml')
+        content = etree.tostring(rootElement, pretty_print=True,
+            xml_declaration=True, encoding="utf-8")
+        outfile = open('to_etree2.xml', 'w')
+        outfile.write(content)
+        outfile.close()
+        cmd = 'diff %s1.xml %s2.xml' % (t_, t_, )
         result, err = self.execute(cmd)
         self.check_result(result, err, ())
 
