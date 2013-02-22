@@ -2064,7 +2064,8 @@ def generateToEtree(wrt, element, Targetnamespace):
     childCount = countChildren(element, 0)
     name = element.getName()
     base = element.getBase()
-    wrt("    def to_etree(self, parent_element=None, name_='%s'):\n" % (name,))
+    wrt("    def to_etree(self, parent_element=None, name_='%s', mapping_=None):\n"
+        % (name,))
     parentName, parent = getParentName(element)
     if parentName and not element.getRestrictionBaseObj():
         elName = element.getCleanName()
@@ -2084,6 +2085,8 @@ def generateToEtree(wrt, element, Targetnamespace):
             "self.extensiontype_)\n")
     generateToEtreeAttributes(wrt, element)
     generateToEtreeChildren(wrt, element, Targetnamespace)
+    wrt("        if mapping_ is not None:\n")
+    wrt("            mapping_[self] = element\n")
     wrt("        return element\n")
 # end generateToEtree
 
@@ -2130,36 +2133,65 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
                     elif (child_type in StringType or
                         child_type == TokenType or
                         child_type in DateTimeGroupType):
-                        wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_string(%s_)\n" % (Targetnamespace, unmappedName, name))
+                        wrt("            etree_.SubElement(element, "
+                                "'{%s}%s').text = self.gds_format_string(%s_)\n" % (Targetnamespace, unmappedName, name))
                     elif child_type in IntegerType or \
                             child_type == PositiveIntegerType or \
                             child_type == NonPositiveIntegerType or \
                             child_type == NegativeIntegerType or \
                             child_type == NonNegativeIntegerType:
                         if child.isListType():
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_integer_list(%s_)\n" % (Targetnamespace, unmappedName, name))
+                            wrt("            etree_.SubElement(element, "
+                                "'{%s}%s').text = self.gds_format_integer_list"
+                                "(%s_)\n" % (
+                                Targetnamespace, unmappedName, name))
                         else:
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_integer(%s_)\n" % (Targetnamespace, unmappedName, name))
+                            wrt("            etree_.SubElement(element, "
+                                "'{%s}%s').text = self.gds_format_integer"
+                                "(%s_)\n" % (
+                                Targetnamespace, unmappedName, name))
                     elif child_type == BooleanType:
                         if child.isListType():
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_boolean_list(%s_)\n" % (Targetnamespace, unmappedName, name))
+                            wrt("            etree_.SubElement(element, "
+                                "'{%s}%s').text = self.gds_format_boolean_list"
+                                "(%s_)\n" % (
+                                Targetnamespace, unmappedName, name))
                         else:
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_boolean(%s_)\n" % (Targetnamespace, unmappedName, name))
+                            wrt("            etree_.SubElement(element, "
+                                "'{%s}%s').text = self.gds_format_boolean"
+                                "(%s_)\n" % (
+                                Targetnamespace, unmappedName, name))
                     elif child_type == FloatType or \
                             child_type == DecimalType:
                         if child.isListType():
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_float_list(%s_)\n" % (Targetnamespace, unmappedName, name))
+                            wrt("            etree_.SubElement(element, "
+                                "'{%s}%s').text = self.gds_format_float_list"
+                                "(%s_)\n" % (
+                                Targetnamespace, unmappedName, name))
                         else:
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_float(%s_)\n" % (Targetnamespace, unmappedName, name))
+                            wrt("            etree_.SubElement(element, "
+                                "'{%s}%s').text = self.gds_format_float"
+                                "(%s_)\n" % (
+                                Targetnamespace, unmappedName, name))
                     elif child_type == DoubleType:
                         if child.isListType():
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_double_list(%s_)\n" % (Targetnamespace, unmappedName, name))
+                            wrt("            etree_.SubElement(element, "
+                                "'{%s}%s').text = self.gds_format_double_list"
+                                "(%s_)\n" % (
+                                Targetnamespace, unmappedName, name))
                         else:
-                            wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_double(%s_)\n" % (Targetnamespace, unmappedName, name))
+                            wrt("            etree_.SubElement(element, "
+                                "'{%s}%s').text = self.gds_format_double"
+                                "(%s_)\n" % (
+                                Targetnamespace, unmappedName, name))
                     elif child_type == Base64Type:
-                        wrt("            etree_.SubElement(element, '{%s}%s').text = self.gds_format_base64(%s_)\n" % (Targetnamespace, unmappedName, name))
+                        wrt("            etree_.SubElement(element, "
+                            "'{%s}%s').text = self.gds_format_base64"
+                            "(%s_)\n" % (
+                            Targetnamespace, unmappedName, name))
                     else:
-                        wrt("            %s_.to_etree(element, name_='%s')\n" % (
+                        wrt("            %s_.to_etree(element, name_='%s', "
+                            "mapping_=mapping_)\n" % (
                             name, unmappedName,))
 #end generateToEtreeChildren
 
@@ -4246,6 +4278,8 @@ except ImportError, exp:
             return class_obj1
         def gds_build_any(self, node, type_name=None):
             return None
+        def gds_reverse_node_mapping(self, mapping):
+            return dict(((v, k) for k,v in mapping.iteritems()))
 
 
 #

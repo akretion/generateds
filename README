@@ -141,6 +141,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.9b (03/01/2013)
+- Added ability to produce mapping (a dict) during call to
+  to_etree() that maps gDS instances to their associated etree
+  elements.  Also added convenience method gds_reverse_node_mapping
+  to reverse the order of keys and values in a mapping/dict.
+
 Version 2.9a (02/21/2013)
 - Added support for exporting to an Lxml element tree.  The element
   tree can then be serialized to XML, e.g. using Lxml
