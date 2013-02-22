@@ -2070,7 +2070,7 @@ def generateToEtree(wrt, element, Targetnamespace):
     if parentName and not element.getRestrictionBaseObj():
         elName = element.getCleanName()
         wrt("        element = super(%s, self).to_etree("
-            "parent_element, name_)\n" % (elName, ))
+            "parent_element, name_, mapping_)\n" % (elName, ))
     else:
         wrt("        if parent_element is None:\n")
         wrt("            element = etree_.Element('{%s}' + name_)\n" % (
