@@ -4215,21 +4215,24 @@ except ImportError, exp:
             return input_data
         def gds_format_date(self, input_data, input_name=''):
             _svalue = input_data.strftime('%%Y-%%m-%%d')
-            if input_data.tzinfo is not None:
-                tzoff = input_data.tzinfo.utcoffset(input_data)
-                if tzoff is not None:
-                    total_seconds = tzoff.seconds + (86400 * tzoff.days)
-                    if total_seconds == 0:
-                        _svalue += 'Z'
-                    else:
-                        if total_seconds < 0:
-                            _svalue += '-'
-                            total_seconds *= -1
+            try:
+                if input_data.tzinfo is not None:
+                    tzoff = input_data.tzinfo.utcoffset(input_data)
+                    if tzoff is not None:
+                        total_seconds = tzoff.seconds + (86400 * tzoff.days)
+                        if total_seconds == 0:
+                            _svalue += 'Z'
                         else:
-                            _svalue += '+'
-                        hours = total_seconds // 3600
-                        minutes = (total_seconds - (hours * 3600)) // 60
-                        _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            if total_seconds < 0:
+                                _svalue += '-'
+                                total_seconds *= -1
+                            else:
+                                _svalue += '+'
+                            hours = total_seconds // 3600
+                            minutes = (total_seconds - (hours * 3600)) // 60
+                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+            except AttributeError:
+                pass
             return _svalue
         def gds_parse_date(self, input_data, node, input_name=''):
             tz = None
