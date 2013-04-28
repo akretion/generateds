@@ -1496,9 +1496,7 @@ class XschemaHandler(handler.ContentHandler):
             # fixlist
             if self.inAttribute:
                 pass
-            elif self.inSimpleType and self.inRestrictionType:
-                pass
-            else:
+            elif self.inSimpleType <= 0:
                 # Save the name of the simpleType, but ignore everything
                 #   else about it (for now).
                 if 'name' in attrs.keys():
@@ -1513,7 +1511,7 @@ class XschemaHandler(handler.ContentHandler):
                 element = SimpleTypeElement(stName)
                 SimpleTypeDict[stName] = element
                 self.stack.append(element)
-            self.inSimpleType = 1
+            self.inSimpleType += 1
         elif name == RestrictionType:
             if self.inAttribute:
                 if 'base' in attrs:
@@ -1521,7 +1519,7 @@ class XschemaHandler(handler.ContentHandler):
             else:
                 # If we are in a simpleType, capture the name of
                 #   the restriction base.
-                if ((self.inSimpleType or self.inSimpleContent) and
+                if ((self.inSimpleType >= 1 or self.inSimpleContent) and
                     'base' in attrs.keys()):
                     self.stack[-1].setBase(attrs['base'])
                 else:
@@ -1550,7 +1548,7 @@ class XschemaHandler(handler.ContentHandler):
                         % (attrs['value']), )
                     sys.exit(1)
                 element.values.append(attrs['value'])
-            elif self.inSimpleType and 'value' in attrs:
+            elif self.inSimpleType >= 1 and 'value' in attrs:
                 # We've been defined as a simpleType on our own.
                 self.stack[-1].values.append(attrs['value'])
         elif name == UnionType:
@@ -1568,9 +1566,8 @@ class XschemaHandler(handler.ContentHandler):
         elif name == ListType:
             self.inListType = 1
             # fixlist
-            if self.inSimpleType:   # and self.inRestrictionType:
+            if self.inSimpleType >= 1:
                 self.stack[-1].setListType(1)
-            if self.inSimpleType:
                 if 'itemType' in attrs:
                     self.stack[-1].setBase(attrs['itemType'])
         elif name == AnnotationType:
@@ -1584,10 +1581,10 @@ class XschemaHandler(handler.ContentHandler):
         logging.debug("End element: %s" % (name))
         logging.debug("End element stack: %d" % (len(self.stack)))
         if name == SimpleTypeType:      # and self.inSimpleType:
-            self.inSimpleType = 0
+            self.inSimpleType -= 1
             if self.inAttribute:
                 pass
-            else:
+            elif self.inSimpleType <= 0:
                 # If the simpleType is directly off the root, it may be used to
                 # qualify the type of many elements and/or attributes so we
                 # don't want to loose it entirely.
@@ -1677,11 +1674,6 @@ class XschemaHandler(handler.ContentHandler):
         elif name == ExtensionType:
             pass
         elif name == ListType:
-            # List types are only used with a parent simpleType and can have a
-            # simpleType child. So, if we're in a list type we have to be
-            # careful to reset the inSimpleType flag otherwise the handler's
-            # internal stack will not be unrolled correctly.
-            self.inSimpleType = 1
             self.inListType = 0
         elif name == AnnotationType:
             self.inAnnotationType = 0
@@ -5708,4 +5700,10 @@ def main():
 if __name__ == '__main__':
     #logging.basicConfig(level=logging.DEBUG,)
     #import pdb; pdb.set_trace()
+    #import ipdb; ipdb.set_trace()
+    # use the following to debug after an exception (post mortem debbing).
+    #try:
+    #    main()
+    #except:
+    #    import pdb; pdb.post_mortem()
     main()
