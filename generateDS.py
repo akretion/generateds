@@ -984,6 +984,9 @@ class XschemaElement(XschemaElementBase):
                     else:
                         type_val = type_val1
                         break
+                # Add the namespace prefix to the simple type if needed.
+                if len(type_val.split(':')) == 1:
+                    type_val = CurrentNamespacePrefix + type_val
             else:
                 if is_builtin_simple_type(type_val):
                     pass
