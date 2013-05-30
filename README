@@ -141,11 +141,45 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version 2.9b (03/01/2013)
+Version 2.10a (05/29/2013)
 - Added ability to produce mapping (a dict) during call to
   to_etree() that maps gDS instances to their associated etree
   elements.  Also added convenience method gds_reverse_node_mapping
-  to reverse the order of keys and values in a mapping/dict.
+  to reverse the order of keys and values in a mapping/dict.  See
+  function parseEtree in the generated code for hints about how to
+  produce these mappings.  There is also a note on generating the
+  Lxml Element tree in the docs (generateDS.txt/generateDS.html).
+- Python datetime.date objects don't have tzinfo, so trying to
+  access it in gds_format_date was throwing an error. According to
+  http://stackoverflow.com/a/610923, the best way to avoid that type
+  of error is to use a try/catch for AttributeError.  Thanks to
+  Logan Owen for this fix.
+- Fixed bug so that gDS will now handle a simpleType nested inside a
+  restriction nested inside a simpleType.  Thanks to Christian
+  Kaiser for finding this, for focusing my attention on it, and for
+  providing the sample files to test it with.
+- Fixed bug where gDS was failing to resolve defined a simpleType
+  correctly.  It was failing to add the XSchema namespace (usually
+  xs:).  Thanks again to Christian Kaiser for focusing me on this
+  one.
+- Fixes to handling of xs:dateTime when the XML schema specifies a
+  default value and the XML instance document omits the value.
+  Also, fixed formatting because datetime.strftime does not handle
+  dates outside of range (e.g. earlier then 19000).  Attempts to use
+  a consistent internal representation across xs:dateTime, xs:date,
+  and xs:time, specifically instances of datetime.datetime,
+  datetime.date, and datetime.time from the Python standard library.
+  Thanks to Shahaf Abileah for reporting this and for providing an
+  example of the schema.  *Caution*: Because this changes the
+  internal representation of dates and times used by the generated
+  code, this fix may break some existing applications.
+- Various fixes to generation of method exportLiteral in generated
+  classes.
+- More code clean-up in generateDS.py to eliminate coding style
+  warnings and errors reported by flake8.  Ditto for
+  process_includes.py.  Also, made a few changes to reduce the
+  warnings and errors reported by flake8 when run on code generated
+  by gDS.
 
 Version 2.9a (02/21/2013)
 - Added support for exporting to an Lxml element tree.  The element

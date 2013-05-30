@@ -30,7 +30,7 @@ from lxml import etree
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.9a'
+VERSION = '2.10a'
 ##VERSION##
 
 Namespaces = {'xs': 'http://www.w3.org/2001/XMLSchema'}
@@ -43,7 +43,7 @@ Xsd_namespace_uri = 'http://www.w3.org/2001/XMLSchema'
 def process_include_files(infile, outfile, inpath=''):
     options = Values({
         'force': False,
-        })
+    })
     prep_schema_doc(infile, outfile, inpath, options)
 
 
@@ -94,24 +94,23 @@ def resolve_ref(node, params, options):
             params.parent_url, )
         sys.stderr.write(msg)
         return None
-    # Uncomment the next line to help track down missing schemaLocation etc.
-    # print '(resolve_ref) url: %s\n    parent-url: %s' % (url, params.parent_url, )
+    # Uncomment the next lines to help track down missing schemaLocation etc.
+    # print '(resolve_ref) url: %s\n    parent-url: %s' % (
+    #     url, params.parent_url, )
 
     if params.base_url and not (
-        url.startswith('/') or
-        url.startswith('http:') or
-        url.startswith('ftp:')
-        ):
+            url.startswith('/') or
+            url.startswith('http:') or
+            url.startswith('ftp:')):
         locn = '%s/%s' % (params.base_url, url, )
         schema_name = locn
     else:
         locn = url
         schema_name = url
     if not (
-        url.startswith('/') or
-        url.startswith('http:') or
-        url.startswith('ftp:')
-        ):
+            url.startswith('/') or
+            url.startswith('http:') or
+            url.startswith('ftp:')):
         schema_name = os.path.abspath(locn)
     if locn is not None:
         if schema_name not in params.already_processed:
@@ -129,7 +128,7 @@ def resolve_ref(node, params, options):
                     urlfile.close()
                     params.parent_url = locn
                     params.base_url = os.path.split(locn)[0]
-                except urllib2.HTTPError, exp:
+                except urllib2.HTTPError:
                     msg = "Can't find file %s referenced in %s." % (
                         locn, params.parent_url, )
                     raise SchemaIOError(msg)
@@ -168,7 +167,7 @@ def collect_inserts_aux(child, params, inserts, options):
             if not isinstance(child1, etree._Comment):
                 namespace = child1.nsmap[child1.prefix]
                 if (child1.tag != '{%s}include' % (namespace, ) and
-                    child1.tag != '{%s' % (namespace, )):
+                        child1.tag != '{%s' % (namespace, )):
                     comment = etree.Comment(etree.tostring(child))
                     comment.tail = '\n'
                     inserts.append(comment)
@@ -246,7 +245,8 @@ def replace_group_defs(def_dict, refs):
             continue
         def_node = def_dict.get(name)
         if def_node is not None:
-            content = def_node.xpath('./xs:sequence|./xs:choice|./xs:all',
+            content = def_node.xpath(
+                './xs:sequence|./xs:choice|./xs:all',
                 namespaces=Namespaces)
             if content:
                 content = content[0]
@@ -337,7 +337,8 @@ def usage(parser):
 
 def main():
     parser = OptionParser(USAGE_TEXT)
-    parser.add_option("-f", "--force", action="store_true",
+    parser.add_option(
+        "-f", "--force", action="store_true",
         dest="force", default=False,
         help="force overwrite without asking")
     (options, args) = parser.parse_args()

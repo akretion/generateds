@@ -139,7 +139,7 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)s %(message)s',
     #filemode='w',      # Can uncomment this line or change to append ('a')
     #filename='generateDS.log'  # uncomment to send messages to file
-    )
+)
 # Disable logging messages level INFO and below (includes DEBUG).
 logging.disable(logging.INFO)
 
@@ -164,7 +164,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.9a'
+VERSION = '2.10a'
 ##VERSION##
 
 GenerateProperties = 0
@@ -193,7 +193,7 @@ NameTable = {
     'type': 'type_',
     'float': 'float_',
     'build': 'build_',
-    }
+}
 for kw in keyword.kwlist:
     NameTable[kw] = '%sxx' % kw
 
@@ -320,8 +320,9 @@ def set_type_constants(nameSpace):
     DateTimeGroupType = (
         DateTimeType, DateType, TimeType,
         GYearType, GYearMonthType, GMonthType, GMonthDayType, GDayType,
-        )
-    IntegerType = (nameSpace + 'integer',
+    )
+    IntegerType = (
+        nameSpace + 'integer',
         nameSpace + 'unsignedShort',
         nameSpace + 'unsignedLong',
         nameSpace + 'unsignedInt',
@@ -330,7 +331,7 @@ def set_type_constants(nameSpace):
         nameSpace + 'short',
         nameSpace + 'long',
         nameSpace + 'int',
-        )
+    )
     DecimalType = nameSpace + 'decimal'
     PositiveIntegerType = nameSpace + 'positiveInteger'
     NegativeIntegerType = nameSpace + 'negativeInteger'
@@ -346,7 +347,8 @@ def set_type_constants(nameSpace):
     IDTypes = (IDREFSType, IDREFType, IDType, )
     SchemaType = nameSpace + 'schema'
     SequenceType = nameSpace + 'sequence'
-    StringType = (nameSpace + 'string',
+    StringType = (
+        nameSpace + 'string',
         nameSpace + 'duration',
         nameSpace + 'anyURI',
         nameSpace + 'hexBinary',
@@ -355,7 +357,7 @@ def set_type_constants(nameSpace):
         nameSpace + 'ID',
         nameSpace + 'Name',
         nameSpace + 'language',
-        )
+    )
     Base64Type = nameSpace + 'base64Binary'
     TokenType = nameSpace + 'token'
     NameType = nameSpace + 'Name'
@@ -547,7 +549,7 @@ class XschemaElement(XschemaElementBase):
             name_val = strip_namespace(self.attrs['name'])
         if 'type' in self.attrs:
             if (len(XsdNameSpace) > 0 and
-                self.attrs['type'].startswith(XsdNameSpace)):
+                    self.attrs['type'].startswith(XsdNameSpace)):
                 type_val = self.attrs['type']
             else:
                 type_val = strip_namespace(self.attrs['type'])
@@ -771,11 +773,12 @@ class XschemaElement(XschemaElementBase):
     def show(self, outfile, level):
         if self.name == 'Reference':
             showLevel(outfile, level)
-            outfile.write('Name: %s  Type: %s  id: %d\n' % (self.name,
-                self.getType(), id(self),))
+            outfile.write('Name: %s  Type: %s  id: %d\n' % (
+                self.name, self.getType(), id(self),))
             showLevel(outfile, level)
-            outfile.write('  - Complex: %d  MaxOccurs: %d  MinOccurs: %d\n' %
-                (self.complex, self.maxOccurs, self.minOccurs))
+            outfile.write('  - Complex: %d  MaxOccurs: %d  '
+                          'MinOccurs: %d\n' % (
+                              self.complex, self.maxOccurs, self.minOccurs))
             showLevel(outfile, level)
             outfile.write('  - Attrs: %s\n' % self.attrs)
             showLevel(outfile, level)
@@ -820,16 +823,16 @@ class XschemaElement(XschemaElementBase):
 
     def collect_element_dict(self):
         base = self.getBase()
-        if self.getTopLevel() or len(self.getChildren()) > 0 or \
-            len(self.getAttributeDefs()) > 0 or base:
+        if (self.getTopLevel() or len(self.getChildren()) > 0 or
+                len(self.getAttributeDefs()) > 0 or base):
             ElementDict[self.name] = self
         for child in self.children:
             child.collect_element_dict()
 
     def build_element_dict(self, elements):
         base = self.getBase()
-        if self.getTopLevel() or len(self.getChildren()) > 0 or \
-            len(self.getAttributeDefs()) > 0 or base:
+        if (self.getTopLevel() or len(self.getChildren()) > 0 or
+                len(self.getAttributeDefs()) > 0 or base):
             if self.name not in elements:
                 elements[self.name] = self
         for child in self.children:
@@ -1076,8 +1079,8 @@ class XschemaElement(XschemaElementBase):
         base = self.getBase()
         if base and base in SimpleTypeDict:
             parent = SimpleTypeDict[base]
-            if isinstance(parent, SimpleTypeElement) and \
-                parent.collapseWhiteSpace:
+            if (isinstance(parent, SimpleTypeElement) and
+                    parent.collapseWhiteSpace):
                 self.collapseWhiteSpace = 1
         # Do it recursively for all descendents.
         for child in self.children:
@@ -1106,7 +1109,7 @@ class XschemaElement(XschemaElementBase):
             attrGroup = AttributeGroups[key]
             for name in attrGroup.getKeys():
                 if (name in AttributeGroups or
-                    strip_namespace(name) in AttributeGroups):
+                        strip_namespace(name) in AttributeGroups):
                     self.replace_attributeGroup_names_1(name)
                 else:
                     attr = attrGroup.get(name)
@@ -1157,10 +1160,9 @@ class XschemaElement(XschemaElementBase):
             parent = ElementDict[base]
             count += 1
             if count > 100:
-                msg = ('Extension/restriction recursion detected.  ' +
-                      'Suggest you check definitions of types ' +
-                      '%s and %s.'
-                      )
+                msg = 'Extension/restriction recursion detected.  ' \
+                    'Suggest you check definitions of types ' \
+                    '%s and %s.'
                 msg = msg % (self.getName(), parent.getName(), )
                 raise RuntimeError(msg)
             parent.collectElementNames(elementNames, count)
@@ -1170,9 +1172,9 @@ class XschemaElement(XschemaElementBase):
         for idx, name in enumerate(attrDefs):
             attr = attrDefs[name]
             attrType = attr.getData_type()
-            if attrType == IDType or \
-                attrType == IDREFType or \
-                attrType == IDREFSType:
+            if (attrType == IDType or
+                    attrType == IDREFType or
+                    attrType == IDREFSType):
                 attr.setData_type(StringType[0])
         for child in self.children:
             child.coerce_attr_types()
@@ -1261,18 +1263,18 @@ class XschemaAttribute:
             typeObj = SimpleElementDict[self.data_type]
             typeObjType = typeObj.getRawType()
             if (typeObjType in StringType or
-                typeObjType == TokenType or
-                typeObjType in DateTimeGroupType or
-                typeObjType == Base64Type or
-                typeObjType in IntegerType or
-                typeObjType == DecimalType or
-                typeObjType == PositiveIntegerType or
-                typeObjType == NegativeIntegerType or
-                typeObjType == NonPositiveIntegerType or
-                typeObjType == NonNegativeIntegerType or
-                typeObjType == BooleanType or
-                typeObjType == FloatType or
-                typeObjType == DoubleType):
+                    typeObjType == TokenType or
+                    typeObjType in DateTimeGroupType or
+                    typeObjType == Base64Type or
+                    typeObjType in IntegerType or
+                    typeObjType == DecimalType or
+                    typeObjType == PositiveIntegerType or
+                    typeObjType == NegativeIntegerType or
+                    typeObjType == NonPositiveIntegerType or
+                    typeObjType == NonNegativeIntegerType or
+                    typeObjType == BooleanType or
+                    typeObjType == FloatType or
+                    typeObjType == DoubleType):
                 returnType = typeObjType
         return returnType
 
@@ -1367,8 +1369,7 @@ class XschemaHandler(handler.ContentHandler):
                 elif name == 'targetNamespace':
                     Targetnamespace = value
         elif (name == ElementType or
-            ((name == ComplexTypeType) and (len(self.stack) == 1))
-            ):
+                ((name == ComplexTypeType) and (len(self.stack) == 1))):
             self.inElement = 1
             self.inNonanonymousComplexType = 1
             element = XschemaElement(attrs)
@@ -1471,25 +1472,25 @@ class XschemaHandler(handler.ContentHandler):
             if 'base' in attrs.keys() and len(self.stack) > 0:
                 extensionBase = attrs['base']
                 if (extensionBase in StringType or
-                    extensionBase in IDTypes or
-                    extensionBase in NameTypes or
-                    extensionBase == TokenType or
-                    extensionBase in DateTimeGroupType or
-                    extensionBase == Base64Type or
-                    extensionBase in IntegerType or
-                    extensionBase == DecimalType or
-                    extensionBase == PositiveIntegerType or
-                    extensionBase == NegativeIntegerType or
-                    extensionBase == NonPositiveIntegerType or
-                    extensionBase == NonNegativeIntegerType or
-                    extensionBase == BooleanType or
-                    extensionBase == FloatType or
-                    extensionBase == DoubleType or
-                    extensionBase in OtherSimpleTypes):
+                        extensionBase in IDTypes or
+                        extensionBase in NameTypes or
+                        extensionBase == TokenType or
+                        extensionBase in DateTimeGroupType or
+                        extensionBase == Base64Type or
+                        extensionBase in IntegerType or
+                        extensionBase == DecimalType or
+                        extensionBase == PositiveIntegerType or
+                        extensionBase == NegativeIntegerType or
+                        extensionBase == NonPositiveIntegerType or
+                        extensionBase == NonNegativeIntegerType or
+                        extensionBase == BooleanType or
+                        extensionBase == FloatType or
+                        extensionBase == DoubleType or
+                        extensionBase in OtherSimpleTypes):
                     if (len(self.stack) > 0 and
-                        isinstance(self.stack[-1], XschemaElement)):
+                            isinstance(self.stack[-1], XschemaElement)):
                         self.stack[-1].addSimpleBase(
-                                extensionBase.encode('utf-8'))
+                            extensionBase.encode('utf-8'))
                 else:
                     self.stack[-1].setBase(extensionBase)
         elif name == AnyAttributeType:
@@ -1523,7 +1524,7 @@ class XschemaHandler(handler.ContentHandler):
                 # If we are in a simpleType, capture the name of
                 #   the restriction base.
                 if ((self.inSimpleType >= 1 or self.inSimpleContent) and
-                    'base' in attrs.keys()):
+                        'base' in attrs.keys()):
                     self.stack[-1].setBase(attrs['base'])
                 else:
                     if 'base' in attrs:
@@ -1547,8 +1548,8 @@ class XschemaHandler(handler.ContentHandler):
                             element = entry
                             break
                 if element is None:
-                    err_msg('Cannot find element to attach enumeration: %s\n'
-                        % (attrs['value']), )
+                    err_msg('Cannot find element to attach '
+                            'enumeration: %s\n' % (attrs['value']), )
                     sys.exit(1)
                 element.values.append(attrs['value'])
             elif self.inSimpleType >= 1 and 'value' in attrs:
@@ -1559,7 +1560,7 @@ class XschemaHandler(handler.ContentHandler):
             # the parent to know what it's a union of.
             parentelement = self.stack[-1]
             if (isinstance(parentelement, SimpleTypeElement) and
-                'memberTypes' in attrs):
+                    'memberTypes' in attrs):
                 for member in attrs['memberTypes'].split(" "):
                     self.stack[-1].unionOf.append(member)
         elif name == WhiteSpaceType and self.inRestrictionType:
@@ -1599,8 +1600,7 @@ class XschemaHandler(handler.ContentHandler):
         elif name == RestrictionType and self.inRestrictionType:
             self.inRestrictionType = 0
         elif (name == ElementType or
-                (name == ComplexTypeType and self.stack[-1].complexType)
-                ):
+                (name == ComplexTypeType and self.stack[-1].complexType)):
             self.inElement = 0
             self.inNonanonymousComplexType = 0
             if len(self.stack) >= 2:
@@ -1723,14 +1723,22 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
             "input_name='%s'), namespace_, eol_))\n" % \
             (fill, name, name, mappedName, name, )
         wrt(s1)
+    elif child_type == TimeType:
+        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
+        s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
+            "(namespace_, self.gds_format_time(self.%s, " \
+            "input_name='%s'), namespace_, eol_))\n" % \
+            (fill, name, name, mappedName, name, )
+        wrt(s1)
     elif (child_type in StringType or
-        child_type == TokenType or
-        child_type in DateTimeGroupType):
+            child_type == TokenType or
+            child_type in DateTimeGroupType):
         wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         # fixlist
         if (child.getSimpleType() in SimpleTypeDict and
-            SimpleTypeDict[child.getSimpleType()].isListType()):
+                SimpleTypeDict[child.getSimpleType()].isListType()):
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
                 "(namespace_, self.gds_format_string(quote_xml" \
                 "(' '.join(self.%s)).encode(ExternalEncoding), " \
@@ -1743,11 +1751,11 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
                 "namespace_, eol_))\n" % \
                 (fill, name, name, mappedName, name, )
         wrt(s1)
-    elif child_type in IntegerType or \
-        child_type == PositiveIntegerType or \
-        child_type == NonPositiveIntegerType or \
-        child_type == NegativeIntegerType or \
-        child_type == NonNegativeIntegerType:
+    elif (child_type in IntegerType or
+            child_type == PositiveIntegerType or
+            child_type == NonPositiveIntegerType or
+            child_type == NegativeIntegerType or
+            child_type == NonNegativeIntegerType):
         wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
@@ -1766,16 +1774,18 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean_list(self.%s, input_name='%s'), " \
-                "namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+                "(namespace_, self.gds_format_boolean_list(" \
+                "self.%s, input_name='%s'), " \
+                "namespace_, eol_))\n" % (
+                    fill, name, name, mappedName, name, )
         else:
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean(self.%s, input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+                "(namespace_, self.gds_format_boolean(" \
+                "self.%s, input_name='%s'), namespace_, eol_))\n" % (
+                    fill, name, name, mappedName, name, )
         wrt(s1)
-    elif child_type == FloatType or \
-        child_type == DecimalType:
+    elif (child_type == FloatType or
+            child_type == DecimalType):
         wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
@@ -1846,19 +1856,26 @@ def generateExportFn_2(wrt, child, name, namespace, fill):
             "namespace_, eol_))\n" % \
             (fill, name, name, cleanName, name, )
         wrt(s1)
+    elif child_type == TimeType:
+        wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
+        s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
+            "(namespace_, self.gds_format_time(%s_, input_name='%s'), " \
+            "namespace_, eol_))\n" % \
+            (fill, name, name, cleanName, name, )
+        wrt(s1)
     elif (child_type in StringType or
-        child_type == TokenType or
-        child_type in DateTimeGroupType):
+            child_type == TokenType or
+            child_type in DateTimeGroupType):
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
         wrt("%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% "
             "(namespace_, self.gds_format_string(quote_xml(%s_).encode("
             "ExternalEncoding), input_name='%s'), namespace_, eol_))\n" %
             (fill, name, name, cleanName, name,))
-    elif child_type in IntegerType or \
-        child_type == PositiveIntegerType or \
-        child_type == NonPositiveIntegerType or \
-        child_type == NegativeIntegerType or \
-        child_type == NonNegativeIntegerType:
+    elif (child_type in IntegerType or
+            child_type == PositiveIntegerType or
+            child_type == NonPositiveIntegerType or
+            child_type == NegativeIntegerType or
+            child_type == NonNegativeIntegerType):
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -1875,17 +1892,19 @@ def generateExportFn_2(wrt, child, name, namespace, fill):
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean_list(%s_, input_name='%s'), " \
+                "(namespace_, self.gds_format_boolean_list(" \
+                "%s_, input_name='%s'), " \
                 "namespace_, eol_))\n" % \
                 (fill, name, name, cleanName, name, )
         else:
             s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean(%s_, input_name='%s'), " \
+                "(namespace_, self.gds_format_boolean(" \
+                "%s_, input_name='%s'), " \
                 "namespace_, eol_))\n" % \
                 (fill, name, name, cleanName, name, )
         wrt(s1)
-    elif child_type == FloatType or \
-        child_type == DecimalType:
+    elif (child_type == FloatType or
+            child_type == DecimalType):
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -1952,14 +1971,22 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
             "self.%s, input_name='%s'), namespace_, eol_))\n" % \
             (fill, name, name, mappedName, name, )
         wrt(s1)
+    elif child_type == TimeType:
+        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
+        s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
+            "(namespace_, self.gds_format_time(" \
+            "self.%s, input_name='%s'), namespace_, eol_))\n" % \
+            (fill, name, name, mappedName, name, )
+        wrt(s1)
     elif (child_type in StringType or
-        child_type == TokenType or
-        child_type in DateTimeGroupType):
+            child_type == TokenType or
+            child_type in DateTimeGroupType):
         wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         # fixlist
         if (child.getSimpleType() in SimpleTypeDict and
-            SimpleTypeDict[child.getSimpleType()].isListType()):
+                SimpleTypeDict[child.getSimpleType()].isListType()):
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
                 "(namespace_, self.gds_format_string(" \
                 "quote_xml(' '.join(self.%s)).encode(ExternalEncoding), " \
@@ -1972,11 +1999,11 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
                 "input_name='%s'), namespace_, eol_))\n" % \
                 (fill, name, name, mappedName, name, )
         wrt(s1)
-    elif child_type in IntegerType or \
-        child_type == PositiveIntegerType or \
-        child_type == NonPositiveIntegerType or \
-        child_type == NegativeIntegerType or \
-        child_type == NonNegativeIntegerType:
+    elif (child_type in IntegerType or
+            child_type == PositiveIntegerType or
+            child_type == NonPositiveIntegerType or
+            child_type == NegativeIntegerType or
+            child_type == NonNegativeIntegerType):
         wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
@@ -1995,17 +2022,18 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean_list(self.%s, input_name='%s'), " \
+                "(namespace_, self.gds_format_boolean_list(" \
+                "self.%s, input_name='%s'), " \
                 "namespace_, eol_))\n" % \
                 (fill, name, name, mappedName, name)
         else:
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean(self.%s, input_name='%s'), " \
-                "namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name)
+                "(namespace_, self.gds_format_boolean(" \
+                "self.%s, input_name='%s'), " \
+                "namespace_, eol_))\n" % (fill, name, name, mappedName, name)
         wrt(s1)
-    elif child_type == FloatType or \
-        child_type == DecimalType:
+    elif (child_type == FloatType or
+            child_type == DecimalType):
         wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
@@ -2055,11 +2083,11 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
         wrt(s1)
 # end generateExportFn_3
 
+
 def generateToEtree(wrt, element, Targetnamespace):
-    childCount = countChildren(element, 0)
     name = element.getName()
-    base = element.getBase()
-    wrt("    def to_etree(self, parent_element=None, name_='%s', mapping_=None):\n"
+    wrt("    def to_etree(self, parent_element=None, "
+        "name_='%s', mapping_=None):\n"
         % (name,))
     parentName, parent = getParentName(element)
     if parentName and not element.getRestrictionBaseObj():
@@ -2085,6 +2113,7 @@ def generateToEtree(wrt, element, Targetnamespace):
     wrt("        return element\n")
 # end generateToEtree
 
+
 def generateToEtreeChildren(wrt, element, Targetnamespace):
     if len(element.getChildren()) > 0:
         if element.isMixed():
@@ -2094,21 +2123,15 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
             for child in element.getChildren():
                 unmappedName = child.getName()
                 name = mapName(cleanupName(child.getName()))
-                type_element = None
-                abstract_child = False
-                type_name = child.getAttrs().get('type')
                 child_type = child.getType()
-                if type_name:
-                    type_element = ElementDict.get(type_name)
-                if type_element and type_element.isAbstract():
-                    abstract_child = True
                 if child_type == AnyTypeIdentifier:
                     if child.getMaxOccurs() > 1:
                         wrt('        for obj_ in self.anytypeobjs_:\n')
                         wrt("            obj_.to_etree(element)\n")
                     else:
                         wrt('        if self.anytypeobjs_ is not None:\n')
-                        wrt("            self.anytypeobjs_.to_etree(element)\n")
+                        wrt("            self.anytypeobjs_.to_etree("
+                            "element)\n")
                 else:
                     if child.getMaxOccurs() > 1:
                         wrt("        for %s_ in self.%s:\n" % (name, name,))
@@ -2125,11 +2148,18 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
                             "element, '{%s}%s').text = self."
                             "gds_format_date(%s_)\n" % (
                                 Targetnamespace, unmappedName, name))
+                    elif child_type == TimeType:
+                        wrt("            etree_.SubElement("
+                            "element, '{%s}%s').text = self."
+                            "gds_format_time(%s_)\n" % (
+                                Targetnamespace, unmappedName, name))
                     elif (child_type in StringType or
-                        child_type == TokenType or
-                        child_type in DateTimeGroupType):
+                            child_type == TokenType or
+                            child_type in DateTimeGroupType):
                         wrt("            etree_.SubElement(element, "
-                                "'{%s}%s').text = self.gds_format_string(%s_)\n" % (Targetnamespace, unmappedName, name))
+                            "'{%s}%s').text = "
+                            "self.gds_format_string(%s_)\n" % (
+                                Targetnamespace, unmappedName, name))
                     elif child_type in IntegerType or \
                             child_type == PositiveIntegerType or \
                             child_type == NonPositiveIntegerType or \
@@ -2190,39 +2220,54 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
                             name, unmappedName,))
 #end generateToEtreeChildren
 
+
 def generateToEtreeAttributes(wrt, element):
     attrDefs = element.getAttributeDefs()
     for key in attrDefs.keys():
         attrDef = attrDefs[key]
         name = attrDef.getName()
         cleanName = mapName(cleanupName(name))
+        attrType = attrDef.getType()
         wrt("        if self.%s is not None:\n" % (cleanName, ))
-        if (attrDef.getType() in StringType or
-            attrDef.getType() in IDTypes or
-            attrDef.getType() == TokenType or
-            attrDef.getType() == TimeType):
-            s1 = '''            element.set('%s', self.gds_format_string(self.%s))\n''' % (name, cleanName, )
-        elif attrDef.getType() in IntegerType or \
-                attrDef.getType() == PositiveIntegerType or \
-                attrDef.getType() == NonPositiveIntegerType or \
-                attrDef.getType() == NegativeIntegerType or \
-                attrDef.getType() == NonNegativeIntegerType:
-            s1 = '''            element.set('%s', self.gds_format_integer(self.%s))\n''' % (name, cleanName, )
-        elif attrDef.getType() == BooleanType:
-            s1 = '''            element.set('%s', self.gds_format_boolean(self.%s))\n''' % (name, cleanName, )
-        elif attrDef.getType() == FloatType or \
-                attrDef.getType() == DecimalType:
-            s1 = '''            element.set('%s', self.gds_format_float(self.%s))\n''' % (name, cleanName, )
-        elif attrDef.getType() == DoubleType:
-            s1 = '''            element.set('%s', self.gds_format_double(self.%s))\n''' % (name, cleanName, )
-        elif attrDef.getType() == DateTimeType:
-            s1 = '''            element.set('%s', self.gds_format_datetime(self.%s))\n''' % (name, cleanName, )
-        elif attrDef.getType() == DateType:
-            s1 = '''            element.set('%s', self.gds_format_date(self.%s))\n''' % (name, cleanName, )
+        if (attrType in StringType or
+                attrType in IDTypes or
+                attrType == TokenType):
+            s1 = '''            element.set('%s', ''' \
+                '''self.gds_format_string(self.%s))\n''' % (name, cleanName, )
+        elif (attrType in IntegerType or
+                attrType == PositiveIntegerType or
+                attrType == NonPositiveIntegerType or
+                attrType == NegativeIntegerType or
+                attrType == NonNegativeIntegerType):
+            s1 = '''            element.set('%s', ''' \
+                '''self.gds_format_integer(self.%s))\n''' % (
+                    name, cleanName, )
+        elif attrType == BooleanType:
+            s1 = '''            element.set('%s', ''' \
+                '''self.gds_format_boolean(self.%s))\n''' % (name, cleanName, )
+        elif (attrType == FloatType or
+                attrType == DecimalType):
+            s1 = '''            element.set('%s', ''' \
+                '''self.gds_format_float(self.%s))\n''' % (name, cleanName, )
+        elif attrType == DoubleType:
+            s1 = '''            element.set('%s', ''' \
+                '''self.gds_format_double(self.%s))\n''' % (name, cleanName, )
+        elif attrType == DateTimeType:
+            s1 = '''            element.set('%s', ''' \
+                '''self.gds_format_datetime(self.%s))\n''' % (
+                    name, cleanName, )
+        elif attrType == DateType:
+            s1 = '''            element.set('%s', ''' \
+                '''self.gds_format_date(self.%s))\n''' % (name, cleanName, )
+        elif attrType == TimeType:
+            s1 = '''            element.set('%s', ''' \
+                '''self.gds_format_time(self.%s))\n''' % (name, cleanName, )
         else:
-            s1 = '''            element.set('%s', self.%s)\n''' % (name, cleanName, )
+            s1 = '''            element.set('%s', self.%s)\n''' % (
+                name, cleanName, )
         wrt(s1)
 # end generateToEtreeAttributes
+
 
 def generateExportAttributes(wrt, element, hasAttributes):
     if len(element.getAttributeDefs()) > 0:
@@ -2254,32 +2299,37 @@ def generateExportAttributes(wrt, element, hasAttributes):
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_date(self.%s, input_name='%s'))\n''' % (
                     indent, orig_name, cleanName, name)
+            elif attrDef.getType() == TimeType:
+                s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
+                    '''self.gds_format_time(self.%s, input_name='%s'))\n''' % (
+                    indent, orig_name, cleanName, name)
             elif (attrDefType in StringType or
-                attrDefType in IDTypes or
-                attrDefType == TokenType or
-                attrDefType in DateTimeGroupType):
+                    attrDefType in IDTypes or
+                    attrDefType == TokenType or
+                    attrDefType in DateTimeGroupType):
                 s1 = '''%s        outfile.write(' %s=%%s' %% ''' \
                     '''(self.gds_format_string(quote_attrib(''' \
                     '''self.%s).encode(''' \
                     '''ExternalEncoding), input_name='%s'), ))\n''' % \
                     (indent, orig_name, cleanName, name, )
             elif (attrDefType in IntegerType or
-                attrDefType == PositiveIntegerType or
-                attrDefType == NonPositiveIntegerType or
-                attrDefType == NegativeIntegerType or
-                attrDefType == NonNegativeIntegerType):
+                    attrDefType == PositiveIntegerType or
+                    attrDefType == NonPositiveIntegerType or
+                    attrDefType == NegativeIntegerType or
+                    attrDefType == NonNegativeIntegerType):
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_integer(self.%s, ''' \
                     '''input_name='%s'))\n''' % (
                     indent, orig_name, cleanName, name, )
             elif attrDefType == BooleanType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
-                    '''self.gds_format_boolean(self.%s, input_name='%s'))\n''' % (
-                    indent, orig_name, cleanName, name, )
+                    '''self.gds_format_boolean(''' \
+                    '''self.%s, input_name='%s'))\n''' % (
+                        indent, orig_name, cleanName, name, )
             elif attrDefType == FloatType or attrDefType == DecimalType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% self.''' \
-                        '''gds_format_float(self.%s, input_name='%s'))\n''' % (
-                    indent, orig_name, cleanName, name)
+                    '''gds_format_float(self.%s, input_name='%s'))\n''' % (
+                        indent, orig_name, cleanName, name)
             elif attrDefType == DoubleType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_double(self.%s, ''' \
@@ -2344,15 +2394,15 @@ def generateExportChildren(wrt, element, hasChildren, namespace):
                             "pretty_print=pretty_print)\n" % (
                             fill, name, name, ))
                     elif child.getMaxOccurs() > 1:
-                        generateExportFn_2(wrt, child, unmappedName,
-                            namespace, '    ')
+                        generateExportFn_2(
+                            wrt, child, unmappedName, namespace, '    ')
                     else:
                         if (child.getOptional()):
-                            generateExportFn_3(wrt, child, unmappedName,
-                                namespace, '')
+                            generateExportFn_3(
+                                wrt, child, unmappedName, namespace, '')
                         else:
-                            generateExportFn_1(wrt, child, unmappedName,
-                                namespace, '')
+                            generateExportFn_1(
+                                wrt, child, unmappedName, namespace, '')
             if any_type_child is not None:
                 if any_type_child.getMaxOccurs() > 1:
                     wrt('        for obj_ in self.anytypeobjs_:\n')
@@ -2525,23 +2575,29 @@ def generateExportLiteralFn_1(wrt, child, name, fill):
         wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
         if childType == DateTimeType:
             wrt('%s            showIndent(outfile, level)\n' % fill)
-            wrt("%s            outfile.write('%s=datetime_.strptime("
-                "\"%%s\", \"%%%%Y-%%%%m-%%%%dT%%%%H:%%%%M:%%%%S\"),\\n' %% "
+            wrt("%s            outfile.write('%s="
+                "model_.GeneratedsSuper.gds_parse_datetime(\"%%s\"),\\n' %% "
                 "self.gds_format_datetime(self.%s, input_name='%s'))\n" %
                 (fill, name, mappedName, name, ))
         elif childType == DateType:
             wrt('%s            showIndent(outfile, level)\n' % fill)
-            wrt("%s            outfile.write('%s=datetime_.strptime("
-                "\"%%s\", \"%%%%Y-%%%%m-%%%%d\"),\\n' %% "
+            wrt("%s            outfile.write('%s="
+                "model_.GeneratedsSuper.gds_parse_date(\"%%s\"),\\n' %% "
                 "self.gds_format_date(self.%s, input_name='%s'))\n" %
                 (fill, name, mappedName, name, ))
+        elif childType == TimeType:
+            wrt('%s            showIndent(outfile, level)\n' % fill)
+            wrt("%s            outfile.write('%s="
+                "model_.GeneratedsSuper.gds_parse_time(\"%%s\"),\\n' %% "
+                "self.gds_format_time(self.%s, input_name='%s'))\n" %
+                (fill, name, mappedName, name, ))
         elif (childType in StringType or
-            childType in IDTypes or
-            childType == TokenType or
-            childType in DateTimeGroupType):
+                childType in IDTypes or
+                childType == TokenType or
+                childType in DateTimeGroupType):
             wrt('%s            showIndent(outfile, level)\n' % fill)
             if (child.getSimpleType() in SimpleTypeDict and
-                SimpleTypeDict[child.getSimpleType()].isListType()):
+                    SimpleTypeDict[child.getSimpleType()].isListType()):
                 wrt("%s            if self.%s:\n" % (fill, mappedName, ))
                 wrt("%s                outfile.write('%s=%%s,\\n' %% "
                     "quote_python(' '.join(self.%s)).encode("
@@ -2554,11 +2610,11 @@ def generateExportLiteralFn_1(wrt, child, name, fill):
                 wrt("%s            outfile.write('%s=%%s,\\n' %% "
                     "quote_python(self.%s).encode(ExternalEncoding))\n" %
                     (fill, mappedName, mappedName, ))
-        elif childType in IntegerType or \
-            childType == PositiveIntegerType or \
-            childType == NonPositiveIntegerType or \
-            childType == NegativeIntegerType or \
-            childType == NonNegativeIntegerType:
+        elif (childType in IntegerType or
+                childType == PositiveIntegerType or
+                childType == NonPositiveIntegerType or
+                childType == NegativeIntegerType or
+                childType == NonNegativeIntegerType):
             wrt('%s            showIndent(outfile, level)\n' % fill)
             wrt("%s            outfile.write('%s=%%d,\\n' %% self.%s)\n" %
                 (fill, mappedName, mappedName, ))
@@ -2566,8 +2622,8 @@ def generateExportLiteralFn_1(wrt, child, name, fill):
             wrt('%s            showIndent(outfile, level)\n' % fill)
             wrt("%s            outfile.write('%s=%%s,\\n' %% self.%s)\n" %
                 (fill, mappedName, mappedName, ))
-        elif childType == FloatType or \
-            childType == DecimalType:
+        elif (childType == FloatType or
+                childType == DecimalType):
             wrt('%s            showIndent(outfile, level)\n' % fill)
             wrt("%s            outfile.write('%s=%%f,\\n' %% self.%s)\n" %
                 (fill, mappedName, mappedName, ))
@@ -2597,30 +2653,38 @@ def generateExportLiteralFn_2(wrt, child, name, fill):
     childType = child.getType()
     if childType == DateTimeType:
         wrt('%s        showIndent(outfile, level)\n' % fill)
-        wrt("%s        outfile.write('%%s,\\n' %% self.gds_format_datetime("
+        wrt("%s        outfile.write("
+            "'model_.GeneratedsSuper.gds_parse_datetime"
+            "(\"%%s\"),\\n' %% self.gds_format_datetime("
             "%s_, input_name='%s'))\n" % (fill, name, name, ))
     elif childType == DateType:
         wrt('%s        showIndent(outfile, level)\n' % fill)
-        wrt("%s        outfile.write('%%s,\\n' %% self.gds_format_date("
+        wrt("%s        outfile.write('model_.GeneratedsSuper.gds_parse_date"
+            "(\"%%s\"),\\n' %% self.gds_format_date("
+            "%s_, input_name='%s'))\n" % (fill, name, name, ))
+    elif childType == TimeType:
+        wrt('%s        showIndent(outfile, level)\n' % fill)
+        wrt("%s        outfile.write('model_.GeneratedsSuper.gds_parse_time"
+            "(\"%%s\"),\\n' %% self.gds_format_time("
             "%s_, input_name='%s'))\n" % (fill, name, name, ))
     elif (childType in StringType or
-        childType == TokenType or
-        childType in DateTimeGroupType):
+            childType == TokenType or
+            childType in DateTimeGroupType):
         wrt('%s        showIndent(outfile, level)\n' % fill)
         wrt("%s        outfile.write('%%s,\\n' %% quote_python(%s_).encode("
             "ExternalEncoding))\n" % (fill, name))
-    elif childType in IntegerType or \
-        childType == PositiveIntegerType or \
-        childType == NonPositiveIntegerType or \
-        childType == NegativeIntegerType or \
-        childType == NonNegativeIntegerType:
+    elif (childType in IntegerType or
+            childType == PositiveIntegerType or
+            childType == NonPositiveIntegerType or
+            childType == NegativeIntegerType or
+            childType == NonNegativeIntegerType):
         wrt('%s        showIndent(outfile, level)\n' % fill)
         wrt("%s        outfile.write('%%d,\\n' %% %s_)\n" % (fill, name))
     elif childType == BooleanType:
         wrt('%s        showIndent(outfile, level)\n' % fill)
         wrt("%s        outfile.write('%%s,\\n' %% %s_)\n" % (fill, name))
-    elif childType == FloatType or \
-        childType == DecimalType:
+    elif (childType == FloatType or
+            childType == DecimalType):
         wrt('%s        showIndent(outfile, level)\n' % fill)
         wrt("%s        outfile.write('%%f,\\n' %% %s_)\n" % (fill, name))
     elif childType == DoubleType:
@@ -2676,45 +2740,62 @@ def generateExportLiteralFn(wrt, prefix, element):
             mappedName, mappedName, ))
         wrt("            already_processed.add('%s')\n" % (
             mappedName, ))
-        if (attrType in StringType or
-            attrType in IDTypes or
-            attrType == TokenType or
-            attrType in DateTimeGroupType or
-            attrType == NCNameType):
+        if attrType == DateTimeType:
+            wrt('            showIndent(outfile, level)\n')
+            wrt("            outfile.write('%s="
+                "model_.GeneratedsSuper.gds_parse_datetime(\"%%s\"),\\n' %% "
+                "self.gds_format_datetime(self.%s, input_name='%s'))\n" %
+                (name, mappedName, name, ))
+        elif attrType == DateType:
+            wrt('            showIndent(outfile, level)\n')
+            wrt("            outfile.write('%s="
+                "model_.GeneratedsSuper.gds_parse_date(\"%%s\"),\\n' %% "
+                "self.gds_format_date(self.%s, input_name='%s'))\n" %
+                (name, mappedName, name, ))
+        elif attrType == TimeType:
+            wrt('            showIndent(outfile, level)\n')
+            wrt("            outfile.write('%s="
+                "model_.GeneratedsSuper.gds_parse_time(\"%%s\"),\\n' %% "
+                "self.gds_format_time(self.%s, input_name='%s'))\n" %
+                (name, mappedName, name, ))
+        elif (attrType in StringType or
+                attrType in IDTypes or
+                attrType == TokenType or
+                attrType == NCNameType):
             wrt("            showIndent(outfile, level)\n")
-            wrt("            outfile.write('%s = \"%%s\",\\n' %% "
+            wrt("            outfile.write('%s=\"%%s\",\\n' %% "
                 "(self.%s,))\n" %
                 (mappedName, mappedName,))
         elif (attrType in IntegerType or
-            attrType == PositiveIntegerType or
-            attrType == NonPositiveIntegerType or
-            attrType == NegativeIntegerType or
-            attrType == NonNegativeIntegerType):
+                attrType == PositiveIntegerType or
+                attrType == NonPositiveIntegerType or
+                attrType == NegativeIntegerType or
+                attrType == NonNegativeIntegerType):
             wrt("            showIndent(outfile, level)\n")
-            wrt("            outfile.write('%s = %%d,\\n' %% (self.%s,))\n" %
+            wrt("            outfile.write('%s=%%d,\\n' %% (self.%s,))\n" %
                 (mappedName, mappedName,))
         elif attrType == BooleanType:
             wrt("            showIndent(outfile, level)\n")
-            wrt("            outfile.write('%s = %%s,\\n' %% (self.%s,))\n" %
+            wrt("            outfile.write('%s=%%s,\\n' %% (self.%s,))\n" %
                 (mappedName, mappedName,))
         elif (attrType == FloatType or
-            attrType == DecimalType):
+                attrType == DecimalType):
             wrt("            showIndent(outfile, level)\n")
-            wrt("            outfile.write('%s = %%f,\\n' %% (self.%s,))\n" %
+            wrt("            outfile.write('%s=%%f,\\n' %% (self.%s,))\n" %
                 (mappedName, mappedName,))
         elif attrType == DoubleType:
             wrt("            showIndent(outfile, level)\n")
-            wrt("            outfile.write('%s = %%e,\\n' %% (self.%s,))\n" %
+            wrt("            outfile.write('%s=%%e,\\n' %% (self.%s,))\n" %
                 (mappedName, mappedName,))
         else:
             wrt("            showIndent(outfile, level)\n")
-            wrt("            outfile.write('%s = %%s,\\n' %% (self.%s,))\n" %
+            wrt("            outfile.write('%s=%%s,\\n' %% (self.%s,))\n" %
                 (mappedName, mappedName,))
     if element.getAnyAttribute():
         count += 1
         wrt('        for name, value in self.anyAttributes_.items():\n')
         wrt('            showIndent(outfile, level)\n')
-        wrt("            outfile.write('%s = \"%s\",\\n' % (name, value,))\n")
+        wrt("            outfile.write('%s=\"%s\",\\n' % (name, value,))\n")
     parentName, parent = getParentName(element)
     if parentName:
         count += 1
@@ -2809,8 +2890,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt("            already_processed.add('%s')\n" % (name, ))
             wrt('            try:\n')
             wrt("                self.%s = self.gds_parse_datetime("
-                "value, node, '%s')\n" %
-                (mappedName, name, ))
+                "value)\n" % (mappedName, ))
             wrt('            except ValueError, exp:\n')
             wrt("                raise ValueError("
                 "'Bad date-time attribute (%s): %%s' %% exp)\n" %
@@ -2824,17 +2904,30 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt("            already_processed.add('%s')\n" % (name, ))
             wrt('            try:\n')
             wrt("                self.%s = self.gds_parse_date("
-                "value, node, '%s')\n" %
-                (mappedName, name, ))
+                "value)\n" % (mappedName, ))
             wrt('            except ValueError, exp:\n')
             wrt("                raise ValueError("
                 "'Bad date attribute (%s): %%s' %% exp)\n" %
                 (name, ))
+        elif atype == TimeType:
+            wrt("        value = find_attr_value_('%s', node)\n" % (
+                orig_name, ))
+            wrt("        if value is not None and '%s' not in "
+                "already_processed:\n" %
+                (name, ))
+            wrt("            already_processed.add('%s')\n" % (name, ))
+            wrt('            try:\n')
+            wrt("                self.%s = self.gds_parse_time("
+                "value)\n" % (mappedName, ))
+            wrt('            except ValueError, exp:\n')
+            wrt("                raise ValueError("
+                "'Bad time attribute (%s): %%s' %% exp)\n" %
+                (name, ))
         elif (atype in IntegerType or
-            atype == PositiveIntegerType or
-            atype == NonPositiveIntegerType or
-            atype == NegativeIntegerType or
-            atype == NonNegativeIntegerType):
+                atype == PositiveIntegerType or
+                atype == NonPositiveIntegerType or
+                atype == NegativeIntegerType or
+                atype == NonNegativeIntegerType):
             wrt("        value = find_attr_value_('%s', node)\n" % (
                 orig_name, ))
             wrt("        if value is not None and '%s' not in "
@@ -2937,8 +3030,8 @@ def generateBuildMixed_1(wrt, prefix, child, headChild, keyword, delayed):
     childType = child.getType()
     mappedName = mapName(name)
     if (childType in StringType or
-        childType == TokenType or
-        childType in DateTimeGroupType):
+            childType == TokenType or
+            childType in DateTimeGroupType):
         wrt("        %s nodeName_ == '%s' and child_.text is not None:\n" % (
             keyword, origName, ))
         wrt("            valuestr_ = child_.text\n")
@@ -2950,11 +3043,11 @@ def generateBuildMixed_1(wrt, prefix, child, headChild, keyword, delayed):
         wrt("                MixedContainer.TypeString, '%s', valuestr_)\n" %
             origName)
         wrt("            self.content_.append(obj_)\n")
-    elif childType in IntegerType or \
-        childType == PositiveIntegerType or \
-        childType == NonPositiveIntegerType or \
-        childType == NegativeIntegerType or \
-        childType == NonNegativeIntegerType:
+    elif (childType in IntegerType or
+            childType == PositiveIntegerType or
+            childType == NonPositiveIntegerType or
+            childType == NegativeIntegerType or
+            childType == NonNegativeIntegerType):
         wrt("        %s nodeName_ == '%s' and child_.text is not None:\n" % (
             keyword, origName, ))
         wrt("            sval_ = child_.text\n")
@@ -2998,9 +3091,9 @@ def generateBuildMixed_1(wrt, prefix, child, headChild, keyword, delayed):
         wrt("            MixedContainer.TypeInteger, '%s', ival_)\n" %
             origName)
         wrt("        self.content_.append(obj_)\n")
-    elif childType == FloatType or \
-        childType == DoubleType or \
-        childType == DecimalType:
+    elif (childType == FloatType or
+            childType == DoubleType or
+            childType == DecimalType):
         wrt("        %s nodeName_ == '%s' and child_.text is not None:\n" % (
             keyword, origName, ))
         wrt("            sval_ = child_.text\n")
@@ -3083,8 +3176,8 @@ def generateBuildMixed(wrt, prefix, element, keyword, delayed, hasChildren):
             for memberName in SubstitutionGroups[child.getName()]:
                 if memberName in ElementDict:
                     member = ElementDict[memberName]
-                    generateBuildMixed_1(wrt, prefix, member, child,
-                        keyword, delayed)
+                    generateBuildMixed_1(
+                        wrt, prefix, member, child, keyword, delayed)
     wrt("        if not fromsubclass_ and child_.tail is not None:\n")
     wrt("            obj_ = self.mixedclass_(MixedContainer.CategoryText,\n")
     wrt("                MixedContainer.TypeNone, '', child_.tail)\n")
@@ -3092,8 +3185,8 @@ def generateBuildMixed(wrt, prefix, element, keyword, delayed, hasChildren):
     return hasChildren
 
 
-def generateBuildStandard_1(wrt, prefix, child, headChild,
-        element, keyword, delayed):
+def generateBuildStandard_1(
+        wrt, prefix, child, headChild, element, keyword, delayed):
     origName = child.getName()
     name = cleanupName(child.getName())
     mappedName = mapName(name)
@@ -3103,8 +3196,7 @@ def generateBuildStandard_1(wrt, prefix, child, headChild,
     if childType == DateTimeType:
         wrt("        %s nodeName_ == '%s':\n" % (keyword, origName, ))
         wrt("            sval_ = child_.text\n")
-        wrt("            dval_ = self.gds_parse_datetime(sval_, node, '%s')\n"
-            % (name, ))
+        wrt("            dval_ = self.gds_parse_datetime(sval_)\n")
         if child.getMaxOccurs() > 1:
             wrt("            self.%s.append(dval_)\n" % (mappedName, ))
         else:
@@ -3112,30 +3204,35 @@ def generateBuildStandard_1(wrt, prefix, child, headChild,
     elif childType == DateType:
         wrt("        %s nodeName_ == '%s':\n" % (keyword, origName, ))
         wrt("            sval_ = child_.text\n")
-        wrt("            dval_ = self.gds_parse_date(sval_, node, '%s')\n" % (
-            name, ))
+        wrt("            dval_ = self.gds_parse_date(sval_)\n")
+        if child.getMaxOccurs() > 1:
+            wrt("            self.%s.append(dval_)\n" % (mappedName, ))
+        else:
+            wrt("            self.%s = dval_\n" % (mappedName, ))
+    elif childType == TimeType:
+        wrt("        %s nodeName_ == '%s':\n" % (keyword, origName, ))
+        wrt("            sval_ = child_.text\n")
+        wrt("            dval_ = self.gds_parse_time(sval_)\n")
         if child.getMaxOccurs() > 1:
             wrt("            self.%s.append(dval_)\n" % (mappedName, ))
         else:
             wrt("            self.%s = dval_\n" % (mappedName, ))
     elif (attrCount == 0 and
-        (childType in StringType or
-            childType == TokenType or
-            childType in DateTimeGroupType or
-            child.isListType()
-        )
-        ):
+            (childType in StringType or
+                childType == TokenType or
+                childType in DateTimeGroupType or
+                child.isListType())):
         wrt("        %s nodeName_ == '%s':\n" % (keyword, origName, ))
         wrt("            %s_ = child_.text\n" % name)
         if childType == TokenType:
             wrt('            %s_ = re_.sub('
                 'String_cleanup_pat_, " ", %s_).strip()\n' % (name, name))
         if child.isListType():
-            if childType in IntegerType or \
-                childType == PositiveIntegerType or \
-                childType == NonPositiveIntegerType or \
-                childType == NegativeIntegerType or \
-                childType == NonNegativeIntegerType:
+            if (childType in IntegerType or
+                    childType == PositiveIntegerType or
+                    childType == NonPositiveIntegerType or
+                    childType == NegativeIntegerType or
+                    childType == NonNegativeIntegerType):
                 wrt("            %s_ = self.gds_validate_integer_list("
                     "%s_, node, '%s')\n" %
                     (name, name, name, ))
@@ -3143,8 +3240,8 @@ def generateBuildStandard_1(wrt, prefix, child, headChild,
                 wrt("            %s_ = self.gds_validate_boolean_list("
                     "%s_, node, '%s')\n" %
                     (name, name, name, ))
-            elif childType == FloatType or \
-                childType == DecimalType:
+            elif (childType == FloatType or
+                    childType == DecimalType):
                 wrt("            %s_ = self.gds_validate_float_list("
                     "%s_, node, '%s')\n" %
                     (name, name, name, ))
@@ -3160,11 +3257,11 @@ def generateBuildStandard_1(wrt, prefix, child, headChild,
             wrt("            self.%s.append(%s_)\n" % (mappedName, name, ))
         else:
             wrt("            self.%s = %s_\n" % (mappedName, name, ))
-    elif childType in IntegerType or \
-        childType == PositiveIntegerType or \
-        childType == NonPositiveIntegerType or \
-        childType == NegativeIntegerType or \
-        childType == NonNegativeIntegerType:
+    elif (childType in IntegerType or
+            childType == PositiveIntegerType or
+            childType == NonPositiveIntegerType or
+            childType == NegativeIntegerType or
+            childType == NonNegativeIntegerType):
         wrt("        %s nodeName_ == '%s':\n" % (keyword, origName, ))
         wrt("            sval_ = child_.text\n")
         wrt("            try:\n")
@@ -3211,9 +3308,9 @@ def generateBuildStandard_1(wrt, prefix, child, headChild,
             wrt("            self.%s.append(ival_)\n" % (mappedName, ))
         else:
             wrt("            self.%s = ival_\n" % (mappedName, ))
-    elif childType == FloatType or \
-        childType == DoubleType or \
-        childType == DecimalType:
+    elif (childType == FloatType or
+            childType == DoubleType or
+            childType == DecimalType):
         wrt("        %s nodeName_ == '%s':\n" % (keyword, origName, ))
         wrt("            sval_ = child_.text\n")
         wrt("            try:\n")
@@ -3310,11 +3407,11 @@ def generateBuildStandard_1(wrt, prefix, child, headChild,
         #typeName = child.getSimpleType()
         typeName = cleanupName(child.getName())
     elif (childType in ElementDict and
-        ElementDict[childType].getSimpleType()):
+            ElementDict[childType].getSimpleType()):
         typeName = ElementDict[childType].getType()
     # fixlist
     if (child.getSimpleType() in SimpleTypeDict and
-        SimpleTypeDict[child.getSimpleType()].isListType()):
+            SimpleTypeDict[child.getSimpleType()].isListType()):
         wrt("            self.%s = self.%s.split()\n" % (
             mappedName, mappedName, ))
     typeName = child.getSimpleType()
@@ -3339,7 +3436,8 @@ def generateBuildStandard(wrt, prefix, element, keyword, delayed, hasChildren):
         if child.getType() == AnyTypeIdentifier:
             any_type_child = child
         else:
-            generateBuildStandard_1(wrt, prefix, child, child,
+            generateBuildStandard_1(
+                wrt, prefix, child, child,
                 element, keyword, delayed)
             hasChildren += 1
             keyword = 'elif'
@@ -3353,7 +3451,8 @@ def generateBuildStandard(wrt, prefix, element, keyword, delayed, hasChildren):
                     memberName = cleanupName(memberName)
                     if memberName in ElementDict:
                         member = ElementDict[memberName]
-                        generateBuildStandard_1(wrt, prefix, member, child,
+                        generateBuildStandard_1(
+                            wrt, prefix, member, child,
                             element, keyword, delayed)
     if any_type_child is not None:
         type_name = element.getType()
@@ -3392,7 +3491,7 @@ def generateBuildFn(wrt, prefix, element, delayed):
     if element.isMixed():
         wrt("        if node.text is not None:\n")
         wrt("            obj_ = self.mixedclass_("
-                "MixedContainer.CategoryText,\n")
+            "MixedContainer.CategoryText,\n")
         wrt("                MixedContainer.TypeNone, '', node.text)\n")
         wrt("            self.content_.append(obj_)\n")
     wrt('        for child in node:\n')
@@ -3415,11 +3514,11 @@ def generateBuildFn(wrt, prefix, element, delayed):
     keyword = 'if'
     hasChildren = 0
     if element.isMixed():
-        hasChildren = generateBuildMixed(wrt, prefix, element, keyword,
-            delayed, hasChildren)
+        hasChildren = generateBuildMixed(
+            wrt, prefix, element, keyword, delayed, hasChildren)
     else:      # not element.isMixed()
-        hasChildren = generateBuildStandard(wrt, prefix, element, keyword,
-            delayed, hasChildren)
+        hasChildren = generateBuildStandard(
+            wrt, prefix, element, keyword, delayed, hasChildren)
     # Generate call to buildChildren in the superclass only if it is
     #  an extension, but *not* if it is a restriction.
     base = element.getBase()
@@ -3448,10 +3547,9 @@ def buildCtorArgs_multilevel(element, childCount):
     buildCtorArgs_multilevel_aux(addedArgs, add, element)
     eltype = element.getType()
     if (element.getSimpleContent() or
-        element.isMixed() or
-        eltype in SimpleTypeDict or
-        CurrentNamespacePrefix + eltype in OtherSimpleTypes
-        ):
+            element.isMixed() or
+            eltype in SimpleTypeDict or
+            CurrentNamespacePrefix + eltype in OtherSimpleTypes):
         add(", valueOf_=None")
     if element.isMixed():
         add(', mixedclass_=None')
@@ -3485,8 +3583,8 @@ def buildCtorArgs_aux(addedArgs, add, element):
         except KeyError:
             atype = StringType
         if (atype in StringType or
-            atype == TokenType or
-            atype in DateTimeGroupType):
+                atype == TokenType or
+                atype in DateTimeGroupType):
             if default is None:
                 add(", %s=None" % mappedName)
             else:
@@ -3548,20 +3646,19 @@ def buildCtorArgs_aux(addedArgs, add, element):
         else:
             childType = child.getType()
             if (childType in StringType or
-                childType == TokenType or
-                childType == Base64Type or
-                childType in DateTimeGroupType):
+                    childType == TokenType or
+                    childType == Base64Type or
+                    childType in DateTimeGroupType):
                 if default is None:
                     add(", %s=None" % cleanName)
                 else:
                     default1 = escape_string(default)
                     add(", %s='%s'" % (cleanName, default1, ))
             elif (childType in IntegerType or
-                childType == PositiveIntegerType or
-                childType == NonPositiveIntegerType or
-                childType == NegativeIntegerType or
-                childType == NonNegativeIntegerType
-                ):
+                    childType == PositiveIntegerType or
+                    childType == NonPositiveIntegerType or
+                    childType == NegativeIntegerType or
+                    childType == NonNegativeIntegerType):
                 if default is None:
                     add(', %s=None' % cleanName)
                 else:
@@ -3574,9 +3671,9 @@ def buildCtorArgs_aux(addedArgs, add, element):
                         add(', %s=%s' % (cleanName, "False", ))
                     else:
                         add(', %s=%s' % (cleanName, "True", ))
-            elif childType == FloatType or \
-                childType == DoubleType or \
-                childType == DecimalType:
+            elif (childType == FloatType or
+                    childType == DoubleType or
+                    childType == DecimalType):
                 if default is None:
                     add(', %s=None' % cleanName)
                 else:
@@ -3619,11 +3716,33 @@ def generateCtor(wrt, element):
     for key in attrDefs:
         attrDef = attrDefs[key]
         mappedName = cleanupName(attrDef.getName())
-        mappedName = mapName(mappedName)
-        logging.debug("Constructor attribute: %s" % mappedName)
-        pythonType = SchemaToPythonTypeMap.get(attrDef.getType())
-        attrVal = "_cast(%s, %s)" % (pythonType, mappedName)
-        wrt('        self.%s = %s\n' % (mappedName, attrVal))
+        name = mapName(mappedName)
+        attrType = attrDef.getType()
+        if attrType == DateTimeType:
+            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("            initvalue_ = datetime_.datetime.strptime("
+                "%s, '%%Y-%%m-%%dT%%H:%%M:%%S')\n" % (name, ))
+            wrt("        else:\n")
+            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("        self.%s = initvalue_\n" % (name, ))
+        elif attrType == DateType:
+            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("            initvalue_ = datetime_.datetime.strptime("
+                "%s, '%%Y-%%m-%%d').date()\n" % (name, ))
+            wrt("        else:\n")
+            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("        self.%s = initvalue_\n" % (name, ))
+        elif attrType == TimeType:
+            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("            initvalue_ = datetime_.datetime.strptime("
+                "%s, '%%H:%%M:%%S').time()\n" % (name, ))
+            wrt("        else:\n")
+            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("        self.%s = initvalue_\n" % (name, ))
+        else:
+            pythonType = SchemaToPythonTypeMap.get(attrDef.getType())
+            attrVal = "_cast(%s, %s)" % (pythonType, name, )
+            wrt('        self.%s = %s\n' % (name, attrVal, ))
         member = 1
     # Generate member initializers in ctor.
     member = 0
@@ -3631,7 +3750,8 @@ def generateCtor(wrt, element):
         name = cleanupName(child.getCleanName())
         logging.debug("Constructor child: %s" % name)
         logging.debug("Dump: %s" % child.__dict__)
-        if child.getType() == AnyTypeIdentifier:
+        childType = child.getType()
+        if childType == AnyTypeIdentifier:
             if child.getMaxOccurs() > 1:
                 wrt('        if anytypeobjs_ is None:\n')
                 wrt('            self.anytypeobjs_ = []\n')
@@ -3639,6 +3759,36 @@ def generateCtor(wrt, element):
                 wrt('            self.anytypeobjs_ = anytypeobjs_\n')
             else:
                 wrt('        self.anytypeobjs_ = anytypeobjs_\n')
+        elif childType == DateTimeType and child.getMaxOccurs() <= 1:
+            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("            initvalue_ = datetime_.datetime.strptime("
+                "%s, '%%Y-%%m-%%dT%%H:%%M:%%S')\n" % (name, ))
+            wrt("        else:\n")
+            wrt("            initvalue_ = %s\n" % (name, ))
+            if child.getMaxOccurs() > 1:
+                wrt("        self.%s.append(initvalue_)\n" % (name, ))
+            else:
+                wrt("        self.%s = initvalue_\n" % (name, ))
+        elif childType == DateType and child.getMaxOccurs() <= 1:
+            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("            initvalue_ = datetime_.datetime.strptime("
+                "%s, '%%Y-%%m-%%d').date()\n" % (name, ))
+            wrt("        else:\n")
+            wrt("            initvalue_ = %s\n" % (name, ))
+            if child.getMaxOccurs() > 1:
+                wrt("        self.%s.append(initvalue_)\n" % (name, ))
+            else:
+                wrt("        self.%s = initvalue_\n" % (name, ))
+        elif childType == TimeType and child.getMaxOccurs() <= 1:
+            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("            initvalue_ = datetime_.datetime.strptime("
+                "%s, '%%H:%%M:%%S').time()\n" % (name, ))
+            wrt("        else:\n")
+            wrt("            initvalue_ = %s\n" % (name, ))
+            if child.getMaxOccurs() > 1:
+                wrt("        self.%s.append(initvalue_)\n" % (name, ))
+            else:
+                wrt("        self.%s = initvalue_\n" % (name, ))
         else:
             if child.getMaxOccurs() > 1:
                 wrt('        if %s is None:\n' % (name, ))
@@ -3648,8 +3798,8 @@ def generateCtor(wrt, element):
             else:
                 typeObj = ElementDict.get(child.getType())
                 if (child.getDefault() and
-                    typeObj is not None and
-                    typeObj.getSimpleContent()):
+                        typeObj is not None and
+                        typeObj.getSimpleContent()):
                     wrt('        if %s is None:\n' % (name, ))
                     wrt("            self.%s = globals()['%s']('%s')\n" %
                         (name, child.getType(), child.getDefault(), ))
@@ -3660,10 +3810,9 @@ def generateCtor(wrt, element):
         member = 1
     eltype = element.getType()
     if (element.getSimpleContent() or
-        element.isMixed() or
-        eltype in SimpleTypeDict or
-        CurrentNamespacePrefix + eltype in OtherSimpleTypes
-        ):
+            element.isMixed() or
+            eltype in SimpleTypeDict or
+            CurrentNamespacePrefix + eltype in OtherSimpleTypes):
         wrt('        self.valueOf_ = valueOf_\n')
         member = 1
     if element.getAnyAttribute():
@@ -3748,8 +3897,8 @@ def generateGettersAndSetters(wrt, element):
             mappedName = mapName(name)
             typeName = child.getSimpleType()
             if (typeName and
-                typeName in SimpleTypeDict and
-                typeName not in generatedSimpleTypes):
+                    typeName in SimpleTypeDict and
+                    typeName not in generatedSimpleTypes):
                 generatedSimpleTypes.append(typeName)
                 wrt('    def validate_%s(self, value):\n' % (typeName, ))
                 if typeName in SimpleTypeDict:
@@ -3775,8 +3924,8 @@ def generateGettersAndSetters(wrt, element):
                 (name, gsName, gsName))
         typeName = attrDef.getType()
         if (typeName and
-            typeName in SimpleTypeDict and
-            typeName not in generatedSimpleTypes):
+                typeName in SimpleTypeDict and
+                typeName not in generatedSimpleTypes):
             generatedSimpleTypes.append(typeName)
             wrt('    def validate_%s(self, value):\n' % (typeName, ))
             if typeName in SimpleTypeDict:
@@ -3876,9 +4025,9 @@ def generateMemberSpec(wrt, element):
                 'xs:string', )
         add(item)
     if generateDict:
-        add('        }')
+        add('    }')
     else:
-        add('        ]')
+        add('    ]')
     wrt('\n'.join(content))
     wrt('\n')
 # end generateMemberSpec
@@ -3924,7 +4073,7 @@ def generateHascontentMethod(wrt, element):
             wrt(' or\n')
         firstTime = False
         wrt('            super(%s, self).hasContent_()' % (elName, ))
-    wrt('\n            ):\n')
+    wrt('\n        ):\n')
     wrt('            return True\n')
     wrt('        else:\n')
     wrt('            return False\n')
@@ -3943,7 +4092,7 @@ def generateClasses(wrt, prefix, element, delayed):
     #   not been generated, then postpone it.
     if parentName:
         if (parentName not in AlreadyGenerated and
-            parentName not in SimpleTypeDict.keys()):
+                parentName not in SimpleTypeDict.keys()):
             PostponedExtensions.append(element)
             return
     if element.getName() in AlreadyGenerated:
@@ -3951,8 +4100,8 @@ def generateClasses(wrt, prefix, element, delayed):
     AlreadyGenerated.append(element.getName())
     if element.getMixedExtensionError():
         err_msg('*** Element %s extension chain contains mixed and '
-            'non-mixed content.  Not generated.\n' %
-            (element.getName(), ))
+                'non-mixed content.  Not generated.\n' %
+                (element.getName(), ))
         return
     ElementsForSubclasses.append(element)
     name = element.getCleanName()
@@ -4018,13 +4167,14 @@ import sys
 import getopt
 import re as re_
 import base64
-from datetime import datetime, tzinfo, timedelta
+import datetime as datetime_
 
 etree_ = None
 Verbose_import_ = False
-(   XMLParser_import_none, XMLParser_import_lxml,
+(
+    XMLParser_import_none, XMLParser_import_lxml,
     XMLParser_import_elementtree
-    ) = range(3)
+) = range(3)
 XMLParser_import_library = None
 try:
     # lxml
@@ -4064,9 +4214,10 @@ except ImportError:
                     raise ImportError(
                         "Failed to import ElementTree from any known place")
 
+
 def parsexml_(*args, **kwargs):
     if (XMLParser_import_library == XMLParser_import_lxml and
-        'parser' not in kwargs):
+            'parser' not in kwargs):
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
         kwargs['parser'] = etree_.ETCompatXMLParser()
@@ -4086,9 +4237,9 @@ except ImportError, exp:
 
     class GeneratedsSuper(object):
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
-        class _FixedOffsetTZ(tzinfo):
+        class _FixedOffsetTZ(datetime_.tzinfo):
             def __init__(self, offset, name):
-                self.__offset = timedelta(minutes = offset)
+                self.__offset = datetime_.timedelta(minutes=offset)
                 self.__name = name
             def utcoffset(self, dt):
                 return self.__offset
@@ -4114,8 +4265,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 try:
-                    fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                    float(value)
+                except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of integers')
             return input_data
         def gds_format_float(self, input_data, input_name=''):
@@ -4128,8 +4279,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 try:
-                    fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                    float(value)
+                except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of floats')
             return input_data
         def gds_format_double(self, input_data, input_name=''):
@@ -4142,8 +4293,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 try:
-                    fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                    float(value)
+                except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of doubles')
             return input_data
         def gds_format_boolean(self, input_data, input_name=''):
@@ -4156,7 +4307,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 if value not in ('true', '1', 'false', '0', ):
-                    raise_parse_error(node,
+                    raise_parse_error(
+                        node,
                         'Requires sequence of booleans '
                         '("true", "1", "false", "0")')
             return input_data
@@ -4164,9 +4316,24 @@ except ImportError, exp:
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
             if input_data.microsecond == 0:
-                _svalue = input_data.strftime('%%Y-%%m-%%dT%%H:%%M:%%S')
+                _svalue = '%%04d-%%02d-%%02dT%%02d:%%02d:%%02d' %% (
+                    input_data.year,
+                    input_data.month,
+                    input_data.day,
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                )
             else:
-                _svalue = input_data.strftime('%%Y-%%m-%%dT%%H:%%M:%%S.%%f')
+                _svalue = '%%04d-%%02d-%%02dT%%02d:%%02d:%%02d.%%s' %% (
+                    input_data.year,
+                    input_data.month,
+                    input_data.day,
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                    ('%%f' %% (float(input_data.microsecond) / 1000000))[2:],
+                )
             if input_data.tzinfo is not None:
                 tzoff = input_data.tzinfo.utcoffset(input_data)
                 if tzoff is not None:
@@ -4183,7 +4350,8 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
-        def gds_parse_datetime(self, input_data, node, input_name=''):
+        @classmethod
+        def gds_parse_datetime(cls, input_data):
             tz = None
             if input_data[-1] == 'Z':
                 tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
@@ -4199,17 +4367,21 @@ except ImportError, exp:
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
             if len(input_data.split('.')) > 1:
-                dt = datetime.strptime(
-                        input_data, '%%Y-%%m-%%dT%%H:%%M:%%S.%%f')
+                dt = datetime_.datetime.strptime(
+                    input_data, '%%Y-%%m-%%dT%%H:%%M:%%S.%%f')
             else:
-                dt = datetime.strptime(
-                        input_data, '%%Y-%%m-%%dT%%H:%%M:%%S')
-            return dt.replace(tzinfo = tz)
-
+                dt = datetime_.datetime.strptime(
+                    input_data, '%%Y-%%m-%%dT%%H:%%M:%%S')
+            dt = dt.replace(tzinfo=tz)
+            return dt
         def gds_validate_date(self, input_data, node, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
-            _svalue = input_data.strftime('%%Y-%%m-%%d')
+            _svalue = '%%04d-%%02d-%%02d' %% (
+                input_data.year,
+                input_data.month,
+                input_data.day,
+            )
             try:
                 if input_data.tzinfo is not None:
                     tzoff = input_data.tzinfo.utcoffset(input_data)
@@ -4229,7 +4401,8 @@ except ImportError, exp:
             except AttributeError:
                 pass
             return _svalue
-        def gds_parse_date(self, input_data, node, input_name=''):
+        @classmethod
+        def gds_parse_date(cls, input_data):
             tz = None
             if input_data[-1] == 'Z':
                 tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
@@ -4244,8 +4417,63 @@ except ImportError, exp:
                     tz = GeneratedsSuper._FixedOffsetTZ(
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
-            return datetime.strptime(input_data,
-                '%%Y-%%m-%%d').replace(tzinfo = tz)
+            dt = datetime_.datetime.strptime(input_data, '%%Y-%%m-%%d')
+            dt = dt.replace(tzinfo=tz)
+            return dt.date()
+        def gds_validate_time(self, input_data, node, input_name=''):
+            return input_data
+        def gds_format_time(self, input_data, input_name=''):
+            if input_data.microsecond == 0:
+                _svalue = '%%02d:%%02d:%%02d' %% (
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                )
+            else:
+                _svalue = '%%02d:%%02d:%%02d.%%s' %% (
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                    ('%%f' %% (float(input_data.microsecond) / 1000000))[2:],
+                )
+            if input_data.tzinfo is not None:
+                tzoff = input_data.tzinfo.utcoffset(input_data)
+                if tzoff is not None:
+                    total_seconds = tzoff.seconds + (86400 * tzoff.days)
+                    if total_seconds == 0:
+                        _svalue += 'Z'
+                    else:
+                        if total_seconds < 0:
+                            _svalue += '-'
+                            total_seconds *= -1
+                        else:
+                            _svalue += '+'
+                        hours = total_seconds // 3600
+                        minutes = (total_seconds - (hours * 3600)) // 60
+                        _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+            return _svalue
+        @classmethod
+        def gds_parse_time(cls, input_data):
+            tz = None
+            if input_data[-1] == 'Z':
+                tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
+                input_data = input_data[:-1]
+            else:
+                results = GeneratedsSuper.tzoff_pattern.search(input_data)
+                if results is not None:
+                    tzoff_parts = results.group(2).split(':')
+                    tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
+                    if results.group(1) == '-':
+                        tzoff *= -1
+                    tz = GeneratedsSuper._FixedOffsetTZ(
+                        tzoff, results.group(0))
+                    input_data = input_data[:-6]
+            if len(input_data.split('.')) > 1:
+                dt = datetime_.datetime.strptime(input_data, '%%H:%%M:%%S.%%f')
+            else:
+                dt = datetime_.datetime.strptime(input_data, '%%H:%%M:%%S')
+            dt = dt.replace(tzinfo=tz)
+            return dt.time()
         def gds_str_lower(self, instring):
             return instring.lower()
         def get_path_(self, node):
@@ -4276,8 +4504,9 @@ except ImportError, exp:
             return class_obj1
         def gds_build_any(self, node, type_name=None):
             return None
-        def gds_reverse_node_mapping(self, mapping):
-            return dict(((v, k) for k,v in mapping.iteritems()))
+        @classmethod
+        def gds_reverse_node_mapping(cls, mapping):
+            return dict(((v, k) for k, v in mapping.iteritems()))
 
 
 #
@@ -4308,10 +4537,12 @@ Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
 # Support/utility functions.
 #
 
+
 def showIndent(outfile, level, pretty_print=True):
     if pretty_print:
         for idx in range(level):
             outfile.write('    ')
+
 
 def quote_xml(inStr):
     if not inStr:
@@ -4322,6 +4553,7 @@ def quote_xml(inStr):
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     return s1
+
 
 def quote_attrib(inStr):
     s1 = (isinstance(inStr, basestring) and inStr or
@@ -4338,6 +4570,7 @@ def quote_attrib(inStr):
         s1 = '"%%s"' %% s1
     return s1
 
+
 def quote_python(inStr):
     s1 = inStr
     if s1.find("'") == -1:
@@ -4353,6 +4586,7 @@ def quote_python(inStr):
         else:
             return '\"\"\"%%s\"\"\"' %% s1
 
+
 def get_all_text_(node):
     if node.text is not None:
         text = node.text
@@ -4362,6 +4596,7 @@ def get_all_text_(node):
         if child.tail is not None:
             text += child.tail
     return text
+
 
 def find_attr_value_(attr_name, node):
     attrs = node.attrib
@@ -4379,6 +4614,7 @@ def find_attr_value_(attr_name, node):
 
 class GDSParseError(Exception):
     pass
+
 
 def raise_parse_error(node, msg):
     if XMLParser_import_library == XMLParser_import_lxml:
@@ -4429,22 +4665,22 @@ class MixedContainer:
             self.value.export(outfile, level, namespace, name, pretty_print)
     def exportSimple(self, outfile, level, name):
         if self.content_type == MixedContainer.TypeString:
-            outfile.write('<%%s>%%s</%%s>' %%
-                (self.name, self.value, self.name))
+            outfile.write('<%%s>%%s</%%s>' %% (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeInteger or \\
                 self.content_type == MixedContainer.TypeBoolean:
-            outfile.write('<%%s>%%d</%%s>' %%
-                (self.name, self.value, self.name))
+            outfile.write('<%%s>%%d</%%s>' %% (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeFloat or \\
                 self.content_type == MixedContainer.TypeDecimal:
-            outfile.write('<%%s>%%f</%%s>' %%
-                (self.name, self.value, self.name))
+            outfile.write('<%%s>%%f</%%s>' %% (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeDouble:
-            outfile.write('<%%s>%%g</%%s>' %%
-                (self.name, self.value, self.name))
+            outfile.write('<%%s>%%g</%%s>' %% (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeBase64:
-            outfile.write('<%%s>%%s</%%s>' %%
-                (self.name, base64.b64encode(self.value), self.name))
+            outfile.write('<%%s>%%s</%%s>' %% (
+                self.name, base64.b64encode(self.value), self.name))
     def to_etree(self, element):
         if self.category == MixedContainer.CategoryText:
             # Prevent exporting empty content as empty lines.
@@ -4481,16 +4717,19 @@ class MixedContainer:
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%%d, %%d, "%%s", "%%s"),\\n'
-                %% (self.category, self.content_type, self.name, self.value))
+            outfile.write(
+                'model_.MixedContainer(%%d, %%d, "%%s", "%%s"),\\n' %% (
+                    self.category, self.content_type, self.name, self.value))
         elif self.category == MixedContainer.CategorySimple:
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%%d, %%d, "%%s", "%%s"),\\n'
-                %% (self.category, self.content_type, self.name, self.value))
+            outfile.write(
+                'model_.MixedContainer(%%d, %%d, "%%s", "%%s"),\\n' %% (
+                    self.category, self.content_type, self.name, self.value))
         else:    # category == MixedContainer.CategoryComplex
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%%d, %%d, "%%s",\\n' %% \\
-                (self.category, self.content_type, self.name,))
+            outfile.write(
+                'model_.MixedContainer(%%d, %%d, "%%s",\\n' %% (
+                    self.category, self.content_type, self.name,))
             self.value.exportLiteral(outfile, level + 1)
             showIndent(outfile, level)
             outfile.write(')\\n')
@@ -4516,6 +4755,7 @@ class MemberSpec_(object):
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
 
+
 def _cast(typ, value):
     if typ is None or value is None:
         return value
@@ -4524,6 +4764,7 @@ def _cast(typ, value):
 #
 # Data representation classes.
 #
+
 
 """
 
@@ -4545,6 +4786,7 @@ TEMPLATE_MAIN = """\
 USAGE_TEXT = \"\"\"
 Usage: python <%(prefix)sParser>.py [ -s ] <in_xml_file>
 \"\"\"
+
 
 def usage():
     print USAGE_TEXT
@@ -4571,7 +4813,8 @@ def parse(inFileName):
     # Enable Python to collect the space used by the DOM.
     doc = None
 #silence#    sys.stdout.write('<?xml version="1.0" ?>\\n')
-#silence#    rootObj.export(sys.stdout, 0, name_=rootTag,
+#silence#    rootObj.export(
+#silence#        sys.stdout, 0, name_=rootTag,
 #silence#        namespacedef_='%(namespacedef)s',
 #silence#        pretty_print=True)
     return rootObj
@@ -4588,28 +4831,32 @@ def parseEtree(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    rootElement = rootObj.to_etree(None, name_=rootTag)
-#silence#    content = etree_.tostring(rootElement, pretty_print=True,
+    mapping = {}
+    rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
+    reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
+#silence#    content = etree_.tostring(
+#silence#        rootElement, pretty_print=True,
 #silence#        xml_declaration=True, encoding="utf-8")
 #silence#    sys.stdout.write(content)
 #silence#    sys.stdout.write('\\n')
-    return rootObj, rootElement
+    return rootObj, rootElement, mapping, reverse_mapping
 
 
 def parseString(inString):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    rootTag, rootClass = get_root_tag(rootNode)
+    roots = get_root_tag(rootNode)
+    rootClass = roots[1]
     if rootClass is None:
-        rootTag = '%(name)s'
         rootClass = %(prefix)s%(root)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
 #silence#    sys.stdout.write('<?xml version="1.0" ?>\\n')
-#silence#    rootObj.export(sys.stdout, 0, name_="%(name)s",
+#silence#    rootObj.export(
+#silence#        sys.stdout, 0, name_="%(name)s",
 #silence#        namespacedef_='%(namespacedef)s')
     return rootObj
 
@@ -4626,7 +4873,6 @@ def parseLiteral(inFileName):
     # Enable Python to collect the space used by the DOM.
     doc = None
 #silence#    sys.stdout.write('#from %(module_name)s import *\\n\\n')
-#silence#    sys.stdout.write('from datetime import datetime as datetime_\\n\\n')
 #silence#    sys.stdout.write('import %(module_name)s as model_\\n\\n')
 #silence#    sys.stdout.write('rootObj = model_.rootTag(\\n')
 #silence#    rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
@@ -4659,8 +4905,7 @@ def generateMain(outfile, prefix, root):
         if MappingTypes[classType] in AlreadyGenerated:
             exportDictLine += "    '%s': %s,\n" % (
                 classType,
-                cleanupName(mapName(MappingTypes[classType]))
-                )
+                cleanupName(mapName(MappingTypes[classType])))
     exportDictLine += "}\n\n\n"
     outfile.write(exportDictLine)
     children = root.getChildren()
@@ -4685,7 +4930,7 @@ def generateMain(outfile, prefix, root):
         'module_name': os.path.splitext(os.path.basename(outfile.name))[0],
         'root': rootElement,
         'namespacedef': Namespacedef,
-        }
+    }
     s1 = TEMPLATE_MAIN % params
     outfile.write(s1)
 
@@ -4904,9 +5149,10 @@ import %s as supermod
 
 etree_ = None
 Verbose_import_ = False
-(   XMLParser_import_none, XMLParser_import_lxml,
+(
+    XMLParser_import_none, XMLParser_import_lxml,
     XMLParser_import_elementtree
-    ) = range(3)
+) = range(3)
 XMLParser_import_library = None
 try:
     # lxml
@@ -4946,9 +5192,10 @@ except ImportError:
                     raise ImportError(
                         "Failed to import ElementTree from any known place")
 
+
 def parsexml_(*args, **kwargs):
     if (XMLParser_import_library == XMLParser_import_lxml and
-        'parser' not in kwargs):
+            'parser' not in kwargs):
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
         kwargs['parser'] = etree_.ETCompatXMLParser()
@@ -4965,10 +5212,10 @@ ExternalEncoding = '%s'
 # Data representation classes
 #
 
+
 """
 
 TEMPLATE_SUBCLASS_FOOTER = """\
-
 def get_root_tag(node):
     tag = supermod.Tag_pattern_.match(node.tag).groups()[-1]
     rootClass = None
@@ -4990,7 +5237,8 @@ def parse(inFilename):
     # Enable Python to collect the space used by the DOM.
     doc = None
 #silence#    sys.stdout.write('<?xml version="1.0" ?>\\n')
-#silence#    rootObj.export(sys.stdout, 0, name_=rootTag,
+#silence#    rootObj.export(
+#silence#        sys.stdout, 0, name_=rootTag,
 #silence#        namespacedef_='%(namespacedef)s',
 #silence#        pretty_print=True)
     return rootObj
@@ -5007,12 +5255,15 @@ def parseEtree(inFilename):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    rootElement = rootObj.to_etree(None, name_=rootTag)
-#silence#    content = etree_.tostring(rootElement, pretty_print=True,
+    mapping = {}
+    rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
+    reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
+#silence#    content = etree_.tostring(
+#silence#        rootElement, pretty_print=True,
 #silence#        xml_declaration=True, encoding="utf-8")
 #silence#    sys.stdout.write(content)
 #silence#    sys.stdout.write('\\n')
-    return rootObj, rootElement
+    return rootObj, rootElement, mapping, reverse_mapping
 
 
 def parseString(inString):
@@ -5028,7 +5279,8 @@ def parseString(inString):
     # Enable Python to collect the space used by the DOM.
     doc = None
 #silence#    sys.stdout.write('<?xml version="1.0" ?>\\n')
-#silence#    rootObj.export(sys.stdout, 0, name_=rootTag,
+#silence#    rootObj.export(
+#silence#        sys.stdout, 0, name_=rootTag,
 #silence#        namespacedef_='%(namespacedef)s')
     return rootObj
 
@@ -5036,9 +5288,9 @@ def parseString(inString):
 def parseLiteral(inFilename):
     doc = parsexml_(inFilename)
     rootNode = doc.getroot()
-    rootTag, rootClass = get_root_tag(rootNode)
+    roots = get_root_tag(rootNode)
+    rootClass = roots[1]
     if rootClass is None:
-        rootTag = '%(name)s'
         rootClass = supermod.%(root)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -5056,6 +5308,7 @@ USAGE_TEXT = \"\"\"
 Usage: python ???.py <infilename>
 \"\"\"
 
+
 def usage():
     print USAGE_TEXT
     sys.exit(1)
@@ -5066,14 +5319,12 @@ def main():
     if len(args) != 1:
         usage()
     infilename = args[0]
-    root = parse(infilename)
+    parse(infilename)
 
 
 if __name__ == '__main__':
     #import pdb; pdb.set_trace()
     main()
-
-
 """
 
 TEMPLATE_ABSTRACT_CLASS = """\
@@ -5127,7 +5378,7 @@ TEMPLATE_ABSTRACT_CHILD = """\
 
 
 def generateSubclasses(root, subclassFilename, behaviorFilename,
-        prefix, superModule='xxx'):
+                       prefix, superModule='xxx'):
     subclassFile = makeFile(subclassFilename)
     wrt = subclassFile.write
     if subclassFile:
@@ -5142,9 +5393,11 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
                 sys.path.insert(0, '.')
                 import xmlbehavior_sub as xmlbehavior
             except ImportError:
-                err_msg('*** You have requested generation of extended methods.\n')
+                err_msg('*** You have requested generation of '
+                        'extended methods.\n')
                 err_msg('*** But, no xmlbehavior module is available.\n')
-                err_msg('*** Generation of extended behavior methods is omitted.\n')
+                err_msg('*** Generation of extended behavior '
+                        'methods is omitted.\n')
             if xmlbehavior:
                 behaviors = xmlbehavior.parse(behaviorFilename)
                 behaviors.make_class_dictionary(cleanupName)
@@ -5179,11 +5432,11 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
             'name': name,
             'cleanname': cleanupName(name),
             'module_name': os.path.splitext(
-                    os.path.basename(subclassFilename))[0],
+                os.path.basename(subclassFilename))[0],
             'root': rootElement,
             'namespacedef': Namespacedef,
             'super': superModule,
-            }
+        }
         wrt(TEMPLATE_SUBCLASS_FOOTER % params)
         subclassFile.close()
 
@@ -5207,7 +5460,7 @@ def generateSimpleTypes(wrt, prefix, simpleTypeDict):
 
 
 def generate(outfileName, subclassFilename, behaviorFilename,
-        prefix, root, superModule):
+             prefix, root, superModule):
     global DelayedElements, DelayedElements_subclass
     # Create an output file.
     # Note that even if the user does not request an output file,
@@ -5245,7 +5498,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
         parentName, parent = getParentName(element)
         if parentName:
             if (parentName in AlreadyGenerated or
-                parentName in SimpleTypeDict.keys()):
+                    parentName in SimpleTypeDict.keys()):
                 generateClasses(wrt, prefix, element, 1)
             else:
                 PostponedExtensions.insert(0, element)
@@ -5257,7 +5510,8 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     generateMain(outfile, prefix, root)
     outfile.close()
     if subclassFilename:
-        generateSubclasses(root, subclassFilename, behaviorFilename,
+        generateSubclasses(
+            root, subclassFilename, behaviorFilename,
             prefix, superModule)
 
 
@@ -5317,19 +5571,18 @@ def escape_string(instring):
 
 def is_builtin_simple_type(type_val):
     if (type_val in StringType or
-        type_val == TokenType or
-        type_val in DateTimeGroupType or
-        type_val in IntegerType or
-        type_val == DecimalType or
-        type_val == PositiveIntegerType or
-        type_val == NonPositiveIntegerType or
-        type_val == NegativeIntegerType or
-        type_val == NonNegativeIntegerType or
-        type_val == BooleanType or
-        type_val == FloatType or
-        type_val == DoubleType or
-        type_val in OtherSimpleTypes
-        ):
+            type_val == TokenType or
+            type_val in DateTimeGroupType or
+            type_val in IntegerType or
+            type_val == DecimalType or
+            type_val == PositiveIntegerType or
+            type_val == NonPositiveIntegerType or
+            type_val == NegativeIntegerType or
+            type_val == NonNegativeIntegerType or
+            type_val == BooleanType or
+            type_val == FloatType or
+            type_val == DoubleType or
+            type_val in OtherSimpleTypes):
         return True
     else:
         return False
@@ -5380,7 +5633,8 @@ def is_builtin_simple_type(type_val):
 ##            idx += 1
 ##        children = root.getchildren()
 
-def parseAndGenerate(outfileName, subclassFilename, prefix,
+def parseAndGenerate(
+        outfileName, subclassFilename, prefix,
         xschemaFileName, behaviorFilename,
         processIncludes, superModule='???'):
     global DelayedElements, DelayedElements_subclass, \
@@ -5409,8 +5663,8 @@ def parseAndGenerate(outfileName, subclassFilename, prefix,
     if processIncludes:
         import process_includes
         outfile = StringIO.StringIO()
-        process_includes.process_include_files(infile, outfile,
-            inpath=xschemaFileName)
+        process_includes.process_include_files(
+            infile, outfile, inpath=xschemaFileName)
         outfile.seek(0)
         infile = outfile
     parser.parse(infile)
@@ -5420,17 +5674,19 @@ def parseAndGenerate(outfileName, subclassFilename, prefix,
 ##     root.show(sys.stdout, 0)
 ##     print '-' * 60
     #debug_show_elements(root)
-    generate(outfileName, subclassFilename, behaviorFilename,
+    generate(
+        outfileName, subclassFilename, behaviorFilename,
         prefix, root, superModule)
     # Generate __all__.  When using the parser as a module it is useful
     # to isolate important classes from internal ones. This way one
     # can do a reasonably safe "from parser import *"
     if outfileName:
-        exportableClassList = ['"%s"' % mapName(cleanupName(name))
+        exportableClassList = [
+            '"%s"' % mapName(cleanupName(name))
             for name in AlreadyGenerated]
         exportableClassList.sort()
         exportableClassNames = ',\n    '.join(exportableClassList)
-        exportLine = "\n__all__ = [\n    %s\n    ]\n" % exportableClassNames
+        exportLine = "\n__all__ = [\n    %s\n]\n" % exportableClassNames
         outfile = open(outfileName, "a")
         outfile.write(exportLine)
         outfile.close()
@@ -5530,15 +5786,17 @@ def main():
     outputText = True
     args = sys.argv[1:]
     try:
-        options, args = getopt.getopt(args, 'hfyo:s:p:a:b:mu:q',
-            ['help', 'subclass-suffix=',
-            'root-element=', 'super=',
-            'validator-bodies=', 'use-old-getter-setter',
-            'user-methods=', 'no-process-includes', 'silence',
-            'namespacedef=', 'external-encoding=',
-            'member-specs=', 'no-dates', 'no-versions',
-            'no-questions', 'session=',
-            'version', 'export=',
+        options, args = getopt.getopt(
+            args, 'hfyo:s:p:a:b:mu:q',
+            [
+                'help', 'subclass-suffix=',
+                'root-element=', 'super=',
+                'validator-bodies=', 'use-old-getter-setter',
+                'user-methods=', 'no-process-includes', 'silence',
+                'namespacedef=', 'external-encoding=',
+                'member-specs=', 'no-dates', 'no-versions',
+                'no-questions', 'session=',
+                'version', 'export=',
             ])
     except getopt.GetoptError:
         usage()
@@ -5594,7 +5852,8 @@ def main():
             if sessionObj.get_validator_bodies():
                 ValidatorBodiesBasePath = sessionObj.get_validator_bodies()
                 if not os.path.isdir(ValidatorBodiesBasePath):
-                    err_msg('*** Option validator-bodies must specify an existing path.\n')
+                    err_msg('*** Option validator-bodies must specify '
+                            'an existing path.\n')
                     sys.exit(1)
             if sessionObj.get_user_methods():
                 UserMethodsPath = sessionObj.get_user_methods()
@@ -5643,7 +5902,8 @@ def main():
         elif option[0] == '--validator-bodies':
             ValidatorBodiesBasePath = option[1]
             if not os.path.isdir(ValidatorBodiesBasePath):
-                err_msg('*** Option validator-bodies must specify an existing path.\n')
+                err_msg('*** Option validator-bodies must specify an '
+                        'existing path.\n')
                 sys.exit(1)
         elif option[0] == '--use-old-getter-setter':
             UseOldGetterSetter = 1
@@ -5695,7 +5955,8 @@ def main():
     TEMPLATE_MAIN = fixSilence(TEMPLATE_MAIN, silent)
     TEMPLATE_SUBCLASS_FOOTER = fixSilence(TEMPLATE_SUBCLASS_FOOTER, silent)
     load_config()
-    parseAndGenerate(outFilename, subclassFilename, prefix,
+    parseAndGenerate(
+        outFilename, subclassFilename, prefix,
         xschemaFileName, behaviorFilename,
         processIncludes, superModule=superModule)
 
