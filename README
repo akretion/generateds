@@ -141,6 +141,17 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.10b (06/10/2013)
+- Changed flag for generating getters and setters.  Removed flag
+  --use-old-getter-setter.  Replaced it with new flag
+  --use-getter-setter, which can have the following values:
+     "old" - Name getters/setters getVar()/setVar().
+     "new" - Name getters/setters get_var()/set_var().
+     "none" - Do not generate getter/setter methods.
+  The default is "new".  See the help (use --help option) or see the
+  doc (generateDS.txt/generateDS.html) for more on this.  Thanks to
+  Mike Vella for suggesting this.
+
 Version 2.10a (05/29/2013)
 - Added ability to produce mapping (a dict) during call to
   to_etree() that maps gDS instances to their associated etree

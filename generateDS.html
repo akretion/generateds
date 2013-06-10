@@ -225,7 +225,7 @@ They are used by updateversion.py. -->
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">date:</th><td class="field-body">May 30, 2013</td>
+<tr class="field"><th class="field-name">date:</th><td class="field-body">June 10, 2013</td>
 </tr>
 </tbody>
 </table>
@@ -517,11 +517,17 @@ Options:
                              Default=&quot;Sub&quot;.
     --root-element=&quot;XXX&quot;     Assume XXX is root element of instance docs.
                              Default is first element defined in schema.
-    --super=&quot;XXX&quot;            Super module name in subclass module. Default=&quot;???&quot;
+                             Also see section &quot;Recognizing the top level
+                             element&quot; in the documentation.
+    --super=&quot;XXX&quot;            Super module name in generated in subclass
+                             module. Default=&quot;???&quot;
     --validator-bodies=path  Path to a directory containing files that provide
                              bodies (implementations) of validator methods.
-    --use-old-getter-setter  Name getters and setters getVar() and setVar(),
-                             instead of get_var() and set_var().
+    --use-getter-setter      Generate getter and setter methods.  Values:
+                             &quot;old&quot; - Name getters/setters getVar()/setVar().
+                             &quot;new&quot; - Name getters/setters get_var()/set_var().
+                             &quot;none&quot; - Do not generate getter/setter methods.
+                             Default is &quot;new&quot;.
     --user-methods= &lt;module&gt;,
     -u &lt;module&gt;              Optional module containing user methods.  See
                              section &quot;User Methods&quot; in the documentation.
@@ -529,10 +535,10 @@ Options:
                              files. This is useful if you want to minimize
                              the amount of (no-operation) changes to the
                              generated python code.
-    --no-versions            Do not include the current version in the generated
-                             files. This is useful if you want to minimize
-                             the amount of (no-operation) changes to the
-                             generated python code.
+    --no-versions            Do not include the current version in the
+                             generated files. This is useful if you want
+                             to minimize the amount of (no-operation)
+                             changes to the generated python code.
     --no-process-includes    Do not process included XML Schema files.  By
                              default, generateDS.py will insert content
                              from files referenced by &lt;include ... /&gt;
@@ -556,7 +562,7 @@ Options:
                              class: a dictionary of instances of class
                              MemberSpec_ containing member name, type,
                              and array or not.  Allowed values are
-                             &quot;list&quot; or &quot;dict&quot;.  Default: None.
+                             &quot;list&quot; or &quot;dict&quot;.  Default: do not generate.
     --export=&lt;export-list&gt;   Specifies export functions to be generated.
                              Value is a whitespace separated list of
                              any of the following:
@@ -564,15 +570,28 @@ Options:
                                  literal -- write out python code
                                  etree -- build element tree (can serialize
                                      to XML)
-                             Examples: --export=&quot;write etree&quot;
-                                       --export=&quot;write&quot;
-                             Default: --export=&quot;write literal&quot;
+                             Example: &quot;write etree&quot;
+                             Default: &quot;write&quot;
     -q, --no-questions       Do not ask questions, for example,
                              force overwrite.
     --session=mysession.session
                              Load and use options from session file. You can
-                             create session file in generateds_gui.py.
+                             create session file in generateds_gui.py.  Or,
+                             copy and edit sample.session from the
+                             distribution.
     --version                Print version and exit.
+
+Usage example:
+
+    $ python generateDS.py -f -o sample_lib.py sample_api.xsd
+
+creates (with force over-write) sample_lib.py from sample_api.xsd.
+
+    $ python generateDS.py -o sample_lib.py -s sample_app1.py \
+            --member-specs=dict sample_api.xsd
+
+creates sample_lib.py superclass and sample_app1.py subclass modules;
+also generates member specifications in each class (in a dictionary).
 </pre>
 <p>The following command line flags are recognized by <tt class="docutils literal">generateDS.py</tt>:</p>
 <dl class="docutils">
@@ -655,13 +674,22 @@ an optional &quot;.py&quot; extension.  If a file is not provided for a
 given type, an empty body (<tt class="docutils literal">pass</tt>) is generated.  In these
 files, lines with &quot;##&quot; in the first two columns are ignored
 and are not inserted.</dd>
-<dt>use-old-getter-setter</dt>
-<dd><tt class="docutils literal">generateDS.py</tt> now generates getter and setter methods (for
+<dt>use-getter-setter</dt>
+<dd><p class="first"><tt class="docutils literal">generateDS.py</tt> now generates getter and setter methods (for
 variable &quot;abc&quot;, for example) with the names get_abc() and
-set_abc(), which I believe is a more Pythonic style, instead
-of getAbc() and setAbc(), which was the old behavior.  Use
-this flag to generate getters and setters in the old style
-(getAbc() and setAbc()).</dd>
+set_abc(), which I believe is a more Pythonic style, instead of
+getAbc() and setAbc(), which was the old behavior.  Use this
+flag to generate getters and setters in the old style (getAbc()
+and setAbc()) or the newer style(get_abc() and set_abc()) which
+is the default or to omit generation of getter and setter
+methods.  Possible values are:</p>
+<ul class="simple">
+<li>&quot;old&quot; - Name getters/setters getVar()/setVar().</li>
+<li>&quot;new&quot; - Name getters/setters get_var()/set_var().</li>
+<li>&quot;none&quot; - Do not generate getter/setter methods.</li>
+</ul>
+<p class="last">The default is &quot;new&quot;.</p>
+</dd>
 <dt>u, user-methods=&lt;module&gt;</dt>
 <dd>If specified, <tt class="docutils literal">generateDS.py</tt> will add methods to generated
 classes as specified in the indicated module.  For more

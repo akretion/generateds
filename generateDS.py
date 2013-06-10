@@ -27,8 +27,11 @@ Options:
                              module. Default="???"
     --validator-bodies=path  Path to a directory containing files that provide
                              bodies (implementations) of validator methods.
-    --use-old-getter-setter  Name getters and setters getVar() and setVar(),
-                             instead of get_var() and set_var().
+    --use-getter-setter      Generate getter and setter methods.  Values:
+                             "old" - Name getters/setters getVar()/setVar().
+                             "new" - Name getters/setters get_var()/set_var().
+                             "none" - Do not generate getter/setter methods.
+                             Default is "new".
     --user-methods= <module>,
     -u <module>              Optional module containing user methods.  See
                              section "User Methods" in the documentation.
@@ -164,11 +167,11 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.10a'
+VERSION = '2.10b'
 ##VERSION##
 
 GenerateProperties = 0
-UseOldGetterSetter = 0
+UseGetterSetter = 'new'
 MemberSpecs = None
 DelayedElements = []
 DelayedElements_subclass = []
@@ -2382,8 +2385,8 @@ def generateExportChildren(wrt, element, hasChildren, namespace):
                     any_type_child = child
                 else:
                     if abstract_child and child.getMaxOccurs() > 1:
-                        wrt("%sfor %s_ in self.get%s():\n" % (fill,
-                            name, make_gs_name(name),))
+                        wrt("%sfor %s_ in self.%s:\n" % (
+                            fill, name, name,))
                         wrt("%s    %s_.export(outfile, level, namespace_, "
                             "name_='%s', pretty_print=pretty_print)\n" % (
                             fill, name, name, ))
@@ -3397,7 +3400,7 @@ def generateBuildStandard_1(
                 name = substitutionGroup
             else:
                 name = headName
-            s1 = "            self.set%s(obj_)\n" % (make_gs_name(name), )
+            s1 = "            self.%s = obj_\n" % (name, )
         wrt(s1)
     #
     # If this child is defined in a simpleType, then generate
@@ -4136,7 +4139,8 @@ def generateClasses(wrt, prefix, element, delayed):
     wrt('        else:\n')
     wrt('            return %s%s(*args_, **kwargs_)\n' % (prefix, name))
     wrt('    factory = staticmethod(factory)\n')
-    generateGettersAndSetters(wrt, element)
+    if UseGetterSetter != 'none':
+        generateGettersAndSetters(wrt, element)
     if Targetnamespace in NamespacesDict:
         namespace = NamespacesDict[Targetnamespace]
     else:
@@ -5548,10 +5552,12 @@ def cleanupName(oldName):
 
 
 def make_gs_name(oldName):
-    if UseOldGetterSetter:
+    if UseGetterSetter == 'old':
         newName = oldName.capitalize()
-    else:
+    elif UseGetterSetter == 'new':
         newName = '_%s' % oldName
+    else:
+        newName = ''
     return newName
 
 ## def mapName(oldName):
@@ -5777,7 +5783,7 @@ def usage():
 
 def main():
     global Force, GenerateProperties, SubclassSuffix, RootElement, \
-        ValidatorBodiesBasePath, UseOldGetterSetter, \
+        ValidatorBodiesBasePath, UseGetterSetter, \
         UserMethodsPath, XsdNameSpace, \
         Namespacedef, NoDates, NoVersion, \
         TEMPLATE_MAIN, TEMPLATE_SUBCLASS_FOOTER, Dirpath, \
@@ -5791,7 +5797,7 @@ def main():
             [
                 'help', 'subclass-suffix=',
                 'root-element=', 'super=',
-                'validator-bodies=', 'use-old-getter-setter',
+                'validator-bodies=', 'use-getter-setter=',
                 'user-methods=', 'no-process-includes', 'silence',
                 'namespacedef=', 'external-encoding=',
                 'member-specs=', 'no-dates', 'no-versions',
@@ -5848,7 +5854,7 @@ def main():
             if sessionObj.get_superclass_module():
                 superModule = sessionObj.get_superclass_module()
             if sessionObj.get_old_getters_setters():
-                UseOldGetterSetter = 1
+                UseGetterSetter = option[1]
             if sessionObj.get_validator_bodies():
                 ValidatorBodiesBasePath = sessionObj.get_validator_bodies()
                 if not os.path.isdir(ValidatorBodiesBasePath):
@@ -5905,8 +5911,13 @@ def main():
                 err_msg('*** Option validator-bodies must specify an '
                         'existing path.\n')
                 sys.exit(1)
-        elif option[0] == '--use-old-getter-setter':
-            UseOldGetterSetter = 1
+        elif option[0] == '--use-getter-setter':
+            if option[1] in ('old', 'new', 'none'):
+                UseGetterSetter = option[1]
+            else:
+                err_msg('*** Option use-getter-setter must '
+                        '"old" or "new" or "none".\n')
+                sys.exit(1)
         elif option[0] in ('-u', '--user-methods'):
             UserMethodsPath = option[1]
         elif option[0] == '--no-process-includes':

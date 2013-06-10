@@ -11,7 +11,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.10a
+:revision: 2.10b
 
 .. version
 
@@ -221,11 +221,17 @@ Here is the usage message displayed by ``generateDS.py``::
                                  Default="Sub".
         --root-element="XXX"     Assume XXX is root element of instance docs.
                                  Default is first element defined in schema.
-        --super="XXX"            Super module name in subclass module. Default="???"
+                                 Also see section "Recognizing the top level
+                                 element" in the documentation.
+        --super="XXX"            Super module name in generated in subclass
+                                 module. Default="???"
         --validator-bodies=path  Path to a directory containing files that provide
                                  bodies (implementations) of validator methods.
-        --use-old-getter-setter  Name getters and setters getVar() and setVar(),
-                                 instead of get_var() and set_var().
+        --use-getter-setter      Generate getter and setter methods.  Values:
+                                 "old" - Name getters/setters getVar()/setVar().
+                                 "new" - Name getters/setters get_var()/set_var().
+                                 "none" - Do not generate getter/setter methods.
+                                 Default is "new".
         --user-methods= <module>,
         -u <module>              Optional module containing user methods.  See
                                  section "User Methods" in the documentation.
@@ -233,10 +239,10 @@ Here is the usage message displayed by ``generateDS.py``::
                                  files. This is useful if you want to minimize
                                  the amount of (no-operation) changes to the
                                  generated python code.
-        --no-versions            Do not include the current version in the generated
-                                 files. This is useful if you want to minimize
-                                 the amount of (no-operation) changes to the
-                                 generated python code.
+        --no-versions            Do not include the current version in the
+                                 generated files. This is useful if you want
+                                 to minimize the amount of (no-operation)
+                                 changes to the generated python code.
         --no-process-includes    Do not process included XML Schema files.  By
                                  default, generateDS.py will insert content
                                  from files referenced by <include ... />
@@ -247,7 +253,7 @@ Here is the usage message displayed by ``generateDS.py``::
         --namespacedef='xmlns:abc="http://www.abc.com"'
                                  Namespace definition to be passed in as the
                                  value for the namespacedef_ parameter of
-                                 the export() method by the generated 
+                                 the export() method by the generated
                                  parse() and parseString() functions.
                                  Default=''.
         --external-encoding=<encoding>
@@ -260,7 +266,7 @@ Here is the usage message displayed by ``generateDS.py``::
                                  class: a dictionary of instances of class
                                  MemberSpec_ containing member name, type,
                                  and array or not.  Allowed values are
-                                 "list" or "dict".  Default: None.
+                                 "list" or "dict".  Default: do not generate.
         --export=<export-list>   Specifies export functions to be generated.
                                  Value is a whitespace separated list of
                                  any of the following:
@@ -268,15 +274,28 @@ Here is the usage message displayed by ``generateDS.py``::
                                      literal -- write out python code
                                      etree -- build element tree (can serialize
                                          to XML)
-                                 Examples: --export="write etree"
-                                           --export="write"
-                                 Default: --export="write literal"
+                                 Example: "write etree"
+                                 Default: "write"
         -q, --no-questions       Do not ask questions, for example,
                                  force overwrite.
         --session=mysession.session
                                  Load and use options from session file. You can
-                                 create session file in generateds_gui.py.
-        --version                Print version and exit.        
+                                 create session file in generateds_gui.py.  Or,
+                                 copy and edit sample.session from the
+                                 distribution.
+        --version                Print version and exit.
+
+    Usage example:
+
+        $ python generateDS.py -f -o sample_lib.py sample_api.xsd
+
+    creates (with force over-write) sample_lib.py from sample_api.xsd.
+
+        $ python generateDS.py -o sample_lib.py -s sample_app1.py \
+                --member-specs=dict sample_api.xsd
+
+    creates sample_lib.py superclass and sample_app1.py subclass modules;
+    also generates member specifications in each class (in a dictionary).
 
 
 The following command line flags are recognized by ``generateDS.py``:
@@ -367,13 +386,21 @@ validator-bodies=<path>
     files, lines with "##" in the first two columns are ignored
     and are not inserted.
 
-use-old-getter-setter
+use-getter-setter
     ``generateDS.py`` now generates getter and setter methods (for
     variable "abc", for example) with the names get_abc() and
-    set_abc(), which I believe is a more Pythonic style, instead
-    of getAbc() and setAbc(), which was the old behavior.  Use
-    this flag to generate getters and setters in the old style
-    (getAbc() and setAbc()).
+    set_abc(), which I believe is a more Pythonic style, instead of
+    getAbc() and setAbc(), which was the old behavior.  Use this
+    flag to generate getters and setters in the old style (getAbc()
+    and setAbc()) or the newer style(get_abc() and set_abc()) which
+    is the default or to omit generation of getter and setter
+    methods.  Possible values are:
+
+    - "old" - Name getters/setters getVar()/setVar().
+    - "new" - Name getters/setters get_var()/set_var().
+    - "none" - Do not generate getter/setter methods.
+
+    The default is "new".
 
 u, user-methods=<module>
     If specified, ``generateDS.py`` will add methods to generated
