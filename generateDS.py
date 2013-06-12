@@ -3400,7 +3400,7 @@ def generateBuildStandard_1(
                 name = substitutionGroup
             else:
                 name = headName
-            s1 = "            self.%s = obj_\n" % (name, )
+            s1 = "            self.%s = obj_\n" % (mappedName, )
         wrt(s1)
     #
     # If this child is defined in a simpleType, then generate
@@ -5559,9 +5559,6 @@ def make_gs_name(oldName):
     else:
         newName = ''
     return newName
-
-## def mapName(oldName):
-##     return '_X_%s' % oldName
 
 
 def strip_namespace(val):
