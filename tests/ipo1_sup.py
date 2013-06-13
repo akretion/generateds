@@ -9,13 +9,14 @@ import sys
 import getopt
 import re as re_
 import base64
-from datetime import datetime, tzinfo, timedelta
+import datetime as datetime_
 
 etree_ = None
 Verbose_import_ = False
-(   XMLParser_import_none, XMLParser_import_lxml,
+(
+    XMLParser_import_none, XMLParser_import_lxml,
     XMLParser_import_elementtree
-    ) = range(3)
+) = range(3)
 XMLParser_import_library = None
 try:
     # lxml
@@ -55,9 +56,10 @@ except ImportError:
                     raise ImportError(
                         "Failed to import ElementTree from any known place")
 
+
 def parsexml_(*args, **kwargs):
     if (XMLParser_import_library == XMLParser_import_lxml and
-        'parser' not in kwargs):
+            'parser' not in kwargs):
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
         kwargs['parser'] = etree_.ETCompatXMLParser()
@@ -77,9 +79,9 @@ except ImportError, exp:
 
     class GeneratedsSuper(object):
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
-        class _FixedOffsetTZ(tzinfo):
+        class _FixedOffsetTZ(datetime_.tzinfo):
             def __init__(self, offset, name):
-                self.__offset = timedelta(minutes = offset)
+                self.__offset = datetime_.timedelta(minutes=offset)
                 self.__name = name
             def utcoffset(self, dt):
                 return self.__offset
@@ -105,8 +107,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 try:
-                    fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                    float(value)
+                except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of integers')
             return input_data
         def gds_format_float(self, input_data, input_name=''):
@@ -119,8 +121,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 try:
-                    fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                    float(value)
+                except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of floats')
             return input_data
         def gds_format_double(self, input_data, input_name=''):
@@ -133,12 +135,12 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 try:
-                    fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                    float(value)
+                except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of doubles')
             return input_data
         def gds_format_boolean(self, input_data, input_name=''):
-            return '%s' % input_data
+            return ('%s' % input_data).lower()
         def gds_validate_boolean(self, input_data, node, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
@@ -147,7 +149,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 if value not in ('true', '1', 'false', '0', ):
-                    raise_parse_error(node,
+                    raise_parse_error(
+                        node,
                         'Requires sequence of booleans '
                         '("true", "1", "false", "0")')
             return input_data
@@ -155,9 +158,24 @@ except ImportError, exp:
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
             if input_data.microsecond == 0:
-                _svalue = input_data.strftime('%Y-%m-%dT%H:%M:%S')
+                _svalue = '%04d-%02d-%02dT%02d:%02d:%02d' % (
+                    input_data.year,
+                    input_data.month,
+                    input_data.day,
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                )
             else:
-                _svalue = input_data.strftime('%Y-%m-%dT%H:%M:%S.%f')
+                _svalue = '%04d-%02d-%02dT%02d:%02d:%02d.%s' % (
+                    input_data.year,
+                    input_data.month,
+                    input_data.day,
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                    ('%f' % (float(input_data.microsecond) / 1000000))[2:],
+                )
             if input_data.tzinfo is not None:
                 tzoff = input_data.tzinfo.utcoffset(input_data)
                 if tzoff is not None:
@@ -174,7 +192,8 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
-        def gds_parse_datetime(self, input_data, node, input_name=''):
+        @classmethod
+        def gds_parse_datetime(cls, input_data):
             tz = None
             if input_data[-1] == 'Z':
                 tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
@@ -190,17 +209,75 @@ except ImportError, exp:
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
             if len(input_data.split('.')) > 1:
-                dt = datetime.strptime(
-                        input_data, '%Y-%m-%dT%H:%M:%S.%f')
+                dt = datetime_.datetime.strptime(
+                    input_data, '%Y-%m-%dT%H:%M:%S.%f')
             else:
-                dt = datetime.strptime(
-                        input_data, '%Y-%m-%dT%H:%M:%S')
-            return dt.replace(tzinfo = tz)
-
+                dt = datetime_.datetime.strptime(
+                    input_data, '%Y-%m-%dT%H:%M:%S')
+            dt = dt.replace(tzinfo=tz)
+            return dt
         def gds_validate_date(self, input_data, node, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
-            _svalue = input_data.strftime('%Y-%m-%d')
+            _svalue = '%04d-%02d-%02d' % (
+                input_data.year,
+                input_data.month,
+                input_data.day,
+            )
+            try:
+                if input_data.tzinfo is not None:
+                    tzoff = input_data.tzinfo.utcoffset(input_data)
+                    if tzoff is not None:
+                        total_seconds = tzoff.seconds + (86400 * tzoff.days)
+                        if total_seconds == 0:
+                            _svalue += 'Z'
+                        else:
+                            if total_seconds < 0:
+                                _svalue += '-'
+                                total_seconds *= -1
+                            else:
+                                _svalue += '+'
+                            hours = total_seconds // 3600
+                            minutes = (total_seconds - (hours * 3600)) // 60
+                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+            except AttributeError:
+                pass
+            return _svalue
+        @classmethod
+        def gds_parse_date(cls, input_data):
+            tz = None
+            if input_data[-1] == 'Z':
+                tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
+                input_data = input_data[:-1]
+            else:
+                results = GeneratedsSuper.tzoff_pattern.search(input_data)
+                if results is not None:
+                    tzoff_parts = results.group(2).split(':')
+                    tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
+                    if results.group(1) == '-':
+                        tzoff *= -1
+                    tz = GeneratedsSuper._FixedOffsetTZ(
+                        tzoff, results.group(0))
+                    input_data = input_data[:-6]
+            dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
+            dt = dt.replace(tzinfo=tz)
+            return dt.date()
+        def gds_validate_time(self, input_data, node, input_name=''):
+            return input_data
+        def gds_format_time(self, input_data, input_name=''):
+            if input_data.microsecond == 0:
+                _svalue = '%02d:%02d:%02d' % (
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                )
+            else:
+                _svalue = '%02d:%02d:%02d.%s' % (
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                    ('%f' % (float(input_data.microsecond) / 1000000))[2:],
+                )
             if input_data.tzinfo is not None:
                 tzoff = input_data.tzinfo.utcoffset(input_data)
                 if tzoff is not None:
@@ -217,7 +294,8 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
-        def gds_parse_date(self, input_data, node, input_name=''):
+        @classmethod
+        def gds_parse_time(cls, input_data):
             tz = None
             if input_data[-1] == 'Z':
                 tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
@@ -232,8 +310,12 @@ except ImportError, exp:
                     tz = GeneratedsSuper._FixedOffsetTZ(
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
-            return datetime.strptime(input_data,
-                '%Y-%m-%d').replace(tzinfo = tz)
+            if len(input_data.split('.')) > 1:
+                dt = datetime_.datetime.strptime(input_data, '%H:%M:%S.%f')
+            else:
+                dt = datetime_.datetime.strptime(input_data, '%H:%M:%S')
+            dt = dt.replace(tzinfo=tz)
+            return dt.time()
         def gds_str_lower(self, instring):
             return instring.lower()
         def get_path_(self, node):
@@ -264,6 +346,9 @@ except ImportError, exp:
             return class_obj1
         def gds_build_any(self, node, type_name=None):
             return None
+        @classmethod
+        def gds_reverse_node_mapping(cls, mapping):
+            return dict(((v, k) for k, v in mapping.iteritems()))
 
 
 #
@@ -294,10 +379,12 @@ Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
 # Support/utility functions.
 #
 
+
 def showIndent(outfile, level, pretty_print=True):
     if pretty_print:
         for idx in range(level):
             outfile.write('    ')
+
 
 def quote_xml(inStr):
     if not inStr:
@@ -308,6 +395,7 @@ def quote_xml(inStr):
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     return s1
+
 
 def quote_attrib(inStr):
     s1 = (isinstance(inStr, basestring) and inStr or
@@ -324,6 +412,7 @@ def quote_attrib(inStr):
         s1 = '"%s"' % s1
     return s1
 
+
 def quote_python(inStr):
     s1 = inStr
     if s1.find("'") == -1:
@@ -339,6 +428,7 @@ def quote_python(inStr):
         else:
             return '"""%s"""' % s1
 
+
 def get_all_text_(node):
     if node.text is not None:
         text = node.text
@@ -348,6 +438,7 @@ def get_all_text_(node):
         if child.tail is not None:
             text += child.tail
     return text
+
 
 def find_attr_value_(attr_name, node):
     attrs = node.attrib
@@ -365,6 +456,7 @@ def find_attr_value_(attr_name, node):
 
 class GDSParseError(Exception):
     pass
+
 
 def raise_parse_error(node, msg):
     if XMLParser_import_library == XMLParser_import_lxml:
@@ -415,35 +507,71 @@ class MixedContainer:
             self.value.export(outfile, level, namespace, name, pretty_print)
     def exportSimple(self, outfile, level, name):
         if self.content_type == MixedContainer.TypeString:
-            outfile.write('<%s>%s</%s>' %
-                (self.name, self.value, self.name))
+            outfile.write('<%s>%s</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeInteger or \
                 self.content_type == MixedContainer.TypeBoolean:
-            outfile.write('<%s>%d</%s>' %
-                (self.name, self.value, self.name))
+            outfile.write('<%s>%d</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeFloat or \
                 self.content_type == MixedContainer.TypeDecimal:
-            outfile.write('<%s>%f</%s>' %
-                (self.name, self.value, self.name))
+            outfile.write('<%s>%f</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeDouble:
-            outfile.write('<%s>%g</%s>' %
-                (self.name, self.value, self.name))
+            outfile.write('<%s>%g</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeBase64:
-            outfile.write('<%s>%s</%s>' %
-                (self.name, base64.b64encode(self.value), self.name))
+            outfile.write('<%s>%s</%s>' % (
+                self.name, base64.b64encode(self.value), self.name))
+    def to_etree(self, element):
+        if self.category == MixedContainer.CategoryText:
+            # Prevent exporting empty content as empty lines.
+            if self.value.strip():
+                if len(element) > 0:
+                    if element[-1].tail is None:
+                        element[-1].tail = self.value
+                    else:
+                        element[-1].tail += self.value
+                else:
+                    if element.text is None:
+                        element.text = self.value
+                    else:
+                        element.text += self.value
+        elif self.category == MixedContainer.CategorySimple:
+            subelement = etree_.SubElement(element, '%s' % self.name)
+            subelement.text = self.to_etree_simple()
+        else:    # category == MixedContainer.CategoryComplex
+            self.value.to_etree(element)
+    def to_etree_simple(self):
+        if self.content_type == MixedContainer.TypeString:
+            text = self.value
+        elif (self.content_type == MixedContainer.TypeInteger or
+                self.content_type == MixedContainer.TypeBoolean):
+            text = '%d' % self.value
+        elif (self.content_type == MixedContainer.TypeFloat or
+                self.content_type == MixedContainer.TypeDecimal):
+            text = '%f' % self.value
+        elif self.content_type == MixedContainer.TypeDouble:
+            text = '%g' % self.value
+        elif self.content_type == MixedContainer.TypeBase64:
+            text = '%s' % base64.b64encode(self.value)
+        return text
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n'
-                % (self.category, self.content_type, self.name, self.value))
+            outfile.write(
+                'model_.MixedContainer(%d, %d, "%s", "%s"),\n' % (
+                    self.category, self.content_type, self.name, self.value))
         elif self.category == MixedContainer.CategorySimple:
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n'
-                % (self.category, self.content_type, self.name, self.value))
+            outfile.write(
+                'model_.MixedContainer(%d, %d, "%s", "%s"),\n' % (
+                    self.category, self.content_type, self.name, self.value))
         else:    # category == MixedContainer.CategoryComplex
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s",\n' % \
-                (self.category, self.content_type, self.name,))
+            outfile.write(
+                'model_.MixedContainer(%d, %d, "%s",\n' % (
+                    self.category, self.content_type, self.name,))
             self.value.exportLiteral(outfile, level + 1)
             showIndent(outfile, level)
             outfile.write(')\n')
@@ -469,6 +597,7 @@ class MemberSpec_(object):
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
 
+
 def _cast(typ, value):
     if typ is None or value is None:
         return value
@@ -478,6 +607,7 @@ def _cast(typ, value):
 # Data representation classes.
 #
 
+
 class PurchaseOrderType(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('orderDate', 'date', 0),
@@ -485,11 +615,15 @@ class PurchaseOrderType(GeneratedsSuper):
         MemberSpec_('billTo', 'Address', 0),
         MemberSpec_('comment', 'string', 0),
         MemberSpec_('items', 'Items', 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, orderDate=None, shipTo=None, billTo=None, comment=None, items=None):
-        self.orderDate = _cast(None, orderDate)
+        if isinstance(orderDate, basestring):
+            initvalue_ = datetime_.datetime.strptime(orderDate, '%Y-%m-%d').date()
+        else:
+            initvalue_ = orderDate
+        self.orderDate = initvalue_
         self.shipTo = shipTo
         self.billTo = billTo
         self.comment = comment
@@ -510,6 +644,16 @@ class PurchaseOrderType(GeneratedsSuper):
     def set_items(self, items): self.items = items
     def get_orderDate(self): return self.orderDate
     def set_orderDate(self, orderDate): self.orderDate = orderDate
+    def hasContent_(self):
+        if (
+            self.shipTo is not None or
+            self.billTo is not None or
+            self.comment is not None or
+            self.items is not None
+        ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='ipo:', name_='PurchaseOrderType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -544,16 +688,6 @@ class PurchaseOrderType(GeneratedsSuper):
             outfile.write('<%scomment>%s</%scomment>%s' % (namespace_, self.gds_format_string(quote_xml(self.comment).encode(ExternalEncoding), input_name='comment'), namespace_, eol_))
         if self.items is not None:
             self.items.export(outfile, level, namespace_, name_='items', pretty_print=pretty_print)
-    def hasContent_(self):
-        if (
-            self.shipTo is not None or
-            self.billTo is not None or
-            self.comment is not None or
-            self.items is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='PurchaseOrderType'):
         level += 1
         already_processed = set()
@@ -564,7 +698,7 @@ class PurchaseOrderType(GeneratedsSuper):
         if self.orderDate is not None and 'orderDate' not in already_processed:
             already_processed.add('orderDate')
             showIndent(outfile, level)
-            outfile.write('orderDate = "%s",\n' % (self.orderDate,))
+            outfile.write('orderDate=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.orderDate, input_name='orderDate'))
     def exportLiteralChildren(self, outfile, level, name_):
         if self.shipTo is not None:
             showIndent(outfile, level)
@@ -598,7 +732,7 @@ class PurchaseOrderType(GeneratedsSuper):
         if value is not None and 'orderDate' not in already_processed:
             already_processed.add('orderDate')
             try:
-                self.orderDate = self.gds_parse_date(value, node, 'orderDate')
+                self.orderDate = self.gds_parse_date(value)
             except ValueError, exp:
                 raise ValueError('Bad date attribute (orderDate): %s' % exp)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -606,12 +740,12 @@ class PurchaseOrderType(GeneratedsSuper):
             class_obj_ = self.get_class_obj_(child_, Address)
             obj_ = class_obj_.factory()
             obj_.build(child_)
-            self.set_shipTo(obj_)
+            self.shipTo = obj_
         elif nodeName_ == 'billTo':
             class_obj_ = self.get_class_obj_(child_, Address)
             obj_ = class_obj_.factory()
             obj_.build(child_)
-            self.set_billTo(obj_)
+            self.billTo = obj_
         elif nodeName_ == 'comment':
             comment_ = child_.text
             comment_ = self.gds_validate_string(comment_, node, 'comment')
@@ -619,14 +753,14 @@ class PurchaseOrderType(GeneratedsSuper):
         elif nodeName_ == 'items':
             obj_ = Items.factory()
             obj_.build(child_)
-            self.set_items(obj_)
+            self.items = obj_
 # end class PurchaseOrderType
 
 
 class Items(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('item', 'itemType', 1),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, item=None):
@@ -644,6 +778,13 @@ class Items(GeneratedsSuper):
     def set_item(self, item): self.item = item
     def add_item(self, value): self.item.append(value)
     def insert_item(self, index, value): self.item[index] = value
+    def hasContent_(self):
+        if (
+            self.item
+        ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='ipo:', name_='Items', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -669,13 +810,6 @@ class Items(GeneratedsSuper):
             eol_ = ''
         for item_ in self.item:
             item_.export(outfile, level, namespace_, name_='item', pretty_print=pretty_print)
-    def hasContent_(self):
-        if (
-            self.item
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='Items'):
         level += 1
         already_processed = set()
@@ -718,7 +852,7 @@ class Address(GeneratedsSuper):
         MemberSpec_('name', 'string', 0),
         MemberSpec_('street', 'string', 0),
         MemberSpec_('city', 'string', 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, name=None, street=None, city=None, extensiontype_=None):
@@ -740,6 +874,15 @@ class Address(GeneratedsSuper):
     def set_city(self, city): self.city = city
     def get_extensiontype_(self): return self.extensiontype_
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+    def hasContent_(self):
+        if (
+            self.name is not None or
+            self.street is not None or
+            self.city is not None
+        ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='ipo:', name_='Address', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -776,15 +919,6 @@ class Address(GeneratedsSuper):
         if self.city is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%scity>%s</%scity>%s' % (namespace_, self.gds_format_string(quote_xml(self.city).encode(ExternalEncoding), input_name='city'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.name is not None or
-            self.street is not None or
-            self.city is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='Address'):
         level += 1
         already_processed = set()
@@ -834,7 +968,7 @@ class USAddress(Address):
     member_data_items_ = [
         MemberSpec_('state', ['USState', 'string'], 0),
         MemberSpec_('zip', 'positiveInteger', 0),
-        ]
+    ]
     subclass = None
     superclass = Address
     def __init__(self, name=None, street=None, city=None, state=None, zip=None):
@@ -849,11 +983,20 @@ class USAddress(Address):
     factory = staticmethod(factory)
     def get_state(self): return self.state
     def set_state(self, state): self.state = state
+    def get_zip(self): return self.zip
+    def set_zip(self, zip): self.zip = zip
     def validate_USState(self, value):
         # Validate type USState, a restriction on string.
         pass
-    def get_zip(self): return self.zip
-    def set_zip(self, zip): self.zip = zip
+    def hasContent_(self):
+        if (
+            self.state is not None or
+            self.zip is not None or
+            super(USAddress, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='ipo:', name_='USAddress', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -884,15 +1027,6 @@ class USAddress(Address):
         if self.zip is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%szip>%s</%szip>%s' % (namespace_, self.gds_format_integer(self.zip, input_name='zip'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.state is not None or
-            self.zip is not None or
-            super(USAddress, self).hasContent_()
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='USAddress'):
         level += 1
         already_processed = set()
@@ -943,7 +1077,7 @@ class UKAddress(Address):
         MemberSpec_('exportCode', 'positiveInteger', 0),
         MemberSpec_('postcode', ['UKPostcode', 'string'], 0),
         MemberSpec_('category', 'string', 0),
-        ]
+    ]
     subclass = None
     superclass = Address
     def __init__(self, name=None, street=None, city=None, category_attr=None, exportCode=None, postcode=None, category=None):
@@ -960,15 +1094,24 @@ class UKAddress(Address):
     factory = staticmethod(factory)
     def get_postcode(self): return self.postcode
     def set_postcode(self, postcode): self.postcode = postcode
-    def validate_UKPostcode(self, value):
-        # Validate type UKPostcode, a restriction on string.
-        pass
     def get_category(self): return self.category
     def set_category(self, category): self.category = category
     def get_category_attr(self): return self.category_attr
     def set_category_attr(self, category_attr): self.category_attr = category_attr
     def get_exportCode(self): return self.exportCode
     def set_exportCode(self, exportCode): self.exportCode = exportCode
+    def validate_UKPostcode(self, value):
+        # Validate type UKPostcode, a restriction on string.
+        pass
+    def hasContent_(self):
+        if (
+            self.postcode is not None or
+            self.category is not None or
+            super(UKAddress, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='ipo:', name_='UKAddress', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1005,15 +1148,6 @@ class UKAddress(Address):
         if self.category is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%scategory>%s</%scategory>%s' % (namespace_, self.gds_format_string(quote_xml(self.category).encode(ExternalEncoding), input_name='category'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.postcode is not None or
-            self.category is not None or
-            super(UKAddress, self).hasContent_()
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='UKAddress'):
         level += 1
         already_processed = set()
@@ -1024,11 +1158,11 @@ class UKAddress(Address):
         if self.category_attr is not None and 'category_attr' not in already_processed:
             already_processed.add('category_attr')
             showIndent(outfile, level)
-            outfile.write('category_attr = %s,\n' % (self.category_attr,))
+            outfile.write('category_attr=%s,\n' % (self.category_attr,))
         if self.exportCode is not None and 'exportCode' not in already_processed:
             already_processed.add('exportCode')
             showIndent(outfile, level)
-            outfile.write('exportCode = %d,\n' % (self.exportCode,))
+            outfile.write('exportCode=%d,\n' % (self.exportCode,))
         super(UKAddress, self).exportLiteralAttributes(outfile, level, already_processed, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(UKAddress, self).exportLiteralChildren(outfile, level, name_)
@@ -1081,7 +1215,7 @@ class itemType(GeneratedsSuper):
         MemberSpec_('USPrice', 'decimal', 0),
         MemberSpec_('comment', 'string', 0),
         MemberSpec_('shipDate', 'date', 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, partNum=None, productName=None, quantity=None, USPrice=None, comment=None, shipDate=None):
@@ -1090,7 +1224,11 @@ class itemType(GeneratedsSuper):
         self.quantity = quantity
         self.USPrice = USPrice
         self.comment = comment
-        self.shipDate = shipDate
+        if isinstance(shipDate, basestring):
+            initvalue_ = datetime_.datetime.strptime(shipDate, '%Y-%m-%d').date()
+        else:
+            initvalue_ = shipDate
+        self.shipDate = initvalue_
     def factory(*args_, **kwargs_):
         if itemType.subclass:
             return itemType.subclass(*args_, **kwargs_)
@@ -1109,6 +1247,17 @@ class itemType(GeneratedsSuper):
     def set_shipDate(self, shipDate): self.shipDate = shipDate
     def get_partNum(self): return self.partNum
     def set_partNum(self, partNum): self.partNum = partNum
+    def hasContent_(self):
+        if (
+            self.productName is not None or
+            self.quantity is not None or
+            self.USPrice is not None or
+            self.comment is not None or
+            self.shipDate is not None
+        ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='ipo:', name_='itemType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1149,17 +1298,6 @@ class itemType(GeneratedsSuper):
         if self.shipDate is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sshipDate>%s</%sshipDate>%s' % (namespace_, self.gds_format_date(self.shipDate, input_name='shipDate'), namespace_, eol_))
-    def hasContent_(self):
-        if (
-            self.productName is not None or
-            self.quantity is not None or
-            self.USPrice is not None or
-            self.comment is not None or
-            self.shipDate is not None
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='itemType'):
         level += 1
         already_processed = set()
@@ -1170,7 +1308,7 @@ class itemType(GeneratedsSuper):
         if self.partNum is not None and 'partNum' not in already_processed:
             already_processed.add('partNum')
             showIndent(outfile, level)
-            outfile.write('partNum = %s,\n' % (self.partNum,))
+            outfile.write('partNum=%s,\n' % (self.partNum,))
     def exportLiteralChildren(self, outfile, level, name_):
         if self.productName is not None:
             showIndent(outfile, level)
@@ -1186,7 +1324,7 @@ class itemType(GeneratedsSuper):
             outfile.write('comment=%s,\n' % quote_python(self.comment).encode(ExternalEncoding))
         if self.shipDate is not None:
             showIndent(outfile, level)
-            outfile.write('shipDate=datetime_.strptime("%s", "%%Y-%%m-%%d"),\n' % self.gds_format_date(self.shipDate, input_name='shipDate'))
+            outfile.write('shipDate=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.shipDate, input_name='shipDate'))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1227,14 +1365,14 @@ class itemType(GeneratedsSuper):
             self.comment = comment_
         elif nodeName_ == 'shipDate':
             sval_ = child_.text
-            dval_ = self.gds_parse_date(sval_, node, 'shipDate')
+            dval_ = self.gds_parse_date(sval_)
             self.shipDate = dval_
 # end class itemType
 
 
 class quantity(GeneratedsSuper):
     member_data_items_ = [
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, valueOf_=None):
@@ -1245,6 +1383,13 @@ class quantity(GeneratedsSuper):
         else:
             return quantity(*args_, **kwargs_)
     factory = staticmethod(factory)
+    def hasContent_(self):
+        if (
+
+        ):
+            return True
+        else:
+            return False
     def export(self, outfile, level, namespace_='ipo:', name_='quantity', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1264,13 +1409,6 @@ class quantity(GeneratedsSuper):
         pass
     def exportChildren(self, outfile, level, namespace_='ipo:', name_='quantity', fromsubclass_=False, pretty_print=True):
         pass
-    def hasContent_(self):
-        if (
-
-            ):
-            return True
-        else:
-            return False
     def exportLiteral(self, outfile, level, name_='quantity'):
         level += 1
         already_processed = set()
@@ -1307,6 +1445,7 @@ USAGE_TEXT = """
 Usage: python <Parser>.py [ -s ] <in_xml_file>
 """
 
+
 def usage():
     print USAGE_TEXT
     sys.exit(1)
@@ -1332,15 +1471,15 @@ def parse(inFileName):
     # Enable Python to collect the space used by the DOM.
     doc = None
     sys.stdout.write('<?xml version="1.0" ?>\n')
-    rootObj.export(sys.stdout, 0, name_=rootTag,
+    rootObj.export(
+        sys.stdout, 0, name_=rootTag,
         namespacedef_='',
         pretty_print=True)
     return rootObj
 
 
-def parseString(inString):
-    from StringIO import StringIO
-    doc = parsexml_(StringIO(inString))
+def parseEtree(inFileName):
+    doc = parsexml_(inFileName)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -1350,8 +1489,32 @@ def parseString(inString):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
+    mapping = {}
+    rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
+    reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
+    content = etree_.tostring(
+        rootElement, pretty_print=True,
+        xml_declaration=True, encoding="utf-8")
+    sys.stdout.write(content)
+    sys.stdout.write('\n')
+    return rootObj, rootElement, mapping, reverse_mapping
+
+
+def parseString(inString):
+    from StringIO import StringIO
+    doc = parsexml_(StringIO(inString))
+    rootNode = doc.getroot()
+    roots = get_root_tag(rootNode)
+    rootClass = roots[1]
+    if rootClass is None:
+        rootClass = PurchaseOrderType
+    rootObj = rootClass.factory()
+    rootObj.build(rootNode)
+    # Enable Python to collect the space used by the DOM.
+    doc = None
     sys.stdout.write('<?xml version="1.0" ?>\n')
-    rootObj.export(sys.stdout, 0, name_="purchaseOrder",
+    rootObj.export(
+        sys.stdout, 0, name_="purchaseOrder",
         namespacedef_='')
     return rootObj
 
@@ -1368,7 +1531,6 @@ def parseLiteral(inFileName):
     # Enable Python to collect the space used by the DOM.
     doc = None
     sys.stdout.write('#from ipo2_sup import *\n\n')
-    sys.stdout.write('from datetime import datetime as datetime_\n\n')
     sys.stdout.write('import ipo2_sup as model_\n\n')
     sys.stdout.write('rootObj = model_.rootTag(\n')
     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
@@ -1397,4 +1559,4 @@ __all__ = [
     "USAddress",
     "itemType",
     "quantity"
-    ]
+]

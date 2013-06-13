@@ -9,17 +9,19 @@ from lxml import etree
 
 class GenTest(unittest.TestCase):
     def execute(self, cmd, cwd=None):
-        p = subprocess.Popen(cmd, cwd=cwd,
+        p = subprocess.Popen(
+            cmd, cwd=cwd,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             shell=True)
         stdout, stderr = p.communicate()
         return stdout, stderr
 
     def setUp(self):
-        cmd = ('python generateDS.py --no-dates --no-versions -f '
+        cmd = (
+            'python generateDS.py --no-dates --no-versions -f '
             '-o tests/out2_sup.py -s tests/out2_sub.py '
             '--super=out2_sup -u gends_user_methods tests/people.xsd'
-            )
+        )
         stdout, stderr = self.execute(cmd, cwd='..')
         self.failUnlessEqual(len(stdout), 0)
         self.failUnlessEqual(len(stderr), 0)
@@ -47,19 +49,21 @@ class GenTest(unittest.TestCase):
         self.check_result(result, err, ())
 
     def test_003_element_groups(self):
-        cmdTempl = ('python generateDS.py --no-dates --silence '
+        cmdTempl = (
+            'python generateDS.py --no-dates --silence '
             '--member-specs=list -f '
             '-o tests/%s_sup.py -s tests/%s_sub.py '
             '--super=%s_sup tests/%s.xsd'
-            )
+        )
         t_ = 'groups'
         cmd = cmdTempl % (t_, t_, t_, t_)
         result, err = self.execute(cmd, cwd='..')
         # Verify the structure
-        cmdTempl = ('python -c "import %s_sub; print '
+        cmdTempl = (
+            'python -c "import %s_sub; print '
             '[ x.name for x in %s_sub.node1TypeSub.member_data_items_ ]; '
             'print [ x.name for x in %s_sub.node2TypeSub.member_data_items_ ]"'
-            )
+        )
         cmd = cmdTempl % (t_, t_, t_)
         result, err = self.execute(cmd)
         self.failUnlessEqual(result, """\
@@ -67,13 +71,14 @@ class GenTest(unittest.TestCase):
 ['node2node1', 'group1', 'group2', 'node2node2']
 """)
         # load the XML, and verify the proper data was loaded
-        cmdTempl = ('python -c "import %s_sub; obj = '
+        cmdTempl = (
+            'python -c "import %s_sub; obj = '
             '%s_sub.parse(\'%s.xml\'); fields = '
             '[ x.name for x in obj.node1.member_data_items_ ]; '
             'print [ getattr(obj.node1, x) for x in fields ]; '
             'fields = [ x.name for x in obj.node2.member_data_items_ ]; '
             'print [ getattr(obj.node2, x) for x in fields ]"'
-            )
+        )
         cmd = cmdTempl % (t_, t_, t_)
         result, err = self.execute(cmd)
         self.failUnlessEqual(result, """\
@@ -82,11 +87,12 @@ class GenTest(unittest.TestCase):
 """)
 
     def test_004_valueof(self):
-        cmdTempl = ('python generateDS.py --no-dates --silence '
+        cmdTempl = (
+            'python generateDS.py --no-dates --silence '
             '--member-specs=list -f '
             '-o tests/%s_sup.py -s tests/%s_sub.py '
             '--super=%s_sup tests/%s.xsd'
-            )
+        )
         t_ = 'valueof'
         cmd = cmdTempl % (t_, t_, t_, t_)
         result, err = self.execute(cmd, cwd='..')
@@ -97,10 +103,11 @@ class GenTest(unittest.TestCase):
         #     children = obj.get_child()
         #     print [ (x.get_name(), x.get_valueOf_()) for x in children ]
         #
-        cmdTempl = ('python -c "import %s_sub; obj = '
+        cmdTempl = (
+            'python -c "import %s_sub; obj = '
             '%s_sub.parse(\'%s.xml\'); children = obj.get_child(); '
             'print [ (x.get_name(), x.get_valueOf_()) for x in children ]"'
-            )
+        )
         cmd = cmdTempl % (t_, t_, t_)
         result, err = self.execute(cmd)
         self.failUnlessEqual(result, """\
@@ -114,11 +121,12 @@ class GenTest(unittest.TestCase):
         #             name='child1', valueOf_ = 'value1')
         #     print (node.get_name(), node.get_valueOf_())
 
-        cmdTempl = ('python -c "import %s_sub; '
+        cmdTempl = (
+            'python -c "import %s_sub; '
             'node = %s_sub.childTypeSub.factory(name=\'child1\', '
             'valueOf_ = \'value1\'); '
             'print (node.get_name(), node.get_valueOf_())"'
-            )
+        )
         cmd = cmdTempl % (t_, t_)
         print 'cmd:', cmd
         result, err = self.execute(cmd)
@@ -157,7 +165,6 @@ class GenTest(unittest.TestCase):
 """
 
     def test_005_ns_for_import(self):
-        from lxml import etree
         root1 = etree.fromstring(GenTest.ns_for_import_xml1)
         root2 = etree.fromstring(GenTest.ns_for_import_xml2)
         for child in root2.getchildren():
@@ -167,11 +174,12 @@ class GenTest(unittest.TestCase):
         self.failUnlessEqual(GenTest.ns_for_import_xml_result, result)
 
     def test_006_anysimpletype(self):
-        cmdTempl = ('python generateDS.py --no-dates --no-versions '
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '
             '--super=%s2_sup tests/%s.xsd'
-            )
+        )
         t_ = 'anysimpletype'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, err = self.execute(cmd, cwd='..')
@@ -183,11 +191,12 @@ class GenTest(unittest.TestCase):
         self.check_result(result, err, ())
 
     def test_007_simpletype_memberspecs(self):
-        cmdTempl = ('python generateDS.py --no-dates --no-versions '
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '
             '--super=%s2_sup tests/%s.xsd'
-            )
+        )
         t_ = 'simpletype_memberspecs'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
@@ -199,11 +208,12 @@ class GenTest(unittest.TestCase):
         self.check_result(result, err, ())
 
     def test_008_extensions(self):
-        cmdTempl = ('python generateDS.py --no-dates --no-versions '
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '
             '--super=%s2_sup tests/%s.xsd'
-            )
+        )
         t_ = 'extensions'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
@@ -230,11 +240,12 @@ class GenTest(unittest.TestCase):
         self.failUnlessEqual(content1, content2)
 
     def test_010_simplecontent_restriction(self):
-        cmdTempl = ('python generateDS.py --no-dates --no-versions '
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '
             '--super=%s2_sup tests/%s.xsd'
-            )
+        )
         t_ = 'simplecontent_restriction'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
@@ -246,11 +257,12 @@ class GenTest(unittest.TestCase):
         self.check_result(result, err, ())
 
     def test_011_annotations(self):
-        cmdTempl = ('python generateDS.py --no-dates --no-versions '
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '
             '--super=%s2_sup tests/%s.xsd'
-            )
+        )
         t_ = 'annotations'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
@@ -262,11 +274,12 @@ class GenTest(unittest.TestCase):
         self.check_result(result, err, ())
 
     def test_012_abstracttype(self):
-        cmdTempl = ('python generateDS.py --no-dates --no-versions '
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '
             '--super=%s2_sup tests/%s.xsd'
-            )
+        )
         t_ = 'abstract_type'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
@@ -278,12 +291,13 @@ class GenTest(unittest.TestCase):
         self.check_result(result, err, ())
 
     def test_013_procincl(self):
-        cmdTempl = ('python generateDS.py --no-dates --no-versions '
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '
             '--super=%s2_sup '
             'tests/%s.xsd'
-            )
+        )
         t_ = 'people_procincl'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
@@ -295,11 +309,12 @@ class GenTest(unittest.TestCase):
         self.check_result(result, err, ())
 
     def test_014_xsi_type(self):
-        cmdTempl = ('python generateDS.py --no-dates --no-versions '
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
             '--member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '
             '--super=%s2_sup tests/%s.xsd'
-            )
+        )
         t_ = 'ipo'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
@@ -317,12 +332,13 @@ class GenTest(unittest.TestCase):
         self.check_result(result, err, ())
 
     def test_015_recursive_simpletype(self):
-        cmdTempl = ('python generateDS.py --no-dates --no-versions '
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '
             '--super=%s2_sup '
             'tests/%s.xsd'
-            )
+        )
         t_ = 'recursive_simpletype'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
@@ -334,12 +350,13 @@ class GenTest(unittest.TestCase):
         self.check_result(result, err, ())
 
     def test_016_anywildcard(self):
-        cmdTempl = ('python generateDS.py --no-dates --no-versions '
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '
             '--super=%s2_sup '
             'tests/%s.xsd'
-            )
+        )
         t_ = 'anywildcard'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
@@ -351,12 +368,13 @@ class GenTest(unittest.TestCase):
         self.check_result(result, err, ())
 
     def test_017_attr_groups(self):
-        cmdTempl = ('python generateDS.py --no-dates --no-versions '
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '
             '--super=%s2_sup '
             'tests/%s.xsd'
-            )
+        )
         t_ = 'attr_groups'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
@@ -368,12 +386,13 @@ class GenTest(unittest.TestCase):
         self.check_result(result, err, ())
 
     def test_018_simpletypes_other(self):
-        cmdTempl = ('python generateDS.py --no-dates --no-versions '
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '
             '--super=%s2_sup '
             'tests/%s.xsd'
-            )
+        )
         t_ = 'simpletypes_other'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
@@ -385,13 +404,14 @@ class GenTest(unittest.TestCase):
         self.check_result(result, err, ())
 
     def test_019_to_etree(self):
-        cmdTempl = ('python generateDS.py --no-dates --no-versions '
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '
             '--export="etree" --silence '
             '--super=%s2_sup '
             'tests/%s.xsd'
-            )
+        )
         t_ = 'to_etree'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
@@ -402,8 +422,10 @@ class GenTest(unittest.TestCase):
         result, err = self.execute(cmd)
         self.check_result(result, err, ())
         import to_etree2_sup
-        rootObj, rootElement = to_etree2_sup.parseEtree('to_etree.xml')
-        content = etree.tostring(rootElement, pretty_print=True,
+        rootObj, rootElement, mapping, reverse_mapping = \
+            to_etree2_sup.parseEtree('to_etree.xml')
+        content = etree.tostring(
+            rootElement, pretty_print=True,
             xml_declaration=True, encoding="utf-8")
         outfile = open('to_etree2.xml', 'w')
         outfile.write(content)

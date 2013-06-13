@@ -9,13 +9,14 @@ import sys
 import getopt
 import re as re_
 import base64
-from datetime import datetime, tzinfo, timedelta
+import datetime as datetime_
 
 etree_ = None
 Verbose_import_ = False
-(   XMLParser_import_none, XMLParser_import_lxml,
+(
+    XMLParser_import_none, XMLParser_import_lxml,
     XMLParser_import_elementtree
-    ) = range(3)
+) = range(3)
 XMLParser_import_library = None
 try:
     # lxml
@@ -55,9 +56,10 @@ except ImportError:
                     raise ImportError(
                         "Failed to import ElementTree from any known place")
 
+
 def parsexml_(*args, **kwargs):
     if (XMLParser_import_library == XMLParser_import_lxml and
-        'parser' not in kwargs):
+            'parser' not in kwargs):
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
         kwargs['parser'] = etree_.ETCompatXMLParser()
@@ -77,9 +79,9 @@ except ImportError, exp:
 
     class GeneratedsSuper(object):
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
-        class _FixedOffsetTZ(tzinfo):
+        class _FixedOffsetTZ(datetime_.tzinfo):
             def __init__(self, offset, name):
-                self.__offset = timedelta(minutes = offset)
+                self.__offset = datetime_.timedelta(minutes=offset)
                 self.__name = name
             def utcoffset(self, dt):
                 return self.__offset
@@ -105,8 +107,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 try:
-                    fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                    float(value)
+                except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of integers')
             return input_data
         def gds_format_float(self, input_data, input_name=''):
@@ -119,8 +121,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 try:
-                    fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                    float(value)
+                except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of floats')
             return input_data
         def gds_format_double(self, input_data, input_name=''):
@@ -133,8 +135,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 try:
-                    fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                    float(value)
+                except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of doubles')
             return input_data
         def gds_format_boolean(self, input_data, input_name=''):
@@ -147,7 +149,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 if value not in ('true', '1', 'false', '0', ):
-                    raise_parse_error(node,
+                    raise_parse_error(
+                        node,
                         'Requires sequence of booleans '
                         '("true", "1", "false", "0")')
             return input_data
@@ -155,9 +158,24 @@ except ImportError, exp:
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
             if input_data.microsecond == 0:
-                _svalue = input_data.strftime('%Y-%m-%dT%H:%M:%S')
+                _svalue = '%04d-%02d-%02dT%02d:%02d:%02d' % (
+                    input_data.year,
+                    input_data.month,
+                    input_data.day,
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                )
             else:
-                _svalue = input_data.strftime('%Y-%m-%dT%H:%M:%S.%f')
+                _svalue = '%04d-%02d-%02dT%02d:%02d:%02d.%s' % (
+                    input_data.year,
+                    input_data.month,
+                    input_data.day,
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                    ('%f' % (float(input_data.microsecond) / 1000000))[2:],
+                )
             if input_data.tzinfo is not None:
                 tzoff = input_data.tzinfo.utcoffset(input_data)
                 if tzoff is not None:
@@ -174,7 +192,8 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
-        def gds_parse_datetime(self, input_data, node, input_name=''):
+        @classmethod
+        def gds_parse_datetime(cls, input_data):
             tz = None
             if input_data[-1] == 'Z':
                 tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
@@ -190,17 +209,75 @@ except ImportError, exp:
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
             if len(input_data.split('.')) > 1:
-                dt = datetime.strptime(
-                        input_data, '%Y-%m-%dT%H:%M:%S.%f')
+                dt = datetime_.datetime.strptime(
+                    input_data, '%Y-%m-%dT%H:%M:%S.%f')
             else:
-                dt = datetime.strptime(
-                        input_data, '%Y-%m-%dT%H:%M:%S')
-            return dt.replace(tzinfo = tz)
-
+                dt = datetime_.datetime.strptime(
+                    input_data, '%Y-%m-%dT%H:%M:%S')
+            dt = dt.replace(tzinfo=tz)
+            return dt
         def gds_validate_date(self, input_data, node, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
-            _svalue = input_data.strftime('%Y-%m-%d')
+            _svalue = '%04d-%02d-%02d' % (
+                input_data.year,
+                input_data.month,
+                input_data.day,
+            )
+            try:
+                if input_data.tzinfo is not None:
+                    tzoff = input_data.tzinfo.utcoffset(input_data)
+                    if tzoff is not None:
+                        total_seconds = tzoff.seconds + (86400 * tzoff.days)
+                        if total_seconds == 0:
+                            _svalue += 'Z'
+                        else:
+                            if total_seconds < 0:
+                                _svalue += '-'
+                                total_seconds *= -1
+                            else:
+                                _svalue += '+'
+                            hours = total_seconds // 3600
+                            minutes = (total_seconds - (hours * 3600)) // 60
+                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+            except AttributeError:
+                pass
+            return _svalue
+        @classmethod
+        def gds_parse_date(cls, input_data):
+            tz = None
+            if input_data[-1] == 'Z':
+                tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
+                input_data = input_data[:-1]
+            else:
+                results = GeneratedsSuper.tzoff_pattern.search(input_data)
+                if results is not None:
+                    tzoff_parts = results.group(2).split(':')
+                    tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
+                    if results.group(1) == '-':
+                        tzoff *= -1
+                    tz = GeneratedsSuper._FixedOffsetTZ(
+                        tzoff, results.group(0))
+                    input_data = input_data[:-6]
+            dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
+            dt = dt.replace(tzinfo=tz)
+            return dt.date()
+        def gds_validate_time(self, input_data, node, input_name=''):
+            return input_data
+        def gds_format_time(self, input_data, input_name=''):
+            if input_data.microsecond == 0:
+                _svalue = '%02d:%02d:%02d' % (
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                )
+            else:
+                _svalue = '%02d:%02d:%02d.%s' % (
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                    ('%f' % (float(input_data.microsecond) / 1000000))[2:],
+                )
             if input_data.tzinfo is not None:
                 tzoff = input_data.tzinfo.utcoffset(input_data)
                 if tzoff is not None:
@@ -217,7 +294,8 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
-        def gds_parse_date(self, input_data, node, input_name=''):
+        @classmethod
+        def gds_parse_time(cls, input_data):
             tz = None
             if input_data[-1] == 'Z':
                 tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
@@ -232,8 +310,12 @@ except ImportError, exp:
                     tz = GeneratedsSuper._FixedOffsetTZ(
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
-            return datetime.strptime(input_data,
-                '%Y-%m-%d').replace(tzinfo = tz)
+            if len(input_data.split('.')) > 1:
+                dt = datetime_.datetime.strptime(input_data, '%H:%M:%S.%f')
+            else:
+                dt = datetime_.datetime.strptime(input_data, '%H:%M:%S')
+            dt = dt.replace(tzinfo=tz)
+            return dt.time()
         def gds_str_lower(self, instring):
             return instring.lower()
         def get_path_(self, node):
@@ -264,6 +346,9 @@ except ImportError, exp:
             return class_obj1
         def gds_build_any(self, node, type_name=None):
             return None
+        @classmethod
+        def gds_reverse_node_mapping(cls, mapping):
+            return dict(((v, k) for k, v in mapping.iteritems()))
 
 
 #
@@ -294,10 +379,12 @@ Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
 # Support/utility functions.
 #
 
+
 def showIndent(outfile, level, pretty_print=True):
     if pretty_print:
         for idx in range(level):
             outfile.write('    ')
+
 
 def quote_xml(inStr):
     if not inStr:
@@ -308,6 +395,7 @@ def quote_xml(inStr):
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     return s1
+
 
 def quote_attrib(inStr):
     s1 = (isinstance(inStr, basestring) and inStr or
@@ -324,6 +412,7 @@ def quote_attrib(inStr):
         s1 = '"%s"' % s1
     return s1
 
+
 def quote_python(inStr):
     s1 = inStr
     if s1.find("'") == -1:
@@ -339,6 +428,7 @@ def quote_python(inStr):
         else:
             return '"""%s"""' % s1
 
+
 def get_all_text_(node):
     if node.text is not None:
         text = node.text
@@ -348,6 +438,7 @@ def get_all_text_(node):
         if child.tail is not None:
             text += child.tail
     return text
+
 
 def find_attr_value_(attr_name, node):
     attrs = node.attrib
@@ -365,6 +456,7 @@ def find_attr_value_(attr_name, node):
 
 class GDSParseError(Exception):
     pass
+
 
 def raise_parse_error(node, msg):
     if XMLParser_import_library == XMLParser_import_lxml:
@@ -415,22 +507,22 @@ class MixedContainer:
             self.value.export(outfile, level, namespace, name, pretty_print)
     def exportSimple(self, outfile, level, name):
         if self.content_type == MixedContainer.TypeString:
-            outfile.write('<%s>%s</%s>' %
-                (self.name, self.value, self.name))
+            outfile.write('<%s>%s</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeInteger or \
                 self.content_type == MixedContainer.TypeBoolean:
-            outfile.write('<%s>%d</%s>' %
-                (self.name, self.value, self.name))
+            outfile.write('<%s>%d</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeFloat or \
                 self.content_type == MixedContainer.TypeDecimal:
-            outfile.write('<%s>%f</%s>' %
-                (self.name, self.value, self.name))
+            outfile.write('<%s>%f</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeDouble:
-            outfile.write('<%s>%g</%s>' %
-                (self.name, self.value, self.name))
+            outfile.write('<%s>%g</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeBase64:
-            outfile.write('<%s>%s</%s>' %
-                (self.name, base64.b64encode(self.value), self.name))
+            outfile.write('<%s>%s</%s>' % (
+                self.name, base64.b64encode(self.value), self.name))
     def to_etree(self, element):
         if self.category == MixedContainer.CategoryText:
             # Prevent exporting empty content as empty lines.
@@ -467,16 +559,19 @@ class MixedContainer:
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n'
-                % (self.category, self.content_type, self.name, self.value))
+            outfile.write(
+                'model_.MixedContainer(%d, %d, "%s", "%s"),\n' % (
+                    self.category, self.content_type, self.name, self.value))
         elif self.category == MixedContainer.CategorySimple:
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n'
-                % (self.category, self.content_type, self.name, self.value))
+            outfile.write(
+                'model_.MixedContainer(%d, %d, "%s", "%s"),\n' % (
+                    self.category, self.content_type, self.name, self.value))
         else:    # category == MixedContainer.CategoryComplex
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s",\n' % \
-                (self.category, self.content_type, self.name,))
+            outfile.write(
+                'model_.MixedContainer(%d, %d, "%s",\n' % (
+                    self.category, self.content_type, self.name,))
             self.value.exportLiteral(outfile, level + 1)
             showIndent(outfile, level)
             outfile.write(')\n')
@@ -502,6 +597,7 @@ class MemberSpec_(object):
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
 
+
 def _cast(typ, value):
     if typ is None or value is None:
         return value
@@ -510,6 +606,7 @@ def _cast(typ, value):
 #
 # Data representation classes.
 #
+
 
 class people(GeneratedsSuper):
     """A list of people."""
@@ -520,7 +617,7 @@ class people(GeneratedsSuper):
         MemberSpec_('programmer', 'programmer', 1),
         MemberSpec_('python_programmer', 'python-programmer', 1),
         MemberSpec_('java_programmer', 'java-programmer', 1),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, comments=None, person=None, specialperson=None, programmer=None, python_programmer=None, java_programmer=None):
@@ -586,7 +683,7 @@ class people(GeneratedsSuper):
             self.programmer or
             self.python_programmer or
             self.java_programmer
-            ):
+        ):
             return True
         else:
             return False
@@ -749,7 +846,7 @@ class comments(GeneratedsSuper):
         MemberSpec_('emp', 'xs:string', 1),
         MemberSpec_('bold', 'xs:string', 1),
         MemberSpec_('valueOf_', [], 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, emp=None, bold=None, valueOf_=None, mixedclass_=None, content_=None):
@@ -792,7 +889,7 @@ class comments(GeneratedsSuper):
             self.emp or
             self.bold or
             self.valueOf_
-            ):
+        ):
             return True
         else:
             return False
@@ -889,7 +986,7 @@ class person(GeneratedsSuper):
         MemberSpec_('agent', 'agent', 1),
         MemberSpec_('promoter', 'booster', 1),
         MemberSpec_('description', 'xs:string', 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, extensiontype_=None):
@@ -958,7 +1055,7 @@ class person(GeneratedsSuper):
             self.agent or
             self.promoter or
             self.description is not None
-            ):
+        ):
             return True
         else:
             return False
@@ -1029,23 +1126,23 @@ class person(GeneratedsSuper):
         if self.vegetable is not None and 'vegetable' not in already_processed:
             already_processed.add('vegetable')
             showIndent(outfile, level)
-            outfile.write('vegetable = "%s",\n' % (self.vegetable,))
+            outfile.write('vegetable="%s",\n' % (self.vegetable,))
         if self.fruit is not None and 'fruit' not in already_processed:
             already_processed.add('fruit')
             showIndent(outfile, level)
-            outfile.write('fruit = "%s",\n' % (self.fruit,))
+            outfile.write('fruit="%s",\n' % (self.fruit,))
         if self.ratio is not None and 'ratio' not in already_processed:
             already_processed.add('ratio')
             showIndent(outfile, level)
-            outfile.write('ratio = %f,\n' % (self.ratio,))
+            outfile.write('ratio=%f,\n' % (self.ratio,))
         if self.id is not None and 'id' not in already_processed:
             already_processed.add('id')
             showIndent(outfile, level)
-            outfile.write('id = %d,\n' % (self.id,))
+            outfile.write('id=%d,\n' % (self.id,))
         if self.value is not None and 'value' not in already_processed:
             already_processed.add('value')
             showIndent(outfile, level)
-            outfile.write('value = "%s",\n' % (self.value,))
+            outfile.write('value="%s",\n' % (self.value,))
     def exportLiteralChildren(self, outfile, level, name_):
         if self.name is not None:
             showIndent(outfile, level)
@@ -1160,7 +1257,7 @@ class person(GeneratedsSuper):
 
 class specialperson(person):
     member_data_items_ = [
-        ]
+    ]
     subclass = None
     superclass = person
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None):
@@ -1175,7 +1272,7 @@ class specialperson(person):
     def hasContent_(self):
         if (
             super(specialperson, self).hasContent_()
-            ):
+        ):
             return True
         else:
             return False
@@ -1234,7 +1331,7 @@ class param(GeneratedsSuper):
         MemberSpec_('type', 'xs:NMTOKEN', 0),
         MemberSpec_('id', 'xs:string', 0),
         MemberSpec_('valueOf_', 'xs:string', 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, semantic=None, name=None, flow=None, sid=None, type_=None, id=None, valueOf_=None):
@@ -1268,7 +1365,7 @@ class param(GeneratedsSuper):
     def hasContent_(self):
         if (
             self.valueOf_
-            ):
+        ):
             return True
         else:
             return False
@@ -1321,27 +1418,27 @@ class param(GeneratedsSuper):
         if self.semantic is not None and 'semantic' not in already_processed:
             already_processed.add('semantic')
             showIndent(outfile, level)
-            outfile.write('semantic = "%s",\n' % (self.semantic,))
+            outfile.write('semantic="%s",\n' % (self.semantic,))
         if self.name is not None and 'name' not in already_processed:
             already_processed.add('name')
             showIndent(outfile, level)
-            outfile.write('name = "%s",\n' % (self.name,))
+            outfile.write('name="%s",\n' % (self.name,))
         if self.flow is not None and 'flow' not in already_processed:
             already_processed.add('flow')
             showIndent(outfile, level)
-            outfile.write('flow = %s,\n' % (self.flow,))
+            outfile.write('flow=%s,\n' % (self.flow,))
         if self.sid is not None and 'sid' not in already_processed:
             already_processed.add('sid')
             showIndent(outfile, level)
-            outfile.write('sid = "%s",\n' % (self.sid,))
+            outfile.write('sid="%s",\n' % (self.sid,))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.add('type_')
             showIndent(outfile, level)
-            outfile.write('type_ = "%s",\n' % (self.type_,))
+            outfile.write('type_="%s",\n' % (self.type_,))
         if self.id is not None and 'id' not in already_processed:
             already_processed.add('id')
             showIndent(outfile, level)
-            outfile.write('id = "%s",\n' % (self.id,))
+            outfile.write('id="%s",\n' % (self.id,))
     def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
@@ -1389,7 +1486,7 @@ class agent(GeneratedsSuper):
         MemberSpec_('priority', 'xs:float', 0),
         MemberSpec_('info', 'info', 0),
         MemberSpec_('vehicle', 'vehicle', 1),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, firstname=None, lastname=None, priority=None, info=None, vehicle=None):
@@ -1426,7 +1523,7 @@ class agent(GeneratedsSuper):
             self.priority is not None or
             self.info is not None or
             self.vehicle
-            ):
+        ):
             return True
         else:
             return False
@@ -1464,7 +1561,7 @@ class agent(GeneratedsSuper):
             outfile.write('<%spriority>%s</%spriority>%s' % (namespace_, self.gds_format_float(self.priority, input_name='priority'), namespace_, eol_))
         if self.info is not None:
             self.info.export(outfile, level, namespace_, name_='info', pretty_print=pretty_print)
-        for vehicle_ in self.get_vehicle():
+        for vehicle_ in self.vehicle:
             vehicle_.export(outfile, level, namespace_, name_='vehicle', pretty_print=pretty_print)
     def exportLiteral(self, outfile, level, name_='agent'):
         level += 1
@@ -1530,7 +1627,7 @@ class agent(GeneratedsSuper):
         elif nodeName_ == 'info':
             obj_ = info.factory()
             obj_.build(child_)
-            self.set_info(obj_)
+            self.info = obj_
         elif nodeName_ == 'vehicle':
             type_name_ = child_.attrib.get(
                 '{http://www.w3.org/2001/XMLSchema-instance}type')
@@ -1560,7 +1657,7 @@ class special_agent(GeneratedsSuper):
         MemberSpec_('lastname', 'xs:string', 0),
         MemberSpec_('priority', 'xs:float', 0),
         MemberSpec_('info', 'info', 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, firstname=None, lastname=None, priority=None, info=None):
@@ -1588,7 +1685,7 @@ class special_agent(GeneratedsSuper):
             self.lastname is not None or
             self.priority is not None or
             self.info is not None
-            ):
+        ):
             return True
         else:
             return False
@@ -1678,7 +1775,7 @@ class special_agent(GeneratedsSuper):
         elif nodeName_ == 'info':
             obj_ = info.factory()
             obj_.build(child_)
-            self.set_info(obj_)
+            self.info = obj_
 # end class special_agent
 
 
@@ -1688,19 +1785,19 @@ class booster(GeneratedsSuper):
         MemberSpec_('firstname', 'xs:string', 0),
         MemberSpec_('lastname', 'xs:string', 0),
         MemberSpec_('other_name', 'xs:float', 0),
-        MemberSpec_('classxx', 'xs:float', 0),
+        MemberSpec_('class_', 'xs:float', 0),
         MemberSpec_('other_value', 'xs:float', 1),
         MemberSpec_('type_', 'xs:float', 1),
         MemberSpec_('client_handler', 'client-handlerType', 1),
-        ]
+    ]
     subclass = None
     superclass = None
-    def __init__(self, member_id=None, firstname=None, lastname=None, other_name=None, classxx=None, other_value=None, type_=None, client_handler=None):
+    def __init__(self, member_id=None, firstname=None, lastname=None, other_name=None, class_=None, other_value=None, type_=None, client_handler=None):
         self.member_id = _cast(None, member_id)
         self.firstname = firstname
         self.lastname = lastname
         self.other_name = other_name
-        self.classxx = classxx
+        self.class_ = class_
         if other_value is None:
             self.other_value = []
         else:
@@ -1725,8 +1822,8 @@ class booster(GeneratedsSuper):
     def set_lastname(self, lastname): self.lastname = lastname
     def get_other_name(self): return self.other_name
     def set_other_name(self, other_name): self.other_name = other_name
-    def get_class(self): return self.classxx
-    def set_class(self, classxx): self.classxx = classxx
+    def get_class(self): return self.class_
+    def set_class(self, class_): self.class_ = class_
     def get_other_value(self): return self.other_value
     def set_other_value(self, other_value): self.other_value = other_value
     def add_other_value(self, value): self.other_value.append(value)
@@ -1746,11 +1843,11 @@ class booster(GeneratedsSuper):
             self.firstname is not None or
             self.lastname is not None or
             self.other_name is not None or
-            self.classxx is not None or
+            self.class_ is not None or
             self.other_value or
             self.type_ or
             self.client_handler
-            ):
+        ):
             return True
         else:
             return False
@@ -1788,9 +1885,9 @@ class booster(GeneratedsSuper):
         if self.other_name is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sother-name>%s</%sother-name>%s' % (namespace_, self.gds_format_float(self.other_name, input_name='other-name'), namespace_, eol_))
-        if self.classxx is not None:
+        if self.class_ is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sclass>%s</%sclass>%s' % (namespace_, self.gds_format_float(self.classxx, input_name='class'), namespace_, eol_))
+            outfile.write('<%sclass>%s</%sclass>%s' % (namespace_, self.gds_format_float(self.class_, input_name='class'), namespace_, eol_))
         for other_value_ in self.other_value:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sother-value>%s</%sother-value>%s' % (namespace_, self.gds_format_float(other_value_, input_name='other-value'), namespace_, eol_))
@@ -1809,7 +1906,7 @@ class booster(GeneratedsSuper):
         if self.member_id is not None and 'member_id' not in already_processed:
             already_processed.add('member_id')
             showIndent(outfile, level)
-            outfile.write('member_id = "%s",\n' % (self.member_id,))
+            outfile.write('member_id="%s",\n' % (self.member_id,))
     def exportLiteralChildren(self, outfile, level, name_):
         if self.firstname is not None:
             showIndent(outfile, level)
@@ -1820,9 +1917,9 @@ class booster(GeneratedsSuper):
         if self.other_name is not None:
             showIndent(outfile, level)
             outfile.write('other_name=%f,\n' % self.other_name)
-        if self.classxx is not None:
+        if self.class_ is not None:
             showIndent(outfile, level)
-            outfile.write('classxx=%f,\n' % self.classxx)
+            outfile.write('class_=%f,\n' % self.class_)
         showIndent(outfile, level)
         outfile.write('other_value=[\n')
         level += 1
@@ -1888,7 +1985,7 @@ class booster(GeneratedsSuper):
             except (TypeError, ValueError), exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'class')
-            self.classxx = fval_
+            self.class_ = fval_
         elif nodeName_ == 'other-value':
             sval_ = child_.text
             try:
@@ -1917,7 +2014,7 @@ class info(GeneratedsSuper):
         MemberSpec_('rating', 'xs:float', 0),
         MemberSpec_('type', 'xs:integer', 0),
         MemberSpec_('name', 'xs:string', 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, rating=None, type_=None, name=None):
@@ -1940,7 +2037,7 @@ class info(GeneratedsSuper):
     def hasContent_(self):
         if (
 
-            ):
+        ):
             return True
         else:
             return False
@@ -1981,15 +2078,15 @@ class info(GeneratedsSuper):
         if self.rating is not None and 'rating' not in already_processed:
             already_processed.add('rating')
             showIndent(outfile, level)
-            outfile.write('rating = %f,\n' % (self.rating,))
+            outfile.write('rating=%f,\n' % (self.rating,))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.add('type_')
             showIndent(outfile, level)
-            outfile.write('type_ = %d,\n' % (self.type_,))
+            outfile.write('type_=%d,\n' % (self.type_,))
         if self.name is not None and 'name' not in already_processed:
             already_processed.add('name')
             showIndent(outfile, level)
-            outfile.write('name = "%s",\n' % (self.name,))
+            outfile.write('name="%s",\n' % (self.name,))
     def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
@@ -2025,7 +2122,7 @@ class info(GeneratedsSuper):
 class vehicle(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('wheelcount', 'xs:integer', 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, wheelcount=None, extensiontype_=None):
@@ -2044,7 +2141,7 @@ class vehicle(GeneratedsSuper):
     def hasContent_(self):
         if (
             self.wheelcount is not None
-            ):
+        ):
             return True
         else:
             return False
@@ -2116,7 +2213,7 @@ class vehicle(GeneratedsSuper):
 class automobile(vehicle):
     member_data_items_ = [
         MemberSpec_('drivername', 'xs:string', 0),
-        ]
+    ]
     subclass = None
     superclass = vehicle
     def __init__(self, wheelcount=None, drivername=None):
@@ -2134,7 +2231,7 @@ class automobile(vehicle):
         if (
             self.drivername is not None or
             super(automobile, self).hasContent_()
-            ):
+        ):
             return True
         else:
             return False
@@ -2198,7 +2295,7 @@ class automobile(vehicle):
 class airplane(vehicle):
     member_data_items_ = [
         MemberSpec_('pilotname', 'xs:string', 0),
-        ]
+    ]
     subclass = None
     superclass = vehicle
     def __init__(self, wheelcount=None, pilotname=None):
@@ -2216,7 +2313,7 @@ class airplane(vehicle):
         if (
             self.pilotname is not None or
             super(airplane, self).hasContent_()
-            ):
+        ):
             return True
         else:
             return False
@@ -2298,7 +2395,7 @@ class programmer(person):
         MemberSpec_('ellong', 'xs:long', 0),
         MemberSpec_('elparam', 'param', 0),
         MemberSpec_('elarraytypes', ['ArrayTypes', 'xs:NMTOKEN'], 0),
-        ]
+    ]
     subclass = None
     superclass = person
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, extensiontype_=None):
@@ -2314,7 +2411,11 @@ class programmer(person):
         self.elnonposint = elnonposint
         self.elnegint = elnegint
         self.elnonnegint = elnonnegint
-        self.eldate = eldate
+        if isinstance(eldate, basestring):
+            initvalue_ = datetime_.datetime.strptime(eldate, '%Y-%m-%d').date()
+        else:
+            initvalue_ = eldate
+        self.eldate = initvalue_
         self.eltoken = eltoken
         self.elshort = elshort
         self.ellong = ellong
@@ -2349,9 +2450,6 @@ class programmer(person):
     def set_elparam(self, elparam): self.elparam = elparam
     def get_elarraytypes(self): return self.elarraytypes
     def set_elarraytypes(self, elarraytypes): self.elarraytypes = elarraytypes
-    def validate_ArrayTypes(self, value):
-        # Validate type ArrayTypes, a restriction on xs:NMTOKEN.
-        pass
     def get_language(self): return self.language
     def set_language(self, language): self.language = language
     def get_area(self): return self.area
@@ -2366,6 +2464,9 @@ class programmer(person):
     def set_attrnonposint(self, attrnonposint): self.attrnonposint = attrnonposint
     def get_extensiontype_(self): return self.extensiontype_
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+    def validate_ArrayTypes(self, value):
+        # Validate type ArrayTypes, a restriction on xs:NMTOKEN.
+        pass
     def hasContent_(self):
         if (
             self.email is not None or
@@ -2380,7 +2481,7 @@ class programmer(person):
             self.elparam is not None or
             self.elarraytypes is not None or
             super(programmer, self).hasContent_()
-            ):
+        ):
             return True
         else:
             return False
@@ -2472,27 +2573,27 @@ class programmer(person):
         if self.language is not None and 'language' not in already_processed:
             already_processed.add('language')
             showIndent(outfile, level)
-            outfile.write('language = "%s",\n' % (self.language,))
+            outfile.write('language="%s",\n' % (self.language,))
         if self.area is not None and 'area' not in already_processed:
             already_processed.add('area')
             showIndent(outfile, level)
-            outfile.write('area = "%s",\n' % (self.area,))
+            outfile.write('area="%s",\n' % (self.area,))
         if self.attrnegint is not None and 'attrnegint' not in already_processed:
             already_processed.add('attrnegint')
             showIndent(outfile, level)
-            outfile.write('attrnegint = %d,\n' % (self.attrnegint,))
+            outfile.write('attrnegint=%d,\n' % (self.attrnegint,))
         if self.attrposint is not None and 'attrposint' not in already_processed:
             already_processed.add('attrposint')
             showIndent(outfile, level)
-            outfile.write('attrposint = %d,\n' % (self.attrposint,))
+            outfile.write('attrposint=%d,\n' % (self.attrposint,))
         if self.attrnonnegint is not None and 'attrnonnegint' not in already_processed:
             already_processed.add('attrnonnegint')
             showIndent(outfile, level)
-            outfile.write('attrnonnegint = %d,\n' % (self.attrnonnegint,))
+            outfile.write('attrnonnegint=%d,\n' % (self.attrnonnegint,))
         if self.attrnonposint is not None and 'attrnonposint' not in already_processed:
             already_processed.add('attrnonposint')
             showIndent(outfile, level)
-            outfile.write('attrnonposint = %d,\n' % (self.attrnonposint,))
+            outfile.write('attrnonposint=%d,\n' % (self.attrnonposint,))
         super(programmer, self).exportLiteralAttributes(outfile, level, already_processed, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(programmer, self).exportLiteralChildren(outfile, level, name_)
@@ -2513,7 +2614,7 @@ class programmer(person):
             outfile.write('elnonnegint=%d,\n' % self.elnonnegint)
         if self.eldate is not None:
             showIndent(outfile, level)
-            outfile.write('eldate=datetime_.strptime("%s", "%%Y-%%m-%%d"),\n' % self.gds_format_date(self.eldate, input_name='eldate'))
+            outfile.write('eldate=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.eldate, input_name='eldate'))
         if self.eltoken is not None:
             showIndent(outfile, level)
             outfile.write('eltoken=%s,\n' % quote_python(self.eltoken).encode(ExternalEncoding))
@@ -2635,7 +2736,7 @@ class programmer(person):
             self.elnonnegint = ival_
         elif nodeName_ == 'eldate':
             sval_ = child_.text
-            dval_ = self.gds_parse_date(sval_, node, 'eldate')
+            dval_ = self.gds_parse_date(sval_)
             self.eldate = dval_
         elif nodeName_ == 'eltoken':
             eltoken_ = child_.text
@@ -2661,7 +2762,7 @@ class programmer(person):
         elif nodeName_ == 'elparam':
             obj_ = param.factory()
             obj_.build(child_)
-            self.set_elparam(obj_)
+            self.elparam = obj_
         elif nodeName_ == 'elarraytypes':
             elarraytypes_ = child_.text
             elarraytypes_ = self.gds_validate_string(elarraytypes_, node, 'elarraytypes')
@@ -2675,7 +2776,7 @@ class client_handlerType(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('fullname', 'xs:string', 0),
         MemberSpec_('refid', 'xs:integer', 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, fullname=None, refid=None):
@@ -2695,7 +2796,7 @@ class client_handlerType(GeneratedsSuper):
         if (
             self.fullname is not None or
             self.refid is not None
-            ):
+        ):
             return True
         else:
             return False
@@ -2775,7 +2876,7 @@ class java_programmer(programmer):
         MemberSpec_('status', 'xs:string', 0),
         MemberSpec_('nick-name', 'xs:string', 0),
         MemberSpec_('favorite_editor', 'xs:string', 0),
-        ]
+    ]
     subclass = None
     superclass = programmer
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, status=None, nick_name=None, favorite_editor=None):
@@ -2799,7 +2900,7 @@ class java_programmer(programmer):
         if (
             self.favorite_editor is not None or
             super(java_programmer, self).hasContent_()
-            ):
+        ):
             return True
         else:
             return False
@@ -2846,11 +2947,11 @@ class java_programmer(programmer):
         if self.status is not None and 'status' not in already_processed:
             already_processed.add('status')
             showIndent(outfile, level)
-            outfile.write('status = "%s",\n' % (self.status,))
+            outfile.write('status="%s",\n' % (self.status,))
         if self.nick_name is not None and 'nick_name' not in already_processed:
             already_processed.add('nick_name')
             showIndent(outfile, level)
-            outfile.write('nick_name = "%s",\n' % (self.nick_name,))
+            outfile.write('nick_name="%s",\n' % (self.nick_name,))
         super(java_programmer, self).exportLiteralAttributes(outfile, level, already_processed, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(java_programmer, self).exportLiteralChildren(outfile, level, name_)
@@ -2888,7 +2989,7 @@ class python_programmer(programmer):
     member_data_items_ = [
         MemberSpec_('nick-name', 'xs:string', 0),
         MemberSpec_('favorite_editor', 'xs:string', 0),
-        ]
+    ]
     subclass = None
     superclass = programmer
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, nick_name=None, favorite_editor=None):
@@ -2909,7 +3010,7 @@ class python_programmer(programmer):
         if (
             self.favorite_editor is not None or
             super(python_programmer, self).hasContent_()
-            ):
+        ):
             return True
         else:
             return False
@@ -2953,7 +3054,7 @@ class python_programmer(programmer):
         if self.nick_name is not None and 'nick_name' not in already_processed:
             already_processed.add('nick_name')
             showIndent(outfile, level)
-            outfile.write('nick_name = "%s",\n' % (self.nick_name,))
+            outfile.write('nick_name="%s",\n' % (self.nick_name,))
         super(python_programmer, self).exportLiteralAttributes(outfile, level, already_processed, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(python_programmer, self).exportLiteralChildren(outfile, level, name_)
@@ -2992,6 +3093,7 @@ USAGE_TEXT = """
 Usage: python <Parser>.py [ -s ] <in_xml_file>
 """
 
+
 def usage():
     print USAGE_TEXT
     sys.exit(1)
@@ -3017,7 +3119,8 @@ def parse(inFileName):
     # Enable Python to collect the space used by the DOM.
     doc = None
 ##     sys.stdout.write('<?xml version="1.0" ?>\n')
-##     rootObj.export(sys.stdout, 0, name_=rootTag,
+##     rootObj.export(
+##         sys.stdout, 0, name_=rootTag,
 ##         namespacedef_='',
 ##         pretty_print=True)
     return rootObj
@@ -3034,28 +3137,32 @@ def parseEtree(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    rootElement = rootObj.to_etree(None, name_=rootTag)
-##     content = etree_.tostring(rootElement, pretty_print=True,
+    mapping = {}
+    rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
+    reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
+##     content = etree_.tostring(
+##         rootElement, pretty_print=True,
 ##         xml_declaration=True, encoding="utf-8")
 ##     sys.stdout.write(content)
 ##     sys.stdout.write('\n')
-    return rootObj, rootElement
+    return rootObj, rootElement, mapping, reverse_mapping
 
 
 def parseString(inString):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    rootTag, rootClass = get_root_tag(rootNode)
+    roots = get_root_tag(rootNode)
+    rootClass = roots[1]
     if rootClass is None:
-        rootTag = 'people'
         rootClass = people
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
 ##     sys.stdout.write('<?xml version="1.0" ?>\n')
-##     rootObj.export(sys.stdout, 0, name_="people",
+##     rootObj.export(
+##         sys.stdout, 0, name_="people",
 ##         namespacedef_='')
     return rootObj
 
@@ -3072,7 +3179,6 @@ def parseLiteral(inFileName):
     # Enable Python to collect the space used by the DOM.
     doc = None
 ##     sys.stdout.write('#from people_procincl2_sup import *\n\n')
-##     sys.stdout.write('from datetime import datetime as datetime_\n\n')
 ##     sys.stdout.write('import people_procincl2_sup as model_\n\n')
 ##     sys.stdout.write('rootObj = model_.rootTag(\n')
 ##     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
@@ -3110,4 +3216,4 @@ __all__ = [
     "special_agent",
     "specialperson",
     "vehicle"
-    ]
+]

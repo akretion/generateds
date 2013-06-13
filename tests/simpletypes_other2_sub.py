@@ -10,9 +10,10 @@ import simpletypes_other2_sup as supermod
 
 etree_ = None
 Verbose_import_ = False
-(   XMLParser_import_none, XMLParser_import_lxml,
+(
+    XMLParser_import_none, XMLParser_import_lxml,
     XMLParser_import_elementtree
-    ) = range(3)
+) = range(3)
 XMLParser_import_library = None
 try:
     # lxml
@@ -52,9 +53,10 @@ except ImportError:
                     raise ImportError(
                         "Failed to import ElementTree from any known place")
 
+
 def parsexml_(*args, **kwargs):
     if (XMLParser_import_library == XMLParser_import_lxml and
-        'parser' not in kwargs):
+            'parser' not in kwargs):
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
         kwargs['parser'] = etree_.ETCompatXMLParser()
@@ -71,6 +73,7 @@ ExternalEncoding = 'ascii'
 # Data representation classes
 #
 
+
 class simpleTypeTestsTypeSub(supermod.simpleTypeTestsType):
     def __init__(self, simpleTypeTest=None):
         super(simpleTypeTestsTypeSub, self).__init__(simpleTypeTest, )
@@ -83,7 +86,6 @@ class simpleTypeTestSub(supermod.simpleTypeTest):
         super(simpleTypeTestSub, self).__init__(datetime1, datetime2, datetime3, datetime4, datetime5, integerVal1, integerVal2, stringVal1, stringVal2, booleanVal1, booleanVal2, decimalVal1, decimalVal2, doubleVal1, doubleVal2, floatVal1, floatVal2, dateVal1, dateVal2, dateTimeVal1, dateTimeVal2, )
 supermod.simpleTypeTest.subclass = simpleTypeTestSub
 # end class simpleTypeTestSub
-
 
 
 def get_root_tag(node):
@@ -107,7 +109,8 @@ def parse(inFilename):
     # Enable Python to collect the space used by the DOM.
     doc = None
 ##     sys.stdout.write('<?xml version="1.0" ?>\n')
-##     rootObj.export(sys.stdout, 0, name_=rootTag,
+##     rootObj.export(
+##         sys.stdout, 0, name_=rootTag,
 ##         namespacedef_='',
 ##         pretty_print=True)
     return rootObj
@@ -124,12 +127,15 @@ def parseEtree(inFilename):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    rootElement = rootObj.to_etree(None, name_=rootTag)
-##     content = etree_.tostring(rootElement, pretty_print=True,
+    mapping = {}
+    rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
+    reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
+##     content = etree_.tostring(
+##         rootElement, pretty_print=True,
 ##         xml_declaration=True, encoding="utf-8")
 ##     sys.stdout.write(content)
 ##     sys.stdout.write('\n')
-    return rootObj, rootElement
+    return rootObj, rootElement, mapping, reverse_mapping
 
 
 def parseString(inString):
@@ -145,7 +151,8 @@ def parseString(inString):
     # Enable Python to collect the space used by the DOM.
     doc = None
 ##     sys.stdout.write('<?xml version="1.0" ?>\n')
-##     rootObj.export(sys.stdout, 0, name_=rootTag,
+##     rootObj.export(
+##         sys.stdout, 0, name_=rootTag,
 ##         namespacedef_='')
     return rootObj
 
@@ -153,9 +160,9 @@ def parseString(inString):
 def parseLiteral(inFilename):
     doc = parsexml_(inFilename)
     rootNode = doc.getroot()
-    rootTag, rootClass = get_root_tag(rootNode)
+    roots = get_root_tag(rootNode)
+    rootClass = roots[1]
     if rootClass is None:
-        rootTag = 'simpleTypeTests'
         rootClass = supermod.simpleTypeTestsType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -173,6 +180,7 @@ USAGE_TEXT = """
 Usage: python ???.py <infilename>
 """
 
+
 def usage():
     print USAGE_TEXT
     sys.exit(1)
@@ -183,11 +191,9 @@ def main():
     if len(args) != 1:
         usage()
     infilename = args[0]
-    root = parse(infilename)
+    parse(infilename)
 
 
 if __name__ == '__main__':
     #import pdb; pdb.set_trace()
     main()
-
-

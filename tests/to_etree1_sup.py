@@ -9,13 +9,14 @@ import sys
 import getopt
 import re as re_
 import base64
-from datetime import datetime, tzinfo, timedelta
+import datetime as datetime_
 
 etree_ = None
 Verbose_import_ = False
-(   XMLParser_import_none, XMLParser_import_lxml,
+(
+    XMLParser_import_none, XMLParser_import_lxml,
     XMLParser_import_elementtree
-    ) = range(3)
+) = range(3)
 XMLParser_import_library = None
 try:
     # lxml
@@ -55,9 +56,10 @@ except ImportError:
                     raise ImportError(
                         "Failed to import ElementTree from any known place")
 
+
 def parsexml_(*args, **kwargs):
     if (XMLParser_import_library == XMLParser_import_lxml and
-        'parser' not in kwargs):
+            'parser' not in kwargs):
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
         kwargs['parser'] = etree_.ETCompatXMLParser()
@@ -77,9 +79,9 @@ except ImportError, exp:
 
     class GeneratedsSuper(object):
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
-        class _FixedOffsetTZ(tzinfo):
+        class _FixedOffsetTZ(datetime_.tzinfo):
             def __init__(self, offset, name):
-                self.__offset = timedelta(minutes = offset)
+                self.__offset = datetime_.timedelta(minutes=offset)
                 self.__name = name
             def utcoffset(self, dt):
                 return self.__offset
@@ -105,8 +107,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 try:
-                    fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                    float(value)
+                except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of integers')
             return input_data
         def gds_format_float(self, input_data, input_name=''):
@@ -119,8 +121,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 try:
-                    fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                    float(value)
+                except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of floats')
             return input_data
         def gds_format_double(self, input_data, input_name=''):
@@ -133,8 +135,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 try:
-                    fvalue = float(value)
-                except (TypeError, ValueError), exp:
+                    float(value)
+                except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of doubles')
             return input_data
         def gds_format_boolean(self, input_data, input_name=''):
@@ -147,7 +149,8 @@ except ImportError, exp:
             values = input_data.split()
             for value in values:
                 if value not in ('true', '1', 'false', '0', ):
-                    raise_parse_error(node,
+                    raise_parse_error(
+                        node,
                         'Requires sequence of booleans '
                         '("true", "1", "false", "0")')
             return input_data
@@ -155,9 +158,24 @@ except ImportError, exp:
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
             if input_data.microsecond == 0:
-                _svalue = input_data.strftime('%Y-%m-%dT%H:%M:%S')
+                _svalue = '%04d-%02d-%02dT%02d:%02d:%02d' % (
+                    input_data.year,
+                    input_data.month,
+                    input_data.day,
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                )
             else:
-                _svalue = input_data.strftime('%Y-%m-%dT%H:%M:%S.%f')
+                _svalue = '%04d-%02d-%02dT%02d:%02d:%02d.%s' % (
+                    input_data.year,
+                    input_data.month,
+                    input_data.day,
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                    ('%f' % (float(input_data.microsecond) / 1000000))[2:],
+                )
             if input_data.tzinfo is not None:
                 tzoff = input_data.tzinfo.utcoffset(input_data)
                 if tzoff is not None:
@@ -174,7 +192,8 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
-        def gds_parse_datetime(self, input_data, node, input_name=''):
+        @classmethod
+        def gds_parse_datetime(cls, input_data):
             tz = None
             if input_data[-1] == 'Z':
                 tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
@@ -190,17 +209,75 @@ except ImportError, exp:
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
             if len(input_data.split('.')) > 1:
-                dt = datetime.strptime(
-                        input_data, '%Y-%m-%dT%H:%M:%S.%f')
+                dt = datetime_.datetime.strptime(
+                    input_data, '%Y-%m-%dT%H:%M:%S.%f')
             else:
-                dt = datetime.strptime(
-                        input_data, '%Y-%m-%dT%H:%M:%S')
-            return dt.replace(tzinfo = tz)
-
+                dt = datetime_.datetime.strptime(
+                    input_data, '%Y-%m-%dT%H:%M:%S')
+            dt = dt.replace(tzinfo=tz)
+            return dt
         def gds_validate_date(self, input_data, node, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
-            _svalue = input_data.strftime('%Y-%m-%d')
+            _svalue = '%04d-%02d-%02d' % (
+                input_data.year,
+                input_data.month,
+                input_data.day,
+            )
+            try:
+                if input_data.tzinfo is not None:
+                    tzoff = input_data.tzinfo.utcoffset(input_data)
+                    if tzoff is not None:
+                        total_seconds = tzoff.seconds + (86400 * tzoff.days)
+                        if total_seconds == 0:
+                            _svalue += 'Z'
+                        else:
+                            if total_seconds < 0:
+                                _svalue += '-'
+                                total_seconds *= -1
+                            else:
+                                _svalue += '+'
+                            hours = total_seconds // 3600
+                            minutes = (total_seconds - (hours * 3600)) // 60
+                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+            except AttributeError:
+                pass
+            return _svalue
+        @classmethod
+        def gds_parse_date(cls, input_data):
+            tz = None
+            if input_data[-1] == 'Z':
+                tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
+                input_data = input_data[:-1]
+            else:
+                results = GeneratedsSuper.tzoff_pattern.search(input_data)
+                if results is not None:
+                    tzoff_parts = results.group(2).split(':')
+                    tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
+                    if results.group(1) == '-':
+                        tzoff *= -1
+                    tz = GeneratedsSuper._FixedOffsetTZ(
+                        tzoff, results.group(0))
+                    input_data = input_data[:-6]
+            dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
+            dt = dt.replace(tzinfo=tz)
+            return dt.date()
+        def gds_validate_time(self, input_data, node, input_name=''):
+            return input_data
+        def gds_format_time(self, input_data, input_name=''):
+            if input_data.microsecond == 0:
+                _svalue = '%02d:%02d:%02d' % (
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                )
+            else:
+                _svalue = '%02d:%02d:%02d.%s' % (
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                    ('%f' % (float(input_data.microsecond) / 1000000))[2:],
+                )
             if input_data.tzinfo is not None:
                 tzoff = input_data.tzinfo.utcoffset(input_data)
                 if tzoff is not None:
@@ -217,7 +294,8 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
-        def gds_parse_date(self, input_data, node, input_name=''):
+        @classmethod
+        def gds_parse_time(cls, input_data):
             tz = None
             if input_data[-1] == 'Z':
                 tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
@@ -232,8 +310,12 @@ except ImportError, exp:
                     tz = GeneratedsSuper._FixedOffsetTZ(
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
-            return datetime.strptime(input_data,
-                '%Y-%m-%d').replace(tzinfo = tz)
+            if len(input_data.split('.')) > 1:
+                dt = datetime_.datetime.strptime(input_data, '%H:%M:%S.%f')
+            else:
+                dt = datetime_.datetime.strptime(input_data, '%H:%M:%S')
+            dt = dt.replace(tzinfo=tz)
+            return dt.time()
         def gds_str_lower(self, instring):
             return instring.lower()
         def get_path_(self, node):
@@ -264,6 +346,9 @@ except ImportError, exp:
             return class_obj1
         def gds_build_any(self, node, type_name=None):
             return None
+        @classmethod
+        def gds_reverse_node_mapping(cls, mapping):
+            return dict(((v, k) for k, v in mapping.iteritems()))
 
 
 #
@@ -294,10 +379,12 @@ Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
 # Support/utility functions.
 #
 
+
 def showIndent(outfile, level, pretty_print=True):
     if pretty_print:
         for idx in range(level):
             outfile.write('    ')
+
 
 def quote_xml(inStr):
     if not inStr:
@@ -308,6 +395,7 @@ def quote_xml(inStr):
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     return s1
+
 
 def quote_attrib(inStr):
     s1 = (isinstance(inStr, basestring) and inStr or
@@ -324,6 +412,7 @@ def quote_attrib(inStr):
         s1 = '"%s"' % s1
     return s1
 
+
 def quote_python(inStr):
     s1 = inStr
     if s1.find("'") == -1:
@@ -339,6 +428,7 @@ def quote_python(inStr):
         else:
             return '"""%s"""' % s1
 
+
 def get_all_text_(node):
     if node.text is not None:
         text = node.text
@@ -348,6 +438,7 @@ def get_all_text_(node):
         if child.tail is not None:
             text += child.tail
     return text
+
 
 def find_attr_value_(attr_name, node):
     attrs = node.attrib
@@ -365,6 +456,7 @@ def find_attr_value_(attr_name, node):
 
 class GDSParseError(Exception):
     pass
+
 
 def raise_parse_error(node, msg):
     if XMLParser_import_library == XMLParser_import_lxml:
@@ -415,22 +507,22 @@ class MixedContainer:
             self.value.export(outfile, level, namespace, name, pretty_print)
     def exportSimple(self, outfile, level, name):
         if self.content_type == MixedContainer.TypeString:
-            outfile.write('<%s>%s</%s>' %
-                (self.name, self.value, self.name))
+            outfile.write('<%s>%s</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeInteger or \
                 self.content_type == MixedContainer.TypeBoolean:
-            outfile.write('<%s>%d</%s>' %
-                (self.name, self.value, self.name))
+            outfile.write('<%s>%d</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeFloat or \
                 self.content_type == MixedContainer.TypeDecimal:
-            outfile.write('<%s>%f</%s>' %
-                (self.name, self.value, self.name))
+            outfile.write('<%s>%f</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeDouble:
-            outfile.write('<%s>%g</%s>' %
-                (self.name, self.value, self.name))
+            outfile.write('<%s>%g</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeBase64:
-            outfile.write('<%s>%s</%s>' %
-                (self.name, base64.b64encode(self.value), self.name))
+            outfile.write('<%s>%s</%s>' % (
+                self.name, base64.b64encode(self.value), self.name))
     def to_etree(self, element):
         if self.category == MixedContainer.CategoryText:
             # Prevent exporting empty content as empty lines.
@@ -467,16 +559,19 @@ class MixedContainer:
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n'
-                % (self.category, self.content_type, self.name, self.value))
+            outfile.write(
+                'model_.MixedContainer(%d, %d, "%s", "%s"),\n' % (
+                    self.category, self.content_type, self.name, self.value))
         elif self.category == MixedContainer.CategorySimple:
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n'
-                % (self.category, self.content_type, self.name, self.value))
+            outfile.write(
+                'model_.MixedContainer(%d, %d, "%s", "%s"),\n' % (
+                    self.category, self.content_type, self.name, self.value))
         else:    # category == MixedContainer.CategoryComplex
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s",\n' % \
-                (self.category, self.content_type, self.name,))
+            outfile.write(
+                'model_.MixedContainer(%d, %d, "%s",\n' % (
+                    self.category, self.content_type, self.name,))
             self.value.exportLiteral(outfile, level + 1)
             showIndent(outfile, level)
             outfile.write(')\n')
@@ -502,6 +597,7 @@ class MemberSpec_(object):
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
 
+
 def _cast(typ, value):
     if typ is None or value is None:
         return value
@@ -511,6 +607,7 @@ def _cast(typ, value):
 # Data representation classes.
 #
 
+
 class peopleType(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('comments', 'commentsType', 1),
@@ -519,7 +616,7 @@ class peopleType(GeneratedsSuper):
         MemberSpec_('programmer', 'programmerType', 1),
         MemberSpec_('python_programmer', 'python-programmerType', 1),
         MemberSpec_('java_programmer', 'java-programmerType', 1),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, comments=None, person=None, specialperson=None, programmer=None, python_programmer=None, java_programmer=None):
@@ -585,27 +682,29 @@ class peopleType(GeneratedsSuper):
             self.programmer or
             self.python_programmer or
             self.java_programmer
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='peopleType'):
+    def to_etree(self, parent_element=None, name_='peopleType', mapping_=None):
         if parent_element is None:
             element = etree_.Element('{}' + name_)
         else:
             element = etree_.SubElement(parent_element, '{}' + name_)
         for comments_ in self.comments:
-            comments_.to_etree(element, name_='comments')
+            comments_.to_etree(element, name_='comments', mapping_=mapping_)
         for person_ in self.person:
-            person_.to_etree(element, name_='person')
+            person_.to_etree(element, name_='person', mapping_=mapping_)
         for specialperson_ in self.specialperson:
-            specialperson_.to_etree(element, name_='specialperson')
+            specialperson_.to_etree(element, name_='specialperson', mapping_=mapping_)
         for programmer_ in self.programmer:
-            programmer_.to_etree(element, name_='programmer')
+            programmer_.to_etree(element, name_='programmer', mapping_=mapping_)
         for python_programmer_ in self.python_programmer:
-            python_programmer_.to_etree(element, name_='python-programmer')
+            python_programmer_.to_etree(element, name_='python-programmer', mapping_=mapping_)
         for java_programmer_ in self.java_programmer:
-            java_programmer_.to_etree(element, name_='java-programmer')
+            java_programmer_.to_etree(element, name_='java-programmer', mapping_=mapping_)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -650,7 +749,7 @@ class commentsType(GeneratedsSuper):
         MemberSpec_('emp', 'xs:string', 1),
         MemberSpec_('bold', 'xs:string', 1),
         MemberSpec_('valueOf_', [], 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, emp=None, bold=None, valueOf_=None, mixedclass_=None, content_=None):
@@ -693,17 +792,19 @@ class commentsType(GeneratedsSuper):
             self.emp or
             self.bold or
             self.valueOf_
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='commentsType'):
+    def to_etree(self, parent_element=None, name_='commentsType', mapping_=None):
         if parent_element is None:
             element = etree_.Element('{}' + name_)
         else:
             element = etree_.SubElement(parent_element, '{}' + name_)
         for item_ in self.content_:
             item_.to_etree(element)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -750,11 +851,11 @@ class personType(GeneratedsSuper):
         MemberSpec_('agent', 'agentType', 1),
         MemberSpec_('promoter', 'boosterType', 1),
         MemberSpec_('description', 'xs:string', 0),
-        MemberSpec_('range', ['RangeType', 'xs:integer'], 0),
-        ]
+        MemberSpec_('range_', ['RangeType', 'xs:integer'], 0),
+    ]
     subclass = None
     superclass = None
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range=None, extensiontype_=None):
+    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, extensiontype_=None):
         self.vegetable = _cast(None, vegetable)
         self.fruit = _cast(None, fruit)
         self.ratio = _cast(float, ratio)
@@ -776,7 +877,7 @@ class personType(GeneratedsSuper):
         else:
             self.promoter = promoter
         self.description = description
-        self.range = range
+        self.range_ = range_
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
         if personType.subclass:
@@ -804,11 +905,8 @@ class personType(GeneratedsSuper):
     def insert_promoter(self, index, value): self.promoter[index] = value
     def get_description(self): return self.description
     def set_description(self, description): self.description = description
-    def get_range(self): return self.range
-    def set_range(self, range): self.range = range
-    def validate_RangeType(self, value):
-        # Validate type RangeType, a restriction on xs:integer.
-        pass
+    def get_range(self): return self.range_
+    def set_range(self, range_): self.range_ = range_
     def get_vegetable(self): return self.vegetable
     def set_vegetable(self, vegetable): self.vegetable = vegetable
     def get_fruit(self): return self.fruit
@@ -821,6 +919,9 @@ class personType(GeneratedsSuper):
     def set_value(self, value): self.value = value
     def get_extensiontype_(self): return self.extensiontype_
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+    def validate_RangeType(self, value):
+        # Validate type RangeType, a restriction on xs:integer.
+        pass
     def hasContent_(self):
         if (
             self.name is not None or
@@ -830,12 +931,12 @@ class personType(GeneratedsSuper):
             self.agent or
             self.promoter or
             self.description is not None or
-            self.range is not None
-            ):
+            self.range_ is not None
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='personType'):
+    def to_etree(self, parent_element=None, name_='personType', mapping_=None):
         if parent_element is None:
             element = etree_.Element('{}' + name_)
         else:
@@ -862,17 +963,19 @@ class personType(GeneratedsSuper):
             etree_.SubElement(element, '{}category').text = self.gds_format_integer(category_)
         if self.hot_agent is not None:
             hot_agent_ = self.hot_agent
-            hot_agent_.to_etree(element, name_='hot.agent')
+            hot_agent_.to_etree(element, name_='hot.agent', mapping_=mapping_)
         for agent_ in self.agent:
-            agent_.to_etree(element, name_='agent')
+            agent_.to_etree(element, name_='agent', mapping_=mapping_)
         for promoter_ in self.promoter:
-            promoter_.to_etree(element, name_='promoter')
+            promoter_.to_etree(element, name_='promoter', mapping_=mapping_)
         if self.description is not None:
             description_ = self.description
             etree_.SubElement(element, '{}description').text = self.gds_format_string(description_)
-        if self.range is not None:
-            range_ = self.range
-            etree_.SubElement(element, '{}range').text = self.gds_format_integer(range_)
+        if self.range_ is not None:
+            range__ = self.range_
+            etree_.SubElement(element, '{}range').text = self.gds_format_integer(range__)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -931,7 +1034,7 @@ class personType(GeneratedsSuper):
         elif nodeName_ == 'hot.agent':
             obj_ = hot_agent.factory()
             obj_.build(child_)
-            self.set_hot_agent(obj_)
+            self.hot_agent = obj_
         elif nodeName_ == 'agent':
             class_obj_ = self.get_class_obj_(child_, agentType)
             obj_ = class_obj_.factory()
@@ -952,18 +1055,18 @@ class personType(GeneratedsSuper):
             except (TypeError, ValueError), exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'range')
-            self.range = ival_
-            self.validate_RangeType(self.range)    # validate type RangeType
+            self.range_ = ival_
+            self.validate_RangeType(self.range_)    # validate type RangeType
 # end class personType
 
 
 class specialperson(personType):
     member_data_items_ = [
-        ]
+    ]
     subclass = None
     superclass = personType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range=None):
-        super(specialperson, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range, )
+    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None):
+        super(specialperson, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, )
         pass
     def factory(*args_, **kwargs_):
         if specialperson.subclass:
@@ -974,12 +1077,14 @@ class specialperson(personType):
     def hasContent_(self):
         if (
             super(specialperson, self).hasContent_()
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='specialperson'):
-        element = super(specialperson, self).to_etree(parent_element, name_)
+    def to_etree(self, parent_element=None, name_='specialperson', mapping_=None):
+        element = super(specialperson, self).to_etree(parent_element, name_, mapping_)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -1016,11 +1121,11 @@ class programmerType(personType):
         MemberSpec_('ellong', 'xs:long', 0),
         MemberSpec_('elparam', 'paramType', 0),
         MemberSpec_('elarraytypes', ['ArrayTypes', 'xs:NMTOKEN'], 0),
-        ]
+    ]
     subclass = None
     superclass = personType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, extensiontype_=None):
-        super(programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range, extensiontype_, )
+    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, extensiontype_=None):
+        super(programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, extensiontype_, )
         self.language = _cast(None, language)
         self.area = _cast(None, area)
         self.attrnegint = _cast(int, attrnegint)
@@ -1032,9 +1137,21 @@ class programmerType(personType):
         self.elnonposint = elnonposint
         self.elnegint = elnegint
         self.elnonnegint = elnonnegint
-        self.eldate = eldate
-        self.eldatetime = eldatetime
-        self.eldatetime1 = eldatetime1
+        if isinstance(eldate, basestring):
+            initvalue_ = datetime_.datetime.strptime(eldate, '%Y-%m-%d').date()
+        else:
+            initvalue_ = eldate
+        self.eldate = initvalue_
+        if isinstance(eldatetime, basestring):
+            initvalue_ = datetime_.datetime.strptime(eldatetime, '%Y-%m-%dT%H:%M:%S')
+        else:
+            initvalue_ = eldatetime
+        self.eldatetime = initvalue_
+        if isinstance(eldatetime1, basestring):
+            initvalue_ = datetime_.datetime.strptime(eldatetime1, '%Y-%m-%dT%H:%M:%S')
+        else:
+            initvalue_ = eldatetime1
+        self.eldatetime1 = initvalue_
         self.eltoken = eltoken
         self.elshort = elshort
         self.ellong = ellong
@@ -1073,9 +1190,6 @@ class programmerType(personType):
     def set_elparam(self, elparam): self.elparam = elparam
     def get_elarraytypes(self): return self.elarraytypes
     def set_elarraytypes(self, elarraytypes): self.elarraytypes = elarraytypes
-    def validate_ArrayTypes(self, value):
-        # Validate type ArrayTypes, a restriction on xs:NMTOKEN.
-        pass
     def get_language(self): return self.language
     def set_language(self, language): self.language = language
     def get_area(self): return self.area
@@ -1090,6 +1204,9 @@ class programmerType(personType):
     def set_attrnonposint(self, attrnonposint): self.attrnonposint = attrnonposint
     def get_extensiontype_(self): return self.extensiontype_
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+    def validate_ArrayTypes(self, value):
+        # Validate type ArrayTypes, a restriction on xs:NMTOKEN.
+        pass
     def hasContent_(self):
         if (
             self.email is not None or
@@ -1106,12 +1223,12 @@ class programmerType(personType):
             self.elparam is not None or
             self.elarraytypes is not None or
             super(programmerType, self).hasContent_()
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='programmerType'):
-        element = super(programmerType, self).to_etree(parent_element, name_)
+    def to_etree(self, parent_element=None, name_='programmerType', mapping_=None):
+        element = super(programmerType, self).to_etree(parent_element, name_, mapping_)
         if self.extensiontype_ is not None:
             element.set('{http://www.w3.org/2001/XMLSchema-instance}type', self.extensiontype_)
         if self.language is not None:
@@ -1161,10 +1278,12 @@ class programmerType(personType):
             etree_.SubElement(element, '{}ellong').text = self.gds_format_integer(ellong_)
         if self.elparam is not None:
             elparam_ = self.elparam
-            elparam_.to_etree(element, name_='elparam')
+            elparam_.to_etree(element, name_='elparam', mapping_=mapping_)
         if self.elarraytypes is not None:
             elarraytypes_ = self.elarraytypes
             etree_.SubElement(element, '{}elarraytypes').text = self.gds_format_string(elarraytypes_)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -1269,15 +1388,15 @@ class programmerType(personType):
             self.elnonnegint = ival_
         elif nodeName_ == 'eldate':
             sval_ = child_.text
-            dval_ = self.gds_parse_date(sval_, node, 'eldate')
+            dval_ = self.gds_parse_date(sval_)
             self.eldate = dval_
         elif nodeName_ == 'eldatetime':
             sval_ = child_.text
-            dval_ = self.gds_parse_datetime(sval_, node, 'eldatetime')
+            dval_ = self.gds_parse_datetime(sval_)
             self.eldatetime = dval_
         elif nodeName_ == 'eldatetime1':
             sval_ = child_.text
-            dval_ = self.gds_parse_datetime(sval_, node, 'eldatetime1')
+            dval_ = self.gds_parse_datetime(sval_)
             self.eldatetime1 = dval_
         elif nodeName_ == 'eltoken':
             eltoken_ = child_.text
@@ -1303,7 +1422,7 @@ class programmerType(personType):
         elif nodeName_ == 'elparam':
             obj_ = paramType.factory()
             obj_.build(child_)
-            self.set_elparam(obj_)
+            self.elparam = obj_
         elif nodeName_ == 'elarraytypes':
             elarraytypes_ = child_.text
             elarraytypes_ = self.gds_validate_string(elarraytypes_, node, 'elarraytypes')
@@ -1322,7 +1441,7 @@ class paramType(GeneratedsSuper):
         MemberSpec_('type', 'xs:NMTOKEN', 0),
         MemberSpec_('id', 'xs:string', 0),
         MemberSpec_('valueOf_', 'xs:string', 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, semantic=None, name=None, flow=None, sid=None, type_=None, id=None, valueOf_=None):
@@ -1345,9 +1464,6 @@ class paramType(GeneratedsSuper):
     def set_name(self, name): self.name = name
     def get_flow(self): return self.flow
     def set_flow(self, flow): self.flow = flow
-    def validate_FlowType(self, value):
-        # Validate type FlowType, a restriction on xs:integer.
-        pass
     def get_sid(self): return self.sid
     def set_sid(self, sid): self.sid = sid
     def get_type(self): return self.type_
@@ -1356,14 +1472,17 @@ class paramType(GeneratedsSuper):
     def set_id(self, id): self.id = id
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def validate_FlowType(self, value):
+        # Validate type FlowType, a restriction on xs:integer.
+        pass
     def hasContent_(self):
         if (
             self.valueOf_
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='paramType'):
+    def to_etree(self, parent_element=None, name_='paramType', mapping_=None):
         if parent_element is None:
             element = etree_.Element('{}' + name_)
         else:
@@ -1380,6 +1499,8 @@ class paramType(GeneratedsSuper):
             element.set('type', self.gds_format_string(self.type_))
         if self.id is not None:
             element.set('id', self.gds_format_string(self.id))
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -1431,11 +1552,11 @@ class python_programmerType(programmerType):
         MemberSpec_('favorite_editor', 'xs:string', 0),
         MemberSpec_('flowvalue', ['FlowType', 'xs:integer'], 0),
         MemberSpec_('drcs', 'xs:string', 0),
-        ]
+    ]
     subclass = None
     superclass = programmerType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, drcs_attr=None, nick_name=None, gui_developer=None, favorite_editor=None, flowvalue=None, drcs=None):
-        super(python_programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
+    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, drcs_attr=None, nick_name=None, gui_developer=None, favorite_editor=None, flowvalue=None, drcs=None):
+        super(python_programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
         self.drcs_attr = _cast(None, drcs_attr)
         self.nick_name = _cast(None, nick_name)
         self.gui_developer = _cast(bool, gui_developer)
@@ -1452,9 +1573,6 @@ class python_programmerType(programmerType):
     def set_favorite_editor(self, favorite_editor): self.favorite_editor = favorite_editor
     def get_flowvalue(self): return self.flowvalue
     def set_flowvalue(self, flowvalue): self.flowvalue = flowvalue
-    def validate_FlowType(self, value):
-        # Validate type FlowType, a restriction on xs:integer.
-        pass
     def get_drcs(self): return self.drcs
     def set_drcs(self, drcs): self.drcs = drcs
     def get_drcs_attr(self): return self.drcs_attr
@@ -1463,18 +1581,21 @@ class python_programmerType(programmerType):
     def set_nick_name(self, nick_name): self.nick_name = nick_name
     def get_gui_developer(self): return self.gui_developer
     def set_gui_developer(self, gui_developer): self.gui_developer = gui_developer
+    def validate_FlowType(self, value):
+        # Validate type FlowType, a restriction on xs:integer.
+        pass
     def hasContent_(self):
         if (
             self.favorite_editor is not None or
             self.flowvalue is not None or
             self.drcs is not None or
             super(python_programmerType, self).hasContent_()
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='python-programmerType'):
-        element = super(python_programmerType, self).to_etree(parent_element, name_)
+    def to_etree(self, parent_element=None, name_='python-programmerType', mapping_=None):
+        element = super(python_programmerType, self).to_etree(parent_element, name_, mapping_)
         if self.drcs_attr is not None:
             element.set('drcs_attr', self.gds_format_string(self.drcs_attr))
         if self.nick_name is not None:
@@ -1490,6 +1611,8 @@ class python_programmerType(programmerType):
         if self.drcs is not None:
             drcs_ = self.drcs
             etree_.SubElement(element, '{}drcs').text = self.gds_format_string(drcs_)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -1548,11 +1671,11 @@ class java_programmerType(programmerType):
         MemberSpec_('datetime3', 'xs:gMonth', 0),
         MemberSpec_('datetime4', 'xs:gMonthDay', 0),
         MemberSpec_('datetime5', 'xs:gDay', 0),
-        ]
+    ]
     subclass = None
     superclass = programmerType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, status=None, nick_name=None, favorite_editor=None, datetime1=None, datetime2=None, datetime3=None, datetime4=None, datetime5=None):
-        super(java_programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
+    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, status=None, nick_name=None, favorite_editor=None, datetime1=None, datetime2=None, datetime3=None, datetime4=None, datetime5=None):
+        super(java_programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
         self.status = _cast(None, status)
         self.nick_name = _cast(None, nick_name)
         self.favorite_editor = favorite_editor
@@ -1592,12 +1715,12 @@ class java_programmerType(programmerType):
             self.datetime4 is not None or
             self.datetime5 is not None or
             super(java_programmerType, self).hasContent_()
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='java-programmerType'):
-        element = super(java_programmerType, self).to_etree(parent_element, name_)
+    def to_etree(self, parent_element=None, name_='java-programmerType', mapping_=None):
+        element = super(java_programmerType, self).to_etree(parent_element, name_, mapping_)
         if self.status is not None:
             element.set('status', self.gds_format_string(self.status))
         if self.nick_name is not None:
@@ -1620,6 +1743,8 @@ class java_programmerType(programmerType):
         if self.datetime5 is not None:
             datetime5_ = self.datetime5
             etree_.SubElement(element, '{}datetime5').text = self.gds_format_string(datetime5_)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -1673,7 +1798,7 @@ class agentType(GeneratedsSuper):
         MemberSpec_('priority', 'xs:float', 0),
         MemberSpec_('info', 'infoType', 0),
         MemberSpec_('vehicle', 'vehicleType', 1),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, firstname=None, lastname=None, priority=None, info=None, vehicle=None, extensiontype_=None):
@@ -1713,11 +1838,11 @@ class agentType(GeneratedsSuper):
             self.priority is not None or
             self.info is not None or
             self.vehicle
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='agentType'):
+    def to_etree(self, parent_element=None, name_='agentType', mapping_=None):
         if parent_element is None:
             element = etree_.Element('{}' + name_)
         else:
@@ -1735,9 +1860,11 @@ class agentType(GeneratedsSuper):
             etree_.SubElement(element, '{}priority').text = self.gds_format_float(priority_)
         if self.info is not None:
             info_ = self.info
-            info_.to_etree(element, name_='info')
+            info_.to_etree(element, name_='info', mapping_=mapping_)
         for vehicle_ in self.vehicle:
-            vehicle_.to_etree(element, name_='vehicle')
+            vehicle_.to_etree(element, name_='vehicle', mapping_=mapping_)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -1770,7 +1897,7 @@ class agentType(GeneratedsSuper):
         elif nodeName_ == 'info':
             obj_ = infoType.factory()
             obj_.build(child_)
-            self.set_info(obj_)
+            self.info = obj_
         elif nodeName_ == 'vehicle':
             class_obj_ = self.get_class_obj_(child_, vehicleType)
             obj_ = class_obj_.factory()
@@ -1787,7 +1914,7 @@ class special_agentType(agentType):
         MemberSpec_('lastname', 'xs:string', 0),
         MemberSpec_('priority', 'xs:float', 0),
         MemberSpec_('info', 'infoType', 0),
-        ]
+    ]
     subclass = None
     superclass = agentType
     def __init__(self, firstname=None, lastname=None, priority=None, info=None, vehicle=None):
@@ -1817,12 +1944,12 @@ class special_agentType(agentType):
             self.priority is not None or
             self.info is not None or
             super(special_agentType, self).hasContent_()
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='special-agentType'):
-        element = super(special_agentType, self).to_etree(parent_element, name_)
+    def to_etree(self, parent_element=None, name_='special-agentType', mapping_=None):
+        element = super(special_agentType, self).to_etree(parent_element, name_, mapping_)
         if self.firstname is not None:
             firstname_ = self.firstname
             etree_.SubElement(element, '{}firstname').text = self.gds_format_string(firstname_)
@@ -1834,7 +1961,9 @@ class special_agentType(agentType):
             etree_.SubElement(element, '{}priority').text = self.gds_format_float(priority_)
         if self.info is not None:
             info_ = self.info
-            info_.to_etree(element, name_='info')
+            info_.to_etree(element, name_='info', mapping_=mapping_)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -1864,7 +1993,7 @@ class special_agentType(agentType):
         elif nodeName_ == 'info':
             obj_ = infoType.factory()
             obj_.build(child_)
-            self.set_info(obj_)
+            self.info = obj_
         super(special_agentType, self).buildChildren(child_, node, nodeName_, True)
 # end class special_agentType
 
@@ -1877,7 +2006,7 @@ class weird_agentType(agentType):
         MemberSpec_('lastname', 'xs:string', 0),
         MemberSpec_('priority', 'xs:float', 0),
         MemberSpec_('info', 'infoType', 0),
-        ]
+    ]
     subclass = None
     superclass = agentType
     def __init__(self, firstname=None, lastname=None, priority=None, info=None, vehicle=None):
@@ -1907,12 +2036,12 @@ class weird_agentType(agentType):
             self.priority is not None or
             self.info is not None or
             super(weird_agentType, self).hasContent_()
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='weird-agentType'):
-        element = super(weird_agentType, self).to_etree(parent_element, name_)
+    def to_etree(self, parent_element=None, name_='weird-agentType', mapping_=None):
+        element = super(weird_agentType, self).to_etree(parent_element, name_, mapping_)
         if self.firstname is not None:
             firstname_ = self.firstname
             etree_.SubElement(element, '{}firstname').text = self.gds_format_string(firstname_)
@@ -1924,7 +2053,9 @@ class weird_agentType(agentType):
             etree_.SubElement(element, '{}priority').text = self.gds_format_float(priority_)
         if self.info is not None:
             info_ = self.info
-            info_.to_etree(element, name_='info')
+            info_.to_etree(element, name_='info', mapping_=mapping_)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -1954,7 +2085,7 @@ class weird_agentType(agentType):
         elif nodeName_ == 'info':
             obj_ = infoType.factory()
             obj_.build(child_)
-            self.set_info(obj_)
+            self.info = obj_
         super(weird_agentType, self).buildChildren(child_, node, nodeName_, True)
 # end class weird_agentType
 
@@ -1965,19 +2096,19 @@ class boosterType(GeneratedsSuper):
         MemberSpec_('firstname', 'xs:string', 0),
         MemberSpec_('lastname', 'xs:string', 0),
         MemberSpec_('other_name', 'xs:float', 0),
-        MemberSpec_('classxx', 'xs:float', 0),
+        MemberSpec_('class_', 'xs:float', 0),
         MemberSpec_('other_value', 'xs:float', 1),
         MemberSpec_('type_', 'xs:float', 1),
         MemberSpec_('client_handler', 'client-handlerType', 1),
-        ]
+    ]
     subclass = None
     superclass = None
-    def __init__(self, member_id=None, firstname=None, lastname=None, other_name=None, classxx=None, other_value=None, type_=None, client_handler=None):
+    def __init__(self, member_id=None, firstname=None, lastname=None, other_name=None, class_=None, other_value=None, type_=None, client_handler=None):
         self.member_id = _cast(None, member_id)
         self.firstname = firstname
         self.lastname = lastname
         self.other_name = other_name
-        self.classxx = classxx
+        self.class_ = class_
         if other_value is None:
             self.other_value = []
         else:
@@ -2002,8 +2133,8 @@ class boosterType(GeneratedsSuper):
     def set_lastname(self, lastname): self.lastname = lastname
     def get_other_name(self): return self.other_name
     def set_other_name(self, other_name): self.other_name = other_name
-    def get_class(self): return self.classxx
-    def set_class(self, classxx): self.classxx = classxx
+    def get_class(self): return self.class_
+    def set_class(self, class_): self.class_ = class_
     def get_other_value(self): return self.other_value
     def set_other_value(self, other_value): self.other_value = other_value
     def add_other_value(self, value): self.other_value.append(value)
@@ -2023,15 +2154,15 @@ class boosterType(GeneratedsSuper):
             self.firstname is not None or
             self.lastname is not None or
             self.other_name is not None or
-            self.classxx is not None or
+            self.class_ is not None or
             self.other_value or
             self.type_ or
             self.client_handler
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='boosterType'):
+    def to_etree(self, parent_element=None, name_='boosterType', mapping_=None):
         if parent_element is None:
             element = etree_.Element('{}' + name_)
         else:
@@ -2047,15 +2178,17 @@ class boosterType(GeneratedsSuper):
         if self.other_name is not None:
             other_name_ = self.other_name
             etree_.SubElement(element, '{}other-name').text = self.gds_format_float(other_name_)
-        if self.classxx is not None:
-            classxx_ = self.classxx
-            etree_.SubElement(element, '{}class').text = self.gds_format_float(classxx_)
+        if self.class_ is not None:
+            class__ = self.class_
+            etree_.SubElement(element, '{}class').text = self.gds_format_float(class__)
         for other_value_ in self.other_value:
             etree_.SubElement(element, '{}other-value').text = self.gds_format_float(other_value_)
         for type__ in self.type_:
             etree_.SubElement(element, '{}type').text = self.gds_format_float(type__)
         for client_handler_ in self.client_handler:
-            client_handler_.to_etree(element, name_='client-handler')
+            client_handler_.to_etree(element, name_='client-handler', mapping_=mapping_)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -2092,7 +2225,7 @@ class boosterType(GeneratedsSuper):
             except (TypeError, ValueError), exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'class')
-            self.classxx = fval_
+            self.class_ = fval_
         elif nodeName_ == 'other-value':
             sval_ = child_.text
             try:
@@ -2121,7 +2254,7 @@ class infoType(GeneratedsSuper):
         MemberSpec_('rating', 'xs:float', 0),
         MemberSpec_('type', 'xs:integer', 0),
         MemberSpec_('name', 'xs:string', 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, rating=None, type_=None, name=None):
@@ -2144,11 +2277,11 @@ class infoType(GeneratedsSuper):
     def hasContent_(self):
         if (
 
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='infoType'):
+    def to_etree(self, parent_element=None, name_='infoType', mapping_=None):
         if parent_element is None:
             element = etree_.Element('{}' + name_)
         else:
@@ -2159,6 +2292,8 @@ class infoType(GeneratedsSuper):
             element.set('type', self.gds_format_integer(self.type_))
         if self.name is not None:
             element.set('name', self.gds_format_string(self.name))
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -2193,7 +2328,7 @@ class infoType(GeneratedsSuper):
 class vehicleType(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('wheelcount', 'xs:integer', 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, wheelcount=None, extensiontype_=None):
@@ -2212,11 +2347,11 @@ class vehicleType(GeneratedsSuper):
     def hasContent_(self):
         if (
             self.wheelcount is not None
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='vehicleType'):
+    def to_etree(self, parent_element=None, name_='vehicleType', mapping_=None):
         if parent_element is None:
             element = etree_.Element('{}' + name_)
         else:
@@ -2226,6 +2361,8 @@ class vehicleType(GeneratedsSuper):
         if self.wheelcount is not None:
             wheelcount_ = self.wheelcount
             etree_.SubElement(element, '{}wheelcount').text = self.gds_format_integer(wheelcount_)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -2253,7 +2390,7 @@ class vehicleType(GeneratedsSuper):
 class automobile(vehicleType):
     member_data_items_ = [
         MemberSpec_('drivername', 'xs:string', 0),
-        ]
+    ]
     subclass = None
     superclass = vehicleType
     def __init__(self, wheelcount=None, drivername=None):
@@ -2271,15 +2408,17 @@ class automobile(vehicleType):
         if (
             self.drivername is not None or
             super(automobile, self).hasContent_()
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='automobile'):
-        element = super(automobile, self).to_etree(parent_element, name_)
+    def to_etree(self, parent_element=None, name_='automobile', mapping_=None):
+        element = super(automobile, self).to_etree(parent_element, name_, mapping_)
         if self.drivername is not None:
             drivername_ = self.drivername
             etree_.SubElement(element, '{}drivername').text = self.gds_format_string(drivername_)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -2301,7 +2440,7 @@ class automobile(vehicleType):
 class airplane(vehicleType):
     member_data_items_ = [
         MemberSpec_('pilotname', 'xs:string', 0),
-        ]
+    ]
     subclass = None
     superclass = vehicleType
     def __init__(self, wheelcount=None, pilotname=None):
@@ -2319,15 +2458,17 @@ class airplane(vehicleType):
         if (
             self.pilotname is not None or
             super(airplane, self).hasContent_()
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='airplane'):
-        element = super(airplane, self).to_etree(parent_element, name_)
+    def to_etree(self, parent_element=None, name_='airplane', mapping_=None):
+        element = super(airplane, self).to_etree(parent_element, name_, mapping_)
         if self.pilotname is not None:
             pilotname_ = self.pilotname
             etree_.SubElement(element, '{}pilotname').text = self.gds_format_string(pilotname_)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -2352,14 +2493,18 @@ class hot_agent(GeneratedsSuper):
         MemberSpec_('lastname', 'xs:string', 0),
         MemberSpec_('priority', 'xs:float', 0),
         MemberSpec_('startDate', 'xs:date', 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, firstname='empty\\name', lastname='no \'last\' name', priority=None, startDate=None):
         self.firstname = firstname
         self.lastname = lastname
         self.priority = priority
-        self.startDate = startDate
+        if isinstance(startDate, basestring):
+            initvalue_ = datetime_.datetime.strptime(startDate, '%Y-%m-%d').date()
+        else:
+            initvalue_ = startDate
+        self.startDate = initvalue_
         self.anyAttributes_ = {}
     def factory(*args_, **kwargs_):
         if hot_agent.subclass:
@@ -2383,11 +2528,11 @@ class hot_agent(GeneratedsSuper):
             self.lastname is not None or
             self.priority is not None or
             self.startDate is not None
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='hot.agent'):
+    def to_etree(self, parent_element=None, name_='hot.agent', mapping_=None):
         if parent_element is None:
             element = etree_.Element('{}' + name_)
         else:
@@ -2404,6 +2549,8 @@ class hot_agent(GeneratedsSuper):
         if self.startDate is not None:
             startDate_ = self.startDate
             etree_.SubElement(element, '{}startDate').text = self.gds_format_date(startDate_)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -2435,7 +2582,7 @@ class hot_agent(GeneratedsSuper):
             self.priority = fval_
         elif nodeName_ == 'startDate':
             sval_ = child_.text
-            dval_ = self.gds_parse_date(sval_, node, 'startDate')
+            dval_ = self.gds_parse_date(sval_)
             self.startDate = dval_
 # end class hot_agent
 
@@ -2444,7 +2591,7 @@ class client_handlerType(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('fullname', 'xs:string', 0),
         MemberSpec_('refid', 'xs:integer', 0),
-        ]
+    ]
     subclass = None
     superclass = None
     def __init__(self, fullname=None, refid=None):
@@ -2464,11 +2611,11 @@ class client_handlerType(GeneratedsSuper):
         if (
             self.fullname is not None or
             self.refid is not None
-            ):
+        ):
             return True
         else:
             return False
-    def to_etree(self, parent_element=None, name_='client-handlerType'):
+    def to_etree(self, parent_element=None, name_='client-handlerType', mapping_=None):
         if parent_element is None:
             element = etree_.Element('{}' + name_)
         else:
@@ -2479,6 +2626,8 @@ class client_handlerType(GeneratedsSuper):
         if self.refid is not None:
             refid_ = self.refid
             etree_.SubElement(element, '{}refid').text = self.gds_format_integer(refid_)
+        if mapping_ is not None:
+            mapping_[self] = element
         return element
     def build(self, node):
         already_processed = set()
@@ -2528,6 +2677,7 @@ USAGE_TEXT = """
 Usage: python <Parser>.py [ -s ] <in_xml_file>
 """
 
+
 def usage():
     print USAGE_TEXT
     sys.exit(1)
@@ -2553,7 +2703,8 @@ def parse(inFileName):
     # Enable Python to collect the space used by the DOM.
     doc = None
 ##     sys.stdout.write('<?xml version="1.0" ?>\n')
-##     rootObj.export(sys.stdout, 0, name_=rootTag,
+##     rootObj.export(
+##         sys.stdout, 0, name_=rootTag,
 ##         namespacedef_='',
 ##         pretty_print=True)
     return rootObj
@@ -2570,28 +2721,32 @@ def parseEtree(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    rootElement = rootObj.to_etree(None, name_=rootTag)
-##     content = etree_.tostring(rootElement, pretty_print=True,
+    mapping = {}
+    rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
+    reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
+##     content = etree_.tostring(
+##         rootElement, pretty_print=True,
 ##         xml_declaration=True, encoding="utf-8")
 ##     sys.stdout.write(content)
 ##     sys.stdout.write('\n')
-    return rootObj, rootElement
+    return rootObj, rootElement, mapping, reverse_mapping
 
 
 def parseString(inString):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    rootTag, rootClass = get_root_tag(rootNode)
+    roots = get_root_tag(rootNode)
+    rootClass = roots[1]
     if rootClass is None:
-        rootTag = 'people'
         rootClass = peopleType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
 ##     sys.stdout.write('<?xml version="1.0" ?>\n')
-##     rootObj.export(sys.stdout, 0, name_="people",
+##     rootObj.export(
+##         sys.stdout, 0, name_="people",
 ##         namespacedef_='')
     return rootObj
 
@@ -2608,7 +2763,6 @@ def parseLiteral(inFileName):
     # Enable Python to collect the space used by the DOM.
     doc = None
 ##     sys.stdout.write('#from to_etree2_sup import *\n\n')
-##     sys.stdout.write('from datetime import datetime as datetime_\n\n')
 ##     sys.stdout.write('import to_etree2_sup as model_\n\n')
 ##     sys.stdout.write('rootObj = model_.rootTag(\n')
 ##     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
@@ -2648,4 +2802,4 @@ __all__ = [
     "specialperson",
     "vehicleType",
     "weird_agentType"
-    ]
+]
