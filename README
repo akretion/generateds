@@ -151,6 +151,8 @@ Version 2.10b (06/10/2013)
   The default is "new".  See the help (use --help option) or see the
   doc (generateDS.txt/generateDS.html) for more on this.  Thanks to
   Mike Vella for suggesting this.
+- Changed suffix used to prevent name conflicts with Python keywords
+  from "xx" to "_".
 
 Version 2.10a (05/29/2013)
 - Added ability to produce mapping (a dict) during call to

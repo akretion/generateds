@@ -198,7 +198,7 @@ NameTable = {
     'build': 'build_',
 }
 for kw in keyword.kwlist:
-    NameTable[kw] = '%sxx' % kw
+    NameTable[kw] = '%s_' % kw
 
 
 SubclassSuffix = 'Sub'
@@ -3865,7 +3865,6 @@ def getValidatorBody(stName):
 
 # Generate get/set/add member functions.
 def generateGettersAndSetters(wrt, element):
-    generatedSimpleTypes = []
     for child in element.getChildren():
         if child.getType() == AnyTypeIdentifier:
             wrt('    def get_anytypeobjs_(self): return self.anytypeobjs_\n')
@@ -3892,26 +3891,6 @@ def generateGettersAndSetters(wrt, element):
             if GenerateProperties:
                 wrt('    %sProp = property(get%s, set%s)\n' %
                     (unmappedName, capName, capName))
-            #
-            # If this child is defined in a simpleType, then generate
-            #   a validator method.
-            typeName = None
-            name = cleanupName(child.getName())
-            mappedName = mapName(name)
-            typeName = child.getSimpleType()
-            if (typeName and
-                    typeName in SimpleTypeDict and
-                    typeName not in generatedSimpleTypes):
-                generatedSimpleTypes.append(typeName)
-                wrt('    def validate_%s(self, value):\n' % (typeName, ))
-                if typeName in SimpleTypeDict:
-                    stObj = SimpleTypeDict[typeName]
-                    wrt('        # Validate type %s, a restriction '
-                        'on %s.\n' %
-                        (typeName, stObj.getBase(), ))
-                else:
-                    wrt('        # validate type %s\n' % (typeName, ))
-                wrt(getValidatorBody(typeName))
     attrDefs = element.getAttributeDefs()
     for key in attrDefs:
         attrDef = attrDefs[key]
@@ -3925,19 +3904,6 @@ def generateGettersAndSetters(wrt, element):
         if GenerateProperties:
             wrt('    %sProp = property(get%s, set%s)\n' %
                 (name, gsName, gsName))
-        typeName = attrDef.getType()
-        if (typeName and
-                typeName in SimpleTypeDict and
-                typeName not in generatedSimpleTypes):
-            generatedSimpleTypes.append(typeName)
-            wrt('    def validate_%s(self, value):\n' % (typeName, ))
-            if typeName in SimpleTypeDict:
-                stObj = SimpleTypeDict[typeName]
-                wrt('        # Validate type %s, a restriction on %s.\n' % (
-                    typeName, stObj.getBase(), ))
-            else:
-                wrt('        # validate type %s\n' % (typeName, ))
-            wrt(getValidatorBody(typeName))
     if element.getSimpleContent() or element.isMixed():
         wrt('    def get%s_(self): return self.valueOf_\n' % (
             make_gs_name('valueOf'), ))
@@ -3956,6 +3922,46 @@ def generateGettersAndSetters(wrt, element):
             'self.extensiontype_ = extensiontype_\n' %
             (make_gs_name('extensiontype'), ))
 # end generateGettersAndSetters
+
+
+# Generate validator methods.
+def generateValidatorDefs(wrt, element):
+    generatedSimpleTypes = []
+    for child in element.getChildren():
+        #
+        # If this child is defined in a simpleType, then generate
+        #   a validator method.
+        typeName = child.getSimpleType()
+        if (typeName and
+                typeName in SimpleTypeDict and
+                typeName not in generatedSimpleTypes):
+            generatedSimpleTypes.append(typeName)
+            wrt('    def validate_%s(self, value):\n' % (typeName, ))
+            if typeName in SimpleTypeDict:
+                stObj = SimpleTypeDict[typeName]
+                wrt('        # Validate type %s, a restriction '
+                    'on %s.\n' %
+                    (typeName, stObj.getBase(), ))
+            else:
+                wrt('        # validate type %s\n' % (typeName, ))
+            wrt(getValidatorBody(typeName))
+    attrDefs = element.getAttributeDefs()
+    for key in attrDefs:
+        attrDef = attrDefs[key]
+        typeName = attrDef.getType()
+        if (typeName and
+                typeName in SimpleTypeDict and
+                typeName not in generatedSimpleTypes):
+            generatedSimpleTypes.append(typeName)
+            wrt('    def validate_%s(self, value):\n' % (typeName, ))
+            if typeName in SimpleTypeDict:
+                stObj = SimpleTypeDict[typeName]
+                wrt('        # Validate type %s, a restriction on %s.\n' % (
+                    typeName, stObj.getBase(), ))
+            else:
+                wrt('        # validate type %s\n' % (typeName, ))
+            wrt(getValidatorBody(typeName))
+# end generateValidatorDefs
 
 
 #
@@ -4141,6 +4147,7 @@ def generateClasses(wrt, prefix, element, delayed):
     wrt('    factory = staticmethod(factory)\n')
     if UseGetterSetter != 'none':
         generateGettersAndSetters(wrt, element)
+    generateValidatorDefs(wrt, element)
     if Targetnamespace in NamespacesDict:
         namespace = NamespacesDict[Targetnamespace]
     else:
