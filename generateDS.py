@@ -3863,7 +3863,7 @@ def getValidatorBody(stName):
 # end getValidatorBody
 
 
-# Generate get/set/add member functions.
+# Generate get/set/add/insert member functions.
 def generateGettersAndSetters(wrt, element):
     for child in element.getChildren():
         if child.getType() == AnyTypeIdentifier:
