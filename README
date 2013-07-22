@@ -141,7 +141,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version 2.10b (06/20/2013)
+Version 2.10b (07/22/2013)
 - Changed flag for generating getters and setters.  Removed flag
   --use-old-getter-setter.  Replaced it with new flag
   --use-getter-setter, which can have the following values:
