@@ -17,6 +17,7 @@ Options:
                              Default = 'xs:'.
     -b <behaviorfilename>    Input file name for behaviors added to subclasses
     -m                       Generate properties for member variables
+    -c <xmlcatalogfilename>  Input file name to load an XML catalog
     --subclass-suffix="XXX"  Append XXX to the generated subclass names.
                              Default="Sub".
     --root-element="XXX"     Assume XXX is root element of instance docs.
@@ -5645,7 +5646,7 @@ def is_builtin_simple_type(type_val):
 
 def parseAndGenerate(
         outfileName, subclassFilename, prefix,
-        xschemaFileName, behaviorFilename,
+        xschemaFileName, behaviorFilename, catalogFilename,
         processIncludes, superModule='???'):
     global DelayedElements, DelayedElements_subclass, \
         AlreadyGenerated, SaxDelayedElements, \
@@ -5674,7 +5675,7 @@ def parseAndGenerate(
         import process_includes
         outfile = StringIO.StringIO()
         process_includes.process_include_files(
-            infile, outfile, inpath=xschemaFileName)
+            infile, outfile, inpath=xschemaFileName, catalogpath=catalogFilename)
         outfile.seek(0)
         infile = outfile
     parser.parse(infile)
@@ -5797,7 +5798,7 @@ def main():
     args = sys.argv[1:]
     try:
         options, args = getopt.getopt(
-            args, 'hfyo:s:p:a:b:mu:q',
+            args, 'hfyo:s:p:a:b:c:mu:q',
             [
                 'help', 'subclass-suffix=',
                 'root-element=', 'super=',
@@ -5897,6 +5898,8 @@ def main():
             nameSpace = option[1]
         elif option[0] == '-b':
             behaviorFilename = option[1]
+        elif option[0] == '-c':
+            catalogFilename = option[1]
         elif option[0] == '-m':
             GenerateProperties = 1
         elif option[0] == '--no-dates':
@@ -5972,7 +5975,7 @@ def main():
     load_config()
     parseAndGenerate(
         outFilename, subclassFilename, prefix,
-        xschemaFileName, behaviorFilename,
+        xschemaFileName, behaviorFilename, catalogFilename,
         processIncludes, superModule=superModule)
 
 

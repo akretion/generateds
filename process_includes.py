@@ -35,12 +35,23 @@ VERSION = '2.10b'
 
 Namespaces = {'xs': 'http://www.w3.org/2001/XMLSchema'}
 Xsd_namespace_uri = 'http://www.w3.org/2001/XMLSchema'
+CatalogDict = {}
+# the base url to use for all relative paths in the catalog
+CatalogBaseUrl = None
 
+def load_catalog(catalogpath):
+    global CatalogBaseUrl
+    if catalogpath:
+        CatalogBaseUrl = os.path.split(catalogpath)[0]
+        catalog = etree.parse(open(catalogpath))
+        for elements in catalog.getroot().findall("{urn:oasis:names:tc:entity:xmlns:xml:catalog}public"):
+            CatalogDict[elements.get("publicId")] = elements.get("uri")
 
 #
 # Functions for external use
 
-def process_include_files(infile, outfile, inpath=''):
+def process_include_files(infile, outfile, inpath='', catalogpath=None):
+    load_catalog(catalogpath)
     options = Values({
         'force': False,
     })
@@ -88,7 +99,19 @@ def clear_includes_and_imports(node):
 
 def resolve_ref(node, params, options):
     content = None
-    url = node.get('schemaLocation')
+    # first look for the schema location in the catalog, if not
+    # there, then see if it's specified in the node
+    namespace = node.get('namespace')
+    url = None
+    baseUrl = None
+    if namespace in CatalogDict:
+        url = CatalogDict[namespace]
+        # setup the base url in case the path 
+        # in the catalog was a relative path
+        baseUrl = CatalogBaseUrl
+    if not url:
+        url = node.get('schemaLocation')
+    
     if not url:
         msg = '*** Warning: missing "schemaLocation" attribute in %s\n' % (
             params.parent_url, )
@@ -97,12 +120,15 @@ def resolve_ref(node, params, options):
     # Uncomment the next lines to help track down missing schemaLocation etc.
     # print '(resolve_ref) url: %s\n    parent-url: %s' % (
     #     url, params.parent_url, )
+    
+    if not baseUrl:
+        baseUrl = params.base_url
 
-    if params.base_url and not (
+    if baseUrl and not (
             url.startswith('/') or
             url.startswith('http:') or
             url.startswith('ftp:')):
-        locn = '%s/%s' % (params.base_url, url, )
+        locn = '%s/%s' % (baseUrl, url, )
         schema_name = locn
     else:
         locn = url
