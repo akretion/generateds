@@ -4934,6 +4934,16 @@ def generateMain(outfile, prefix, root):
             rootElement = RootElement
         else:
             rootElement = ''
+    if Namespacedef:
+        namespace = Namespacedef
+    elif Targetnamespace:
+        if Targetnamespace in NamespacesDict:
+            namespace = 'xmlns:%s="%s"' % (
+                NamespacesDict[Targetnamespace].rstrip(':'), Targetnamespace, )
+        else:
+            namespace = ''
+    else:
+        namespace = ''
     params = {
         'prefix': prefix,
         'cap_name': cleanupName(make_gs_name(name)),
@@ -4941,7 +4951,7 @@ def generateMain(outfile, prefix, root):
         'cleanname': cleanupName(name),
         'module_name': os.path.splitext(os.path.basename(outfile.name))[0],
         'root': rootElement,
-        'namespacedef': Namespacedef,
+        'namespacedef': namespace,
     }
     s1 = TEMPLATE_MAIN % params
     outfile.write(s1)
@@ -5439,6 +5449,17 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
                 rootElement = RootElement
             else:
                 rootElement = ''
+        if Namespacedef:
+            namespace = Namespacedef
+        elif Targetnamespace:
+            if Targetnamespace in NamespacesDict:
+                namespace = 'xmlns:%s="%s"' % (
+                    NamespacesDict[Targetnamespace].rstrip(':'),
+                    Targetnamespace, )
+            else:
+                namespace = ''
+        else:
+            namespace = ''
         params = {
             'cap_name': make_gs_name(cleanupName(name)),
             'name': name,
@@ -5446,7 +5467,7 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
             'module_name': os.path.splitext(
                 os.path.basename(subclassFilename))[0],
             'root': rootElement,
-            'namespacedef': Namespacedef,
+            'namespacedef': namespace,
             'super': superModule,
         }
         wrt(TEMPLATE_SUBCLASS_FOOTER % params)
@@ -5675,7 +5696,8 @@ def parseAndGenerate(
         import process_includes
         outfile = StringIO.StringIO()
         process_includes.process_include_files(
-            infile, outfile, inpath=xschemaFileName, catalogpath=catalogFilename)
+            infile, outfile, inpath=xschemaFileName,
+            catalogpath=catalogFilename)
         outfile.seek(0)
         infile = outfile
     parser.parse(infile)
@@ -5825,6 +5847,7 @@ def main():
     NoQuestions = False
     showVersion = False
     xschemaFileName = None
+    catalogFilename = None
     for option in options:
         if option[0] == '--session':
             sessionFilename = option[1]

@@ -141,6 +141,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.11a (08/06/2013)
+- Added ability to use XML catalog to find included/imported
+  schemas.  Thanks to George David for implementing this
+  enhancement.
+- Added ability to pick up the target namespace and its prefix, then
+  use them in calling the export functions from the parse functions.
+  Thanks to George David for suggesting this.
+
 Version 2.10b (07/22/2013)
 - Changed flag for generating getters and setters.  Removed flag
   --use-old-getter-setter.  Replaced it with new flag
