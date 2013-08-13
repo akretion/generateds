@@ -11,7 +11,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.10b
+:revision: 2.11a
 
 .. version
 
@@ -1427,13 +1427,15 @@ supported in ``generateDS.py``::
     </xsd:element>
 
 
-minOccurs attribute support
----------------------------
+Arity, minOccurs, maxOccurs, etc
+--------------------------------
 
-Some applications require the availability of the "minOccurs"
-attribute in addition to the previous minimal support of
-"optionality".  This is available through the ``getMinOccurs``
-method (which follows the style of the existing API).
+Some applications require information about the "minOccurs" and
+"maxOccurs" attributes in the XML Schema.  Some of that information
+can be obtained by using the --member-specs= (list|dict) command line
+option, then looking at the ``member_data_items_`` class variable
+that it generates in each data representation class.  In particular,
+look at the ``get_container`` method (from class ``MemberSpec_``).
 
 
 More thorough content type and base type resolution

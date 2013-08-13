@@ -225,7 +225,7 @@ They are used by updateversion.py. -->
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">date:</th><td class="field-body">June 19, 2013</td>
+<tr class="field"><th class="field-name">date:</th><td class="field-body">August 13, 2013</td>
 </tr>
 </tbody>
 </table>
@@ -308,7 +308,7 @@ to process the contents of an XML document.</td>
 <li><a class="reference internal" href="#xsd-enumeration-support" id="id45">11.2&nbsp;&nbsp;&nbsp;xsd:enumeration support</a></li>
 <li><a class="reference internal" href="#xsd-union-support" id="id46">11.3&nbsp;&nbsp;&nbsp;xsd:union support</a></li>
 <li><a class="reference internal" href="#extended-xsd-choice-support" id="id47">11.4&nbsp;&nbsp;&nbsp;Extended xsd:choice support</a></li>
-<li><a class="reference internal" href="#minoccurs-attribute-support" id="id48">11.5&nbsp;&nbsp;&nbsp;minOccurs attribute support</a></li>
+<li><a class="reference internal" href="#arity-minoccurs-maxoccurs-etc" id="id48">11.5&nbsp;&nbsp;&nbsp;Arity, minOccurs, maxOccurs, etc</a></li>
 <li><a class="reference internal" href="#more-thorough-content-type-and-base-type-resolution" id="id49">11.6&nbsp;&nbsp;&nbsp;More thorough content type and base type resolution</a></li>
 <li><a class="reference internal" href="#making-top-level-simpletypes-available-from-xschemahandler" id="id50">11.7&nbsp;&nbsp;&nbsp;Making top level simpleTypes available from XschemaHandler</a></li>
 <li><a class="reference internal" href="#namespaces-inserting-namespace-definition-in-exported-documents" id="id51">11.8&nbsp;&nbsp;&nbsp;Namespaces -- inserting namespace definition in exported documents</a></li>
@@ -1630,12 +1630,14 @@ supported in <tt class="docutils literal">generateDS.py</tt>:</p>
 &lt;/xsd:element&gt;
 </pre>
 </div>
-<div class="section" id="minoccurs-attribute-support">
-<h2><a class="toc-backref" href="#id48">11.5&nbsp;&nbsp;&nbsp;minOccurs attribute support</a></h2>
-<p>Some applications require the availability of the &quot;minOccurs&quot;
-attribute in addition to the previous minimal support of
-&quot;optionality&quot;.  This is available through the <tt class="docutils literal">getMinOccurs</tt>
-method (which follows the style of the existing API).</p>
+<div class="section" id="arity-minoccurs-maxoccurs-etc">
+<h2><a class="toc-backref" href="#id48">11.5&nbsp;&nbsp;&nbsp;Arity, minOccurs, maxOccurs, etc</a></h2>
+<p>Some applications require information about the &quot;minOccurs&quot; and
+&quot;maxOccurs&quot; attributes in the XML Schema.  Some of that information
+can be obtained by using the --member-specs= (list|dict) command line
+option, then looking at the <tt class="docutils literal">member_data_items_</tt> class variable
+that it generates in each data representation class.  In particular,
+look at the <tt class="docutils literal">get_container</tt> method (from class <tt class="docutils literal">MemberSpec_</tt>).</p>
 </div>
 <div class="section" id="more-thorough-content-type-and-base-type-resolution">
 <h2><a class="toc-backref" href="#id49">11.6&nbsp;&nbsp;&nbsp;More thorough content type and base type resolution</a></h2>
