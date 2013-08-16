@@ -51,6 +51,8 @@ Options:
     --silence                Normally, the code generated with generateDS
                              echoes the information being parsed. To prevent
                              the echo from occurring, use the --silence switch.
+                             Also note optional "silence" parameter on
+                             generated functions, e.g. parse, parseString, etc.
     --namespacedef='xmlns:abc="http://www.abc.com"'
                              Namespace definition to be passed in as the
                              value for the namespacedef_ parameter of

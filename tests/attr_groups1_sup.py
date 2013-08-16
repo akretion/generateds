@@ -112,7 +112,7 @@ except ImportError, exp:
                     raise_parse_error(node, 'Requires sequence of integers')
             return input_data
         def gds_format_float(self, input_data, input_name=''):
-            return '%f' % input_data
+            return ('%.15f' % input_data).rstrip('0')
         def gds_validate_float(self, input_data, node, input_name=''):
             return input_data
         def gds_format_float_list(self, input_data, input_name=''):
@@ -196,7 +196,7 @@ except ImportError, exp:
         def gds_parse_datetime(cls, input_data):
             tz = None
             if input_data[-1] == 'Z':
-                tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
+                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
                 input_data = input_data[:-1]
             else:
                 results = GeneratedsSuper.tzoff_pattern.search(input_data)
@@ -247,7 +247,7 @@ except ImportError, exp:
         def gds_parse_date(cls, input_data):
             tz = None
             if input_data[-1] == 'Z':
-                tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
+                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
                 input_data = input_data[:-1]
             else:
                 results = GeneratedsSuper.tzoff_pattern.search(input_data)
@@ -298,7 +298,7 @@ except ImportError, exp:
         def gds_parse_time(cls, input_data):
             tz = None
             if input_data[-1] == 'Z':
-                tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
+                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
                 input_data = input_data[:-1]
             else:
                 results = GeneratedsSuper.tzoff_pattern.search(input_data)
@@ -840,7 +840,7 @@ def get_root_tag(node):
     return tag, rootClass
 
 
-def parse(inFileName):
+def parse(inFileName, silence=False):
     doc = parsexml_(inFileName)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
@@ -851,15 +851,16 @@ def parse(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     sys.stdout.write('<?xml version="1.0" ?>\n')
-##     rootObj.export(
-##         sys.stdout, 0, name_=rootTag,
-##         namespacedef_='',
-##         pretty_print=True)
+##     if not silence:
+##         sys.stdout.write('<?xml version="1.0" ?>\n')
+##         rootObj.export(
+##             sys.stdout, 0, name_=rootTag,
+##             namespacedef_='',
+##             pretty_print=True)
     return rootObj
 
 
-def parseEtree(inFileName):
+def parseEtree(inFileName, silence=False):
     doc = parsexml_(inFileName)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
@@ -873,15 +874,16 @@ def parseEtree(inFileName):
     mapping = {}
     rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
     reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
-##     content = etree_.tostring(
-##         rootElement, pretty_print=True,
-##         xml_declaration=True, encoding="utf-8")
-##     sys.stdout.write(content)
-##     sys.stdout.write('\n')
+##     if not silence:
+##         content = etree_.tostring(
+##             rootElement, pretty_print=True,
+##             xml_declaration=True, encoding="utf-8")
+##         sys.stdout.write(content)
+##         sys.stdout.write('\n')
     return rootObj, rootElement, mapping, reverse_mapping
 
 
-def parseString(inString):
+def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
@@ -893,14 +895,15 @@ def parseString(inString):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     sys.stdout.write('<?xml version="1.0" ?>\n')
-##     rootObj.export(
-##         sys.stdout, 0, name_="getUser",
-##         namespacedef_='')
+##     if not silence:
+##         sys.stdout.write('<?xml version="1.0" ?>\n')
+##         rootObj.export(
+##             sys.stdout, 0, name_="getUser",
+##             namespacedef_='')
     return rootObj
 
 
-def parseLiteral(inFileName):
+def parseLiteral(inFileName, silence=False):
     doc = parsexml_(inFileName)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
@@ -911,11 +914,12 @@ def parseLiteral(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     sys.stdout.write('#from attr_groups2_sup import *\n\n')
-##     sys.stdout.write('import attr_groups2_sup as model_\n\n')
-##     sys.stdout.write('rootObj = model_.rootTag(\n')
-##     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
-##     sys.stdout.write(')\n')
+##     if not silence:
+##         sys.stdout.write('#from attr_groups2_sup import *\n\n')
+##         sys.stdout.write('import attr_groups2_sup as model_\n\n')
+##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
+##         sys.stdout.write(')\n')
     return rootObj
 
 

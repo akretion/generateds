@@ -217,6 +217,7 @@ Here is the usage message displayed by ``generateDS.py``::
                                  Default = 'xs:'.
         -b <behaviorfilename>    Input file name for behaviors added to subclasses
         -m                       Generate properties for member variables
+        -c <xmlcatalogfilename>  Input file name to load an XML catalog
         --subclass-suffix="XXX"  Append XXX to the generated subclass names.
                                  Default="Sub".
         --root-element="XXX"     Assume XXX is root element of instance docs.
@@ -250,6 +251,8 @@ Here is the usage message displayed by ``generateDS.py``::
         --silence                Normally, the code generated with generateDS
                                  echoes the information being parsed. To prevent
                                  the echo from occurring, use the --silence switch.
+                                 Also note optional "silence" parameter on
+                                 generated functions, e.g. parse, parseString, etc.
         --namespacedef='xmlns:abc="http://www.abc.com"'
                                  Namespace definition to be passed in as the
                                  value for the namespacedef_ parameter of
@@ -346,6 +349,13 @@ m
     generated classes to inherit from class object.  Generates
     a call to the built-in property function for each pair of
     getters and setters.  This is experimental.
+
+c <xmlcatalogfilename>
+    Specify the file to be used as an XML catalog.  This file will
+    be used by process_includes.py if needed to resolve references
+    in <import> and <include> elements in the XML Schema.  For more
+    information on XML catalogs, see:
+    http://en.wikipedia.org/wiki/XML_Catalog
 
 subclass-suffix=<suffix>
     Append suffix to the name of classes generated in the subclass

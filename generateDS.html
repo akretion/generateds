@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.11: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.12: http://docutils.sourceforge.net/" />
 <title>generateDS -- Generate Data Structures from XML Schema</title>
 <meta name="author" content="Dave Kuhlman" />
 <style type="text/css">
@@ -216,7 +216,7 @@ They are used by updateversion.py. -->
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">revision:</th><td class="field-body">2.10b</td>
+<tr class="field"><th class="field-name">revision:</th><td class="field-body">2.11a</td>
 </tr>
 </tbody>
 </table>
@@ -225,7 +225,7 @@ They are used by updateversion.py. -->
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">date:</th><td class="field-body">August 13, 2013</td>
+<tr class="field"><th class="field-name">date:</th><td class="field-body">August 16, 2013</td>
 </tr>
 </tbody>
 </table>
@@ -513,6 +513,7 @@ Options:
                              Default = 'xs:'.
     -b &lt;behaviorfilename&gt;    Input file name for behaviors added to subclasses
     -m                       Generate properties for member variables
+    -c &lt;xmlcatalogfilename&gt;  Input file name to load an XML catalog
     --subclass-suffix=&quot;XXX&quot;  Append XXX to the generated subclass names.
                              Default=&quot;Sub&quot;.
     --root-element=&quot;XXX&quot;     Assume XXX is root element of instance docs.
@@ -546,6 +547,8 @@ Options:
     --silence                Normally, the code generated with generateDS
                              echoes the information being parsed. To prevent
                              the echo from occurring, use the --silence switch.
+                             Also note optional &quot;silence&quot; parameter on
+                             generated functions, e.g. parse, parseString, etc.
     --namespacedef='xmlns:abc=&quot;http://www.abc.com&quot;'
                              Namespace definition to be passed in as the
                              value for the namespacedef_ parameter of
@@ -636,6 +639,12 @@ section on <a class="reference internal" href="#xmlbehaviors">XMLBehaviors</a> b
 generated classes to inherit from class object.  Generates
 a call to the built-in property function for each pair of
 getters and setters.  This is experimental.</dd>
+<dt>c &lt;xmlcatalogfilename&gt;</dt>
+<dd>Specify the file to be used as an XML catalog.  This file will
+be used by process_includes.py if needed to resolve references
+in &lt;import&gt; and &lt;include&gt; elements in the XML Schema.  For more
+information on XML catalogs, see:
+<a class="reference external" href="http://en.wikipedia.org/wiki/XML_Catalog">http://en.wikipedia.org/wiki/XML_Catalog</a></dd>
 <dt>subclass-suffix=&lt;suffix&gt;</dt>
 <dd><p class="first">Append suffix to the name of classes generated in the subclass
 file.  The default, if omitted, is &quot;Sub&quot;.  For example, the
