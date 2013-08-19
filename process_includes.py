@@ -30,7 +30,7 @@ from lxml import etree
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.11a'
+VERSION = '2.11b'
 ##VERSION##
 
 Namespaces = {'xs': 'http://www.w3.org/2001/XMLSchema'}
@@ -297,19 +297,8 @@ def raise_anon_complextypes(root):
     """ Raise each anonymous complexType to top level and give it a name.
     Rename if necessary to prevent duplicates.
     """
-    element_tag = '{%s}element' % (Xsd_namespace_uri, )
-    def_names = {}
+    def_names = collect_type_names(root)
     def_count = 0
-    # Collect top level complexTypes.
-    defs = root.xpath('./xs:complexType', namespaces=Namespaces)
-    for node in defs:
-        type_name = node.get('name')
-        def_names[type_name] = node
-    # Collect top level simpleTypes.
-    defs = root.xpath('./xs:simpleType', namespaces=Namespaces)
-    for node in defs:
-        type_name = node.get('name')
-        def_names[type_name] = node
     # Find all complexTypes below top level.
     #   Raise them to top level and name them.
     #   Re-name if there is a duplicate (simpleType, complexType, or
@@ -320,7 +309,15 @@ def raise_anon_complextypes(root):
     el = etree.Comment(text="Raised anonymous complexType definitions")
     el.tail = "\n\n"
     root.append(el)
-    defs = root.xpath('./*/*//xs:complexType', namespaces=Namespaces)
+    prefix = root.prefix
+    if prefix:
+        pattern = './*/*//%s:complexType|./*/*//%s:simpleType' % (
+            prefix, prefix, )
+        element_tag = '{%s}element' % (root.nsmap[prefix], )
+    else:
+        pattern = './*/*//complexType|./*/*//simpleType'
+        element_tag = 'element'
+    defs = root.xpath(pattern, namespaces=Namespaces)
     for node in defs:
         parent = node.getparent()
         if parent.tag != element_tag:
@@ -330,19 +327,38 @@ def raise_anon_complextypes(root):
             continue
         type_name = '%sType' % (name, )
         type_name, def_count = unique_name(type_name, def_names, def_count)
-        def_names[type_name] = node
+        def_names.add(type_name)
         parent.set('type', type_name)
         node.set('name', type_name)
         # Move the complexType node to top level.
         root.append(node)
 
 
+#
+# Collect the names of all currently defined types (complexType,
+#   simpleType, element).
+def collect_type_names(node):
+    prefix = node.prefix
+    if prefix:
+        pattern = './/%s:complexType|.//%s:simpleType|.//%s:element' % (
+            prefix, prefix, prefix)
+    else:
+        pattern = './/complexType|.//simpleType|.//element'
+    elements = node.xpath(pattern, namespaces=node.nsmap)
+    names = [
+        el.attrib['name'] for el in elements if
+        'name' in el.attrib and el.getchildren()
+    ]
+    names = set(names)
+    return names
+
+
 def unique_name(type_name, def_names, def_count):
     orig_type_name = type_name
     while True:
-        def_count += 1
         if type_name not in def_names:
             return type_name, def_count
+        def_count += 1
         type_name = '%s%d' % (orig_type_name, def_count, )
 
 

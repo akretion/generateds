@@ -141,6 +141,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.11b (08/19/2013)
+- A name conflict issue caused by naming anonymous types.  An
+  anonymous type is a complexType that does not have a name
+  attribute and that is nested inside an element that does not have
+  a type attribute.  Strengthened the code that generates new,
+  unique names.  And, also fixed a problem or two in the surrounding
+  code.  Thanks to Shahaf Abileah for reporting this and for
+  providing test files to reproduce the problem behavior.
+- Created unit test for anonymous types.
+
 Version 2.11a (08/16/2013)
 - Added ability to use XML catalog to find included/imported
   schemas.  The -c command line option has been added to support

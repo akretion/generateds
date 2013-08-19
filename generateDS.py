@@ -170,7 +170,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.11a'
+VERSION = '2.11b'
 ##VERSION##
 
 GenerateProperties = 0
@@ -4104,7 +4104,7 @@ def generateClasses(wrt, prefix, element, delayed):
     #   not been generated, then postpone it.
     if parentName:
         if (parentName not in AlreadyGenerated and
-                parentName not in SimpleTypeDict.keys()):
+                parentName not in SimpleTypeDict):
             PostponedExtensions.append(element)
             return
     if element.getName() in AlreadyGenerated:
@@ -5541,7 +5541,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
         parentName, parent = getParentName(element)
         if parentName:
             if (parentName in AlreadyGenerated or
-                    parentName in SimpleTypeDict.keys()):
+                    parentName in SimpleTypeDict):
                 generateClasses(wrt, prefix, element, 1)
             else:
                 PostponedExtensions.insert(0, element)
