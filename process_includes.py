@@ -53,10 +53,13 @@ def load_catalog(catalogpath):
 # Functions for external use
 
 
-def process_include_files(infile, outfile, inpath='', catalogpath=None):
+def process_include_files(
+        infile, outfile, inpath='', catalogpath=None,
+        fixtypenames=None):
     load_catalog(catalogpath)
     options = Values({
         'force': False,
+        'fixtypenames': fixtypenames,
     })
     prep_schema_doc(infile, outfile, inpath, options)
 
@@ -230,6 +233,7 @@ def prep_schema_doc(infile, outfile, inpath, options):
         root2.append(insert_node)
     process_groups(root2)
     raise_anon_complextypes(root2)
+    fix_type_names(root2, options)
     doc2 = etree.ElementTree(root2)
     doc2.write(outfile)
     return doc2
@@ -265,6 +269,81 @@ def process_groups(root):
     for node in defs:
         def_dict[trim_prefix(node.get('name'))] = node
     replace_group_defs(def_dict, refs)
+
+
+def fix_type_names(root, options):
+    fixnamespec = options.fixtypenames
+    if fixnamespec:
+        namespecs = fixnamespec.split(';')
+    else:
+        namespecs = []
+    for namespec in namespecs:
+        names = namespec.split(':')
+        if len(names) == 2:
+            oldname = names[0]
+            newname = names[1]
+        elif len(names) == 1:
+            oldname = names[0]
+            newname = '%sxx' % (oldname, )
+        else:
+            continue
+        # Change the name (name attribute) of the complexType.
+        pat = './/%s:complexType[@name="%s"]' % (
+            root.prefix, oldname)
+        elements = xpath_find(root, pat)
+        if len(elements) < 1:
+            sys.stderr.write(
+                "\nWarning: fix-type-names can't find complexType '%s'.  "
+                "Exiting.\n\n" % (oldname, ))
+            sys.exit(1)
+        if len(elements) < 1:
+            sys.stderr.write(
+                "Warning: fix-type-names found more than "
+                "one complexType '%s'.  "
+                "Changing first." % (oldname, ))
+        element = elements[0]
+        element.set('name', newname)
+        # Change the reference (type attribute) of child elements.
+        pat = './/%s:element' % (root.prefix, )
+        elements = xpath_find(root, pat)
+        for element in elements:
+            typename = element.get('type')
+            if not typename:
+                continue
+            names = typename.split(':')
+            if len(names) == 2:
+                typename = names[1]
+            elif len(names) == 1:
+                typename = names[0]
+            else:
+                continue
+            if typename != oldname:
+                continue
+            if not element.getchildren():
+                element.set('type', newname)
+        # Change the extensions ('base' attribute) that refer to the old type.
+        pat = './/%s:extension' % (root.prefix, )
+        elements = xpath_find(root, pat)
+        for element in elements:
+            typename = element.get('base')
+            if not typename:
+                continue
+            names = typename.split(':')
+            if len(names) == 2:
+                typename = names[1]
+            elif len(names) == 1:
+                typename = names[0]
+            else:
+                continue
+            if typename != oldname:
+                continue
+            element.set('base', newname)
+
+
+def xpath_find(node, pat):
+    namespaces = {node.prefix: node.nsmap[node.prefix]}
+    elements = node.xpath(pat, namespaces=namespaces)
+    return elements
 
 
 def replace_group_defs(def_dict, refs):
@@ -339,12 +418,16 @@ def raise_anon_complextypes(root):
 #   simpleType, element).
 def collect_type_names(node):
     prefix = node.prefix
-    if prefix:
+    if prefix is not None and prefix.strip():
         pattern = './/%s:complexType|.//%s:simpleType|.//%s:element' % (
             prefix, prefix, prefix)
+        # Must make sure that we have a namespace dictionary that does *not*
+        # have a key None.
+        namespaces = {prefix: node.nsmap[prefix]}
+        elements = node.xpath(pattern, namespaces=namespaces)
     else:
         pattern = './/complexType|.//simpleType|.//element'
-    elements = node.xpath(pattern, namespaces=node.nsmap)
+        elements = node.xpath(pattern)
     names = [
         el.attrib['name'] for el in elements if
         'name' in el.attrib and el.getchildren()

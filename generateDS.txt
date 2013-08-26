@@ -3,8 +3,9 @@ generateDS -- Generate Data Structures from XML Schema
 ======================================================
 
 :author: Dave Kuhlman
-:address: dkuhlman@rexx.com
-    http://www.rexx.com/~dkuhlman
+:contact: dkuhlman@pacbell.net
+:address:
+    http://www.davekuhlman.org
 
 .. Do not modify the following version comments.
    They are used by updateversion.py.
@@ -123,6 +124,10 @@ You can find the source distribution here:
   http://sourceforge.net/projects/generateds/
   <http://sourceforge.net/projects/generateds/>`_
 
+- `Bitbucket --
+  https://bitbucket.org/dkuhlman/generateds
+  <https://bitbucket.org/dkuhlman/generateds>`_
+
 
 
 
@@ -137,8 +142,8 @@ https://lists.sourceforge.net/lists/listinfo/generateds-users
 There is a tutorial in the distribution:
 ``tutorial/tutorial.html`` and at
 `generateDS -- Introduction and Tutorial --
-http://www.rexx.com/~dkuhlman/generateds_tutorial.html
-<http://www.rexx.com/~dkuhlman/generateds_tutorial.html>`_.
+http://www.davekuhlman.org/generateds_tutorial.html
+<http://www.davekuhlman.org/generateds_tutorial.html>`_.
 
 
 How to build and install it
@@ -286,6 +291,8 @@ Here is the usage message displayed by ``generateDS.py``::
                                  create session file in generateds_gui.py.  Or,
                                  copy and edit sample.session from the
                                  distribution.
+        --fix-type-names="oldname1:newname1;oldname2:newname2;..."
+                                 Fix up (replace) complex type names.
         --version                Print version and exit.
 
     Usage example:
@@ -506,6 +513,17 @@ session=mysession.session
     generateDS.py.  Additional options on the command line can be
     used to override options in the session file.  A session file
     is an XML document, so you can modify it with a text editor.
+
+fix-type-names="oldname1:newname1;oldname2:newname2;..."
+    Fix up (replace) complex type names.  Using this option will
+    replace the following: (1) the 'name' attribute of a
+    complexType; (2) the 'type' attribute of each element that
+    refers to the type; and (3) the 'base' attribute of each
+    extension that refers to the type.  These fixups happen before
+    information is collected from the schema for code generation.
+    Therefore, using this option is effectively equivalent to
+    copying your schema, then editing it with your text editor, then
+    generating code from the modified schema.
 
 version
     Print out the current version of generateDS.py and immediately

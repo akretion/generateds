@@ -86,6 +86,8 @@ Options:
                              create session file in generateds_gui.py.  Or,
                              copy and edit sample.session from the
                              distribution.
+    --fix-type-names="oldname1:newname1;oldname2:newname2;..."
+                             Fix up (replace) complex type names.
     --version                Print version and exit.
 
 Usage example:
@@ -224,6 +226,7 @@ AnyTypeIdentifier = '__ANY__'
 ExportWrite = True
 ExportEtree = False
 ExportLiteral = True
+FixTypeNames = None
 
 SchemaToPythonTypeMap = {}
 
@@ -5706,8 +5709,10 @@ def parseAndGenerate(
         import process_includes
         outfile = StringIO.StringIO()
         process_includes.process_include_files(
-            infile, outfile, inpath=xschemaFileName,
-            catalogpath=catalogFilename)
+            infile, outfile,
+            inpath=xschemaFileName,
+            catalogpath=catalogFilename,
+            fixtypenames=FixTypeNames)
         outfile.seek(0)
         infile = outfile
     parser.parse(infile)
@@ -5825,7 +5830,8 @@ def main():
         Namespacedef, NoDates, NoVersion, \
         TEMPLATE_MAIN, TEMPLATE_SUBCLASS_FOOTER, Dirpath, \
         ExternalEncoding, MemberSpecs, NoQuestions, \
-        ExportWrite, ExportEtree, ExportLiteral
+        ExportWrite, ExportEtree, ExportLiteral, \
+        FixTypeNames
     outputText = True
     args = sys.argv[1:]
     try:
@@ -5838,7 +5844,7 @@ def main():
                 'user-methods=', 'no-process-includes', 'silence',
                 'namespacedef=', 'external-encoding=',
                 'member-specs=', 'no-dates', 'no-versions',
-                'no-questions', 'session=',
+                'no-questions', 'session=', 'fix-type-names=',
                 'version', 'export=',
             ])
     except getopt.GetoptError:
@@ -5970,6 +5976,8 @@ def main():
             ExternalEncoding = option[1]
         elif option[0] in ('-q', '--no-questions'):
             NoQuestions = True
+        elif option[0] == "--fix-type-names":
+            FixTypeNames = option[1]
         elif option[0] == '--version':
             showVersion = True
         elif option[0] == '--member-specs':

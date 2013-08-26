@@ -65,14 +65,14 @@ More information
 More information on generateDS.py is in generateDS.html
 in the distribution or
 `generateDS -- Generate Data Structures from XML Schema --
-http://www.rexx.com/~dkuhlman/generateDS.html
-<http://www.rexx.com/~dkuhlman/generateDS.html>`_.
+http://www.davekuhlman.org/generateDS.html
+<http://www.davekuhlman.org/generateDS.html>`_.
 
 There is also a tutorial.  See tutorial/tutorial.html
 in the distribution or
 `generateDS -- Introduction and Tutorial --
-http://www.rexx.com/~dkuhlman/generateds_tutorial.html
-<http://www.rexx.com/~dkuhlman/generateds_tutorial.html>`_.
+http://www.davekuhlman.org/generateds_tutorial.html
+<http://www.davekuhlman.org/generateds_tutorial.html>`_.
 
 
 -----------
@@ -150,6 +150,10 @@ Version 2.11b (08/19/2013)
   code.  Thanks to Shahaf Abileah for reporting this and for
   providing test files to reproduce the problem behavior.
 - Created unit test for anonymous types.
+- Added command line option --fix-type-names.  This may be useful if
+  there are name conflicts in your XML schema, for example, because
+  the schema refers to two types with the same name but in different
+  namespaces.
 
 Version 2.11a (08/16/2013)
 - Added ability to use XML catalog to find included/imported
@@ -1419,6 +1423,6 @@ The following enhancements and fixes remain to be done:
 
 
 Dave Kuhlman
-dkuhlman@rexx.com
-http://www.rexx.com/~dkuhlman
+dkuhlman@pacbell.net
+http://www.davekuhlman.org
 
