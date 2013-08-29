@@ -3506,6 +3506,7 @@ def generateBuildFn(wrt, prefix, element, delayed):
     wrt('        for child in node:\n')
     wrt("            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]\n")
     wrt("            self.buildChildren(child, node, nodeName_)\n")
+    wrt('        return self\n')
     wrt('    def buildAttributes(self, node, attrs, already_processed):\n')
     hasAttributes = 0
     hasAttributes = generateBuildAttributes(wrt, element, hasAttributes)
