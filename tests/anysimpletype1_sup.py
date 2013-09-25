@@ -608,6 +608,7 @@ def _cast(typ, value):
 #
 
 
+
 class test1element(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('test1attribute', 'cimAnySimpleType', 0),

@@ -608,6 +608,7 @@ def _cast(typ, value):
 #
 
 
+
 class document1Type(GeneratedsSuper):
     """This is a element of Type 1. It has some very nice documentation for
     test purposes. It should make a somewhat uninteresting

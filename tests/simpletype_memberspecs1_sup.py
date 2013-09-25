@@ -608,6 +608,7 @@ def _cast(typ, value):
 #
 
 
+
 class SpecialDate(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('SpecialProperty', 'xs:string', 0),
@@ -635,7 +636,7 @@ class SpecialDate(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='pl:', name_='SpecialDate', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='pl:', name_='SpecialDate', namespacedef_='xmlns:pl="http://kuhlman.com/people.xsd"', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -716,7 +717,7 @@ class ExtremeDate(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='pl:', name_='ExtremeDate', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='pl:', name_='ExtremeDate', namespacedef_='xmlns:pl="http://kuhlman.com/people.xsd"', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -806,7 +807,7 @@ def parse(inFileName):
 ##     sys.stdout.write('<?xml version="1.0" ?>\n')
 ##     rootObj.export(
 ##         sys.stdout, 0, name_=rootTag,
-##         namespacedef_='',
+##         namespacedef_='xmlns:pl="http://kuhlman.com/people.xsd"',
 ##         pretty_print=True)
     return rootObj
 
@@ -848,7 +849,7 @@ def parseString(inString):
 ##     sys.stdout.write('<?xml version="1.0" ?>\n')
 ##     rootObj.export(
 ##         sys.stdout, 0, name_="SpecialDate",
-##         namespacedef_='')
+##         namespacedef_='xmlns:pl="http://kuhlman.com/people.xsd"')
     return rootObj
 
 

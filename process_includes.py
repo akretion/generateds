@@ -60,6 +60,18 @@ def process_include_files(infile, outfile, inpath='', catalogpath=None):
     })
     prep_schema_doc(infile, outfile, inpath, options)
 
+def get_all_root_file_paths(infile, inpath='', catalogpath=None):
+    load_catalog(catalogpath)
+    
+    doc1 = etree.parse(infile)
+    root1 = doc1.getroot()
+    rootPaths = [ ]
+    params = Params()
+    params.parent_url = infile
+    params.base_url = os.path.split(inpath)[0]
+    get_root_file_paths(root1, params, rootPaths)
+    rootPaths.append(inpath)
+    return rootPaths
 
 #
 # Classes
@@ -99,9 +111,7 @@ def clear_includes_and_imports(node):
         repl.tail = '\n'
         node.replace(child, repl)
 
-
-def resolve_ref(node, params, options):
-    content = None
+def get_ref_info(node, params):
     # first look for the schema location in the catalog, if not
     # there, then see if it's specified in the node
     namespace = node.get('namespace')
@@ -119,7 +129,7 @@ def resolve_ref(node, params, options):
         msg = '*** Warning: missing "schemaLocation" attribute in %s\n' % (
             params.parent_url, )
         sys.stderr.write(msg)
-        return None
+        return (None, None)
     # Uncomment the next lines to help track down missing schemaLocation etc.
     # print '(resolve_ref) url: %s\n    parent-url: %s' % (
     #     url, params.parent_url, )
@@ -136,10 +146,18 @@ def resolve_ref(node, params, options):
     else:
         locn = url
         schema_name = url
-    if not (
-            url.startswith('/') or
-            url.startswith('http:') or
-            url.startswith('ftp:')):
+        
+    return locn, schema_name
+
+def resolve_ref(node, params, options):
+    content = None
+    
+    locn, schema_name = get_ref_info(node, params)
+    
+    if locn is not None and not (
+            locn.startswith('/') or
+            locn.startswith('http:') or
+            locn.startswith('ftp:')):
         schema_name = os.path.abspath(locn)
     if locn is not None:
         if schema_name not in params.already_processed:
@@ -181,17 +199,23 @@ def resolve_ref(node, params, options):
 
 def collect_inserts(node, params, inserts, options):
     namespace = node.nsmap[node.prefix]
+    roots = []
     child_iter1 = node.iterfind('{%s}include' % (namespace, ))
     child_iter2 = node.iterfind('{%s}import' % (namespace, ))
     for child in itertools.chain(child_iter1, child_iter2):
-        collect_inserts_aux(child, params, inserts, options)
+        aux_roots = collect_inserts_aux(child, params, inserts, options)
+        roots.extend(aux_roots)
+            
+    return roots
 
 
 def collect_inserts_aux(child, params, inserts, options):
+    roots = []
     save_base_url = params.base_url
     string_content = resolve_ref(child, params, options)
     if string_content is not None:
         root = etree.fromstring(string_content, base_url=params.base_url)
+        roots.append(root)
         for child1 in root:
             if not isinstance(child1, etree._Comment):
                 namespace = child1.nsmap[child1.prefix]
@@ -201,9 +225,31 @@ def collect_inserts_aux(child, params, inserts, options):
                     comment.tail = '\n'
                     inserts.append(comment)
                     inserts.append(child1)
-        collect_inserts(root, params, inserts, options)
+        insert_roots = collect_inserts(root, params, inserts, options)
+        roots.extend(insert_roots)
     params.base_url = save_base_url
+    return roots
 
+def get_root_file_paths(node, params, rootPaths):
+
+    namespace = node.nsmap[node.prefix]
+    child_iter1 = node.iterfind('{%s}include' % (namespace, ))
+    child_iter2 = node.iterfind('{%s}import' % (namespace, ))
+    for child in itertools.chain(child_iter1, child_iter2):
+        get_root_file_paths_aux(child, params, rootPaths)
+
+def get_root_file_paths_aux(child, params, rootPaths):
+    save_base_url = params.base_url
+    path, _ = get_ref_info(child, params)
+    string_content = resolve_ref(child, params, None)
+    if string_content is not None:
+        root = etree.fromstring(string_content, base_url=params.base_url)
+        get_root_file_paths(root, params, rootPaths)
+        
+    if path is not None and path not in rootPaths:
+        rootPaths.append(path)
+
+    params.base_url = save_base_url
 
 def make_file(outFileName, options):
     outFile = None

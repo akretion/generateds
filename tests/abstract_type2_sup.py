@@ -608,6 +608,7 @@ def _cast(typ, value):
 #
 
 
+
 class carrierType(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('fleet', 'Vehicle', 1),
@@ -636,7 +637,7 @@ class carrierType(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='target:', name_='carrierType', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='target:', name_='carrierType', namespacedef_='xmlns:target="http://cars.example.com/schema"', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -734,7 +735,7 @@ class Vehicle(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='target:', name_='Vehicle', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='target:', name_='Vehicle', namespacedef_='xmlns:target="http://cars.example.com/schema"', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -804,7 +805,7 @@ class Car(Vehicle):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='target:', name_='Car', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='target:', name_='Car', namespacedef_='xmlns:target="http://cars.example.com/schema"', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -870,7 +871,7 @@ class Plane(Vehicle):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='target:', name_='Plane', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='target:', name_='Plane', namespacedef_='xmlns:target="http://cars.example.com/schema"', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -953,7 +954,7 @@ def parse(inFileName):
 ##     sys.stdout.write('<?xml version="1.0" ?>\n')
 ##     rootObj.export(
 ##         sys.stdout, 0, name_=rootTag,
-##         namespacedef_='',
+##         namespacedef_='xmlns:target="http://cars.example.com/schema"',
 ##         pretty_print=True)
     return rootObj
 
@@ -995,7 +996,7 @@ def parseString(inString):
 ##     sys.stdout.write('<?xml version="1.0" ?>\n')
 ##     rootObj.export(
 ##         sys.stdout, 0, name_="carrier",
-##         namespacedef_='')
+##         namespacedef_='xmlns:target="http://cars.example.com/schema"')
     return rootObj
 
 

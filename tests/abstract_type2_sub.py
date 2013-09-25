@@ -125,7 +125,7 @@ def parse(inFilename):
 ##     sys.stdout.write('<?xml version="1.0" ?>\n')
 ##     rootObj.export(
 ##         sys.stdout, 0, name_=rootTag,
-##         namespacedef_='',
+##         namespacedef_='xmlns:target="http://cars.example.com/schema"',
 ##         pretty_print=True)
     return rootObj
 
@@ -167,7 +167,7 @@ def parseString(inString):
 ##     sys.stdout.write('<?xml version="1.0" ?>\n')
 ##     rootObj.export(
 ##         sys.stdout, 0, name_=rootTag,
-##         namespacedef_='')
+##         namespacedef_='xmlns:target="http://cars.example.com/schema"')
     return rootObj
 
 

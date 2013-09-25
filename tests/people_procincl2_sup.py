@@ -608,6 +608,7 @@ def _cast(typ, value):
 #
 
 
+
 class people(GeneratedsSuper):
     """A list of people."""
     member_data_items_ = [

@@ -608,6 +608,7 @@ def _cast(typ, value):
 #
 
 
+
 class GetUserReq(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('value04', 'xsd:integer', 0),

@@ -608,6 +608,7 @@ def _cast(typ, value):
 #
 
 
+
 class PersonType(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('personId', 'xs:integer', 0),

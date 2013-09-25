@@ -608,6 +608,7 @@ def _cast(typ, value):
 #
 
 
+
 class SpecialDate(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('SpecialProperty', 'xs:string', 0),

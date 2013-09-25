@@ -608,6 +608,7 @@ def _cast(typ, value):
 #
 
 
+
 class IdentifierType(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('schemeDataURI', 'xsd:anyURI', 0),

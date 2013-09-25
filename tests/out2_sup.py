@@ -608,6 +608,7 @@ def _cast(typ, value):
 #
 
 
+
 class people(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('comments', 'comments', 1),

@@ -18,6 +18,11 @@ Options:
     -b <behaviorfilename>    Input file name for behaviors added to subclasses
     -m                       Generate properties for member variables
     -c <xmlcatalogfilename>  Input file name to load an XML catalog
+    --one-file-per-xsd       Create a python class for each XSD processed.
+    --output-directory="XXX" Used in conjunction with --one-file-per-xsd. 
+                             The directory where the XSDs will be created.
+    --module--suffix="xxx"   To be used in conjunction with --one-file-per-xsd.
+                             Append XXX to the end of each file created.
     --subclass-suffix="XXX"  Append XXX to the generated subclass names.
                              Default="Sub".
     --root-element="XXX"     Assume XXX is root element of instance docs.
@@ -136,6 +141,7 @@ import logging
 import keyword
 import StringIO
 import textwrap
+from lxml import etree
 
 # Default logger configuration
 logging.basicConfig(
@@ -181,6 +187,8 @@ AlreadyGenerated_subclass = []
 PostponedExtensions = []
 ElementsForSubclasses = []
 ElementDict = {}
+fqnToElementDict = {}
+fqnToModuleNameMap = {}
 Force = False
 NoQuestions = False
 NoDates = False
@@ -190,6 +198,7 @@ ExternalEncoding = sys.getdefaultencoding()
 Namespacedef = ''
 
 NamespacesDict = {}
+prefixToNamespaceMap = {}
 MappingTypes = {}
 Targetnamespace = ""
 
@@ -222,6 +231,9 @@ AnyTypeIdentifier = '__ANY__'
 ExportWrite = True
 ExportEtree = False
 ExportLiteral = True
+SingleFileOutput = True
+OutputDirectory = None
+ModuleSuffix = ""
 
 SchemaToPythonTypeMap = {}
 
@@ -542,23 +554,45 @@ class SimpleTypeElement(XschemaElementBase):
 
 
 class XschemaElement(XschemaElementBase):
-    def __init__(self, attrs):
+    def __init__(self, attrs, targetNamespace=None):
         XschemaElementBase.__init__(self)
         self.cleanName = ''
         self.attrs = dict(attrs)
         name_val = ''
         type_val = ''
         ref_val = ''
+        self.prefix = None
+        self.namespace = None
+        self.is_root_element = False
+        self.targetNamespace = targetNamespace
+        self.fullyQualifiedName = None
+        self.fullyQualifiedType = None
+        self.type = 'NoneType'
+        
         if 'name' in self.attrs:
-            name_val = strip_namespace(self.attrs['name'])
+            self.prefix, name_val = get_prefix_and_value(self.attrs['name'])
+            self.fullyQualifiedName = "%s:%s" % (targetNamespace, name_val)
+
         if 'type' in self.attrs:
             if (len(XsdNameSpace) > 0 and
                     self.attrs['type'].startswith(XsdNameSpace)):
                 type_val = self.attrs['type']
             else:
-                type_val = strip_namespace(self.attrs['type'])
+                self.prefix, type_val = get_prefix_and_value(self.attrs['type'])
+                self.type = type_val
         if 'ref' in self.attrs:
-            ref_val = strip_namespace(self.attrs['ref'])
+            self.prefix, ref_val = get_prefix_and_value(self.attrs['ref'])
+            if self.prefix in prefixToNamespaceMap:
+                xmlns = prefixToNamespaceMap[self.prefix]
+                fqn = "%s:%s" % (xmlns, ref_val)
+                if fqn in fqnToElementDict:
+                    referencedElement = fqnToElementDict[fqn]
+                    type_val = referencedElement.getType()
+                    if type_val == "NoneType":
+                        type_val = referencedElement.getName() # anonymous types
+                    name_val = ref_val
+        
+
         if type_val and not name_val:
             name_val = type_val
         if ref_val and not name_val:
@@ -582,7 +616,6 @@ class XschemaElement(XschemaElementBase):
         self.maxOccurs = 1
         self.complex = 0
         self.complexType = 0
-        self.type = 'NoneType'
         self.mixed = 0
         self.base = None
         self.mixedExtensionError = 0
@@ -622,7 +655,24 @@ class XschemaElement(XschemaElementBase):
 
     def getName(self):
         return self.name
+    
+    def getFullyQualifiedName(self):
+        return self.fullyQualifiedName
 
+    def getFullyQualifiedType(self):
+        typeName = self.type
+        if not typeName or typeName == "NoneType":
+            typeName = self.name
+        if typeName and not self.fullyQualifiedType:
+            namespace = self.targetNamespace
+            if self.prefix:
+                xmlns = prefixToNamespaceMap[self.prefix]
+                if xmlns:
+                    namespace = xmlns
+            self.fullyQualifiedType = "%s:%s"% (namespace, typeName)
+            
+        return self.fullyQualifiedType
+    
     def getCleanName(self):
         return self.cleanName
 
@@ -676,6 +726,12 @@ class XschemaElement(XschemaElementBase):
 
     def isComplex(self):
         return self.complex
+    
+    def setIsRootElement(self, is_root_elem):
+        self.is_root_element = is_root_elem
+    
+    def isRootElement(self):
+        return self.is_root_element
 
     def addAttributeDefs(self, attrs):
         self.attributeDefs.append(attrs)
@@ -1023,6 +1079,7 @@ class XschemaElement(XschemaElementBase):
             type_val = self.resolve_type()
             self.attrs['type'] = type_val
             self.type = type_val
+            self.fullyQualifiedType = None
         if not self.complex:
             SimpleElementDict[self.name] = self
         for child in self.children:
@@ -1345,7 +1402,7 @@ class XschemaHandler(handler.ContentHandler):
         return keys[0]
 
     def startElement(self, name, attrs):
-        global Targetnamespace, NamespacesDict, XsdNameSpace
+        global Targetnamespace, NamespacesDict, XsdNameSpace, fqnToElementDict
         logging.debug("Start element: %s %s" % (name, repr(attrs.items())))
         if len(self.stack) == 0 and self.firstElement:
             self.firstElement = False
@@ -1368,15 +1425,25 @@ class XschemaHandler(handler.ContentHandler):
             #   use that namespace prefix.
             for name, value in attrs.items():
                 if name[:6] == 'xmlns:':
-                    nameSpace = name[6:] + ':'
+                    prefix = name[6:]
+                    nameSpace = prefix + ':'
                     NamespacesDict[value] = nameSpace
+                    prefixToNamespaceMap[prefix] = value
                 elif name == 'targetNamespace':
                     Targetnamespace = value
+                    element.targetNamespace = value
         elif (name == ElementType or
                 ((name == ComplexTypeType) and (len(self.stack) == 1))):
             self.inElement = 1
             self.inNonanonymousComplexType = 1
-            element = XschemaElement(attrs)
+            element = XschemaElement(attrs, Targetnamespace)
+            fqn = element.getFullyQualifiedName()
+            if fqn:
+                fqnToElementDict[fqn] = element
+            
+            if element.prefix in prefixToNamespaceMap:
+                element.namespace = prefixToNamespaceMap[element.prefix]
+                 
             if not 'type' in attrs.keys() and not 'ref' in attrs.keys():
                 element.setExplicitDefine(1)
             if len(self.stack) == 1:
@@ -1610,6 +1677,8 @@ class XschemaHandler(handler.ContentHandler):
             if len(self.stack) >= 2:
                 element = self.stack.pop()
                 self.stack[-1].addChild(element)
+            if name == ElementType and len(self.stack) == 1:
+                element.setIsRootElement(True)
         elif name == AnyType:
             if len(self.stack) >= 2:
                 element = self.stack.pop()
@@ -1749,11 +1818,15 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
                 "input_name='%s'), namespace_, eol_))\n" % \
                 (fill, name, name, mappedName, name, )
         else:
+            namespace='namespace_'
+            if child.prefix and 'ref' in child.attrs:
+                namespace = "'%s:'" % child.prefix
+
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_string(quote_xml(self.%s)." \
+                "(%s, self.gds_format_string(quote_xml(self.%s)." \
                 "encode(ExternalEncoding), input_name='%s'), " \
-                "namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+                "%s, eol_))\n" % \
+                (fill, name, name, namespace, mappedName, name, namespace )
         wrt(s1)
     elif (child_type in IntegerType or
             child_type == PositiveIntegerType or
@@ -1833,9 +1906,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
                 "namespace_, pretty_print=pretty_print)\n" % \
                 (fill, mappedName)
         else:
-            s1 = "%s            self.%s.export(outfile, level, " \
-                "namespace_, name_='%s', pretty_print=pretty_print)\n" % \
-                (fill, mappedName, name)
+            namespace='namespace_'
+            if child.prefix and 'ref' in child.attrs:
+                namespace += "='%s:'" % child.prefix
+            s1 = "%s            self.%s.export(outfile, level, %s, " \
+                "name_='%s', pretty_print=pretty_print)\n" % \
+                (fill, mappedName, namespace, name)
         wrt(s1)
 # end generateExportFn_1
 
@@ -1947,9 +2023,12 @@ def generateExportFn_2(wrt, child, name, namespace, fill):
             s1 = "%s        %s_.export(outfile, level, namespace_, " \
                 "pretty_print=pretty_print)\n" % (fill, cleanName)
         else:
-            s1 = "%s        %s_.export(outfile, level, namespace_, " \
+            namespace='namespace_'
+            if child.prefix and 'ref' in child.attrs:
+                namespace += "='%s:'" % child.prefix
+            s1 = "%s        %s_.export(outfile, level, %s, " \
                 "name_='%s', pretty_print=pretty_print)\n" % \
-                (fill, cleanName, name)
+                (fill, cleanName, namespace, name)
         wrt(s1)
 # end generateExportFn_2
 
@@ -2081,9 +2160,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
                 "outfile, level, namespace_, pretty_print=pretty_print)\n" % \
                 (fill, mappedName)
         else:
-            s1 = "%s            self.%s.export(outfile, level, namespace_, " \
+            namespace='namespace_'
+            if child.prefix and 'ref' in child.attrs:
+                namespace += "='%s:'" % child.prefix
+            s1 = "%s            self.%s.export(outfile, level, %s, " \
                 "name_='%s', pretty_print=pretty_print)\n" % \
-                (fill, mappedName, name)
+                (fill, mappedName, namespace, name)
         wrt(s1)
 # end generateExportFn_3
 
@@ -2444,13 +2526,13 @@ def getParentName(element):
     return parentName, parentObj
 
 
-def generateExportFn(wrt, prefix, element, namespace):
+def generateExportFn(wrt, prefix, element, namespace, nameSpacesDef):
     childCount = countChildren(element, 0)
     name = element.getName()
     base = element.getBase()
     wrt("    def export(self, outfile, level, namespace_='%s', "
-        "name_='%s', namespacedef_='', pretty_print=True):\n" %
-        (namespace, name, ))
+        "name_='%s', namespacedef_='%s', pretty_print=True):\n" %
+        (namespace, name, nameSpacesDef))
     wrt('        if pretty_print:\n')
     wrt("            eol_ = '\\n'\n")
     wrt('        else:\n')
@@ -4089,7 +4171,7 @@ def generateHascontentMethod(wrt, element):
     wrt('            return False\n')
 
 
-def generateClasses(wrt, prefix, element, delayed):
+def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     logging.debug("Generating class for: %s" % element)
     parentName, base = getParentName(element)
     logging.debug("Element base: %s" % base)
@@ -4149,13 +4231,17 @@ def generateClasses(wrt, prefix, element, delayed):
     if UseGetterSetter != 'none':
         generateGettersAndSetters(wrt, element)
     generateValidatorDefs(wrt, element)
-    if Targetnamespace in NamespacesDict:
+    if element.namespace:
+        namespace = element.namespace
+    elif element.targetNamespace in NamespacesDict:
+        namespace = NamespacesDict[element.targetNamespace]
+    elif Targetnamespace in NamespacesDict:
         namespace = NamespacesDict[Targetnamespace]
     else:
         namespace = ''
     generateHascontentMethod(wrt, element)
     if ExportWrite:
-        generateExportFn(wrt, prefix, element, namespace)
+        generateExportFn(wrt, prefix, element, namespace, nameSpacesDef)
     if ExportEtree:
         generateToEtree(wrt, element, Targetnamespace)
     if ExportLiteral:
@@ -4784,7 +4870,7 @@ def _cast(typ, value):
 # DUMMY = """
 
 
-def generateHeader(wrt, prefix):
+def generateHeader(wrt, prefix, externalImports):
     tstamp = (not NoDates and time.ctime()) or ''
     if NoVersion:
         version = ''
@@ -4792,6 +4878,10 @@ def generateHeader(wrt, prefix):
         version = ' version %s' % VERSION
     s1 = TEMPLATE_HEADER % (tstamp, version, ExternalEncoding, )
     wrt(s1)
+    for externalImport in externalImports:
+        wrt(externalImport + "\n")
+        
+    wrt("\n")
 
 
 TEMPLATE_MAIN = """\
@@ -5398,6 +5488,20 @@ TEMPLATE_ABSTRACT_CHILD = """\
                     'Class not implemented for <%s> element')
 """
 
+def getNamespace(element):
+    namespace = ''
+    if element.targetNamespace in NamespacesDict:
+        namespace = 'xmlns:%s="%s"' % (
+                NamespacesDict[element.targetNamespace].rstrip(':'),
+                element.targetNamespace, )
+    elif Namespacedef:
+        namespace = Namespacedef
+    elif Targetnamespace in NamespacesDict:
+            namespace = 'xmlns:%s="%s"' % (
+                NamespacesDict[Targetnamespace].rstrip(':'),
+                Targetnamespace, )
+        
+    return namespace
 
 def generateSubclasses(root, subclassFilename, behaviorFilename,
                        prefix, superModule='xxx'):
@@ -5473,13 +5577,26 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
         wrt(TEMPLATE_SUBCLASS_FOOTER % params)
         subclassFile.close()
 
+def getUsedNamespacesDefs(element):
+    global prefixToNamespaceMap
+    processedPrefixes = []
+    nameSpacesDef = getNamespace(element)
+    for child in element.getChildren():
+        if child.prefix not in processedPrefixes and \
+           child.prefix in prefixToNamespaceMap:
+            spaceDef = 'xmlns:%s="%s" ' % (child.prefix, prefixToNamespaceMap[child.prefix])
+            nameSpacesDef += ' ' + spaceDef
+            processedPrefixes.append(child.prefix)
+        
+    return nameSpacesDef
 
 def generateFromTree(wrt, prefix, elements, processed):
     for element in elements:
+        nameSpacesDef = getUsedNamespacesDefs(element)
         name = element.getCleanName()
         if 1:     # if name not in processed:
             processed.append(name)
-            generateClasses(wrt, prefix, element, 0)
+            generateClasses(wrt, prefix, element, 0, nameSpacesDef)
             children = element.getChildren()
             if children:
                 generateFromTree(wrt, prefix, element.getChildren(), processed)
@@ -5491,15 +5608,42 @@ def generateSimpleTypes(wrt, prefix, simpleTypeDict):
         wrt('    pass\n')
         wrt('\n\n')
 
+def getImportsForExternalXsds(root):
+    '''
+    If we are creating a file per xsd, then
+    we need to import any external classes we use
+    '''
+    externalImports = []
+    if not SingleFileOutput:
+        childStack = list(root.getChildren())
+        while len(childStack) > 0:
+            child = childStack.pop()
+            if child.namespace and child.namespace != root.targetNamespace:
+                fqn = child.getFullyQualifiedType()
+                if fqn in fqnToModuleNameMap and fqn in fqnToElementDict:
+                    schemaElement = fqnToElementDict[fqn]
+                    moduleName = fqnToModuleNameMap[fqn]
+                    type = schemaElement.getType()
+                    if type == "xs:string":
+                        type = schemaElement.getName()
+                    externalImports.append("from %s%s import %s" % 
+                                           (moduleName, ModuleSuffix, 
+                                            type))
+            for subChild in child.getChildren():
+                childStack.append(subChild)
+        
+    return externalImports
 
 def generate(outfileName, subclassFilename, behaviorFilename,
              prefix, root, superModule):
-    global DelayedElements, DelayedElements_subclass
+    global DelayedElements, DelayedElements_subclass, AlreadyGenerated
     # Create an output file.
     # Note that even if the user does not request an output file,
     #   we still need to go through the process of generating classes
     #   because it produces data structures needed during generation of
     #   subclasses.
+    MappingTypes.clear()
+    AlreadyGenerated = []
     outfile = None
     if outfileName:
         outfile = makeFile(outfileName)
@@ -5507,7 +5651,10 @@ def generate(outfileName, subclassFilename, behaviorFilename,
         outfile = os.tmpfile()
     wrt = outfile.write
     processed = []
-    generateHeader(wrt, prefix)
+    
+    externalImports = getImportsForExternalXsds(root)
+    
+    generateHeader(wrt, prefix, externalImports)
     #generateSimpleTypes(outfile, prefix, SimpleTypeDict)
     DelayedElements = []
     DelayedElements_subclass = []
@@ -5593,6 +5740,11 @@ def make_gs_name(oldName):
 def strip_namespace(val):
     return val.split(':')[-1]
 
+def get_prefix_and_value(val):
+    if ':' in val:
+        return val.split(':')
+    
+    return None, val
 
 def escape_string(instring):
     s1 = instring
@@ -5684,45 +5836,119 @@ def parseAndGenerate(
         module_spec = imp.find_module(mod_name, [mod_path, ])
         UserMethodsModule = imp.load_module(mod_name, *module_spec)
 ##    parser = saxexts.make_parser("xml.sax.drivers2.drv_pyexpat")
-    parser = make_parser()
-    dh = XschemaHandler()
-##    parser.setDocumentHandler(dh)
-    parser.setContentHandler(dh)
     if xschemaFileName == '-':
         infile = sys.stdin
     else:
         infile = open(xschemaFileName, 'r')
-    if processIncludes:
-        import process_includes
-        outfile = StringIO.StringIO()
-        process_includes.process_include_files(
-            infile, outfile, inpath=xschemaFileName,
-            catalogpath=catalogFilename)
-        outfile.seek(0)
-        infile = outfile
-    parser.parse(infile)
-    root = dh.getRoot()
-    root.annotate()
+        
+    if SingleFileOutput:
+        parser = make_parser()
+        dh = XschemaHandler()
+    ##    parser.setDocumentHandler(dh)
+        parser.setContentHandler(dh)
+            
+        if processIncludes:
+            import process_includes
+            outfile = StringIO.StringIO()
+            process_includes.process_include_files(
+                infile, outfile, inpath=xschemaFileName,
+                catalogpath=catalogFilename)
+            outfile.seek(0)
+            infile = outfile
+        parser.parse(infile)
+        root = dh.getRoot()
+        root.annotate()
+    
 ##     print '-' * 60
 ##     root.show(sys.stdout, 0)
 ##     print '-' * 60
     #debug_show_elements(root)
-    generate(
-        outfileName, subclassFilename, behaviorFilename,
-        prefix, root, superModule)
-    # Generate __all__.  When using the parser as a module it is useful
-    # to isolate important classes from internal ones. This way one
-    # can do a reasonably safe "from parser import *"
-    if outfileName:
-        exportableClassList = [
-            '"%s"' % mapName(cleanupName(name))
-            for name in AlreadyGenerated]
-        exportableClassList.sort()
-        exportableClassNames = ',\n    '.join(exportableClassList)
-        exportLine = "\n__all__ = [\n    %s\n]\n" % exportableClassNames
-        outfile = open(outfileName, "a")
-        outfile.write(exportLine)
-        outfile.close()
+        generate(
+            outfileName, subclassFilename, behaviorFilename,
+            prefix, root, superModule)
+        # Generate __all__.  When using the parser as a module it is useful
+        # to isolate important classes from internal ones. This way one
+        # can do a reasonably safe "from parser import *"
+        if outfileName:
+            exportableClassList = [
+                '"%s"' % mapName(cleanupName(name))
+                for name in AlreadyGenerated]
+            exportableClassList.sort()
+            exportableClassNames = ',\n    '.join(exportableClassList)
+            exportLine = "\n__all__ = [\n    %s\n]\n" % exportableClassNames
+            outfile = open(outfileName, "a")
+            outfile.write(exportLine)
+            outfile.close()
+            
+    else:
+        import process_includes
+        rootPaths = process_includes.get_all_root_file_paths(
+                    infile, inpath=xschemaFileName,
+                    catalogpath=catalogFilename)
+        roots = []
+        rootInfos = []
+        for path in rootPaths:
+            rootFile = open(path, 'r')
+
+            parser = make_parser()
+            dh = XschemaHandler()
+            parser.setContentHandler(dh)
+            parser.parse(rootFile)
+
+            root = dh.getRoot()
+            roots.append(root)
+        
+        for root in roots:
+            root.annotate()
+            
+            moduleName = None            
+            modulePath = None
+            
+            # use the first root element to set
+            # up the module name and path
+            for child in root.getChildren():
+                if child.isRootElement():
+                    typeName = child.getType(); 
+                    if typeName.startswith("xs:"):
+                        # no need to create a module for
+                        # xs: types
+                        continue 
+                
+                    # convert to upper camel case if needed.
+                    if "-" in typeName:
+                        tokens = typeName.split("-")
+                        typeName = ''.join([t.title() for t in tokens])
+
+                    moduleName = typeName[0].lower() + typeName[1:]
+        
+                    modulePath = OutputDirectory + \
+                                 "/" + moduleName + \
+                                 ModuleSuffix + ".py"
+                                      
+                    fqnToModuleNameMap[child.getFullyQualifiedType()] = moduleName                        
+                    fqnToModuleNameMap[child.getFullyQualifiedName()] = moduleName                        
+                    break
+                
+            rootInfos.append((root, modulePath))
+
+        for root, modulePath in rootInfos:
+            if modulePath:
+                generate(modulePath, subclassFilename, behaviorFilename, 
+                    prefix, root, superModule)
+                
+                # Generate __all__.  When using the parser as a module it is useful
+                # to isolate important classes from internal ones. This way one
+                # can do a reasonably safe "from parser import *"
+                if modulePath:
+                    exportableClassList = [
+                        '"%s"' % mapName(cleanupName(name))
+                        for name in AlreadyGenerated]
+                    exportableClassList.sort()
+                    exportableClassNames = ',\n    '.join(exportableClassList)
+                    exportLine = "\n__all__ = [\n    %s\n]\n" % exportableClassNames
+                    outfile = open(modulePath, "a")
+                    outfile.write(exportLine)
+                    outfile.close()
 
 
 # Function that gets called recursively in order to expand nested references
@@ -5815,7 +6041,8 @@ def main():
         Namespacedef, NoDates, NoVersion, \
         TEMPLATE_MAIN, TEMPLATE_SUBCLASS_FOOTER, Dirpath, \
         ExternalEncoding, MemberSpecs, NoQuestions, \
-        ExportWrite, ExportEtree, ExportLiteral
+        ExportWrite, ExportEtree, ExportLiteral, \
+        SingleFileOutput, OutputDirectory, ModuleSuffix
     outputText = True
     args = sys.argv[1:]
     try:
@@ -5830,6 +6057,8 @@ def main():
                 'member-specs=', 'no-dates', 'no-versions',
                 'no-questions', 'session=',
                 'version', 'export=',
+                'one-file-per-xsd', 'output-directory=',
+                'module-suffix='
             ])
     except getopt.GetoptError:
         usage()
@@ -5978,6 +6207,13 @@ def main():
                 ExportEtree = True
             if 'literal' in tmpoptions:
                 ExportLiteral = True
+        elif option[0] == '--one-file-per-xsd':
+            SingleFileOutput = False
+        elif option[0] == "--output-directory":
+            OutputDirectory = option[1]
+        elif option[0] == "--module-suffix":
+            ModuleSuffix = option[1]
+                
     if showVersion:
         print 'generateDS.py version %s' % VERSION
         sys.exit(0)

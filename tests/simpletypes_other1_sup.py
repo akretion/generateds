@@ -608,6 +608,7 @@ def _cast(typ, value):
 #
 
 
+
 class simpleTypeTestsType(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('simpleTypeTest', 'simpleTypeTest', 1),
