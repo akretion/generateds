@@ -5897,6 +5897,7 @@ def parseAndGenerate(
 
             root = dh.getRoot()
             roots.append(root)
+            rootFile.close()
         
         for root in roots:
             root.annotate()
@@ -5914,7 +5915,7 @@ def parseAndGenerate(
                         # xs: types
                         continue 
                 
-                    # convert to upper camel case if needed.
+                    # convert to lower camel case if needed.
                     if "-" in typeName:
                         tokens = typeName.split("-")
                         typeName = ''.join([t.title() for t in tokens])
@@ -5939,16 +5940,15 @@ def parseAndGenerate(
                 # Generate __all__.  When using the parser as a module it is useful
                 # to isolate important classes from internal ones. This way one
                 # can do a reasonably safe "from parser import *"
-                if modulePath:
-                    exportableClassList = [
-                        '"%s"' % mapName(cleanupName(name))
-                        for name in AlreadyGenerated]
-                    exportableClassList.sort()
-                    exportableClassNames = ',\n    '.join(exportableClassList)
-                    exportLine = "\n__all__ = [\n    %s\n]\n" % exportableClassNames
-                    outfile = open(modulePath, "a")
-                    outfile.write(exportLine)
-                    outfile.close()
+                exportableClassList = [
+                    '"%s"' % mapName(cleanupName(name))
+                    for name in AlreadyGenerated]
+                exportableClassList.sort()
+                exportableClassNames = ',\n    '.join(exportableClassList)
+                exportLine = "\n__all__ = [\n    %s\n]\n" % exportableClassNames
+                outfile = open(modulePath, "a")
+                outfile.write(exportLine)
+                outfile.close()
 
 
 # Function that gets called recursively in order to expand nested references
