@@ -128,9 +128,9 @@ class GenTest(unittest.TestCase):
             'print (node.get_name(), node.get_valueOf_())"'
         )
         cmd = cmdTempl % (t_, t_)
-        print 'cmd:', cmd
+        #print 'cmd:', cmd
         result, err = self.execute(cmd)
-        print 'result: %s' % result
+        #print 'result: %s' % result
         self.failUnlessEqual(result, """\
 ('child1', 'value1')
 """)
@@ -431,6 +431,43 @@ class GenTest(unittest.TestCase):
         outfile.write(content)
         outfile.close()
         cmd = 'diff %s1.xml %s2.xml' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ())
+
+    def test_020_catalogtest(self):
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
+            '--silence --member-specs=list -f '
+            '-o tests/%s2_sup.py -s tests/%s2_sub.py '
+            '--super=%s2_sup '
+            '-c tests/catalog.xml '
+            'tests/%s.xsd'
+        )
+        t_ = 'catalogtest'
+        cmd = cmdTempl % (t_, t_, t_, t_, )
+        result, _ = self.execute(cmd, cwd='..')
+        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ('sys.stdout.write',))
+        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ())
+
+    def test_021_anonymous_type(self):
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
+            '--silence --member-specs=list -f '
+            '-o tests/%s2_sup.py -s tests/%s2_sub.py '
+            '--super=%s2_sup '
+            'tests/%s.xsd'
+        )
+        t_ = 'anonymous_type'
+        cmd = cmdTempl % (t_, t_, t_, t_, )
+        result, _ = self.execute(cmd, cwd='..')
+        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ('sys.stdout.write',))
+        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
         result, err = self.execute(cmd)
         self.check_result(result, err, ())
 

@@ -6,7 +6,7 @@
 
 import sys
 
-import extensions2_sup as supermod
+import anonymous_type2_sup as supermod
 
 etree_ = None
 Verbose_import_ = False
@@ -74,88 +74,32 @@ ExternalEncoding = 'ascii'
 #
 
 
-class SpecialDateSub(supermod.SpecialDate):
-    def __init__(self, SpecialProperty=None, valueOf_=None):
-        super(SpecialDateSub, self).__init__(SpecialProperty, valueOf_, )
-supermod.SpecialDate.subclass = SpecialDateSub
-# end class SpecialDateSub
+class FooListSub(supermod.FooList):
+    def __init__(self, Foo=None, Bar=None, Baz=None):
+        super(FooListSub, self).__init__(Foo, Bar, Baz, )
+supermod.FooList.subclass = FooListSub
+# end class FooListSub
 
 
-class ExtremeDateSub(supermod.ExtremeDate):
-    def __init__(self, ExtremeProperty=None, valueOf_=None):
-        super(ExtremeDateSub, self).__init__(ExtremeProperty, valueOf_, )
-supermod.ExtremeDate.subclass = ExtremeDateSub
-# end class ExtremeDateSub
+class FooType1Sub(supermod.FooType1):
+    def __init__(self, FooType=None):
+        super(FooType1Sub, self).__init__(FooType, )
+supermod.FooType1.subclass = FooType1Sub
+# end class FooType1Sub
 
 
-class singleExtremeDateSub(supermod.singleExtremeDate):
-    def __init__(self, ExtremeProperty=None, valueOf_=None):
-        super(singleExtremeDateSub, self).__init__(ExtremeProperty, valueOf_, )
-supermod.singleExtremeDate.subclass = singleExtremeDateSub
-# end class singleExtremeDateSub
+class BarType2Sub(supermod.BarType2):
+    def __init__(self, BarType=None):
+        super(BarType2Sub, self).__init__(BarType, )
+supermod.BarType2.subclass = BarType2Sub
+# end class BarType2Sub
 
 
-class containerTypeSub(supermod.containerType):
-    def __init__(self, simplefactoid=None, mixedfactoid=None):
-        super(containerTypeSub, self).__init__(simplefactoid, mixedfactoid, )
-supermod.containerType.subclass = containerTypeSub
-# end class containerTypeSub
-
-
-class simpleFactoidTypeSub(supermod.simpleFactoidType):
-    def __init__(self, relation=None):
-        super(simpleFactoidTypeSub, self).__init__(relation, )
-supermod.simpleFactoidType.subclass = simpleFactoidTypeSub
-# end class simpleFactoidTypeSub
-
-
-class mixedFactoidTypeSub(supermod.mixedFactoidType):
-    def __init__(self, relation=None, valueOf_=None, mixedclass_=None, content_=None):
-        super(mixedFactoidTypeSub, self).__init__(relation, valueOf_, mixedclass_, content_, )
-supermod.mixedFactoidType.subclass = mixedFactoidTypeSub
-# end class mixedFactoidTypeSub
-
-
-class BaseTypeSub(supermod.BaseType):
-    def __init__(self, BaseProperty1=None, BaseProperty2=None, valueOf_=None, extensiontype_=None):
-        super(BaseTypeSub, self).__init__(BaseProperty1, BaseProperty2, valueOf_, extensiontype_, )
-supermod.BaseType.subclass = BaseTypeSub
-# end class BaseTypeSub
-
-
-class DerivedTypeSub(supermod.DerivedType):
-    def __init__(self, BaseProperty1=None, BaseProperty2=None, DerivedProperty1=None, DerivedProperty2=None, valueOf_=None):
-        super(DerivedTypeSub, self).__init__(BaseProperty1, BaseProperty2, DerivedProperty1, DerivedProperty2, valueOf_, )
-supermod.DerivedType.subclass = DerivedTypeSub
-# end class DerivedTypeSub
-
-
-class MyIntegerSub(supermod.MyInteger):
-    def __init__(self, MyAttr=None, valueOf_=None):
-        super(MyIntegerSub, self).__init__(MyAttr, valueOf_, )
-supermod.MyInteger.subclass = MyIntegerSub
-# end class MyIntegerSub
-
-
-class MyBooleanSub(supermod.MyBoolean):
-    def __init__(self, MyAttr=None, valueOf_=None):
-        super(MyBooleanSub, self).__init__(MyAttr, valueOf_, )
-supermod.MyBoolean.subclass = MyBooleanSub
-# end class MyBooleanSub
-
-
-class MyFloatSub(supermod.MyFloat):
-    def __init__(self, MyAttr=None, valueOf_=None):
-        super(MyFloatSub, self).__init__(MyAttr, valueOf_, )
-supermod.MyFloat.subclass = MyFloatSub
-# end class MyFloatSub
-
-
-class MyDoubleSub(supermod.MyDouble):
-    def __init__(self, MyAttr=None, valueOf_=None):
-        super(MyDoubleSub, self).__init__(MyAttr, valueOf_, )
-supermod.MyDouble.subclass = MyDoubleSub
-# end class MyDoubleSub
+class BazType3Sub(supermod.BazType3):
+    def __init__(self, BazType=None):
+        super(BazType3Sub, self).__init__(BazType, )
+supermod.BazType3.subclass = BazType3Sub
+# end class BazType3Sub
 
 
 def get_root_tag(node):
@@ -172,8 +116,8 @@ def parse(inFilename, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'container'
-        rootClass = supermod.containerType
+        rootTag = 'FooList'
+        rootClass = supermod.FooList
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -192,8 +136,8 @@ def parseEtree(inFilename, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'container'
-        rootClass = supermod.containerType
+        rootTag = 'FooList'
+        rootClass = supermod.FooList
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -216,8 +160,8 @@ def parseString(inString, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'container'
-        rootClass = supermod.containerType
+        rootTag = 'FooList'
+        rootClass = supermod.FooList
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -236,16 +180,16 @@ def parseLiteral(inFilename, silence=False):
     roots = get_root_tag(rootNode)
     rootClass = roots[1]
     if rootClass is None:
-        rootClass = supermod.containerType
+        rootClass = supermod.FooList
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
 ##     if not silence:
-##         sys.stdout.write('#from extensions2_sup import *\n\n')
-##         sys.stdout.write('import extensions2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.container(\n')
-##         rootObj.exportLiteral(sys.stdout, 0, name_="container")
+##         sys.stdout.write('#from anonymous_type2_sup import *\n\n')
+##         sys.stdout.write('import anonymous_type2_sup as model_\n\n')
+##         sys.stdout.write('rootObj = model_.FooList(\n')
+##         rootObj.exportLiteral(sys.stdout, 0, name_="FooList")
 ##         sys.stdout.write(')\n')
     return rootObj
 

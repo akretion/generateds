@@ -90,7 +90,7 @@ def get_root_tag(node):
     return tag, rootClass
 
 
-def parse(inFilename):
+def parse(inFilename, silence=False):
     doc = parsexml_(inFilename)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
@@ -101,15 +101,16 @@ def parse(inFilename):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     sys.stdout.write('<?xml version="1.0" ?>\n')
-##     rootObj.export(
-##         sys.stdout, 0, name_=rootTag,
-##         namespacedef_='',
-##         pretty_print=True)
+##     if not silence:
+##         sys.stdout.write('<?xml version="1.0" ?>\n')
+##         rootObj.export(
+##             sys.stdout, 0, name_=rootTag,
+##             namespacedef_='',
+##             pretty_print=True)
     return rootObj
 
 
-def parseEtree(inFilename):
+def parseEtree(inFilename, silence=False):
     doc = parsexml_(inFilename)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
@@ -123,15 +124,16 @@ def parseEtree(inFilename):
     mapping = {}
     rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
     reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
-##     content = etree_.tostring(
-##         rootElement, pretty_print=True,
-##         xml_declaration=True, encoding="utf-8")
-##     sys.stdout.write(content)
-##     sys.stdout.write('\n')
+##     if not silence:
+##         content = etree_.tostring(
+##             rootElement, pretty_print=True,
+##             xml_declaration=True, encoding="utf-8")
+##         sys.stdout.write(content)
+##         sys.stdout.write('\n')
     return rootObj, rootElement, mapping, reverse_mapping
 
 
-def parseString(inString):
+def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
@@ -143,14 +145,15 @@ def parseString(inString):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     sys.stdout.write('<?xml version="1.0" ?>\n')
-##     rootObj.export(
-##         sys.stdout, 0, name_=rootTag,
-##         namespacedef_='')
+##     if not silence:
+##         sys.stdout.write('<?xml version="1.0" ?>\n')
+##         rootObj.export(
+##             sys.stdout, 0, name_=rootTag,
+##             namespacedef_='')
     return rootObj
 
 
-def parseLiteral(inFilename):
+def parseLiteral(inFilename, silence=False):
     doc = parsexml_(inFilename)
     rootNode = doc.getroot()
     roots = get_root_tag(rootNode)
@@ -161,11 +164,12 @@ def parseLiteral(inFilename):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     sys.stdout.write('#from attr_groups2_sup import *\n\n')
-##     sys.stdout.write('import attr_groups2_sup as model_\n\n')
-##     sys.stdout.write('rootObj = model_.getUser(\n')
-##     rootObj.exportLiteral(sys.stdout, 0, name_="getUser")
-##     sys.stdout.write(')\n')
+##     if not silence:
+##         sys.stdout.write('#from attr_groups2_sup import *\n\n')
+##         sys.stdout.write('import attr_groups2_sup as model_\n\n')
+##         sys.stdout.write('rootObj = model_.getUser(\n')
+##         rootObj.exportLiteral(sys.stdout, 0, name_="getUser")
+##         sys.stdout.write(')\n')
     return rootObj
 
 

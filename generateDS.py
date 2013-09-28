@@ -56,6 +56,8 @@ Options:
     --silence                Normally, the code generated with generateDS
                              echoes the information being parsed. To prevent
                              the echo from occurring, use the --silence switch.
+                             Also note optional "silence" parameter on
+                             generated functions, e.g. parse, parseString, etc.
     --namespacedef='xmlns:abc="http://www.abc.com"'
                              Namespace definition to be passed in as the
                              value for the namespacedef_ parameter of
@@ -89,6 +91,8 @@ Options:
                              create session file in generateds_gui.py.  Or,
                              copy and edit sample.session from the
                              distribution.
+    --fix-type-names="oldname1:newname1;oldname2:newname2;..."
+                             Fix up (replace) complex type names.
     --version                Print version and exit.
 
 Usage example:
@@ -174,7 +178,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.10b'
+VERSION = '2.11b'
 ##VERSION##
 
 GenerateProperties = 0
@@ -231,6 +235,7 @@ AnyTypeIdentifier = '__ANY__'
 ExportWrite = True
 ExportEtree = False
 ExportLiteral = True
+FixTypeNames = None
 SingleFileOutput = True
 OutputDirectory = None
 ModuleSuffix = ""
@@ -4184,7 +4189,7 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     #   not been generated, then postpone it.
     if parentName:
         if (parentName not in AlreadyGenerated and
-                parentName not in SimpleTypeDict.keys()):
+                parentName not in SimpleTypeDict):
             PostponedExtensions.append(element)
             return
     if element.getName() in AlreadyGenerated:
@@ -4348,7 +4353,10 @@ except ImportError, exp:
         def gds_format_string(self, input_data, input_name=''):
             return input_data
         def gds_validate_string(self, input_data, node, input_name=''):
-            return input_data
+            if not input_data:
+                return ''
+            else:
+                return input_data
         def gds_format_base64(self, input_data, input_name=''):
             return base64.b64encode(input_data)
         def gds_validate_base64(self, input_data, node, input_name=''):
@@ -4368,7 +4376,7 @@ except ImportError, exp:
                     raise_parse_error(node, 'Requires sequence of integers')
             return input_data
         def gds_format_float(self, input_data, input_name=''):
-            return '%%f' %% input_data
+            return ('%%.15f' %% input_data).rstrip('0')
         def gds_validate_float(self, input_data, node, input_name=''):
             return input_data
         def gds_format_float_list(self, input_data, input_name=''):
@@ -4452,7 +4460,7 @@ except ImportError, exp:
         def gds_parse_datetime(cls, input_data):
             tz = None
             if input_data[-1] == 'Z':
-                tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
+                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
                 input_data = input_data[:-1]
             else:
                 results = GeneratedsSuper.tzoff_pattern.search(input_data)
@@ -4503,7 +4511,7 @@ except ImportError, exp:
         def gds_parse_date(cls, input_data):
             tz = None
             if input_data[-1] == 'Z':
-                tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
+                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
                 input_data = input_data[:-1]
             else:
                 results = GeneratedsSuper.tzoff_pattern.search(input_data)
@@ -4554,7 +4562,7 @@ except ImportError, exp:
         def gds_parse_time(cls, input_data):
             tz = None
             if input_data[-1] == 'Z':
-                tz = GeneratedsSuper._FixedOffsetTZ(0, 'GMT')
+                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
                 input_data = input_data[:-1]
             else:
                 results = GeneratedsSuper.tzoff_pattern.search(input_data)
@@ -4903,7 +4911,7 @@ def get_root_tag(node):
     return tag, rootClass
 
 
-def parse(inFileName):
+def parse(inFileName, silence=False):
     doc = parsexml_(inFileName)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
@@ -4914,15 +4922,16 @@ def parse(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-#silence#    sys.stdout.write('<?xml version="1.0" ?>\\n')
-#silence#    rootObj.export(
-#silence#        sys.stdout, 0, name_=rootTag,
-#silence#        namespacedef_='%(namespacedef)s',
-#silence#        pretty_print=True)
+#silence#    if not silence:
+#silence#        sys.stdout.write('<?xml version="1.0" ?>\\n')
+#silence#        rootObj.export(
+#silence#            sys.stdout, 0, name_=rootTag,
+#silence#            namespacedef_='%(namespacedef)s',
+#silence#            pretty_print=True)
     return rootObj
 
 
-def parseEtree(inFileName):
+def parseEtree(inFileName, silence=False):
     doc = parsexml_(inFileName)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
@@ -4936,15 +4945,16 @@ def parseEtree(inFileName):
     mapping = {}
     rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
     reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
-#silence#    content = etree_.tostring(
-#silence#        rootElement, pretty_print=True,
-#silence#        xml_declaration=True, encoding="utf-8")
-#silence#    sys.stdout.write(content)
-#silence#    sys.stdout.write('\\n')
+#silence#    if not silence:
+#silence#        content = etree_.tostring(
+#silence#            rootElement, pretty_print=True,
+#silence#            xml_declaration=True, encoding="utf-8")
+#silence#        sys.stdout.write(content)
+#silence#        sys.stdout.write('\\n')
     return rootObj, rootElement, mapping, reverse_mapping
 
 
-def parseString(inString):
+def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
@@ -4956,14 +4966,15 @@ def parseString(inString):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-#silence#    sys.stdout.write('<?xml version="1.0" ?>\\n')
-#silence#    rootObj.export(
-#silence#        sys.stdout, 0, name_="%(name)s",
-#silence#        namespacedef_='%(namespacedef)s')
+#silence#    if not silence:
+#silence#        sys.stdout.write('<?xml version="1.0" ?>\\n')
+#silence#        rootObj.export(
+#silence#            sys.stdout, 0, name_="%(name)s",
+#silence#            namespacedef_='%(namespacedef)s')
     return rootObj
 
 
-def parseLiteral(inFileName):
+def parseLiteral(inFileName, silence=False):
     doc = parsexml_(inFileName)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
@@ -4974,11 +4985,12 @@ def parseLiteral(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-#silence#    sys.stdout.write('#from %(module_name)s import *\\n\\n')
-#silence#    sys.stdout.write('import %(module_name)s as model_\\n\\n')
-#silence#    sys.stdout.write('rootObj = model_.rootTag(\\n')
-#silence#    rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
-#silence#    sys.stdout.write(')\\n')
+#silence#    if not silence:
+#silence#        sys.stdout.write('#from %(module_name)s import *\\n\\n')
+#silence#        sys.stdout.write('import %(module_name)s as model_\\n\\n')
+#silence#        sys.stdout.write('rootObj = model_.rootTag(\\n')
+#silence#        rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
+#silence#        sys.stdout.write(')\\n')
     return rootObj
 
 
@@ -5337,7 +5349,7 @@ def get_root_tag(node):
     return tag, rootClass
 
 
-def parse(inFilename):
+def parse(inFilename, silence=False):
     doc = parsexml_(inFilename)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
@@ -5348,15 +5360,16 @@ def parse(inFilename):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-#silence#    sys.stdout.write('<?xml version="1.0" ?>\\n')
-#silence#    rootObj.export(
-#silence#        sys.stdout, 0, name_=rootTag,
-#silence#        namespacedef_='%(namespacedef)s',
-#silence#        pretty_print=True)
+#silence#    if not silence:
+#silence#        sys.stdout.write('<?xml version="1.0" ?>\\n')
+#silence#        rootObj.export(
+#silence#            sys.stdout, 0, name_=rootTag,
+#silence#            namespacedef_='%(namespacedef)s',
+#silence#            pretty_print=True)
     return rootObj
 
 
-def parseEtree(inFilename):
+def parseEtree(inFilename, silence=False):
     doc = parsexml_(inFilename)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
@@ -5370,15 +5383,16 @@ def parseEtree(inFilename):
     mapping = {}
     rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
     reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
-#silence#    content = etree_.tostring(
-#silence#        rootElement, pretty_print=True,
-#silence#        xml_declaration=True, encoding="utf-8")
-#silence#    sys.stdout.write(content)
-#silence#    sys.stdout.write('\\n')
+#silence#    if not silence:
+#silence#        content = etree_.tostring(
+#silence#            rootElement, pretty_print=True,
+#silence#            xml_declaration=True, encoding="utf-8")
+#silence#        sys.stdout.write(content)
+#silence#        sys.stdout.write('\\n')
     return rootObj, rootElement, mapping, reverse_mapping
 
 
-def parseString(inString):
+def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
@@ -5390,14 +5404,15 @@ def parseString(inString):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-#silence#    sys.stdout.write('<?xml version="1.0" ?>\\n')
-#silence#    rootObj.export(
-#silence#        sys.stdout, 0, name_=rootTag,
-#silence#        namespacedef_='%(namespacedef)s')
+#silence#    if not silence:
+#silence#        sys.stdout.write('<?xml version="1.0" ?>\\n')
+#silence#        rootObj.export(
+#silence#            sys.stdout, 0, name_=rootTag,
+#silence#            namespacedef_='%(namespacedef)s')
     return rootObj
 
 
-def parseLiteral(inFilename):
+def parseLiteral(inFilename, silence=False):
     doc = parsexml_(inFilename)
     rootNode = doc.getroot()
     roots = get_root_tag(rootNode)
@@ -5408,11 +5423,12 @@ def parseLiteral(inFilename):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-#silence#    sys.stdout.write('#from %(super)s import *\\n\\n')
-#silence#    sys.stdout.write('import %(super)s as model_\\n\\n')
-#silence#    sys.stdout.write('rootObj = model_.%(cleanname)s(\\n')
-#silence#    rootObj.exportLiteral(sys.stdout, 0, name_="%(cleanname)s")
-#silence#    sys.stdout.write(')\\n')
+#silence#    if not silence:
+#silence#        sys.stdout.write('#from %(super)s import *\\n\\n')
+#silence#        sys.stdout.write('import %(super)s as model_\\n\\n')
+#silence#        sys.stdout.write('rootObj = model_.%(cleanname)s(\\n')
+#silence#        rootObj.exportLiteral(sys.stdout, 0, name_="%(cleanname)s")
+#silence#        sys.stdout.write(')\\n')
     return rootObj
 
 
@@ -5678,7 +5694,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
         parentName, parent = getParentName(element)
         if parentName:
             if (parentName in AlreadyGenerated or
-                    parentName in SimpleTypeDict.keys()):
+                    parentName in SimpleTypeDict):
                 generateClasses(wrt, prefix, element, 1)
             else:
                 PostponedExtensions.insert(0, element)
@@ -5851,8 +5867,10 @@ def parseAndGenerate(
             import process_includes
             outfile = StringIO.StringIO()
             process_includes.process_include_files(
-                infile, outfile, inpath=xschemaFileName,
-                catalogpath=catalogFilename)
+                infile, outfile,
+                inpath=xschemaFileName,
+                catalogpath=catalogFilename,
+                fixtypenames=FixTypeNames)
             outfile.seek(0)
             infile = outfile
         parser.parse(infile)
@@ -6042,7 +6060,8 @@ def main():
         TEMPLATE_MAIN, TEMPLATE_SUBCLASS_FOOTER, Dirpath, \
         ExternalEncoding, MemberSpecs, NoQuestions, \
         ExportWrite, ExportEtree, ExportLiteral, \
-        SingleFileOutput, OutputDirectory, ModuleSuffix
+        FixTypeNames, SingleFileOutput, OutputDirectory, \
+        ModuleSuffix
     outputText = True
     args = sys.argv[1:]
     try:
@@ -6055,7 +6074,7 @@ def main():
                 'user-methods=', 'no-process-includes', 'silence',
                 'namespacedef=', 'external-encoding=',
                 'member-specs=', 'no-dates', 'no-versions',
-                'no-questions', 'session=',
+                'no-questions', 'session=', 'fix-type-names=',
                 'version', 'export=',
                 'one-file-per-xsd', 'output-directory=',
                 'module-suffix='
@@ -6189,6 +6208,8 @@ def main():
             ExternalEncoding = option[1]
         elif option[0] in ('-q', '--no-questions'):
             NoQuestions = True
+        elif option[0] == "--fix-type-names":
+            FixTypeNames = option[1]
         elif option[0] == '--version':
             showVersion = True
         elif option[0] == '--member-specs':
