@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<ipo:purchaseOrder orderDate="1999-12-01">
+<ipo:purchaseOrder xmlns:ipo="http://www.example.com/IPO" orderDate="1999-12-01">
     <ipo:shipTo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ipo:UKAddress" category="1-a" exportCode="1">
         <ipo:name>Helen Zoe</ipo:name>
         <ipo:street>47 Eden Street</ipo:street>
@@ -18,7 +18,7 @@
         <ipo:item partNum="833-AA">
             <ipo:productName>Lapis necklace</ipo:productName>
             <ipo:quantity>1</ipo:quantity>
-            <ipo:USPrice>99.950000</ipo:USPrice>
+            <ipo:USPrice>99.950000000000003</ipo:USPrice>
             <ipo:comment>Want this for the holidays</ipo:comment>
             <ipo:shipDate>1999-12-05</ipo:shipDate>
         </ipo:item>

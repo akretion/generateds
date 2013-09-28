@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.11: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.12: http://docutils.sourceforge.net/" />
 <title>generateDS -- Generate Data Structures from XML Schema</title>
 <meta name="author" content="Dave Kuhlman" />
 <style type="text/css">
@@ -201,10 +201,11 @@ tt.docutils {
 <tbody valign="top">
 <tr><th class="docinfo-name">Author:</th>
 <td>Dave Kuhlman</td></tr>
+<tr><th class="docinfo-name">Contact:</th>
+<td><a class="first last reference external" href="mailto:dkuhlman&#64;pacbell.net">dkuhlman&#64;pacbell.net</a></td></tr>
 <tr><th class="docinfo-name">Address:</th>
 <td><pre class="address">
-<a class="first reference external" href="mailto:dkuhlman&#64;rexx.com">dkuhlman&#64;rexx.com</a>
-<a class="last reference external" href="http://www.rexx.com/~dkuhlman">http://www.rexx.com/~dkuhlman</a>
+<a class="first last reference external" href="http://www.davekuhlman.org">http://www.davekuhlman.org</a>
 </pre>
 </td></tr>
 </tbody>
@@ -216,7 +217,7 @@ They are used by updateversion.py. -->
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">revision:</th><td class="field-body">2.10b</td>
+<tr class="field"><th class="field-name">revision:</th><td class="field-body">2.11b</td>
 </tr>
 </tbody>
 </table>
@@ -225,7 +226,7 @@ They are used by updateversion.py. -->
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">date:</th><td class="field-body">June 19, 2013</td>
+<tr class="field"><th class="field-name">date:</th><td class="field-body">August 21, 2013</td>
 </tr>
 </tbody>
 </table>
@@ -308,7 +309,7 @@ to process the contents of an XML document.</td>
 <li><a class="reference internal" href="#xsd-enumeration-support" id="id45">11.2&nbsp;&nbsp;&nbsp;xsd:enumeration support</a></li>
 <li><a class="reference internal" href="#xsd-union-support" id="id46">11.3&nbsp;&nbsp;&nbsp;xsd:union support</a></li>
 <li><a class="reference internal" href="#extended-xsd-choice-support" id="id47">11.4&nbsp;&nbsp;&nbsp;Extended xsd:choice support</a></li>
-<li><a class="reference internal" href="#minoccurs-attribute-support" id="id48">11.5&nbsp;&nbsp;&nbsp;minOccurs attribute support</a></li>
+<li><a class="reference internal" href="#arity-minoccurs-maxoccurs-etc" id="id48">11.5&nbsp;&nbsp;&nbsp;Arity, minOccurs, maxOccurs, etc</a></li>
 <li><a class="reference internal" href="#more-thorough-content-type-and-base-type-resolution" id="id49">11.6&nbsp;&nbsp;&nbsp;More thorough content type and base type resolution</a></li>
 <li><a class="reference internal" href="#making-top-level-simpletypes-available-from-xschemahandler" id="id50">11.7&nbsp;&nbsp;&nbsp;Making top level simpleTypes available from XschemaHandler</a></li>
 <li><a class="reference internal" href="#namespaces-inserting-namespace-definition-in-exported-documents" id="id51">11.8&nbsp;&nbsp;&nbsp;Namespaces -- inserting namespace definition in exported documents</a></li>
@@ -434,6 +435,8 @@ to use the Python code and data structures that it generates; and
 http://pypi.python.org/pypi/generateDS/</a></li>
 <li><a class="reference external" href="http://sourceforge.net/projects/generateds/">Source Forge --
 http://sourceforge.net/projects/generateds/</a></li>
+<li><a class="reference external" href="https://bitbucket.org/dkuhlman/generateds">Bitbucket --
+https://bitbucket.org/dkuhlman/generateds</a></li>
 </ul>
 </div>
 <div class="section" id="support-and-more-information">
@@ -513,6 +516,7 @@ Options:
                              Default = 'xs:'.
     -b &lt;behaviorfilename&gt;    Input file name for behaviors added to subclasses
     -m                       Generate properties for member variables
+    -c &lt;xmlcatalogfilename&gt;  Input file name to load an XML catalog
     --subclass-suffix=&quot;XXX&quot;  Append XXX to the generated subclass names.
                              Default=&quot;Sub&quot;.
     --root-element=&quot;XXX&quot;     Assume XXX is root element of instance docs.
@@ -546,6 +550,8 @@ Options:
     --silence                Normally, the code generated with generateDS
                              echoes the information being parsed. To prevent
                              the echo from occurring, use the --silence switch.
+                             Also note optional &quot;silence&quot; parameter on
+                             generated functions, e.g. parse, parseString, etc.
     --namespacedef='xmlns:abc=&quot;http://www.abc.com&quot;'
                              Namespace definition to be passed in as the
                              value for the namespacedef_ parameter of
@@ -636,6 +642,12 @@ section on <a class="reference internal" href="#xmlbehaviors">XMLBehaviors</a> b
 generated classes to inherit from class object.  Generates
 a call to the built-in property function for each pair of
 getters and setters.  This is experimental.</dd>
+<dt>c &lt;xmlcatalogfilename&gt;</dt>
+<dd>Specify the file to be used as an XML catalog.  This file will
+be used by process_includes.py if needed to resolve references
+in &lt;import&gt; and &lt;include&gt; elements in the XML Schema.  For more
+information on XML catalogs, see:
+<a class="reference external" href="http://en.wikipedia.org/wiki/XML_Catalog">http://en.wikipedia.org/wiki/XML_Catalog</a></dd>
 <dt>subclass-suffix=&lt;suffix&gt;</dt>
 <dd><p class="first">Append suffix to the name of classes generated in the subclass
 file.  The default, if omitted, is &quot;Sub&quot;.  For example, the
@@ -1630,12 +1642,14 @@ supported in <tt class="docutils literal">generateDS.py</tt>:</p>
 &lt;/xsd:element&gt;
 </pre>
 </div>
-<div class="section" id="minoccurs-attribute-support">
-<h2><a class="toc-backref" href="#id48">11.5&nbsp;&nbsp;&nbsp;minOccurs attribute support</a></h2>
-<p>Some applications require the availability of the &quot;minOccurs&quot;
-attribute in addition to the previous minimal support of
-&quot;optionality&quot;.  This is available through the <tt class="docutils literal">getMinOccurs</tt>
-method (which follows the style of the existing API).</p>
+<div class="section" id="arity-minoccurs-maxoccurs-etc">
+<h2><a class="toc-backref" href="#id48">11.5&nbsp;&nbsp;&nbsp;Arity, minOccurs, maxOccurs, etc</a></h2>
+<p>Some applications require information about the &quot;minOccurs&quot; and
+&quot;maxOccurs&quot; attributes in the XML Schema.  Some of that information
+can be obtained by using the --member-specs= (list|dict) command line
+option, then looking at the <tt class="docutils literal">member_data_items_</tt> class variable
+that it generates in each data representation class.  In particular,
+look at the <tt class="docutils literal">get_container</tt> method (from class <tt class="docutils literal">MemberSpec_</tt>).</p>
 </div>
 <div class="section" id="more-thorough-content-type-and-base-type-resolution">
 <h2><a class="toc-backref" href="#id49">11.6&nbsp;&nbsp;&nbsp;More thorough content type and base type resolution</a></h2>

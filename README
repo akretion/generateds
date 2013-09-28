@@ -65,14 +65,14 @@ More information
 More information on generateDS.py is in generateDS.html
 in the distribution or
 `generateDS -- Generate Data Structures from XML Schema --
-http://www.rexx.com/~dkuhlman/generateDS.html
-<http://www.rexx.com/~dkuhlman/generateDS.html>`_.
+http://www.davekuhlman.org/generateDS.html
+<http://www.davekuhlman.org/generateDS.html>`_.
 
 There is also a tutorial.  See tutorial/tutorial.html
 in the distribution or
 `generateDS -- Introduction and Tutorial --
-http://www.rexx.com/~dkuhlman/generateds_tutorial.html
-<http://www.rexx.com/~dkuhlman/generateds_tutorial.html>`_.
+http://www.davekuhlman.org/generateds_tutorial.html
+<http://www.davekuhlman.org/generateds_tutorial.html>`_.
 
 
 -----------
@@ -141,13 +141,36 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version 2.11a (08/06/2013)
+Version 2.11b (08/19/2013)
+- A name conflict issue caused by naming anonymous types.  An
+  anonymous type is a complexType that does not have a name
+  attribute and that is nested inside an element that does not have
+  a type attribute.  Strengthened the code that generates new,
+  unique names.  And, also fixed a problem or two in the surrounding
+  code.  Thanks to Shahaf Abileah for reporting this and for
+  providing test files to reproduce the problem behavior.
+- Created unit test for anonymous types.
+- Added command line option --fix-type-names.  This may be useful if
+  there are name conflicts in your XML schema, for example, because
+  the schema refers to two types with the same name but in different
+  namespaces.
+
+Version 2.11a (08/16/2013)
 - Added ability to use XML catalog to find included/imported
-  schemas.  Thanks to George David for implementing this
-  enhancement.
+  schemas.  The -c command line option has been added to support
+  this.  Thanks to George David for implementing this enhancement.
+- Added unit test for the catalog capability.
 - Added ability to pick up the target namespace and its prefix, then
   use them in calling the export functions from the parse functions.
   Thanks to George David for suggesting this.
+- Several fixes to formatting date and floats during export.  Thanks
+  to Domenico Mangieri for catching and fixing these.
+- Added generation of an extra, optional "silence" argument to the
+  parse functions so that export can be turned on or off at runtime.
+  Domenico is the motivator on this one, too.
+- The information about minOccurs and maxOccurs in the generateDS
+  document (generateDS.txt) was misleading or wrong.  Edited it.
+  Thanks to Rinat Yangurazov for catching this.
 
 Version 2.10b (07/22/2013)
 - Changed flag for generating getters and setters.  Removed flag
@@ -1400,6 +1423,6 @@ The following enhancements and fixes remain to be done:
 
 
 Dave Kuhlman
-dkuhlman@rexx.com
-http://www.rexx.com/~dkuhlman
+dkuhlman@pacbell.net
+http://www.davekuhlman.org
 

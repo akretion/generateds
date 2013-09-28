@@ -92,7 +92,10 @@ except ImportError, exp:
         def gds_format_string(self, input_data, input_name=''):
             return input_data
         def gds_validate_string(self, input_data, node, input_name=''):
-            return input_data
+            if not input_data:
+                return ''
+            else:
+                return input_data
         def gds_format_base64(self, input_data, input_name=''):
             return base64.b64encode(input_data)
         def gds_validate_base64(self, input_data, node, input_name=''):
@@ -608,53 +611,41 @@ def _cast(typ, value):
 #
 
 
-class PurchaseOrderType(GeneratedsSuper):
+
+class FooList(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('orderDate', 'date', 0),
-        MemberSpec_('shipTo', 'Address', 0),
-        MemberSpec_('billTo', 'Address', 0),
-        MemberSpec_('comment', 'string', 0),
-        MemberSpec_('items', 'Items', 0),
+        MemberSpec_('Foo', 'FooType1', 0),
+        MemberSpec_('Bar', 'BarType2', 0),
+        MemberSpec_('Baz', 'BazType3', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, orderDate=None, shipTo=None, billTo=None, comment=None, items=None):
-        if isinstance(orderDate, basestring):
-            initvalue_ = datetime_.datetime.strptime(orderDate, '%Y-%m-%d').date()
-        else:
-            initvalue_ = orderDate
-        self.orderDate = initvalue_
-        self.shipTo = shipTo
-        self.billTo = billTo
-        self.comment = comment
-        self.items = items
+    def __init__(self, Foo=None, Bar=None, Baz=None):
+        self.Foo = Foo
+        self.Bar = Bar
+        self.Baz = Baz
     def factory(*args_, **kwargs_):
-        if PurchaseOrderType.subclass:
-            return PurchaseOrderType.subclass(*args_, **kwargs_)
+        if FooList.subclass:
+            return FooList.subclass(*args_, **kwargs_)
         else:
-            return PurchaseOrderType(*args_, **kwargs_)
+            return FooList(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_shipTo(self): return self.shipTo
-    def set_shipTo(self, shipTo): self.shipTo = shipTo
-    def get_billTo(self): return self.billTo
-    def set_billTo(self, billTo): self.billTo = billTo
-    def get_comment(self): return self.comment
-    def set_comment(self, comment): self.comment = comment
-    def get_items(self): return self.items
-    def set_items(self, items): self.items = items
-    def get_orderDate(self): return self.orderDate
-    def set_orderDate(self, orderDate): self.orderDate = orderDate
+    def get_Foo(self): return self.Foo
+    def set_Foo(self, Foo): self.Foo = Foo
+    def get_Bar(self): return self.Bar
+    def set_Bar(self, Bar): self.Bar = Bar
+    def get_Baz(self): return self.Baz
+    def set_Baz(self, Baz): self.Baz = Baz
     def hasContent_(self):
         if (
-            self.shipTo is not None or
-            self.billTo is not None or
-            self.comment is not None or
-            self.items is not None
+            self.Foo is not None or
+            self.Bar is not None or
+            self.Baz is not None
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='ipo:', name_='PurchaseOrderType', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='FooList', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -662,7 +653,7 @@ class PurchaseOrderType(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='PurchaseOrderType')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='FooList')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
             self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
@@ -670,55 +661,44 @@ class PurchaseOrderType(GeneratedsSuper):
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='ipo:', name_='PurchaseOrderType'):
-        if self.orderDate is not None and 'orderDate' not in already_processed:
-            already_processed.add('orderDate')
-            outfile.write(' orderDate="%s"' % self.gds_format_date(self.orderDate, input_name='orderDate'))
-    def exportChildren(self, outfile, level, namespace_='ipo:', name_='PurchaseOrderType', fromsubclass_=False, pretty_print=True):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='FooList'):
+        pass
+    def exportChildren(self, outfile, level, namespace_='', name_='FooList', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
-        if self.shipTo is not None:
-            self.shipTo.export(outfile, level, namespace_, name_='shipTo', pretty_print=pretty_print)
-        if self.billTo is not None:
-            self.billTo.export(outfile, level, namespace_, name_='billTo', pretty_print=pretty_print)
-        if self.comment is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%scomment>%s</%scomment>%s' % (namespace_, self.gds_format_string(quote_xml(self.comment).encode(ExternalEncoding), input_name='comment'), namespace_, eol_))
-        if self.items is not None:
-            self.items.export(outfile, level, namespace_, name_='items', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='PurchaseOrderType'):
+        if self.Foo is not None:
+            self.Foo.export(outfile, level, namespace_, name_='Foo', pretty_print=pretty_print)
+        if self.Bar is not None:
+            self.Bar.export(outfile, level, namespace_, name_='Bar', pretty_print=pretty_print)
+        if self.Baz is not None:
+            self.Baz.export(outfile, level, namespace_, name_='Baz', pretty_print=pretty_print)
+    def exportLiteral(self, outfile, level, name_='FooList'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.orderDate is not None and 'orderDate' not in already_processed:
-            already_processed.add('orderDate')
-            showIndent(outfile, level)
-            outfile.write('orderDate=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.orderDate, input_name='orderDate'))
+        pass
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.shipTo is not None:
+        if self.Foo is not None:
             showIndent(outfile, level)
-            outfile.write('shipTo=model_.Address(\n')
-            self.shipTo.exportLiteral(outfile, level, name_='shipTo')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.billTo is not None:
-            showIndent(outfile, level)
-            outfile.write('billTo=model_.Address(\n')
-            self.billTo.exportLiteral(outfile, level, name_='billTo')
+            outfile.write('Foo=model_.FooType1(\n')
+            self.Foo.exportLiteral(outfile, level, name_='Foo')
             showIndent(outfile, level)
             outfile.write('),\n')
-        if self.comment is not None:
+        if self.Bar is not None:
             showIndent(outfile, level)
-            outfile.write('comment=%s,\n' % quote_python(self.comment).encode(ExternalEncoding))
-        if self.items is not None:
+            outfile.write('Bar=model_.BarType2(\n')
+            self.Bar.exportLiteral(outfile, level, name_='Bar')
             showIndent(outfile, level)
-            outfile.write('items=model_.Items(\n')
-            self.items.exportLiteral(outfile, level, name_='items')
+            outfile.write('),\n')
+        if self.Baz is not None:
+            showIndent(outfile, level)
+            outfile.write('Baz=model_.BazType3(\n')
+            self.Baz.exportLiteral(outfile, level, name_='Baz')
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node):
@@ -728,64 +708,50 @@ class PurchaseOrderType(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('orderDate', node)
-        if value is not None and 'orderDate' not in already_processed:
-            already_processed.add('orderDate')
-            try:
-                self.orderDate = self.gds_parse_date(value)
-            except ValueError, exp:
-                raise ValueError('Bad date attribute (orderDate): %s' % exp)
+        pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'shipTo':
-            class_obj_ = self.get_class_obj_(child_, Address)
-            obj_ = class_obj_.factory()
+        if nodeName_ == 'Foo':
+            obj_ = FooType1.factory()
             obj_.build(child_)
-            self.shipTo = obj_
-        elif nodeName_ == 'billTo':
-            class_obj_ = self.get_class_obj_(child_, Address)
-            obj_ = class_obj_.factory()
+            self.Foo = obj_
+        elif nodeName_ == 'Bar':
+            obj_ = BarType2.factory()
             obj_.build(child_)
-            self.billTo = obj_
-        elif nodeName_ == 'comment':
-            comment_ = child_.text
-            comment_ = self.gds_validate_string(comment_, node, 'comment')
-            self.comment = comment_
-        elif nodeName_ == 'items':
-            obj_ = Items.factory()
+            self.Bar = obj_
+        elif nodeName_ == 'Baz':
+            obj_ = BazType3.factory()
             obj_.build(child_)
-            self.items = obj_
-# end class PurchaseOrderType
+            self.Baz = obj_
+# end class FooList
 
 
-class Items(GeneratedsSuper):
+class FooType1(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('item', 'itemType', 1),
+        MemberSpec_('FooType', ['FooTypeType', 'xs:string'], 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, item=None):
-        if item is None:
-            self.item = []
-        else:
-            self.item = item
+    def __init__(self, FooType=None):
+        self.FooType = FooType
     def factory(*args_, **kwargs_):
-        if Items.subclass:
-            return Items.subclass(*args_, **kwargs_)
+        if FooType1.subclass:
+            return FooType1.subclass(*args_, **kwargs_)
         else:
-            return Items(*args_, **kwargs_)
+            return FooType1(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_item(self): return self.item
-    def set_item(self, item): self.item = item
-    def add_item(self, value): self.item.append(value)
-    def insert_item(self, index, value): self.item[index] = value
+    def get_FooType(self): return self.FooType
+    def set_FooType(self, FooType): self.FooType = FooType
+    def validate_FooTypeType(self, value):
+        # Validate type FooTypeType, a restriction on xs:string.
+        pass
     def hasContent_(self):
         if (
-            self.item
+            self.FooType is not None
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='ipo:', name_='Items', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='FooType1', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -793,7 +759,7 @@ class Items(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Items')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='FooType1')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
             self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
@@ -801,16 +767,17 @@ class Items(GeneratedsSuper):
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='ipo:', name_='Items'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='FooType1'):
         pass
-    def exportChildren(self, outfile, level, namespace_='ipo:', name_='Items', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='FooType1', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
-        for item_ in self.item:
-            item_.export(outfile, level, namespace_, name_='item', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='Items'):
+        if self.FooType is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sFooType>%s</%sFooType>%s' % (namespace_, self.gds_format_string(quote_xml(self.FooType).encode(ExternalEncoding), input_name='FooType'), namespace_, eol_))
+    def exportLiteral(self, outfile, level, name_='FooType1'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
@@ -819,18 +786,9 @@ class Items(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('item=[\n')
-        level += 1
-        for item_ in self.item:
+        if self.FooType is not None:
             showIndent(outfile, level)
-            outfile.write('model_.itemType(\n')
-            item_.exportLiteral(outfile, level, name_='itemType')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
+            outfile.write('FooType=%s,\n' % quote_python(self.FooType).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -840,50 +798,41 @@ class Items(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'item':
-            obj_ = itemType.factory()
-            obj_.build(child_)
-            self.item.append(obj_)
-# end class Items
+        if nodeName_ == 'FooType':
+            FooType_ = child_.text
+            FooType_ = self.gds_validate_string(FooType_, node, 'FooType')
+            self.FooType = FooType_
+            self.validate_FooTypeType(self.FooType)    # validate type FooTypeType
+# end class FooType1
 
 
-class Address(GeneratedsSuper):
+class BarType2(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('name', 'string', 0),
-        MemberSpec_('street', 'string', 0),
-        MemberSpec_('city', 'string', 0),
+        MemberSpec_('BarType', ['BarTypeType', 'xs:string'], 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, name=None, street=None, city=None, extensiontype_=None):
-        self.name = name
-        self.street = street
-        self.city = city
-        self.extensiontype_ = extensiontype_
+    def __init__(self, BarType=None):
+        self.BarType = BarType
     def factory(*args_, **kwargs_):
-        if Address.subclass:
-            return Address.subclass(*args_, **kwargs_)
+        if BarType2.subclass:
+            return BarType2.subclass(*args_, **kwargs_)
         else:
-            return Address(*args_, **kwargs_)
+            return BarType2(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_name(self): return self.name
-    def set_name(self, name): self.name = name
-    def get_street(self): return self.street
-    def set_street(self, street): self.street = street
-    def get_city(self): return self.city
-    def set_city(self, city): self.city = city
-    def get_extensiontype_(self): return self.extensiontype_
-    def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
+    def get_BarType(self): return self.BarType
+    def set_BarType(self, BarType): self.BarType = BarType
+    def validate_BarTypeType(self, value):
+        # Validate type BarTypeType, a restriction on xs:string.
+        pass
     def hasContent_(self):
         if (
-            self.name is not None or
-            self.street is not None or
-            self.city is not None
+            self.BarType is not None
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='ipo:', name_='Address', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='BarType2', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -891,7 +840,7 @@ class Address(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Address')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='BarType2')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
             self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
@@ -899,27 +848,17 @@ class Address(GeneratedsSuper):
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='ipo:', name_='Address'):
-        if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
-            already_processed.add('xsi:type')
-            outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
-            outfile.write(' xsi:type="%s"' % self.extensiontype_)
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='BarType2'):
         pass
-    def exportChildren(self, outfile, level, namespace_='ipo:', name_='Address', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='BarType2', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
-        if self.name is not None:
+        if self.BarType is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sname>%s</%sname>%s' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_, eol_))
-        if self.street is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstreet>%s</%sstreet>%s' % (namespace_, self.gds_format_string(quote_xml(self.street).encode(ExternalEncoding), input_name='street'), namespace_, eol_))
-        if self.city is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%scity>%s</%scity>%s' % (namespace_, self.gds_format_string(quote_xml(self.city).encode(ExternalEncoding), input_name='city'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='Address'):
+            outfile.write('<%sBarType>%s</%sBarType>%s' % (namespace_, self.gds_format_string(quote_xml(self.BarType).encode(ExternalEncoding), input_name='BarType'), namespace_, eol_))
+    def exportLiteral(self, outfile, level, name_='BarType2'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
@@ -928,15 +867,9 @@ class Address(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.name is not None:
+        if self.BarType is not None:
             showIndent(outfile, level)
-            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
-        if self.street is not None:
-            showIndent(outfile, level)
-            outfile.write('street=%s,\n' % quote_python(self.street).encode(ExternalEncoding))
-        if self.city is not None:
-            showIndent(outfile, level)
-            outfile.write('city=%s,\n' % quote_python(self.city).encode(ExternalEncoding))
+            outfile.write('BarType=%s,\n' % quote_python(self.BarType).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -944,321 +877,43 @@ class Address(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('xsi:type', node)
-        if value is not None and 'xsi:type' not in already_processed:
-            already_processed.add('xsi:type')
-            self.extensiontype_ = value
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'name':
-            name_ = child_.text
-            name_ = self.gds_validate_string(name_, node, 'name')
-            self.name = name_
-        elif nodeName_ == 'street':
-            street_ = child_.text
-            street_ = self.gds_validate_string(street_, node, 'street')
-            self.street = street_
-        elif nodeName_ == 'city':
-            city_ = child_.text
-            city_ = self.gds_validate_string(city_, node, 'city')
-            self.city = city_
-# end class Address
-
-
-class USAddress(Address):
-    member_data_items_ = [
-        MemberSpec_('state', ['USState', 'string'], 0),
-        MemberSpec_('zip', 'positiveInteger', 0),
-    ]
-    subclass = None
-    superclass = Address
-    def __init__(self, name=None, street=None, city=None, state=None, zip=None):
-        super(USAddress, self).__init__(name, street, city, )
-        self.state = state
-        self.zip = zip
-    def factory(*args_, **kwargs_):
-        if USAddress.subclass:
-            return USAddress.subclass(*args_, **kwargs_)
-        else:
-            return USAddress(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_state(self): return self.state
-    def set_state(self, state): self.state = state
-    def get_zip(self): return self.zip
-    def set_zip(self, zip): self.zip = zip
-    def validate_USState(self, value):
-        # Validate type USState, a restriction on string.
         pass
-    def hasContent_(self):
-        if (
-            self.state is not None or
-            self.zip is not None or
-            super(USAddress, self).hasContent_()
-        ):
-            return True
-        else:
-            return False
-    def export(self, outfile, level, namespace_='ipo:', name_='USAddress', namespacedef_='', pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        showIndent(outfile, level, pretty_print)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='USAddress')
-        if self.hasContent_():
-            outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
-            showIndent(outfile, level, pretty_print)
-            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
-        else:
-            outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='ipo:', name_='USAddress'):
-        super(USAddress, self).exportAttributes(outfile, level, already_processed, namespace_, name_='USAddress')
-    def exportChildren(self, outfile, level, namespace_='ipo:', name_='USAddress', fromsubclass_=False, pretty_print=True):
-        super(USAddress, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        if self.state is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstate>%s</%sstate>%s' % (namespace_, self.gds_format_string(quote_xml(self.state).encode(ExternalEncoding), input_name='state'), namespace_, eol_))
-        if self.zip is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%szip>%s</%szip>%s' % (namespace_, self.gds_format_integer(self.zip, input_name='zip'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='USAddress'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(USAddress, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(USAddress, self).exportLiteralChildren(outfile, level, name_)
-        if self.state is not None:
-            showIndent(outfile, level)
-            outfile.write('state=%s,\n' % quote_python(self.state).encode(ExternalEncoding))
-        if self.zip is not None:
-            showIndent(outfile, level)
-            outfile.write('zip=%d,\n' % self.zip)
-    def build(self, node):
-        already_processed = set()
-        self.buildAttributes(node, node.attrib, already_processed)
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        super(USAddress, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'state':
-            state_ = child_.text
-            state_ = self.gds_validate_string(state_, node, 'state')
-            self.state = state_
-            self.validate_USState(self.state)    # validate type USState
-        elif nodeName_ == 'zip':
-            sval_ = child_.text
-            try:
-                ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
-                raise_parse_error(child_, 'requires integer: %s' % exp)
-            if ival_ <= 0:
-                raise_parse_error(child_, 'requires positiveInteger')
-            ival_ = self.gds_validate_integer(ival_, node, 'zip')
-            self.zip = ival_
-        super(USAddress, self).buildChildren(child_, node, nodeName_, True)
-# end class USAddress
+        if nodeName_ == 'BarType':
+            BarType_ = child_.text
+            BarType_ = self.gds_validate_string(BarType_, node, 'BarType')
+            self.BarType = BarType_
+            self.validate_BarTypeType(self.BarType)    # validate type BarTypeType
+# end class BarType2
 
 
-class UKAddress(Address):
+class BazType3(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('category_attr', 'xs:string', 0),
-        MemberSpec_('exportCode', 'positiveInteger', 0),
-        MemberSpec_('postcode', ['UKPostcode', 'string'], 0),
-        MemberSpec_('category', 'string', 0),
-    ]
-    subclass = None
-    superclass = Address
-    def __init__(self, name=None, street=None, city=None, category_attr=None, exportCode=None, postcode=None, category=None):
-        super(UKAddress, self).__init__(name, street, city, )
-        self.category_attr = _cast(None, category_attr)
-        self.exportCode = _cast(int, exportCode)
-        self.postcode = postcode
-        self.category = category
-    def factory(*args_, **kwargs_):
-        if UKAddress.subclass:
-            return UKAddress.subclass(*args_, **kwargs_)
-        else:
-            return UKAddress(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_postcode(self): return self.postcode
-    def set_postcode(self, postcode): self.postcode = postcode
-    def get_category(self): return self.category
-    def set_category(self, category): self.category = category
-    def get_category_attr(self): return self.category_attr
-    def set_category_attr(self, category_attr): self.category_attr = category_attr
-    def get_exportCode(self): return self.exportCode
-    def set_exportCode(self, exportCode): self.exportCode = exportCode
-    def validate_UKPostcode(self, value):
-        # Validate type UKPostcode, a restriction on string.
-        pass
-    def hasContent_(self):
-        if (
-            self.postcode is not None or
-            self.category is not None or
-            super(UKAddress, self).hasContent_()
-        ):
-            return True
-        else:
-            return False
-    def export(self, outfile, level, namespace_='ipo:', name_='UKAddress', namespacedef_='', pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        showIndent(outfile, level, pretty_print)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='UKAddress')
-        if self.hasContent_():
-            outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
-            showIndent(outfile, level, pretty_print)
-            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
-        else:
-            outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='ipo:', name_='UKAddress'):
-        super(UKAddress, self).exportAttributes(outfile, level, already_processed, namespace_, name_='UKAddress')
-        if self.category_attr is not None and 'category_attr' not in already_processed:
-            already_processed.add('category_attr')
-            outfile.write(' category=%s' % (quote_attrib(self.category_attr), ))
-        if self.exportCode is not None and 'exportCode' not in already_processed:
-            already_processed.add('exportCode')
-            outfile.write(' exportCode="%s"' % self.gds_format_integer(self.exportCode, input_name='exportCode'))
-    def exportChildren(self, outfile, level, namespace_='ipo:', name_='UKAddress', fromsubclass_=False, pretty_print=True):
-        super(UKAddress, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        if self.postcode is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%spostcode>%s</%spostcode>%s' % (namespace_, self.gds_format_string(quote_xml(self.postcode).encode(ExternalEncoding), input_name='postcode'), namespace_, eol_))
-        if self.category is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%scategory>%s</%scategory>%s' % (namespace_, self.gds_format_string(quote_xml(self.category).encode(ExternalEncoding), input_name='category'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='UKAddress'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.category_attr is not None and 'category_attr' not in already_processed:
-            already_processed.add('category_attr')
-            showIndent(outfile, level)
-            outfile.write('category_attr=%s,\n' % (self.category_attr,))
-        if self.exportCode is not None and 'exportCode' not in already_processed:
-            already_processed.add('exportCode')
-            showIndent(outfile, level)
-            outfile.write('exportCode=%d,\n' % (self.exportCode,))
-        super(UKAddress, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(UKAddress, self).exportLiteralChildren(outfile, level, name_)
-        if self.postcode is not None:
-            showIndent(outfile, level)
-            outfile.write('postcode=%s,\n' % quote_python(self.postcode).encode(ExternalEncoding))
-        if self.category is not None:
-            showIndent(outfile, level)
-            outfile.write('category=%s,\n' % quote_python(self.category).encode(ExternalEncoding))
-    def build(self, node):
-        already_processed = set()
-        self.buildAttributes(node, node.attrib, already_processed)
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('category', node)
-        if value is not None and 'category_attr' not in already_processed:
-            already_processed.add('category_attr')
-            self.category_attr = value
-        value = find_attr_value_('exportCode', node)
-        if value is not None and 'exportCode' not in already_processed:
-            already_processed.add('exportCode')
-            try:
-                self.exportCode = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-            if self.exportCode <= 0:
-                raise_parse_error(node, 'Invalid PositiveInteger')
-        super(UKAddress, self).buildAttributes(node, attrs, already_processed)
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'postcode':
-            postcode_ = child_.text
-            postcode_ = self.gds_validate_string(postcode_, node, 'postcode')
-            self.postcode = postcode_
-            self.validate_UKPostcode(self.postcode)    # validate type UKPostcode
-        elif nodeName_ == 'category':
-            category_ = child_.text
-            category_ = self.gds_validate_string(category_, node, 'category')
-            self.category = category_
-        super(UKAddress, self).buildChildren(child_, node, nodeName_, True)
-# end class UKAddress
-
-
-class itemType(GeneratedsSuper):
-    member_data_items_ = [
-        MemberSpec_('partNum', 'ipo:SKU', 0),
-        MemberSpec_('productName', 'string', 0),
-        MemberSpec_('quantity', ['quantity', 'positiveInteger'], 0),
-        MemberSpec_('USPrice', 'decimal', 0),
-        MemberSpec_('comment', 'string', 0),
-        MemberSpec_('shipDate', 'date', 0),
+        MemberSpec_('BazType', ['BazTypeType', 'xs:string'], 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, partNum=None, productName=None, quantity=None, USPrice=None, comment=None, shipDate=None):
-        self.partNum = _cast(None, partNum)
-        self.productName = productName
-        self.quantity = quantity
-        self.USPrice = USPrice
-        self.comment = comment
-        if isinstance(shipDate, basestring):
-            initvalue_ = datetime_.datetime.strptime(shipDate, '%Y-%m-%d').date()
-        else:
-            initvalue_ = shipDate
-        self.shipDate = initvalue_
+    def __init__(self, BazType=None):
+        self.BazType = BazType
     def factory(*args_, **kwargs_):
-        if itemType.subclass:
-            return itemType.subclass(*args_, **kwargs_)
+        if BazType3.subclass:
+            return BazType3.subclass(*args_, **kwargs_)
         else:
-            return itemType(*args_, **kwargs_)
+            return BazType3(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_productName(self): return self.productName
-    def set_productName(self, productName): self.productName = productName
-    def get_quantity(self): return self.quantity
-    def set_quantity(self, quantity): self.quantity = quantity
-    def get_USPrice(self): return self.USPrice
-    def set_USPrice(self, USPrice): self.USPrice = USPrice
-    def get_comment(self): return self.comment
-    def set_comment(self, comment): self.comment = comment
-    def get_shipDate(self): return self.shipDate
-    def set_shipDate(self, shipDate): self.shipDate = shipDate
-    def get_partNum(self): return self.partNum
-    def set_partNum(self, partNum): self.partNum = partNum
+    def get_BazType(self): return self.BazType
+    def set_BazType(self, BazType): self.BazType = BazType
+    def validate_BazTypeType(self, value):
+        # Validate type BazTypeType, a restriction on xs:string.
+        pass
     def hasContent_(self):
         if (
-            self.productName is not None or
-            self.quantity is not None or
-            self.USPrice is not None or
-            self.comment is not None or
-            self.shipDate is not None
+            self.BazType is not None
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='ipo:', name_='itemType', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='BazType3', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -1266,7 +921,7 @@ class itemType(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='itemType')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='BazType3')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
             self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
@@ -1274,142 +929,17 @@ class itemType(GeneratedsSuper):
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='ipo:', name_='itemType'):
-        if self.partNum is not None and 'partNum' not in already_processed:
-            already_processed.add('partNum')
-            outfile.write(' partNum=%s' % (quote_attrib(self.partNum), ))
-    def exportChildren(self, outfile, level, namespace_='ipo:', name_='itemType', fromsubclass_=False, pretty_print=True):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='BazType3'):
+        pass
+    def exportChildren(self, outfile, level, namespace_='', name_='BazType3', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
-        if self.productName is not None:
+        if self.BazType is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sproductName>%s</%sproductName>%s' % (namespace_, self.gds_format_string(quote_xml(self.productName).encode(ExternalEncoding), input_name='productName'), namespace_, eol_))
-        if self.quantity is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%squantity>%s</%squantity>%s' % (namespace_, self.gds_format_integer(self.quantity, input_name='quantity'), namespace_, eol_))
-        if self.USPrice is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sUSPrice>%s</%sUSPrice>%s' % (namespace_, self.gds_format_float(self.USPrice, input_name='USPrice'), namespace_, eol_))
-        if self.comment is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%scomment>%s</%scomment>%s' % (namespace_, self.gds_format_string(quote_xml(self.comment).encode(ExternalEncoding), input_name='comment'), namespace_, eol_))
-        if self.shipDate is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sshipDate>%s</%sshipDate>%s' % (namespace_, self.gds_format_date(self.shipDate, input_name='shipDate'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='itemType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.partNum is not None and 'partNum' not in already_processed:
-            already_processed.add('partNum')
-            showIndent(outfile, level)
-            outfile.write('partNum=%s,\n' % (self.partNum,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.productName is not None:
-            showIndent(outfile, level)
-            outfile.write('productName=%s,\n' % quote_python(self.productName).encode(ExternalEncoding))
-        if self.quantity is not None:
-            showIndent(outfile, level)
-            outfile.write('quantity=%d,\n' % self.quantity)
-        if self.USPrice is not None:
-            showIndent(outfile, level)
-            outfile.write('USPrice=%f,\n' % self.USPrice)
-        if self.comment is not None:
-            showIndent(outfile, level)
-            outfile.write('comment=%s,\n' % quote_python(self.comment).encode(ExternalEncoding))
-        if self.shipDate is not None:
-            showIndent(outfile, level)
-            outfile.write('shipDate=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.shipDate, input_name='shipDate'))
-    def build(self, node):
-        already_processed = set()
-        self.buildAttributes(node, node.attrib, already_processed)
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('partNum', node)
-        if value is not None and 'partNum' not in already_processed:
-            already_processed.add('partNum')
-            self.partNum = value
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'productName':
-            productName_ = child_.text
-            productName_ = self.gds_validate_string(productName_, node, 'productName')
-            self.productName = productName_
-        elif nodeName_ == 'quantity':
-            sval_ = child_.text
-            try:
-                ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
-                raise_parse_error(child_, 'requires integer: %s' % exp)
-            if ival_ <= 0:
-                raise_parse_error(child_, 'requires positiveInteger')
-            ival_ = self.gds_validate_integer(ival_, node, 'quantity')
-            self.quantity = ival_
-        elif nodeName_ == 'USPrice':
-            sval_ = child_.text
-            try:
-                fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
-                raise_parse_error(child_, 'requires float or double: %s' % exp)
-            fval_ = self.gds_validate_float(fval_, node, 'USPrice')
-            self.USPrice = fval_
-        elif nodeName_ == 'comment':
-            comment_ = child_.text
-            comment_ = self.gds_validate_string(comment_, node, 'comment')
-            self.comment = comment_
-        elif nodeName_ == 'shipDate':
-            sval_ = child_.text
-            dval_ = self.gds_parse_date(sval_)
-            self.shipDate = dval_
-# end class itemType
-
-
-class quantity(GeneratedsSuper):
-    member_data_items_ = [
-    ]
-    subclass = None
-    superclass = None
-    def __init__(self, valueOf_=None):
-        self.valueOf_ = valueOf_
-    def factory(*args_, **kwargs_):
-        if quantity.subclass:
-            return quantity.subclass(*args_, **kwargs_)
-        else:
-            return quantity(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def hasContent_(self):
-        if (
-
-        ):
-            return True
-        else:
-            return False
-    def export(self, outfile, level, namespace_='ipo:', name_='quantity', namespacedef_='', pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        showIndent(outfile, level, pretty_print)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='quantity')
-        if self.hasContent_():
-            outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
-            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
-        else:
-            outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='ipo:', name_='quantity'):
-        pass
-    def exportChildren(self, outfile, level, namespace_='ipo:', name_='quantity', fromsubclass_=False, pretty_print=True):
-        pass
-    def exportLiteral(self, outfile, level, name_='quantity'):
+            outfile.write('<%sBazType>%s</%sBazType>%s' % (namespace_, self.gds_format_string(quote_xml(self.BazType).encode(ExternalEncoding), input_name='BazType'), namespace_, eol_))
+    def exportLiteral(self, outfile, level, name_='BazType3'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
@@ -1418,7 +948,9 @@ class quantity(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        pass
+        if self.BazType is not None:
+            showIndent(outfile, level)
+            outfile.write('BazType=%s,\n' % quote_python(self.BazType).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1428,16 +960,18 @@ class quantity(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        pass
-# end class quantity
+        if nodeName_ == 'BazType':
+            BazType_ = child_.text
+            BazType_ = self.gds_validate_string(BazType_, node, 'BazType')
+            self.BazType = BazType_
+            self.validate_BazTypeType(self.BazType)    # validate type BazTypeType
+# end class BazType3
 
 
 GDSClassesMapping = {
-    'items': Items,
-    'purchaseOrder': PurchaseOrderType,
-    'shipTo': Address,
-    'billTo': Address,
-    'item': itemType,
+    'Baz': BazType3,
+    'Foo': FooType1,
+    'Bar': BarType2,
 }
 
 
@@ -1464,18 +998,18 @@ def parse(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'purchaseOrder'
-        rootClass = PurchaseOrderType
+        rootTag = 'FooList'
+        rootClass = FooList
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    if not silence:
-        sys.stdout.write('<?xml version="1.0" ?>\n')
-        rootObj.export(
-            sys.stdout, 0, name_=rootTag,
-            namespacedef_='xmlns:ipo="http://www.example.com/IPO"',
-            pretty_print=True)
+##     if not silence:
+##         sys.stdout.write('<?xml version="1.0" ?>\n')
+##         rootObj.export(
+##             sys.stdout, 0, name_=rootTag,
+##             namespacedef_='',
+##             pretty_print=True)
     return rootObj
 
 
@@ -1484,8 +1018,8 @@ def parseEtree(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'purchaseOrder'
-        rootClass = PurchaseOrderType
+        rootTag = 'FooList'
+        rootClass = FooList
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -1493,12 +1027,12 @@ def parseEtree(inFileName, silence=False):
     mapping = {}
     rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
     reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
-    if not silence:
-        content = etree_.tostring(
-            rootElement, pretty_print=True,
-            xml_declaration=True, encoding="utf-8")
-        sys.stdout.write(content)
-        sys.stdout.write('\n')
+##     if not silence:
+##         content = etree_.tostring(
+##             rootElement, pretty_print=True,
+##             xml_declaration=True, encoding="utf-8")
+##         sys.stdout.write(content)
+##         sys.stdout.write('\n')
     return rootObj, rootElement, mapping, reverse_mapping
 
 
@@ -1509,16 +1043,16 @@ def parseString(inString, silence=False):
     roots = get_root_tag(rootNode)
     rootClass = roots[1]
     if rootClass is None:
-        rootClass = PurchaseOrderType
+        rootClass = FooList
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    if not silence:
-        sys.stdout.write('<?xml version="1.0" ?>\n')
-        rootObj.export(
-            sys.stdout, 0, name_="purchaseOrder",
-            namespacedef_='xmlns:ipo="http://www.example.com/IPO"')
+##     if not silence:
+##         sys.stdout.write('<?xml version="1.0" ?>\n')
+##         rootObj.export(
+##             sys.stdout, 0, name_="FooList",
+##             namespacedef_='')
     return rootObj
 
 
@@ -1527,18 +1061,18 @@ def parseLiteral(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'purchaseOrder'
-        rootClass = PurchaseOrderType
+        rootTag = 'FooList'
+        rootClass = FooList
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    if not silence:
-        sys.stdout.write('#from ipo2_sup import *\n\n')
-        sys.stdout.write('import ipo2_sup as model_\n\n')
-        sys.stdout.write('rootObj = model_.rootTag(\n')
-        rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
-        sys.stdout.write(')\n')
+##     if not silence:
+##         sys.stdout.write('#from anonymous_type2_sup import *\n\n')
+##         sys.stdout.write('import anonymous_type2_sup as model_\n\n')
+##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
+##         sys.stdout.write(')\n')
     return rootObj
 
 
@@ -1556,11 +1090,8 @@ if __name__ == '__main__':
 
 
 __all__ = [
-    "Address",
-    "Items",
-    "PurchaseOrderType",
-    "UKAddress",
-    "USAddress",
-    "itemType",
-    "quantity"
+    "BarType2",
+    "BazType3",
+    "FooList",
+    "FooType1"
 ]

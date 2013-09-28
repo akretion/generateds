@@ -31,13 +31,22 @@
             <lastname>Diddly</lastname>
             <priority>4.5</priority>
             <info name="Albert Abasinian" type="321" rating="5.33" />
-            <vehicle type="airplane">
+            <vehicle xsi:type="airplane">
               <wheelcount>36</wheelcount>
               <pilotname>Felicity Flygirl</pilotname>
             </vehicle>
             <vehicle xsi:type="automobile">
               <wheelcount>4</wheelcount>
               <drivername>Daryl Driver</drivername>
+            </vehicle>
+            <!-- Note that the following does not work. "xsi:" is omitted.
+                 That means that it is not recognized as an airplane
+                 subtype of the vehicle type, and the pilotname defined
+                 in the subtype is not preserved..
+            -->
+            <vehicle type="airplane">
+              <wheelcount>48</wheelcount>
+              <pilotname>Felicity Flygirl</pilotname>
             </vehicle>
         </agent>
         <range>25</range>
@@ -99,13 +108,26 @@
             <class>11.2233</class>
             <other-value>33.4455</other-value>
             <type>22.3344</type>
-            
             <client-handler>
                 <fullname>Arnold Applebee</fullname>
                 <refid>10001</refid>
             </client-handler>
             <other-value>44.5566</other-value>
         </promoter>
+        <!-- Check use of python keyword as element name. -->
+        <with member-id="ID102">
+            <firstname>Frank</firstname>
+            <lastname>Finlayson</lastname>
+            <other-name>9.8</other-name>
+            <class>12.2236</class>
+            <other-value>36.4457</other-value>
+            <type>19.33467</type>
+            <client-handler>
+                <fullname>Arnold Applebee</fullname>
+                <refid>10001</refid>
+            </client-handler>
+            <other-value>44.5566</other-value>
+        </with>
         <promoter>
             <firstname>Edward</firstname>
             <lastname>Eddleberry</lastname>
@@ -119,7 +141,18 @@
 
     <person id="4" />
 
-    <python-programmer drcs="git" vegetable="tomato" fruit="peach" language="python" area="xml" nick-name="davy" id="232" ratio="8.7" value="abcd">
+    <python-programmer
+        drcs="git"
+        vegetable="tomato"
+        fruit="peach"
+        language="python"
+        area="xml"
+        nick-name="davy"
+        id="232"
+        ratio="8.7"
+        value="abcd"
+        gui_developer="1"
+        >
         <favorite-editor>jed</favorite-editor>
         <name>Darrel Dawson</name>
         <interest>hang gliding</interest>

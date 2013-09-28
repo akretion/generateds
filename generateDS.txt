@@ -3,15 +3,16 @@ generateDS -- Generate Data Structures from XML Schema
 ======================================================
 
 :author: Dave Kuhlman
-:address: dkuhlman@rexx.com
-    http://www.rexx.com/~dkuhlman
+:contact: dkuhlman@pacbell.net
+:address:
+    http://www.davekuhlman.org
 
 .. Do not modify the following version comments.
    They are used by updateversion.py.
 
 .. version
 
-:revision: 2.10b
+:revision: 2.11b
 
 .. version
 
@@ -123,6 +124,10 @@ You can find the source distribution here:
   http://sourceforge.net/projects/generateds/
   <http://sourceforge.net/projects/generateds/>`_
 
+- `Bitbucket --
+  https://bitbucket.org/dkuhlman/generateds
+  <https://bitbucket.org/dkuhlman/generateds>`_
+
 
 
 
@@ -137,8 +142,8 @@ https://lists.sourceforge.net/lists/listinfo/generateds-users
 There is a tutorial in the distribution:
 ``tutorial/tutorial.html`` and at
 `generateDS -- Introduction and Tutorial --
-http://www.rexx.com/~dkuhlman/generateds_tutorial.html
-<http://www.rexx.com/~dkuhlman/generateds_tutorial.html>`_.
+http://www.davekuhlman.org/generateds_tutorial.html
+<http://www.davekuhlman.org/generateds_tutorial.html>`_.
 
 
 How to build and install it
@@ -217,6 +222,7 @@ Here is the usage message displayed by ``generateDS.py``::
                                  Default = 'xs:'.
         -b <behaviorfilename>    Input file name for behaviors added to subclasses
         -m                       Generate properties for member variables
+        -c <xmlcatalogfilename>  Input file name to load an XML catalog
         --subclass-suffix="XXX"  Append XXX to the generated subclass names.
                                  Default="Sub".
         --root-element="XXX"     Assume XXX is root element of instance docs.
@@ -250,6 +256,8 @@ Here is the usage message displayed by ``generateDS.py``::
         --silence                Normally, the code generated with generateDS
                                  echoes the information being parsed. To prevent
                                  the echo from occurring, use the --silence switch.
+                                 Also note optional "silence" parameter on
+                                 generated functions, e.g. parse, parseString, etc.
         --namespacedef='xmlns:abc="http://www.abc.com"'
                                  Namespace definition to be passed in as the
                                  value for the namespacedef_ parameter of
@@ -283,6 +291,8 @@ Here is the usage message displayed by ``generateDS.py``::
                                  create session file in generateds_gui.py.  Or,
                                  copy and edit sample.session from the
                                  distribution.
+        --fix-type-names="oldname1:newname1;oldname2:newname2;..."
+                                 Fix up (replace) complex type names.
         --version                Print version and exit.
 
     Usage example:
@@ -346,6 +356,13 @@ m
     generated classes to inherit from class object.  Generates
     a call to the built-in property function for each pair of
     getters and setters.  This is experimental.
+
+c <xmlcatalogfilename>
+    Specify the file to be used as an XML catalog.  This file will
+    be used by process_includes.py if needed to resolve references
+    in <import> and <include> elements in the XML Schema.  For more
+    information on XML catalogs, see:
+    http://en.wikipedia.org/wiki/XML_Catalog
 
 subclass-suffix=<suffix>
     Append suffix to the name of classes generated in the subclass
@@ -496,6 +513,17 @@ session=mysession.session
     generateDS.py.  Additional options on the command line can be
     used to override options in the session file.  A session file
     is an XML document, so you can modify it with a text editor.
+
+fix-type-names="oldname1:newname1;oldname2:newname2;..."
+    Fix up (replace) complex type names.  Using this option will
+    replace the following: (1) the 'name' attribute of a
+    complexType; (2) the 'type' attribute of each element that
+    refers to the type; and (3) the 'base' attribute of each
+    extension that refers to the type.  These fixups happen before
+    information is collected from the schema for code generation.
+    Therefore, using this option is effectively equivalent to
+    copying your schema, then editing it with your text editor, then
+    generating code from the modified schema.
 
 version
     Print out the current version of generateDS.py and immediately
@@ -1427,13 +1455,15 @@ supported in ``generateDS.py``::
     </xsd:element>
 
 
-minOccurs attribute support
----------------------------
+Arity, minOccurs, maxOccurs, etc
+--------------------------------
 
-Some applications require the availability of the "minOccurs"
-attribute in addition to the previous minimal support of
-"optionality".  This is available through the ``getMinOccurs``
-method (which follows the style of the existing API).
+Some applications require information about the "minOccurs" and
+"maxOccurs" attributes in the XML Schema.  Some of that information
+can be obtained by using the --member-specs= (list|dict) command line
+option, then looking at the ``member_data_items_`` class variable
+that it generates in each data representation class.  In particular,
+look at the ``get_container`` method (from class ``MemberSpec_``).
 
 
 More thorough content type and base type resolution
