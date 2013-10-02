@@ -7,7 +7,7 @@ if [ $# -ne 1 ]; then
     exit 0
 fi
 
-generateDS.py -f -m \
+../../generateDS.py -f -m \
   --namespacedef='xmlns:pl="http://kuhlman.com/people.xsd"' \
   --super=$1sup -o $1sup.py -s $1sub.py \
   --member-specs=dict \

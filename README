@@ -154,6 +154,10 @@ Version 2.11b (08/19/2013)
   there are name conflicts in your XML schema, for example, because
   the schema refers to two types with the same name but in different
   namespaces.
+- Ability added to generate one Python module for each XML Schema
+  (.xsd file) imported/included.  Added command line options
+  --one-file-per-xsd and --output-directory= in support of this.
+  Thanks much to George David for implementing this new feature.
 
 Version 2.11a (08/16/2013)
 - Added ability to use XML catalog to find included/imported

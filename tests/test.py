@@ -16,15 +16,16 @@ class GenTest(unittest.TestCase):
         stdout, stderr = p.communicate()
         return stdout, stderr
 
-    def setUp(self):
-        cmd = (
-            'python generateDS.py --no-dates --no-versions -f '
-            '-o tests/out2_sup.py -s tests/out2_sub.py '
-            '--super=out2_sup -u gends_user_methods tests/people.xsd'
-        )
-        stdout, stderr = self.execute(cmd, cwd='..')
-        self.failUnlessEqual(len(stdout), 0)
-        self.failUnlessEqual(len(stderr), 0)
+##     def setUp(self):
+##         print 'running setUp'
+##         cmd = (
+##             'python generateDS.py --no-dates --no-versions -f '
+##             '-o tests/out2_sup.py -s tests/out2_sub.py '
+##             '--super=out2_sup -u gends_user_methods tests/people.xsd'
+##         )
+##         stdout, stderr = self.execute(cmd, cwd='..')
+##         self.failUnlessEqual(len(stdout), 0)
+##         self.failUnlessEqual(len(stderr), 0)
 
 ##     def tearDown(self):
 ##         for f in [ "out2_sub.py", "out2_sup.py" ]:
@@ -34,14 +35,20 @@ class GenTest(unittest.TestCase):
 ##                 pass
 
     def test_001_compare_superclasses(self):
+        cmd = (
+            'python generateDS.py --no-dates --no-versions -f '
+            '-o tests/out2_sup.py -s tests/out2_sub.py '
+            '--super=out2_sup -u gends_user_methods tests/people.xsd'
+        )
+        stdout, stderr = self.execute(cmd, cwd='..')
+        self.failUnlessEqual(len(stdout), 0)
+        self.failUnlessEqual(len(stderr), 0)
         cmd = 'diff out1_sup.py out2_sup.py'
         result, err = self.execute(cmd)
         #print 'len(result):', len(result)
         # Ignore the differing lines containing the date/time.
         #self.failUnless(len(result) < 130 and result.find('Generated') > -1)
         self.check_result(result, err, ())
-
-    def test_002_compare_subclasses(self):
         cmd = 'diff out1_sub.py out2_sub.py'
         result, err = self.execute(cmd)
         # Ignore the differing lines containing the date/time.
