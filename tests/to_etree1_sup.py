@@ -855,11 +855,11 @@ class personType(GeneratedsSuper):
         MemberSpec_('agent', 'agentType', 1),
         MemberSpec_('promoter', 'boosterType', 1),
         MemberSpec_('description', 'xs:string', 0),
-        MemberSpec_('range', ['RangeType', 'xs:integer'], 0),
+        MemberSpec_('range_', ['RangeType', 'xs:integer'], 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range=None, extensiontype_=None):
+    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, extensiontype_=None):
         self.vegetable = _cast(None, vegetable)
         self.fruit = _cast(None, fruit)
         self.ratio = _cast(float, ratio)
@@ -881,7 +881,7 @@ class personType(GeneratedsSuper):
         else:
             self.promoter = promoter
         self.description = description
-        self.range = range
+        self.range_ = range_
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
         if personType.subclass:
@@ -909,8 +909,8 @@ class personType(GeneratedsSuper):
     def insert_promoter(self, index, value): self.promoter[index] = value
     def get_description(self): return self.description
     def set_description(self, description): self.description = description
-    def get_range(self): return self.range
-    def set_range(self, range): self.range = range
+    def get_range(self): return self.range_
+    def set_range(self, range_): self.range_ = range_
     def get_vegetable(self): return self.vegetable
     def set_vegetable(self, vegetable): self.vegetable = vegetable
     def get_fruit(self): return self.fruit
@@ -935,7 +935,7 @@ class personType(GeneratedsSuper):
             self.agent or
             self.promoter or
             self.description is not None or
-            self.range is not None
+            self.range_ is not None
         ):
             return True
         else:
@@ -975,9 +975,9 @@ class personType(GeneratedsSuper):
         if self.description is not None:
             description_ = self.description
             etree_.SubElement(element, '{}description').text = self.gds_format_string(description_)
-        if self.range is not None:
-            range_ = self.range
-            etree_.SubElement(element, '{}range').text = self.gds_format_integer(range_)
+        if self.range_ is not None:
+            range__ = self.range_
+            etree_.SubElement(element, '{}range').text = self.gds_format_integer(range__)
         if mapping_ is not None:
             mapping_[self] = element
         return element
@@ -1059,8 +1059,8 @@ class personType(GeneratedsSuper):
             except (TypeError, ValueError), exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'range')
-            self.range = ival_
-            self.validate_RangeType(self.range)    # validate type RangeType
+            self.range_ = ival_
+            self.validate_RangeType(self.range_)    # validate type RangeType
 # end class personType
 
 
@@ -1069,8 +1069,8 @@ class specialperson(personType):
     ]
     subclass = None
     superclass = personType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range=None):
-        super(specialperson, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range, )
+    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None):
+        super(specialperson, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, )
         pass
     def factory(*args_, **kwargs_):
         if specialperson.subclass:
@@ -1128,8 +1128,8 @@ class programmerType(personType):
     ]
     subclass = None
     superclass = personType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, extensiontype_=None):
-        super(programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range, extensiontype_, )
+    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, extensiontype_=None):
+        super(programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, extensiontype_, )
         self.language = _cast(None, language)
         self.area = _cast(None, area)
         self.attrnegint = _cast(int, attrnegint)
@@ -1559,8 +1559,8 @@ class python_programmerType(programmerType):
     ]
     subclass = None
     superclass = programmerType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, drcs_attr=None, nick_name=None, gui_developer=None, favorite_editor=None, flowvalue=None, drcs=None):
-        super(python_programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
+    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, drcs_attr=None, nick_name=None, gui_developer=None, favorite_editor=None, flowvalue=None, drcs=None):
+        super(python_programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
         self.drcs_attr = _cast(None, drcs_attr)
         self.nick_name = _cast(None, nick_name)
         self.gui_developer = _cast(bool, gui_developer)
@@ -1678,8 +1678,8 @@ class java_programmerType(programmerType):
     ]
     subclass = None
     superclass = programmerType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, status=None, nick_name=None, favorite_editor=None, datetime1=None, datetime2=None, datetime3=None, datetime4=None, datetime5=None):
-        super(java_programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
+    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, status=None, nick_name=None, favorite_editor=None, datetime1=None, datetime2=None, datetime3=None, datetime4=None, datetime5=None):
+        super(java_programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
         self.status = _cast(None, status)
         self.nick_name = _cast(None, nick_name)
         self.favorite_editor = favorite_editor

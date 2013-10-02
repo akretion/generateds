@@ -226,7 +226,7 @@ They are used by updateversion.py. -->
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">date:</th><td class="field-body">August 21, 2013</td>
+<tr class="field"><th class="field-name">date:</th><td class="field-body">August 26, 2013</td>
 </tr>
 </tbody>
 </table>
@@ -446,8 +446,8 @@ https://bitbucket.org/dkuhlman/generateds</a></li>
 https://lists.sourceforge.net/lists/listinfo/generateds-users</a>.</p>
 <p>There is a tutorial in the distribution:
 <tt class="docutils literal">tutorial/tutorial.html</tt> and at
-<a class="reference external" href="http://www.rexx.com/~dkuhlman/generateds_tutorial.html">generateDS -- Introduction and Tutorial --
-http://www.rexx.com/~dkuhlman/generateds_tutorial.html</a>.</p>
+<a class="reference external" href="http://www.davekuhlman.org/generateds_tutorial.html">generateDS -- Introduction and Tutorial --
+http://www.davekuhlman.org/generateds_tutorial.html</a>.</p>
 </div>
 </div>
 <div class="section" id="how-to-build-and-install-it">
@@ -585,6 +585,8 @@ Options:
                              create session file in generateds_gui.py.  Or,
                              copy and edit sample.session from the
                              distribution.
+    --fix-type-names=&quot;oldname1:newname1;oldname2:newname2;...&quot;
+                             Fix up (replace) complex type names.
     --version                Print version and exit.
 
 Usage example:
@@ -785,6 +787,23 @@ session file in generateds_gui.py, the graphical front-end for
 generateDS.py.  Additional options on the command line can be
 used to override options in the session file.  A session file
 is an XML document, so you can modify it with a text editor.</dd>
+<dt>fix-type-names=&quot;oldname1:newname1;oldname2:newname2;...&quot; Fix up</dt>
+<dd><p class="first">(replace) complex type names.  Using this option will replace
+the following: (1) the 'name' attribute of a complexType; (2)
+the 'type' attribute of each element that refers to the type;
+and (3) the 'base' attribute of each extension that refers to
+the type.  These fixups happen before information is collected
+from the schema for code generation. Therefore, using this
+option is effectively equivalent to copying your schema, then
+editing it with your text editor, then generating code from the
+modified schema.  If a new name is not specified, the default is
+to replace the old name with the old name plus an added &quot;xx&quot;
+suffix.  Examples:</p>
+<pre class="last literal-block">
+$ generateDS.py --fix-type-names=&quot;type1:type1Aux&quot;
+$ generateDS.py --fix-type-names=&quot;type1;type2:type2Repl&quot;
+</pre>
+</dd>
 <dt>version</dt>
 <dd>Print out the current version of generateDS.py and immediately
 exit.</dd>

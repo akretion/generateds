@@ -514,16 +514,21 @@ session=mysession.session
     used to override options in the session file.  A session file
     is an XML document, so you can modify it with a text editor.
 
-fix-type-names="oldname1:newname1;oldname2:newname2;..."
-    Fix up (replace) complex type names.  Using this option will
-    replace the following: (1) the 'name' attribute of a
-    complexType; (2) the 'type' attribute of each element that
-    refers to the type; and (3) the 'base' attribute of each
-    extension that refers to the type.  These fixups happen before
-    information is collected from the schema for code generation.
-    Therefore, using this option is effectively equivalent to
-    copying your schema, then editing it with your text editor, then
-    generating code from the modified schema.
+fix-type-names="oldname1:newname1;oldname2:newname2;..." Fix up
+    (replace) complex type names.  Using this option will replace
+    the following: (1) the 'name' attribute of a complexType; (2)
+    the 'type' attribute of each element that refers to the type;
+    and (3) the 'base' attribute of each extension that refers to
+    the type.  These fixups happen before information is collected
+    from the schema for code generation. Therefore, using this
+    option is effectively equivalent to copying your schema, then
+    editing it with your text editor, then generating code from the
+    modified schema.  If a new name is not specified, the default is
+    to replace the old name with the old name plus an added "xx"
+    suffix.  Examples::
+
+        $ generateDS.py --fix-type-names="type1:type1Aux"
+        $ generateDS.py --fix-type-names="type1;type2:type2Repl"
 
 version
     Print out the current version of generateDS.py and immediately

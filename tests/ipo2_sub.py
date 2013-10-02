@@ -88,6 +88,13 @@ supermod.Items.subclass = ItemsSub
 # end class ItemsSub
 
 
+class itemSub(supermod.item):
+    def __init__(self, partNum=None, productName=None, quantity=None, USPrice=None, comment=None, shipDate=None):
+        super(itemSub, self).__init__(partNum, productName, quantity, USPrice, comment, shipDate, )
+supermod.item.subclass = itemSub
+# end class itemSub
+
+
 class AddressSub(supermod.Address):
     def __init__(self, name=None, street=None, city=None, extensiontype_=None):
         super(AddressSub, self).__init__(name, street, city, extensiontype_, )
@@ -107,13 +114,6 @@ class UKAddressSub(supermod.UKAddress):
         super(UKAddressSub, self).__init__(name, street, city, category_attr, exportCode, postcode, category, )
 supermod.UKAddress.subclass = UKAddressSub
 # end class UKAddressSub
-
-
-class itemTypeSub(supermod.itemType):
-    def __init__(self, partNum=None, productName=None, quantity=None, USPrice=None, comment=None, shipDate=None):
-        super(itemTypeSub, self).__init__(partNum, productName, quantity, USPrice, comment, shipDate, )
-supermod.itemType.subclass = itemTypeSub
-# end class itemTypeSub
 
 
 def get_root_tag(node):
