@@ -177,7 +177,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.11b'
+VERSION = '2.12a'
 ##VERSION##
 
 GenerateProperties = 0
@@ -2260,55 +2260,55 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_integer_list"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                         else:
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_integer"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                     elif child_type == BooleanType:
                         if child.isListType():
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_boolean_list"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                         else:
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_boolean"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                     elif child_type == FloatType or \
                             child_type == DecimalType:
                         if child.isListType():
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_float_list"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                         else:
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_float"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                     elif child_type == DoubleType:
                         if child.isListType():
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_double_list"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                         else:
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_double"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                     elif child_type == Base64Type:
                         wrt("            etree_.SubElement(element, "
                             "'{%s}%s').text = self.gds_format_base64"
                             "(%s_)\n" % (
-                            Targetnamespace, unmappedName, name))
+                                Targetnamespace, unmappedName, name))
                     else:
                         wrt("            %s_.to_etree(element, name_='%s', "
                             "mapping_=mapping_)\n" % (
-                            name, unmappedName,))
+                                name, unmappedName,))
 #end generateToEtreeChildren
 
 
@@ -2374,7 +2374,7 @@ def generateExportAttributes(wrt, element, hasAttributes):
             if True:            # attrDef.getUse() == 'optional':
                 wrt("        if self.%s is not None and '%s' not in "
                     "already_processed:\n" % (
-                    cleanName, cleanName, ))
+                        cleanName, cleanName, ))
                 wrt("            already_processed.add('%s')\n" % (
                     cleanName, ))
                 indent = "    "
@@ -2385,15 +2385,15 @@ def generateExportAttributes(wrt, element, hasAttributes):
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_datetime(self.%s, ''' \
                     '''input_name='%s'))\n''' % (
-                    indent, orig_name, cleanName, name)
+                        indent, orig_name, cleanName, name)
             elif attrDef.getType() == DateType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_date(self.%s, input_name='%s'))\n''' % (
-                    indent, orig_name, cleanName, name)
+                        indent, orig_name, cleanName, name)
             elif attrDef.getType() == TimeType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_time(self.%s, input_name='%s'))\n''' % (
-                    indent, orig_name, cleanName, name)
+                        indent, orig_name, cleanName, name)
             elif (attrDefType in StringType or
                     attrDefType in IDTypes or
                     attrDefType == TokenType or
@@ -2411,7 +2411,7 @@ def generateExportAttributes(wrt, element, hasAttributes):
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_integer(self.%s, ''' \
                     '''input_name='%s'))\n''' % (
-                    indent, orig_name, cleanName, name, )
+                        indent, orig_name, cleanName, name, )
             elif attrDefType == BooleanType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_boolean(''' \
@@ -2425,11 +2425,11 @@ def generateExportAttributes(wrt, element, hasAttributes):
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_double(self.%s, ''' \
                     '''input_name='%s'))\n''' % (
-                    indent, orig_name, cleanName, name)
+                        indent, orig_name, cleanName, name)
             else:
                 s1 = '''%s        outfile.write(' %s=%%s' %% ''' \
                     '''(quote_attrib(self.%s), ))\n''' % (
-                    indent, orig_name, cleanName, )
+                        indent, orig_name, cleanName, )
             wrt(s1)
     if element.getExtended():
         wrt("        if self.extensiontype_ is not None and 'xsi:type' "
@@ -2477,13 +2477,13 @@ def generateExportChildren(wrt, element, hasChildren, namespace):
                             fill, name, name,))
                         wrt("%s    %s_.export(outfile, level, namespace_, "
                             "name_='%s', pretty_print=pretty_print)\n" % (
-                            fill, name, name, ))
+                                fill, name, name, ))
                     elif abstract_child:
                         wrt("%sif self.%s is not None:\n" % (fill, name, ))
                         wrt("%s    self.%s.export(outfile, level, "
                             "namespace_, name_='%s', "
                             "pretty_print=pretty_print)\n" % (
-                            fill, name, name, ))
+                                fill, name, name, ))
                     elif child.getMaxOccurs() > 1:
                         generateExportFn_2(
                             wrt, child, unmappedName, namespace, '    ')
@@ -2828,7 +2828,7 @@ def generateExportLiteralFn(wrt, prefix, element):
             attrType = SimpleTypeDict[attrType].getBase()
         wrt("        if self.%s is not None and '%s' not in "
             "already_processed:\n" % (
-            mappedName, mappedName, ))
+                mappedName, mappedName, ))
         wrt("            already_processed.add('%s')\n" % (
             mappedName, ))
         if attrType == DateTimeType:
@@ -3233,7 +3233,7 @@ def generateBuildMixed_1(wrt, prefix, child, headChild, keyword, delayed):
             if type_obj is not None and type_obj.getExtended():
                 wrt("            class_obj_ = self.get_class_obj_("
                     "child_, %s%s)\n" % (
-                    prefix, cleanupName(mapName(childType)), ))
+                        prefix, cleanupName(mapName(childType)), ))
                 wrt("            class_obj_ = %s%s.factory()\n")
             else:
                 wrt("            obj_ = %s%s.factory()\n" % (
@@ -4872,7 +4872,6 @@ def _cast(typ, value):
 # Data representation classes.
 #
 
-
 """
 
 # Fool (and straighten out) the syntax highlighting.
@@ -5598,7 +5597,6 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
 
 
 def getUsedNamespacesDefs(element):
-    global prefixToNamespaceMap
     processedPrefixes = []
     nameSpacesDef = getNamespace(element)
     for child in element.getChildren():
@@ -5606,9 +5604,9 @@ def getUsedNamespacesDefs(element):
            child.prefix in prefixToNamespaceMap:
             spaceDef = 'xmlns:%s="%s" ' % (
                 child.prefix, prefixToNamespaceMap[child.prefix])
-            nameSpacesDef += ' ' + spaceDef
+            if spaceDef.strip() not in nameSpacesDef:
+                nameSpacesDef += ' ' + spaceDef
             processedPrefixes.append(child.prefix)
-
     return nameSpacesDef
 
 

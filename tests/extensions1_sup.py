@@ -611,7 +611,6 @@ def _cast(typ, value):
 #
 
 
-
 class SpecialDate(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('SpecialProperty', 'xs:string', 0),
@@ -683,6 +682,7 @@ class SpecialDate(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('SpecialProperty', node)
         if value is not None and 'SpecialProperty' not in already_processed:
@@ -764,6 +764,7 @@ class ExtremeDate(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('ExtremeProperty', node)
         if value is not None and 'ExtremeProperty' not in already_processed:
@@ -845,6 +846,7 @@ class singleExtremeDate(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('ExtremeProperty', node)
         if value is not None and 'ExtremeProperty' not in already_processed:
@@ -948,6 +950,7 @@ class containerType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -1032,6 +1035,7 @@ class simpleFactoidType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -1134,6 +1138,7 @@ class mixedFactoidType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -1238,6 +1243,7 @@ class BaseType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('BaseProperty1', node)
         if value is not None and 'BaseProperty1' not in already_processed:
@@ -1344,6 +1350,7 @@ class DerivedType(BaseType):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('DerivedProperty1', node)
         if value is not None and 'DerivedProperty1' not in already_processed:
@@ -1430,6 +1437,7 @@ class MyInteger(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('MyAttr', node)
         if value is not None and 'MyAttr' not in already_processed:
@@ -1511,6 +1519,7 @@ class MyBoolean(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('MyAttr', node)
         if value is not None and 'MyAttr' not in already_processed:
@@ -1592,6 +1601,7 @@ class MyFloat(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('MyAttr', node)
         if value is not None and 'MyAttr' not in already_processed:
@@ -1673,6 +1683,7 @@ class MyDouble(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('MyAttr', node)
         if value is not None and 'MyAttr' not in already_processed:

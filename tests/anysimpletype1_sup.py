@@ -611,7 +611,6 @@ def _cast(typ, value):
 #
 
 
-
 class test1element(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('test1attribute', 'cimAnySimpleType', 0),
@@ -690,6 +689,7 @@ class test1element(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('test1attribute', node)
         if value is not None and 'test1attribute' not in already_processed:
@@ -801,6 +801,7 @@ class cimAnySimpleType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         self.anyAttributes_ = {}
         for name, value in attrs.items():
