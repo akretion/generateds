@@ -480,7 +480,7 @@ class GenTest(unittest.TestCase):
 
     def check_result(self, result, err, ignore_strings):
         self.failUnlessEqual(len(result), 0)
-        self.failUnlessEqual(len(err), 0, err)
+        self.failUnlessEqual(len(err), 0)
         return True
 ##         if len(err) > 0:
 ##             return False

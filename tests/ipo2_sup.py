@@ -92,7 +92,10 @@ except ImportError, exp:
         def gds_format_string(self, input_data, input_name=''):
             return input_data
         def gds_validate_string(self, input_data, node, input_name=''):
-            return input_data
+            if not input_data:
+                return ''
+            else:
+                return input_data
         def gds_format_base64(self, input_data, input_name=''):
             return base64.b64encode(input_data)
         def gds_validate_base64(self, input_data, node, input_name=''):
@@ -654,7 +657,7 @@ class PurchaseOrderType(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='ipo:', name_='PurchaseOrderType', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='ipo:', name_='PurchaseOrderType', namespacedef_='xmlns:ipo="http://www.example.com/IPO"', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -727,6 +730,7 @@ class PurchaseOrderType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('orderDate', node)
         if value is not None and 'orderDate' not in already_processed:
@@ -785,7 +789,7 @@ class Items(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='ipo:', name_='Items', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='ipo:', name_='Items', namespacedef_='xmlns:ipo="http://www.example.com/IPO"', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -837,6 +841,7 @@ class Items(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -898,7 +903,7 @@ class item(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='ipo:', name_='item', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='ipo:', name_='item', namespacedef_='xmlns:ipo="http://www.example.com/IPO"', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -971,6 +976,7 @@ class item(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('partNum', node)
         if value is not None and 'partNum' not in already_processed:
@@ -1030,7 +1036,7 @@ class quantity(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='ipo:', name_='quantity', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='ipo:', name_='quantity', namespacedef_='xmlns:ipo="http://www.example.com/IPO"', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -1065,6 +1071,7 @@ class quantity(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -1108,7 +1115,7 @@ class Address(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='ipo:', name_='Address', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='ipo:', name_='Address', namespacedef_='xmlns:ipo="http://www.example.com/IPO"', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -1168,6 +1175,7 @@ class Address(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('xsi:type', node)
         if value is not None and 'xsi:type' not in already_processed:
@@ -1222,7 +1230,7 @@ class USAddress(Address):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='ipo:', name_='USAddress', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='ipo:', name_='USAddress', namespacedef_='xmlns:ipo="http://www.example.com/IPO"', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -1274,6 +1282,7 @@ class USAddress(Address):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         super(USAddress, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -1337,7 +1346,7 @@ class UKAddress(Address):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='ipo:', name_='UKAddress', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='ipo:', name_='UKAddress', namespacedef_='xmlns:ipo="http://www.example.com/IPO"', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -1403,6 +1412,7 @@ class UKAddress(Address):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('category', node)
         if value is not None and 'category_attr' not in already_processed:

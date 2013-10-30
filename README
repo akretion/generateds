@@ -141,7 +141,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version 2.11b (08/19/2013)
+Version 2.12a (10/29/2013)
 - A name conflict issue caused by naming anonymous types.  An
   anonymous type is a complexType that does not have a name
   attribute and that is nested inside an element that does not have
@@ -159,6 +159,11 @@ Version 2.11b (08/19/2013)
   --one-file-per-xsd, --output-directory=, and --module--suffix= in
   support of this.  Thanks much to George David for implementing
   this new feature.
+- This change provided by Logan Owen. -- Return self from build
+  function of generated classes, to allow easy chaining.  The main
+  use case for this change is if you have a list of xml documents,
+  and you want to change them into generateDS class instances.
+  Thank you Logan.
 
 Version 2.11a (08/16/2013)
 - Added ability to use XML catalog to find included/imported
