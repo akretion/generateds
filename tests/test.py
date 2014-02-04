@@ -14,6 +14,10 @@ class GenTest(unittest.TestCase):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             shell=True)
         stdout, stderr = p.communicate()
+
+        if stderr:
+            raise Exception(stderr)
+            
         return stdout, stderr
 
 ##     def setUp(self):
