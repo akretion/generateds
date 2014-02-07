@@ -149,9 +149,21 @@ http://www.davekuhlman.org/generateds_tutorial.html
 How to build and install it
 ===========================
 
-Newer versions of Python have XML support in the Python standard
-library. For older versions of Python, install PyXML. You can find
-it at: http://pyxml.sourceforge.net/
+Requirements
+--------------
+
+``Lxml`` is used both by ``generateDS.py`` and by the code it
+generates.  ``Lxml`` is available at the Python Package Index
+https://pypi.python.org/pypi/lxml/ and at the ``Lxml`` project home
+site http://lxml.de/.
+
+Older versions of Python XML support can sometimes cause problems.
+If you receive a traceback that includes "_xmlplus", then you will
+need to remove that ``_xmlplus`` package.
+
+
+Installation
+--------------
 
 De-compress the ``generateDS`` distribution file. Use something
 like the following::
@@ -205,6 +217,7 @@ it will write subclass stubs to the file peoplesubs.py::
 
 Here is the usage message displayed by ``generateDS.py``::
 
+
     Synopsis:
         Generate Python classes from XML Schema definition.
         Input is read from in_xsd_file or, if "-" (dash) arg, from stdin.
@@ -223,6 +236,11 @@ Here is the usage message displayed by ``generateDS.py``::
         -b <behaviorfilename>    Input file name for behaviors added to subclasses
         -m                       Generate properties for member variables
         -c <xmlcatalogfilename>  Input file name to load an XML catalog
+        --one-file-per-xsd       Create a python module for each XSD processed.
+        --output-directory="XXX" Used in conjunction with --one-file-per-xsd.
+                                 The directory where the modules will be created.
+        --module-suffix="XXX"    To be used in conjunction with --one-file-per-xsd.
+                                 Append XXX to the end of each file created.
         --subclass-suffix="XXX"  Append XXX to the generated subclass names.
                                  Default="Sub".
         --root-element="XXX"     Assume XXX is root element of instance docs.
@@ -360,9 +378,23 @@ m
 c <xmlcatalogfilename>
     Specify the file to be used as an XML catalog.  This file will
     be used by process_includes.py if needed to resolve references
-    in <import> and <include> elements in the XML Schema.  For more
-    information on XML catalogs, see:
+    in <xs:import> and <xs:include> elements in the XML Schema.  For
+    more information on XML catalogs, see:
     http://en.wikipedia.org/wiki/XML_Catalog
+
+one-file-per-xsd
+    Create a separate Python module for each XML Schema document
+    processed (for example, using <xs:include> or <xs:import>).  For
+    help with using this option, see `"One Per" -- generating
+    separate files from imported/included schemas`_.
+
+output-directory <directory>
+    When used with ``one-file-per-xsd``, create generated output
+    files in path ``<directory>``.
+
+module-suffix <suffix>
+    When used with ``one-file-per-xsd``, append ``<suffix>`` to the
+    end of each module name.
 
 subclass-suffix=<suffix>
     Append suffix to the name of classes generated in the subclass
@@ -2338,6 +2370,61 @@ element/complexType names to the names of the class generated for
 that complexType definition.  This dictionary is named
 ``GDSClassesMapping``.  You will find it in the module generated
 with the "-o" option.
+
+
+"One Per" -- generating separate files from imported/included schemas
+=======================================================================
+
+The ``--one-file-per-xsd`` command line option enables you to
+generate a separate Python module for each XML schema that is
+imported or included (using ``<xs:import>`` or ``<xs:include>``) by
+a "master" schema.  Then, in your Python application, these modules
+can then be imported separately.  Alternatively, these modules can
+be placed in a Python package (a directory containing a file named
+"__init__.py").  See
+http://docs.python.org/2/tutorial/modules.html#packages for more on
+Python packages.
+
+Here is a sample use::
+
+    $ ../generateDS.py --one-file-per-xsd --output-directory="OnePer" --module-suffix="One" one_per.xsd
+
+The above command does the following:
+
+- It generates one Python module for each XML schema that is
+  included/imported by ``one_per.xsd``.
+
+- It places the generated output files in the directory ``OnePer``.
+
+- It adds "One" as a suffix to the name of each generated module.
+
+Here are a few hints, guidelines, and suggestions:
+
+- At least one element definition in an included/imported module
+  must be a root element definition in order to cause a
+  module to be generated for that schema.  In other words, the
+  module must contain an element definition of the form::
+
+      <xs:element name="Sample" type="sampleType" />
+
+- You may want to write a separate "master" schema that includes
+  each of the schemas for which you want to generate a separate
+  Python module.
+
+- Use the ``--output-directory=<directory>`` command line option to
+  tell ``generateDS.py`` to generate the Python modules in a
+  specific directory.  The directory must already exist.
+
+- Use the ``--module-suffix=<suffix>`` command line option to add a
+  specifc suffix to each module name (the part immediately before
+  the extension).  For example, the option ``--module-suffix=Abc``
+  causes ``generateDS.py`` to generate a file named "schema1Abc.py"
+  instead of "schema1.py".
+
+- If you want to import files from the output directory and it is
+  not in ``sys.path``, add a file named "__init__.py" to that
+  directory.  The existence of the file ``__init__.py`` turns the
+  directory into a Python package.
 
 
 How to modify the generated code
