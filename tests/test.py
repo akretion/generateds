@@ -14,10 +14,6 @@ class GenTest(unittest.TestCase):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             shell=True)
         stdout, stderr = p.communicate()
-
-        if stderr:
-            raise Exception(stderr)
-            
         return stdout, stderr
 
 ##     def setUp(self):
@@ -482,6 +478,23 @@ class GenTest(unittest.TestCase):
         result, err = self.execute(cmd)
         self.check_result(result, err, ())
 
+    def test_022_one_per(self):
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
+            '--silence --member-specs=list -f '
+            '--one-file-per-xsd --output-directory="tests/OnePer" '
+            '--module-suffix="One" '
+            '--super=%s2_sup '
+            'tests/%s00.xsd'
+        )
+        t_ = 'oneper'
+        cmd = cmdTempl % (t_, t_, )
+        result, _ = self.execute(cmd, cwd='..')
+        cmd = 'diff OnePer/%sType00_1One.py OnePer/%sType00_2One.py' % (
+            t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ('sys.stdout.write',))
+
     def check_result(self, result, err, ignore_strings):
         self.failUnlessEqual(len(result), 0)
         self.failUnlessEqual(len(err), 0)
@@ -508,7 +521,7 @@ class GenTest(unittest.TestCase):
 def suite():
     # The following is obsolete.  See Lib/unittest.py.
     #return unittest.makeSuite(GenTest)
-    loader = unittest.TestLoader()
+    loader = unittest.defaultTestLoader
     testsuite = loader.loadTestsFromTestCase(GenTest)
     return testsuite
 

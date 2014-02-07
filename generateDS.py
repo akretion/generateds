@@ -18,10 +18,10 @@ Options:
     -b <behaviorfilename>    Input file name for behaviors added to subclasses
     -m                       Generate properties for member variables
     -c <xmlcatalogfilename>  Input file name to load an XML catalog
-    --one-file-per-xsd       Create a python class for each XSD processed.
+    --one-file-per-xsd       Create a python module for each XSD processed.
     --output-directory="XXX" Used in conjunction with --one-file-per-xsd.
-                             The directory where the XSDs will be created.
-    --module--suffix="xxx"   To be used in conjunction with --one-file-per-xsd.
+                             The directory where the modules will be created.
+    --module-suffix="xxx"    To be used in conjunction with --one-file-per-xsd.
                              Append XXX to the end of each file created.
     --subclass-suffix="XXX"  Append XXX to the generated subclass names.
                              Default="Sub".
@@ -4194,7 +4194,7 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
                 parentName not in SimpleTypeDict):
             PostponedExtensions.append(element)
             return
-    if element.getName() in AlreadyGenerated:
+    if mapName(element.getName()) in AlreadyGenerated:
         return
     AlreadyGenerated.append(element.getName())
     if element.getMixedExtensionError():
@@ -5951,7 +5951,7 @@ def parseAndGenerate(
 
                     modulePath = (
                         OutputDirectory +
-                        "/" + moduleName +
+                        os.sep + moduleName +
                         ModuleSuffix + ".py")
 
                     fqnToModuleNameMap[child.getFullyQualifiedType()] = \

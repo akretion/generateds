@@ -92,10 +92,7 @@ except ImportError, exp:
         def gds_format_string(self, input_data, input_name=''):
             return input_data
         def gds_validate_string(self, input_data, node, input_name=''):
-            if not input_data:
-                return ''
-            else:
-                return input_data
+            return input_data
         def gds_format_base64(self, input_data, input_name=''):
             return base64.b64encode(input_data)
         def gds_validate_base64(self, input_data, node, input_name=''):
@@ -611,35 +608,61 @@ def _cast(typ, value):
 #
 
 
-class simpleTypeTestsType(GeneratedsSuper):
+class IdentifierType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('simpleTypeTest', 'simpleTypeTest', 1),
+        MemberSpec_('schemeDataURI', 'xsd:anyURI', 0),
+        MemberSpec_('schemeID', 'xsd:normalizedString', 0),
+        MemberSpec_('schemeAgencyName', 'xsd:string', 0),
+        MemberSpec_('schemeAgencyID', 'xsd:normalizedString', 0),
+        MemberSpec_('schemeName', 'xsd:string', 0),
+        MemberSpec_('schemeVersionID', 'xsd:normalizedString', 0),
+        MemberSpec_('schemeURI', 'xsd:anyURI', 0),
+        MemberSpec_('valueOf_', 'xsd:normalizedString', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, simpleTypeTest=None):
-        if simpleTypeTest is None:
-            self.simpleTypeTest = []
-        else:
-            self.simpleTypeTest = simpleTypeTest
+    def __init__(self, schemeDataURI=None, schemeID=None, schemeAgencyName=None, schemeAgencyID=None, schemeName=None, schemeVersionID=None, schemeURI=None, valueOf_=None, extensiontype_=None):
+        self.schemeDataURI = _cast(None, schemeDataURI)
+        self.schemeID = _cast(None, schemeID)
+        self.schemeAgencyName = _cast(None, schemeAgencyName)
+        self.schemeAgencyID = _cast(None, schemeAgencyID)
+        self.schemeName = _cast(None, schemeName)
+        self.schemeVersionID = _cast(None, schemeVersionID)
+        self.schemeURI = _cast(None, schemeURI)
+        self.valueOf_ = valueOf_
+        self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
-        if simpleTypeTestsType.subclass:
-            return simpleTypeTestsType.subclass(*args_, **kwargs_)
+        if IdentifierType.subclass:
+            return IdentifierType.subclass(*args_, **kwargs_)
         else:
-            return simpleTypeTestsType(*args_, **kwargs_)
+            return IdentifierType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_simpleTypeTest(self): return self.simpleTypeTest
-    def set_simpleTypeTest(self, simpleTypeTest): self.simpleTypeTest = simpleTypeTest
-    def add_simpleTypeTest(self, value): self.simpleTypeTest.append(value)
-    def insert_simpleTypeTest(self, index, value): self.simpleTypeTest[index] = value
+    def get_schemeDataURI(self): return self.schemeDataURI
+    def set_schemeDataURI(self, schemeDataURI): self.schemeDataURI = schemeDataURI
+    def get_schemeID(self): return self.schemeID
+    def set_schemeID(self, schemeID): self.schemeID = schemeID
+    def get_schemeAgencyName(self): return self.schemeAgencyName
+    def set_schemeAgencyName(self, schemeAgencyName): self.schemeAgencyName = schemeAgencyName
+    def get_schemeAgencyID(self): return self.schemeAgencyID
+    def set_schemeAgencyID(self, schemeAgencyID): self.schemeAgencyID = schemeAgencyID
+    def get_schemeName(self): return self.schemeName
+    def set_schemeName(self, schemeName): self.schemeName = schemeName
+    def get_schemeVersionID(self): return self.schemeVersionID
+    def set_schemeVersionID(self, schemeVersionID): self.schemeVersionID = schemeVersionID
+    def get_schemeURI(self): return self.schemeURI
+    def set_schemeURI(self, schemeURI): self.schemeURI = schemeURI
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def get_extensiontype_(self): return self.extensiontype_
+    def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def hasContent_(self):
         if (
-            self.simpleTypeTest
+            self.valueOf_
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='simpleTypeTestsType', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='IdentifierType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -647,231 +670,152 @@ class simpleTypeTestsType(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='simpleTypeTestsType')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='IdentifierType')
         if self.hasContent_():
-            outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='simpleTypeTestsType', pretty_print=pretty_print)
-            showIndent(outfile, level, pretty_print)
+            outfile.write('>')
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='simpleTypeTestsType'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='IdentifierType'):
+        if self.schemeDataURI is not None and 'schemeDataURI' not in already_processed:
+            already_processed.add('schemeDataURI')
+            outfile.write(' schemeDataURI=%s' % (self.gds_format_string(quote_attrib(self.schemeDataURI).encode(ExternalEncoding), input_name='schemeDataURI'), ))
+        if self.schemeID is not None and 'schemeID' not in already_processed:
+            already_processed.add('schemeID')
+            outfile.write(' schemeID=%s' % (self.gds_format_string(quote_attrib(self.schemeID).encode(ExternalEncoding), input_name='schemeID'), ))
+        if self.schemeAgencyName is not None and 'schemeAgencyName' not in already_processed:
+            already_processed.add('schemeAgencyName')
+            outfile.write(' schemeAgencyName=%s' % (self.gds_format_string(quote_attrib(self.schemeAgencyName).encode(ExternalEncoding), input_name='schemeAgencyName'), ))
+        if self.schemeAgencyID is not None and 'schemeAgencyID' not in already_processed:
+            already_processed.add('schemeAgencyID')
+            outfile.write(' schemeAgencyID=%s' % (self.gds_format_string(quote_attrib(self.schemeAgencyID).encode(ExternalEncoding), input_name='schemeAgencyID'), ))
+        if self.schemeName is not None and 'schemeName' not in already_processed:
+            already_processed.add('schemeName')
+            outfile.write(' schemeName=%s' % (self.gds_format_string(quote_attrib(self.schemeName).encode(ExternalEncoding), input_name='schemeName'), ))
+        if self.schemeVersionID is not None and 'schemeVersionID' not in already_processed:
+            already_processed.add('schemeVersionID')
+            outfile.write(' schemeVersionID=%s' % (self.gds_format_string(quote_attrib(self.schemeVersionID).encode(ExternalEncoding), input_name='schemeVersionID'), ))
+        if self.schemeURI is not None and 'schemeURI' not in already_processed:
+            already_processed.add('schemeURI')
+            outfile.write(' schemeURI=%s' % (self.gds_format_string(quote_attrib(self.schemeURI).encode(ExternalEncoding), input_name='schemeURI'), ))
+        if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+            outfile.write(' xsi:type="%s"' % self.extensiontype_)
+    def exportChildren(self, outfile, level, namespace_='', name_='IdentifierType', fromsubclass_=False, pretty_print=True):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='simpleTypeTestsType', fromsubclass_=False, pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        for simpleTypeTest_ in self.simpleTypeTest:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%ssimpleTypeTest>%s</%ssimpleTypeTest>%s' % (namespace_, self.gds_format_string(quote_xml(simpleTypeTest_).encode(ExternalEncoding), input_name='simpleTypeTest'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='simpleTypeTestsType'):
+    def exportLiteral(self, outfile, level, name_='IdentifierType'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+        showIndent(outfile, level)
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('simpleTypeTest=[\n')
-        level += 1
-        for simpleTypeTest_ in self.simpleTypeTest:
+        if self.schemeDataURI is not None and 'schemeDataURI' not in already_processed:
+            already_processed.add('schemeDataURI')
             showIndent(outfile, level)
-            outfile.write('%s,\n' % quote_python(simpleTypeTest_).encode(ExternalEncoding))
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
+            outfile.write('schemeDataURI="%s",\n' % (self.schemeDataURI,))
+        if self.schemeID is not None and 'schemeID' not in already_processed:
+            already_processed.add('schemeID')
+            showIndent(outfile, level)
+            outfile.write('schemeID="%s",\n' % (self.schemeID,))
+        if self.schemeAgencyName is not None and 'schemeAgencyName' not in already_processed:
+            already_processed.add('schemeAgencyName')
+            showIndent(outfile, level)
+            outfile.write('schemeAgencyName="%s",\n' % (self.schemeAgencyName,))
+        if self.schemeAgencyID is not None and 'schemeAgencyID' not in already_processed:
+            already_processed.add('schemeAgencyID')
+            showIndent(outfile, level)
+            outfile.write('schemeAgencyID="%s",\n' % (self.schemeAgencyID,))
+        if self.schemeName is not None and 'schemeName' not in already_processed:
+            already_processed.add('schemeName')
+            showIndent(outfile, level)
+            outfile.write('schemeName="%s",\n' % (self.schemeName,))
+        if self.schemeVersionID is not None and 'schemeVersionID' not in already_processed:
+            already_processed.add('schemeVersionID')
+            showIndent(outfile, level)
+            outfile.write('schemeVersionID="%s",\n' % (self.schemeVersionID,))
+        if self.schemeURI is not None and 'schemeURI' not in already_processed:
+            already_processed.add('schemeURI')
+            showIndent(outfile, level)
+            outfile.write('schemeURI="%s",\n' % (self.schemeURI,))
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
+        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-        return self
     def buildAttributes(self, node, attrs, already_processed):
-        pass
+        value = find_attr_value_('schemeDataURI', node)
+        if value is not None and 'schemeDataURI' not in already_processed:
+            already_processed.add('schemeDataURI')
+            self.schemeDataURI = value
+        value = find_attr_value_('schemeID', node)
+        if value is not None and 'schemeID' not in already_processed:
+            already_processed.add('schemeID')
+            self.schemeID = value
+        value = find_attr_value_('schemeAgencyName', node)
+        if value is not None and 'schemeAgencyName' not in already_processed:
+            already_processed.add('schemeAgencyName')
+            self.schemeAgencyName = value
+        value = find_attr_value_('schemeAgencyID', node)
+        if value is not None and 'schemeAgencyID' not in already_processed:
+            already_processed.add('schemeAgencyID')
+            self.schemeAgencyID = value
+        value = find_attr_value_('schemeName', node)
+        if value is not None and 'schemeName' not in already_processed:
+            already_processed.add('schemeName')
+            self.schemeName = value
+        value = find_attr_value_('schemeVersionID', node)
+        if value is not None and 'schemeVersionID' not in already_processed:
+            already_processed.add('schemeVersionID')
+            self.schemeVersionID = value
+        value = find_attr_value_('schemeURI', node)
+        if value is not None and 'schemeURI' not in already_processed:
+            already_processed.add('schemeURI')
+            self.schemeURI = value
+        value = find_attr_value_('xsi:type', node)
+        if value is not None and 'xsi:type' not in already_processed:
+            already_processed.add('xsi:type')
+            self.extensiontype_ = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'simpleTypeTest':
-            simpleTypeTest_ = child_.text
-            simpleTypeTest_ = self.gds_validate_string(simpleTypeTest_, node, 'simpleTypeTest')
-            self.simpleTypeTest.append(simpleTypeTest_)
-# end class simpleTypeTestsType
+        pass
+# end class IdentifierType
 
 
-class simpleTypeTest(GeneratedsSuper):
+class BillOfResourcesIDType(IdentifierType):
     member_data_items_ = [
-        MemberSpec_('datetime1', 'xs:gYear', 0),
-        MemberSpec_('datetime2', 'xs:gYearMonth', 0),
-        MemberSpec_('datetime3', 'xs:gMonth', 0),
-        MemberSpec_('datetime4', 'xs:gMonthDay', 0),
-        MemberSpec_('datetime5', 'xs:gDay', 0),
-        MemberSpec_('integerVal1', 'xs:integer', 0),
-        MemberSpec_('integerVal2', 'xs:integer', 1),
-        MemberSpec_('stringVal1', 'xs:string', 0),
-        MemberSpec_('stringVal2', 'xs:string', 1),
-        MemberSpec_('booleanVal1', 'xs:boolean', 0),
-        MemberSpec_('booleanVal2', 'xs:boolean', 1),
-        MemberSpec_('decimalVal1', 'xs:decimal', 0),
-        MemberSpec_('decimalVal2', 'xs:decimal', 1),
-        MemberSpec_('doubleVal1', 'xs:double', 0),
-        MemberSpec_('doubleVal2', 'xs:double', 1),
-        MemberSpec_('floatVal1', 'xs:float', 0),
-        MemberSpec_('floatVal2', 'xs:float', 1),
-        MemberSpec_('dateVal1', 'xs:date', 0),
-        MemberSpec_('dateVal2', 'xs:date', 1),
-        MemberSpec_('dateTimeVal1', 'xs:dateTime', 0),
-        MemberSpec_('dateTimeVal2', 'xs:dateTime', 1),
+        MemberSpec_('valueOf_', 'IdentifierType', 0),
     ]
     subclass = None
-    superclass = None
-    def __init__(self, datetime1=None, datetime2=None, datetime3=None, datetime4=None, datetime5=None, integerVal1=None, integerVal2=None, stringVal1=None, stringVal2=None, booleanVal1=None, booleanVal2=None, decimalVal1=None, decimalVal2=None, doubleVal1=None, doubleVal2=None, floatVal1=None, floatVal2=None, dateVal1=None, dateVal2=None, dateTimeVal1=None, dateTimeVal2=None):
-        self.datetime1 = datetime1
-        self.datetime2 = datetime2
-        self.datetime3 = datetime3
-        self.datetime4 = datetime4
-        self.datetime5 = datetime5
-        self.integerVal1 = integerVal1
-        if integerVal2 is None:
-            self.integerVal2 = []
-        else:
-            self.integerVal2 = integerVal2
-        self.stringVal1 = stringVal1
-        if stringVal2 is None:
-            self.stringVal2 = []
-        else:
-            self.stringVal2 = stringVal2
-        self.booleanVal1 = booleanVal1
-        if booleanVal2 is None:
-            self.booleanVal2 = []
-        else:
-            self.booleanVal2 = booleanVal2
-        self.decimalVal1 = decimalVal1
-        if decimalVal2 is None:
-            self.decimalVal2 = []
-        else:
-            self.decimalVal2 = decimalVal2
-        self.doubleVal1 = doubleVal1
-        if doubleVal2 is None:
-            self.doubleVal2 = []
-        else:
-            self.doubleVal2 = doubleVal2
-        self.floatVal1 = floatVal1
-        if floatVal2 is None:
-            self.floatVal2 = []
-        else:
-            self.floatVal2 = floatVal2
-        if isinstance(dateVal1, basestring):
-            initvalue_ = datetime_.datetime.strptime(dateVal1, '%Y-%m-%d').date()
-        else:
-            initvalue_ = dateVal1
-        self.dateVal1 = initvalue_
-        if dateVal2 is None:
-            self.dateVal2 = []
-        else:
-            self.dateVal2 = dateVal2
-        if isinstance(dateTimeVal1, basestring):
-            initvalue_ = datetime_.datetime.strptime(dateTimeVal1, '%Y-%m-%dT%H:%M:%S')
-        else:
-            initvalue_ = dateTimeVal1
-        self.dateTimeVal1 = initvalue_
-        if dateTimeVal2 is None:
-            self.dateTimeVal2 = []
-        else:
-            self.dateTimeVal2 = dateTimeVal2
+    superclass = IdentifierType
+    def __init__(self, schemeDataURI=None, schemeID=None, schemeAgencyName=None, schemeAgencyID=None, schemeName=None, schemeVersionID=None, schemeURI=None, valueOf_=None):
+        super(BillOfResourcesIDType, self).__init__(schemeDataURI, schemeID, schemeAgencyName, schemeAgencyID, schemeName, schemeVersionID, schemeURI, valueOf_, )
+        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
-        if simpleTypeTest.subclass:
-            return simpleTypeTest.subclass(*args_, **kwargs_)
+        if BillOfResourcesIDType.subclass:
+            return BillOfResourcesIDType.subclass(*args_, **kwargs_)
         else:
-            return simpleTypeTest(*args_, **kwargs_)
+            return BillOfResourcesIDType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_datetime1(self): return self.datetime1
-    def set_datetime1(self, datetime1): self.datetime1 = datetime1
-    def get_datetime2(self): return self.datetime2
-    def set_datetime2(self, datetime2): self.datetime2 = datetime2
-    def get_datetime3(self): return self.datetime3
-    def set_datetime3(self, datetime3): self.datetime3 = datetime3
-    def get_datetime4(self): return self.datetime4
-    def set_datetime4(self, datetime4): self.datetime4 = datetime4
-    def get_datetime5(self): return self.datetime5
-    def set_datetime5(self, datetime5): self.datetime5 = datetime5
-    def get_integerVal1(self): return self.integerVal1
-    def set_integerVal1(self, integerVal1): self.integerVal1 = integerVal1
-    def get_integerVal2(self): return self.integerVal2
-    def set_integerVal2(self, integerVal2): self.integerVal2 = integerVal2
-    def add_integerVal2(self, value): self.integerVal2.append(value)
-    def insert_integerVal2(self, index, value): self.integerVal2[index] = value
-    def get_stringVal1(self): return self.stringVal1
-    def set_stringVal1(self, stringVal1): self.stringVal1 = stringVal1
-    def get_stringVal2(self): return self.stringVal2
-    def set_stringVal2(self, stringVal2): self.stringVal2 = stringVal2
-    def add_stringVal2(self, value): self.stringVal2.append(value)
-    def insert_stringVal2(self, index, value): self.stringVal2[index] = value
-    def get_booleanVal1(self): return self.booleanVal1
-    def set_booleanVal1(self, booleanVal1): self.booleanVal1 = booleanVal1
-    def get_booleanVal2(self): return self.booleanVal2
-    def set_booleanVal2(self, booleanVal2): self.booleanVal2 = booleanVal2
-    def add_booleanVal2(self, value): self.booleanVal2.append(value)
-    def insert_booleanVal2(self, index, value): self.booleanVal2[index] = value
-    def get_decimalVal1(self): return self.decimalVal1
-    def set_decimalVal1(self, decimalVal1): self.decimalVal1 = decimalVal1
-    def get_decimalVal2(self): return self.decimalVal2
-    def set_decimalVal2(self, decimalVal2): self.decimalVal2 = decimalVal2
-    def add_decimalVal2(self, value): self.decimalVal2.append(value)
-    def insert_decimalVal2(self, index, value): self.decimalVal2[index] = value
-    def get_doubleVal1(self): return self.doubleVal1
-    def set_doubleVal1(self, doubleVal1): self.doubleVal1 = doubleVal1
-    def get_doubleVal2(self): return self.doubleVal2
-    def set_doubleVal2(self, doubleVal2): self.doubleVal2 = doubleVal2
-    def add_doubleVal2(self, value): self.doubleVal2.append(value)
-    def insert_doubleVal2(self, index, value): self.doubleVal2[index] = value
-    def get_floatVal1(self): return self.floatVal1
-    def set_floatVal1(self, floatVal1): self.floatVal1 = floatVal1
-    def get_floatVal2(self): return self.floatVal2
-    def set_floatVal2(self, floatVal2): self.floatVal2 = floatVal2
-    def add_floatVal2(self, value): self.floatVal2.append(value)
-    def insert_floatVal2(self, index, value): self.floatVal2[index] = value
-    def get_dateVal1(self): return self.dateVal1
-    def set_dateVal1(self, dateVal1): self.dateVal1 = dateVal1
-    def get_dateVal2(self): return self.dateVal2
-    def set_dateVal2(self, dateVal2): self.dateVal2 = dateVal2
-    def add_dateVal2(self, value): self.dateVal2.append(value)
-    def insert_dateVal2(self, index, value): self.dateVal2[index] = value
-    def get_dateTimeVal1(self): return self.dateTimeVal1
-    def set_dateTimeVal1(self, dateTimeVal1): self.dateTimeVal1 = dateTimeVal1
-    def get_dateTimeVal2(self): return self.dateTimeVal2
-    def set_dateTimeVal2(self, dateTimeVal2): self.dateTimeVal2 = dateTimeVal2
-    def add_dateTimeVal2(self, value): self.dateTimeVal2.append(value)
-    def insert_dateTimeVal2(self, index, value): self.dateTimeVal2[index] = value
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            self.datetime1 is not None or
-            self.datetime2 is not None or
-            self.datetime3 is not None or
-            self.datetime4 is not None or
-            self.datetime5 is not None or
-            self.integerVal1 is not None or
-            self.integerVal2 or
-            self.stringVal1 is not None or
-            self.stringVal2 or
-            self.booleanVal1 is not None or
-            self.booleanVal2 or
-            self.decimalVal1 is not None or
-            self.decimalVal2 or
-            self.doubleVal1 is not None or
-            self.doubleVal2 or
-            self.floatVal1 is not None or
-            self.floatVal2 or
-            self.dateVal1 is not None or
-            self.dateVal2 or
-            self.dateTimeVal1 is not None or
-            self.dateTimeVal2
+            self.valueOf_ or
+            super(BillOfResourcesIDType, self).hasContent_()
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='simpleTypeTest', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='BillOfResourcesIDType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -879,347 +823,120 @@ class simpleTypeTest(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='simpleTypeTest')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='BillOfResourcesIDType')
         if self.hasContent_():
-            outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='simpleTypeTest', pretty_print=pretty_print)
-            showIndent(outfile, level, pretty_print)
+            outfile.write('>')
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='simpleTypeTest'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='BillOfResourcesIDType'):
+        super(BillOfResourcesIDType, self).exportAttributes(outfile, level, already_processed, namespace_, name_='BillOfResourcesIDType')
+    def exportChildren(self, outfile, level, namespace_='', name_='BillOfResourcesIDType', fromsubclass_=False, pretty_print=True):
+        super(BillOfResourcesIDType, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='simpleTypeTest', fromsubclass_=False, pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        if self.datetime1 is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime1>%s</%sdatetime1>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime1).encode(ExternalEncoding), input_name='datetime1'), namespace_, eol_))
-        if self.datetime2 is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime2>%s</%sdatetime2>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime2).encode(ExternalEncoding), input_name='datetime2'), namespace_, eol_))
-        if self.datetime3 is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime3>%s</%sdatetime3>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime3).encode(ExternalEncoding), input_name='datetime3'), namespace_, eol_))
-        if self.datetime4 is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime4>%s</%sdatetime4>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime4).encode(ExternalEncoding), input_name='datetime4'), namespace_, eol_))
-        if self.datetime5 is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime5>%s</%sdatetime5>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime5).encode(ExternalEncoding), input_name='datetime5'), namespace_, eol_))
-        if self.integerVal1 is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sintegerVal1>%s</%sintegerVal1>%s' % (namespace_, self.gds_format_integer(self.integerVal1, input_name='integerVal1'), namespace_, eol_))
-        for integerVal2_ in self.integerVal2:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sintegerVal2>%s</%sintegerVal2>%s' % (namespace_, self.gds_format_integer(integerVal2_, input_name='integerVal2'), namespace_, eol_))
-        if self.stringVal1 is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstringVal1>%s</%sstringVal1>%s' % (namespace_, self.gds_format_string(quote_xml(self.stringVal1).encode(ExternalEncoding), input_name='stringVal1'), namespace_, eol_))
-        for stringVal2_ in self.stringVal2:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstringVal2>%s</%sstringVal2>%s' % (namespace_, self.gds_format_string(quote_xml(stringVal2_).encode(ExternalEncoding), input_name='stringVal2'), namespace_, eol_))
-        if self.booleanVal1 is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sbooleanVal1>%s</%sbooleanVal1>%s' % (namespace_, self.gds_format_boolean(self.booleanVal1, input_name='booleanVal1'), namespace_, eol_))
-        for booleanVal2_ in self.booleanVal2:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sbooleanVal2>%s</%sbooleanVal2>%s' % (namespace_, self.gds_format_boolean(booleanVal2_, input_name='booleanVal2'), namespace_, eol_))
-        if self.decimalVal1 is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdecimalVal1>%s</%sdecimalVal1>%s' % (namespace_, self.gds_format_float(self.decimalVal1, input_name='decimalVal1'), namespace_, eol_))
-        for decimalVal2_ in self.decimalVal2:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdecimalVal2>%s</%sdecimalVal2>%s' % (namespace_, self.gds_format_float(decimalVal2_, input_name='decimalVal2'), namespace_, eol_))
-        if self.doubleVal1 is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdoubleVal1>%s</%sdoubleVal1>%s' % (namespace_, self.gds_format_double(self.doubleVal1, input_name='doubleVal1'), namespace_, eol_))
-        for doubleVal2_ in self.doubleVal2:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdoubleVal2>%s</%sdoubleVal2>%s' % (namespace_, self.gds_format_double(doubleVal2_, input_name='doubleVal2'), namespace_, eol_))
-        if self.floatVal1 is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfloatVal1>%s</%sfloatVal1>%s' % (namespace_, self.gds_format_float(self.floatVal1, input_name='floatVal1'), namespace_, eol_))
-        for floatVal2_ in self.floatVal2:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfloatVal2>%s</%sfloatVal2>%s' % (namespace_, self.gds_format_float(floatVal2_, input_name='floatVal2'), namespace_, eol_))
-        if self.dateVal1 is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdateVal1>%s</%sdateVal1>%s' % (namespace_, self.gds_format_date(self.dateVal1, input_name='dateVal1'), namespace_, eol_))
-        for dateVal2_ in self.dateVal2:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdateVal2>%s</%sdateVal2>%s' % (namespace_, self.gds_format_date(dateVal2_, input_name='dateVal2'), namespace_, eol_))
-        if self.dateTimeVal1 is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdateTimeVal1>%s</%sdateTimeVal1>%s' % (namespace_, self.gds_format_datetime(self.dateTimeVal1, input_name='dateTimeVal1'), namespace_, eol_))
-        for dateTimeVal2_ in self.dateTimeVal2:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdateTimeVal2>%s</%sdateTimeVal2>%s' % (namespace_, self.gds_format_datetime(dateTimeVal2_, input_name='dateTimeVal2'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='simpleTypeTest'):
+    def exportLiteral(self, outfile, level, name_='BillOfResourcesIDType'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+        showIndent(outfile, level)
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
+        super(BillOfResourcesIDType, self).exportLiteralAttributes(outfile, level, already_processed, name_)
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.datetime1 is not None:
-            showIndent(outfile, level)
-            outfile.write('datetime1=%s,\n' % quote_python(self.datetime1).encode(ExternalEncoding))
-        if self.datetime2 is not None:
-            showIndent(outfile, level)
-            outfile.write('datetime2=%s,\n' % quote_python(self.datetime2).encode(ExternalEncoding))
-        if self.datetime3 is not None:
-            showIndent(outfile, level)
-            outfile.write('datetime3=%s,\n' % quote_python(self.datetime3).encode(ExternalEncoding))
-        if self.datetime4 is not None:
-            showIndent(outfile, level)
-            outfile.write('datetime4=%s,\n' % quote_python(self.datetime4).encode(ExternalEncoding))
-        if self.datetime5 is not None:
-            showIndent(outfile, level)
-            outfile.write('datetime5=%s,\n' % quote_python(self.datetime5).encode(ExternalEncoding))
-        if self.integerVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('integerVal1=%d,\n' % self.integerVal1)
-        showIndent(outfile, level)
-        outfile.write('integerVal2=[\n')
-        level += 1
-        for integerVal2_ in self.integerVal2:
-            showIndent(outfile, level)
-            outfile.write('%d,\n' % integerVal2_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.stringVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('stringVal1=%s,\n' % quote_python(self.stringVal1).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('stringVal2=[\n')
-        level += 1
-        for stringVal2_ in self.stringVal2:
-            showIndent(outfile, level)
-            outfile.write('%s,\n' % quote_python(stringVal2_).encode(ExternalEncoding))
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.booleanVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('booleanVal1=%s,\n' % self.booleanVal1)
-        showIndent(outfile, level)
-        outfile.write('booleanVal2=[\n')
-        level += 1
-        for booleanVal2_ in self.booleanVal2:
-            showIndent(outfile, level)
-            outfile.write('%s,\n' % booleanVal2_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.decimalVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('decimalVal1=%f,\n' % self.decimalVal1)
-        showIndent(outfile, level)
-        outfile.write('decimalVal2=[\n')
-        level += 1
-        for decimalVal2_ in self.decimalVal2:
-            showIndent(outfile, level)
-            outfile.write('%f,\n' % decimalVal2_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.doubleVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('doubleVal1=%e,\n' % self.doubleVal1)
-        showIndent(outfile, level)
-        outfile.write('doubleVal2=[\n')
-        level += 1
-        for doubleVal2_ in self.doubleVal2:
-            showIndent(outfile, level)
-            outfile.write('%e,\n' % doubleVal2_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.floatVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('floatVal1=%f,\n' % self.floatVal1)
-        showIndent(outfile, level)
-        outfile.write('floatVal2=[\n')
-        level += 1
-        for floatVal2_ in self.floatVal2:
-            showIndent(outfile, level)
-            outfile.write('%f,\n' % floatVal2_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.dateVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('dateVal1=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.dateVal1, input_name='dateVal1'))
-        showIndent(outfile, level)
-        outfile.write('dateVal2=[\n')
-        level += 1
-        for dateVal2_ in self.dateVal2:
-            showIndent(outfile, level)
-            outfile.write('model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(dateVal2_, input_name='dateVal2'))
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.dateTimeVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('dateTimeVal1=model_.GeneratedsSuper.gds_parse_datetime("%s"),\n' % self.gds_format_datetime(self.dateTimeVal1, input_name='dateTimeVal1'))
-        showIndent(outfile, level)
-        outfile.write('dateTimeVal2=[\n')
-        level += 1
-        for dateTimeVal2_ in self.dateTimeVal2:
-            showIndent(outfile, level)
-            outfile.write('model_.GeneratedsSuper.gds_parse_datetime("%s"),\n' % self.gds_format_datetime(dateTimeVal2_, input_name='dateTimeVal2'))
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
+        super(BillOfResourcesIDType, self).exportLiteralChildren(outfile, level, name_)
+        pass
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
+        self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-        return self
     def buildAttributes(self, node, attrs, already_processed):
-        pass
+        super(BillOfResourcesIDType, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'datetime1':
-            datetime1_ = child_.text
-            datetime1_ = self.gds_validate_string(datetime1_, node, 'datetime1')
-            self.datetime1 = datetime1_
-        elif nodeName_ == 'datetime2':
-            datetime2_ = child_.text
-            datetime2_ = self.gds_validate_string(datetime2_, node, 'datetime2')
-            self.datetime2 = datetime2_
-        elif nodeName_ == 'datetime3':
-            datetime3_ = child_.text
-            datetime3_ = self.gds_validate_string(datetime3_, node, 'datetime3')
-            self.datetime3 = datetime3_
-        elif nodeName_ == 'datetime4':
-            datetime4_ = child_.text
-            datetime4_ = self.gds_validate_string(datetime4_, node, 'datetime4')
-            self.datetime4 = datetime4_
-        elif nodeName_ == 'datetime5':
-            datetime5_ = child_.text
-            datetime5_ = self.gds_validate_string(datetime5_, node, 'datetime5')
-            self.datetime5 = datetime5_
-        elif nodeName_ == 'integerVal1':
-            sval_ = child_.text
-            try:
-                ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
-                raise_parse_error(child_, 'requires integer: %s' % exp)
-            ival_ = self.gds_validate_integer(ival_, node, 'integerVal1')
-            self.integerVal1 = ival_
-        elif nodeName_ == 'integerVal2':
-            sval_ = child_.text
-            try:
-                ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
-                raise_parse_error(child_, 'requires integer: %s' % exp)
-            ival_ = self.gds_validate_integer(ival_, node, 'integerVal2')
-            self.integerVal2.append(ival_)
-        elif nodeName_ == 'stringVal1':
-            stringVal1_ = child_.text
-            stringVal1_ = self.gds_validate_string(stringVal1_, node, 'stringVal1')
-            self.stringVal1 = stringVal1_
-        elif nodeName_ == 'stringVal2':
-            stringVal2_ = child_.text
-            stringVal2_ = self.gds_validate_string(stringVal2_, node, 'stringVal2')
-            self.stringVal2.append(stringVal2_)
-        elif nodeName_ == 'booleanVal1':
-            sval_ = child_.text
-            if sval_ in ('true', '1'):
-                ival_ = True
-            elif sval_ in ('false', '0'):
-                ival_ = False
-            else:
-                raise_parse_error(child_, 'requires boolean')
-            ival_ = self.gds_validate_boolean(ival_, node, 'booleanVal1')
-            self.booleanVal1 = ival_
-        elif nodeName_ == 'booleanVal2':
-            sval_ = child_.text
-            if sval_ in ('true', '1'):
-                ival_ = True
-            elif sval_ in ('false', '0'):
-                ival_ = False
-            else:
-                raise_parse_error(child_, 'requires boolean')
-            ival_ = self.gds_validate_boolean(ival_, node, 'booleanVal2')
-            self.booleanVal2.append(ival_)
-        elif nodeName_ == 'decimalVal1':
-            sval_ = child_.text
-            try:
-                fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
-                raise_parse_error(child_, 'requires float or double: %s' % exp)
-            fval_ = self.gds_validate_float(fval_, node, 'decimalVal1')
-            self.decimalVal1 = fval_
-        elif nodeName_ == 'decimalVal2':
-            sval_ = child_.text
-            try:
-                fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
-                raise_parse_error(child_, 'requires float or double: %s' % exp)
-            fval_ = self.gds_validate_float(fval_, node, 'decimalVal2')
-            self.decimalVal2.append(fval_)
-        elif nodeName_ == 'doubleVal1':
-            sval_ = child_.text
-            try:
-                fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
-                raise_parse_error(child_, 'requires float or double: %s' % exp)
-            fval_ = self.gds_validate_float(fval_, node, 'doubleVal1')
-            self.doubleVal1 = fval_
-        elif nodeName_ == 'doubleVal2':
-            sval_ = child_.text
-            try:
-                fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
-                raise_parse_error(child_, 'requires float or double: %s' % exp)
-            fval_ = self.gds_validate_float(fval_, node, 'doubleVal2')
-            self.doubleVal2.append(fval_)
-        elif nodeName_ == 'floatVal1':
-            sval_ = child_.text
-            try:
-                fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
-                raise_parse_error(child_, 'requires float or double: %s' % exp)
-            fval_ = self.gds_validate_float(fval_, node, 'floatVal1')
-            self.floatVal1 = fval_
-        elif nodeName_ == 'floatVal2':
-            sval_ = child_.text
-            try:
-                fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
-                raise_parse_error(child_, 'requires float or double: %s' % exp)
-            fval_ = self.gds_validate_float(fval_, node, 'floatVal2')
-            self.floatVal2.append(fval_)
-        elif nodeName_ == 'dateVal1':
-            sval_ = child_.text
-            dval_ = self.gds_parse_date(sval_)
-            self.dateVal1 = dval_
-        elif nodeName_ == 'dateVal2':
-            sval_ = child_.text
-            dval_ = self.gds_parse_date(sval_)
-            self.dateVal2.append(dval_)
-        elif nodeName_ == 'dateTimeVal1':
-            sval_ = child_.text
-            dval_ = self.gds_parse_datetime(sval_)
-            self.dateTimeVal1 = dval_
-        elif nodeName_ == 'dateTimeVal2':
-            sval_ = child_.text
-            dval_ = self.gds_parse_datetime(sval_)
-            self.dateTimeVal2.append(dval_)
-# end class simpleTypeTest
+        pass
+# end class BillOfResourcesIDType
+
+
+class BillOfMaterialIDType(IdentifierType):
+    member_data_items_ = [
+        MemberSpec_('valueOf_', 'IdentifierType', 0),
+    ]
+    subclass = None
+    superclass = IdentifierType
+    def __init__(self, schemeDataURI=None, schemeID=None, schemeAgencyName=None, schemeAgencyID=None, schemeName=None, schemeVersionID=None, schemeURI=None, valueOf_=None):
+        super(BillOfMaterialIDType, self).__init__(schemeDataURI, schemeID, schemeAgencyName, schemeAgencyID, schemeName, schemeVersionID, schemeURI, valueOf_, )
+        self.valueOf_ = valueOf_
+    def factory(*args_, **kwargs_):
+        if BillOfMaterialIDType.subclass:
+            return BillOfMaterialIDType.subclass(*args_, **kwargs_)
+        else:
+            return BillOfMaterialIDType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            self.valueOf_ or
+            super(BillOfMaterialIDType, self).hasContent_()
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='BillOfMaterialIDType', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='BillOfMaterialIDType')
+        if self.hasContent_():
+            outfile.write('>')
+            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='BillOfMaterialIDType'):
+        super(BillOfMaterialIDType, self).exportAttributes(outfile, level, already_processed, namespace_, name_='BillOfMaterialIDType')
+    def exportChildren(self, outfile, level, namespace_='', name_='BillOfMaterialIDType', fromsubclass_=False, pretty_print=True):
+        super(BillOfMaterialIDType, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
+        pass
+    def exportLiteral(self, outfile, level, name_='BillOfMaterialIDType'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+        showIndent(outfile, level)
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        super(BillOfMaterialIDType, self).exportLiteralAttributes(outfile, level, already_processed, name_)
+    def exportLiteralChildren(self, outfile, level, name_):
+        super(BillOfMaterialIDType, self).exportLiteralChildren(outfile, level, name_)
+        pass
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        self.valueOf_ = get_all_text_(node)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+    def buildAttributes(self, node, attrs, already_processed):
+        super(BillOfMaterialIDType, self).buildAttributes(node, attrs, already_processed)
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class BillOfMaterialIDType
 
 
 GDSClassesMapping = {
-    'simpleTypeTests': simpleTypeTestsType,
 }
 
 
@@ -1246,8 +963,8 @@ def parse(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'simpleTypeTests'
-        rootClass = simpleTypeTestsType
+        rootTag = 'IdentifierType'
+        rootClass = IdentifierType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -1266,8 +983,8 @@ def parseEtree(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'simpleTypeTests'
-        rootClass = simpleTypeTestsType
+        rootTag = 'IdentifierType'
+        rootClass = IdentifierType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -1291,7 +1008,7 @@ def parseString(inString, silence=False):
     roots = get_root_tag(rootNode)
     rootClass = roots[1]
     if rootClass is None:
-        rootClass = simpleTypeTestsType
+        rootClass = IdentifierType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -1299,7 +1016,7 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="simpleTypeTests",
+##             sys.stdout, 0, name_="IdentifierType",
 ##             namespacedef_='')
     return rootObj
 
@@ -1309,15 +1026,15 @@ def parseLiteral(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'simpleTypeTests'
-        rootClass = simpleTypeTestsType
+        rootTag = 'IdentifierType'
+        rootClass = IdentifierType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
 ##     if not silence:
-##         sys.stdout.write('#from simpletypes_other2_sup import *\n\n')
-##         sys.stdout.write('import simpletypes_other2_sup as model_\n\n')
+##         sys.stdout.write('#from simplecontent_restriction2_sup import *\n\n')
+##         sys.stdout.write('import simplecontent_restriction2_sup as model_\n\n')
 ##         sys.stdout.write('rootObj = model_.rootTag(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
@@ -1338,6 +1055,7 @@ if __name__ == '__main__':
 
 
 __all__ = [
-    "simpleTypeTest",
-    "simpleTypeTestsType"
+    "BillOfMaterialIDType",
+    "BillOfResourcesIDType",
+    "IdentifierType"
 ]
