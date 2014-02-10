@@ -33,8 +33,6 @@ from lxml import etree
 VERSION = '2.12a'
 ##VERSION##
 
-Namespaces = {'xs': 'http://www.w3.org/2001/XMLSchema'}
-Xsd_namespace_uri = 'http://www.w3.org/2001/XMLSchema'
 CatalogDict = {}
 # the base url to use for all relative paths in the catalog
 CatalogBaseUrl = None
@@ -311,11 +309,14 @@ def prep_schema(inpath, outpath, options):
 
 
 def process_groups(root):
+    namespaces = {root.prefix: root.nsmap[root.prefix]}
     # Get all the xs:group definitions at top level.
-    defs = root.xpath('./xs:group', namespaces=Namespaces)
+    pattern = './%s:group' % (root.prefix, )
+    defs = root.xpath(pattern, namespaces=namespaces)
     defs = [node for node in defs if node.get('name') is not None]
     # Get all the xs:group references (below top level).
-    refs = root.xpath('./*//xs:group', namespaces=Namespaces)
+    pattern = './*//%s:group' % (root.prefix, )
+    refs = root.xpath(pattern, namespaces=namespaces)
     refs = [node for node in refs if node.get('ref') is not None]
     # Create a dictionary of the named model groups (definitions).
     def_dict = {}
@@ -405,10 +406,13 @@ def replace_group_defs(def_dict, refs):
         if name is None:
             continue
         def_node = def_dict.get(name)
+        namespaces = {def_node.prefix: def_node.nsmap[def_node.prefix]}
         if def_node is not None:
+            pattern = './%s:sequence|./%s:choice|./%s:all' % (
+                def_node.prefix, def_node.prefix, def_node.prefix, )
             content = def_node.xpath(
-                './xs:sequence|./xs:choice|./xs:all',
-                namespaces=Namespaces)
+                pattern,
+                namespaces=namespaces)
             if content:
                 content = content[0]
                 parent = ref_node.getparent()
@@ -449,7 +453,8 @@ def raise_anon_complextypes(root):
     else:
         pattern = './*/*//complexType|./*/*//simpleType'
         element_tag = 'element'
-    defs = root.xpath(pattern, namespaces=Namespaces)
+    namespaces = {prefix: root.nsmap[prefix]}
+    defs = root.xpath(pattern, namespaces=namespaces)
     for node in defs:
         parent = node.getparent()
         if parent.tag != element_tag:
