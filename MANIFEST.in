@@ -1,6 +1,7 @@
 include README LICENSE MANIFEST.in
 include setup.py
 include generateDS.py
+include generateds_config.py
 include generateDS.txt
 include django/gends_run_gen_django.py
 include django/gends_extract_simple_types.py
@@ -77,14 +78,24 @@ include tests/people_procincl_b.xsd
 include tests/abstract_type.xsd
 include tests/abstract_type1_sup.py tests/abstract_type1_sub.py
 include tests/abstract_type2_sup.py tests/abstract_type2_sub.py
-
 include tests/simpletypes_other.xsd
-include tests/simpletypes_other1_sup.py tests/simpletypes1_other_sub.py
-include tests/simpletypes_other2_sup.py tests/simpletypes_other2_sub.py
-
+include tests/simpletypes_other1_sub.py tests/simpletypes1_other_sup.py
+include tests/simpletypes_other2_sub.py tests/simpletypes_other2_sup.py
 include tests/attr_groups.xsd
 include tests/attr_groups1_sup.py tests/attr_groups1_sub.py
 include tests/attr_groups2_sup.py tests/attr_groups2_sub.py
+include tests/oneper00.xsd tests/oneper01.xsd tests/oneper02.xsd
+include tests/OnePer/oneperType0?_?One.py
+include tests/anonymous_type.xsd
+include tests/anonymous_type1_sub.py tests/anonymous_type1_sup.py
+include tests/anonymous_type2_sub.py tests/anonymous_type2_sup.py
+include tests/catalog.xml tests/catalogtest.xsd
+include tests/catalogtest1_sub.py tests/catalogtest1_sup.py
+include tests/catalogtest2_sub.py tests/catalogtest2_sup.py
+include tests/to_etree.xsd tests/to_etree.xml
+include tests/to_etree1.xml tests/to_etree2.xml
+include tests/to_etree1_sub.py tests/to_etree1_sup.py
+include tests/to_etree2_sub.py tests/to_etree2_sup.py
 
 include gui/generateds_gui.py
 include gui/generateds_gui.glade

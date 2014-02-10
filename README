@@ -148,12 +148,15 @@ Version 2.12b (02/10/2014)
   documentation for more on this.  Thanks to Mikki Weesenaar for
   bring up the use case that needed this.
 - Additional fixes for the "one module per XSD file".  Also,
-  creation of a unit test for this capability.  Thanks again to
+  creation of a unit test for this capability.  See section "One
+  Per -- generating separate files from imported/included schemas"
+  in the documentation for more information.  Thanks again to
   George David for all his work on this.
 - Fixes to process_includes.py -- Some uses of namespace prefix xs:
   were hard-coded, whereas some XML schemas use xsd: instead of xs:.
 - Various fixes to unit tests so that all unit tests pass when using
-  the cloned Mercurial repository.
+  either the cloned Mercurial repository at Bitbucket
+  (https://bitbucket.org/dkuhlman/generateds) or the tar achive.
 
 Version 2.12a (10/29/2013)
 - A name conflict issue caused by naming anonymous types.  An
