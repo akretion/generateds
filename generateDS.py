@@ -177,7 +177,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.12a'
+VERSION = '2.12b'
 ##VERSION##
 
 GenerateProperties = 0
