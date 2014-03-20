@@ -11,7 +11,7 @@ generateDS -- Introduction and Tutorial
 
 .. version
 
-:revision: 2.12b
+:revision: 2.12c
 
 .. version
 

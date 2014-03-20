@@ -625,6 +625,7 @@ class IdentifierType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, schemeDataURI=None, schemeID=None, schemeAgencyName=None, schemeAgencyID=None, schemeName=None, schemeVersionID=None, schemeURI=None, valueOf_=None, extensiontype_=None):
+        self.original_tagname_ = None
         self.schemeDataURI = _cast(None, schemeDataURI)
         self.schemeID = _cast(None, schemeID)
         self.schemeAgencyName = _cast(None, schemeAgencyName)
@@ -670,6 +671,8 @@ class IdentifierType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -801,6 +804,7 @@ class BillOfResourcesIDType(IdentifierType):
     subclass = None
     superclass = IdentifierType
     def __init__(self, schemeDataURI=None, schemeID=None, schemeAgencyName=None, schemeAgencyID=None, schemeName=None, schemeVersionID=None, schemeURI=None, valueOf_=None):
+        self.original_tagname_ = None
         super(BillOfResourcesIDType, self).__init__(schemeDataURI, schemeID, schemeAgencyName, schemeAgencyID, schemeName, schemeVersionID, schemeURI, valueOf_, )
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
@@ -824,6 +828,8 @@ class BillOfResourcesIDType(IdentifierType):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -875,6 +881,7 @@ class BillOfMaterialIDType(IdentifierType):
     subclass = None
     superclass = IdentifierType
     def __init__(self, schemeDataURI=None, schemeID=None, schemeAgencyName=None, schemeAgencyID=None, schemeName=None, schemeVersionID=None, schemeURI=None, valueOf_=None):
+        self.original_tagname_ = None
         super(BillOfMaterialIDType, self).__init__(schemeDataURI, schemeID, schemeAgencyName, schemeAgencyID, schemeName, schemeVersionID, schemeURI, valueOf_, )
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
@@ -898,6 +905,8 @@ class BillOfMaterialIDType(IdentifierType):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1011,9 +1020,9 @@ def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'IdentifierType'
         rootClass = IdentifierType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1022,7 +1031,7 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="IdentifierType",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='')
     return rootObj
 
@@ -1041,7 +1050,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from simplecontent_restriction2_sup import *\n\n')
 ##         sys.stdout.write('import simplecontent_restriction2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj

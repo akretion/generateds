@@ -619,6 +619,7 @@ class SpecialDate(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, SpecialProperty=None, valueOf_=None):
+        self.original_tagname_ = None
         self.SpecialProperty = _cast(None, SpecialProperty)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
@@ -643,6 +644,8 @@ class SpecialDate(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -701,6 +704,7 @@ class ExtremeDate(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, ExtremeProperty=None, valueOf_=None):
+        self.original_tagname_ = None
         self.ExtremeProperty = _cast(None, ExtremeProperty)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
@@ -725,6 +729,8 @@ class ExtremeDate(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -783,6 +789,7 @@ class singleExtremeDate(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, ExtremeProperty=None, valueOf_=None):
+        self.original_tagname_ = None
         self.ExtremeProperty = _cast(None, ExtremeProperty)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
@@ -807,6 +814,8 @@ class singleExtremeDate(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -865,6 +874,7 @@ class containerType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, simplefactoid=None, mixedfactoid=None):
+        self.original_tagname_ = None
         if simplefactoid is None:
             self.simplefactoid = []
         else:
@@ -895,6 +905,8 @@ class containerType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -958,10 +970,12 @@ class containerType(GeneratedsSuper):
             obj_ = simpleFactoidType.factory()
             obj_.build(child_)
             self.simplefactoid.append(obj_)
+            obj_.original_tagname_ = 'simplefactoid'
         elif nodeName_ == 'mixedfactoid':
             obj_ = mixedFactoidType.factory()
             obj_.build(child_)
             self.mixedfactoid = obj_
+            obj_.original_tagname_ = 'mixedfactoid'
 # end class containerType
 
 
@@ -972,6 +986,7 @@ class simpleFactoidType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, relation=None):
+        self.original_tagname_ = None
         self.relation = relation
     def factory(*args_, **kwargs_):
         if simpleFactoidType.subclass:
@@ -996,6 +1011,8 @@ class simpleFactoidType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1055,6 +1072,7 @@ class mixedFactoidType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, relation=None, valueOf_=None, mixedclass_=None, content_=None):
+        self.original_tagname_ = None
         self.relation = relation
         self.valueOf_ = valueOf_
         if mixedclass_ is None:
@@ -1092,6 +1110,8 @@ class mixedFactoidType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1163,6 +1183,7 @@ class BaseType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, BaseProperty1=None, BaseProperty2=None, valueOf_=None, extensiontype_=None):
+        self.original_tagname_ = None
         self.BaseProperty1 = _cast(None, BaseProperty1)
         self.BaseProperty2 = _cast(None, BaseProperty2)
         self.valueOf_ = valueOf_
@@ -1193,6 +1214,8 @@ class BaseType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1271,6 +1294,7 @@ class DerivedType(BaseType):
     subclass = None
     superclass = BaseType
     def __init__(self, BaseProperty1=None, BaseProperty2=None, DerivedProperty1=None, DerivedProperty2=None, valueOf_=None):
+        self.original_tagname_ = None
         super(DerivedType, self).__init__(BaseProperty1, BaseProperty2, valueOf_, )
         self.DerivedProperty1 = _cast(None, DerivedProperty1)
         self.DerivedProperty2 = _cast(None, DerivedProperty2)
@@ -1300,6 +1324,8 @@ class DerivedType(BaseType):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1374,6 +1400,7 @@ class MyInteger(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, MyAttr=None, valueOf_=None):
+        self.original_tagname_ = None
         self.MyAttr = _cast(None, MyAttr)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
@@ -1398,6 +1425,8 @@ class MyInteger(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1456,6 +1485,7 @@ class MyBoolean(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, MyAttr=None, valueOf_=None):
+        self.original_tagname_ = None
         self.MyAttr = _cast(None, MyAttr)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
@@ -1480,6 +1510,8 @@ class MyBoolean(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1538,6 +1570,7 @@ class MyFloat(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, MyAttr=None, valueOf_=None):
+        self.original_tagname_ = None
         self.MyAttr = _cast(None, MyAttr)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
@@ -1562,6 +1595,8 @@ class MyFloat(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1620,6 +1655,7 @@ class MyDouble(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, MyAttr=None, valueOf_=None):
+        self.original_tagname_ = None
         self.MyAttr = _cast(None, MyAttr)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
@@ -1644,6 +1680,8 @@ class MyDouble(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1724,7 +1762,7 @@ def parse(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'container'
+        rootTag = 'containerType'
         rootClass = containerType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1744,7 +1782,7 @@ def parseEtree(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'container'
+        rootTag = 'containerType'
         rootClass = containerType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1766,9 +1804,9 @@ def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'containerType'
         rootClass = containerType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1777,7 +1815,7 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="container",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='')
     return rootObj
 
@@ -1787,7 +1825,7 @@ def parseLiteral(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'container'
+        rootTag = 'containerType'
         rootClass = containerType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1796,7 +1834,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from extensions2_sup import *\n\n')
 ##         sys.stdout.write('import extensions2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj

@@ -4,6 +4,7 @@
 
     <xs:include schemaLocation="oneper01.xsd"/>
     <xs:include schemaLocation="oneper02.xsd"/>
+    <xs:include schemaLocation="http://www.davekuhlman.org/oneper03.xsd"/>
 
     <xs:element name="root00" type="oneperType00_1" />
 

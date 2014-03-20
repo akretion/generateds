@@ -141,6 +141,36 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.12c (03/19/2014)
+- Fix for  "one module per XSD file" to handle an include or import
+  element that refers to a remote schema on the Net (i.e. the
+  location is "http:..." or "ftp:...") rather than a file on the
+  local file system.  Added ability to access include/import file
+  across the Net.  Thanks to Jinquan Liu for reporting this.
+- Added schema to unit test for "one module per XSD file" that is
+  read from remote site (http://www.davekuhlman.org).
+- Fix to process_includes.py -- When run directly from the command
+  line (as opposed to imported and called from another python
+  module), the fixtypenames option was not being intialized.
+- Fix for error in order of generation of classes that have
+  superclasses.  When an anonymous simpleType occured, the name of
+  the enclosing complexType was used, which caused generateDS.py to
+  believe that the superclass had already been generated.  Thanks
+  again to Jinquan Liu for reporting this issue.
+- Fix for handling of xs:substitutionGroup -- Namespace prefix was
+  causing gDS to fail to match on substitutionGroup name.
+- Added code so that an instance of a generated class can remember
+  the tag from which it was built.  This is needed for instances of
+  a class that represents an element type that is a member of a
+  xs:substitutionGroup.  But, in fact, generated code now uses this
+  feature to remember and export the tag name of all complex
+  elements.
+- Enhanced command line option --root-element so that both the root
+  tag and the root class can be specified (separated by a vertical
+  bar).
+- Added support for the ability of an element definition to inherit
+  minOccurs and maxOccurs from the xs:sequence that contains it.
+
 Version 2.12b (02/10/2014)
 - Fix to the aliasing capability.  You should now be able to alias
   one element to another, and by doing so, only generate the

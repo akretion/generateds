@@ -5,7 +5,7 @@
   <xs:include schemaLocation="people_10b.xsd" />
 -->
 
-  <xs:include schemaLocation="http://www.rexx.com/~dkuhlman/people_procincl_c.xsd" />
+  <xs:include schemaLocation="http://www.davekuhlman.org/people_procincl_c.xsd" />
 
     <xs:element name="comments">
         <xs:complexType mixed="true">

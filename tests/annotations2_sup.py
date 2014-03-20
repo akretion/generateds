@@ -622,6 +622,7 @@ class document1Type(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, comments=None, otherdoc=None):
+        self.original_tagname_ = None
         self.comments = comments
         self.otherdoc = otherdoc
     def factory(*args_, **kwargs_):
@@ -647,6 +648,8 @@ class document1Type(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -706,6 +709,7 @@ class document1Type(GeneratedsSuper):
             obj_ = document2Type.factory()
             obj_.build(child_)
             self.otherdoc = obj_
+            obj_.original_tagname_ = 'otherdoc'
 # end class document1Type
 
 
@@ -721,6 +725,7 @@ class document2Type(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, comments=None, rating=None, anotherdoc=None):
+        self.original_tagname_ = None
         self.comments = comments
         self.rating = rating
         self.anotherdoc = anotherdoc
@@ -750,6 +755,8 @@ class document2Type(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -823,6 +830,7 @@ class document2Type(GeneratedsSuper):
             obj_ = document3Type.factory()
             obj_.build(child_)
             self.anotherdoc = obj_
+            obj_.original_tagname_ = 'anotherdoc'
 # end class document2Type
 
 
@@ -835,6 +843,7 @@ class document3Type(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, comments=None, rating=None):
+        self.original_tagname_ = None
         self.comments = comments
         self.rating = rating
     def factory(*args_, **kwargs_):
@@ -860,6 +869,8 @@ class document3Type(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -954,7 +965,7 @@ def parse(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'document1'
+        rootTag = 'document1Type'
         rootClass = document1Type
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -974,7 +985,7 @@ def parseEtree(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'document1'
+        rootTag = 'document1Type'
         rootClass = document1Type
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -996,9 +1007,9 @@ def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'document1Type'
         rootClass = document1Type
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1007,7 +1018,7 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="document1",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='')
     return rootObj
 
@@ -1017,7 +1028,7 @@ def parseLiteral(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'document1'
+        rootTag = 'document1Type'
         rootClass = document1Type
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1026,7 +1037,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from annotations2_sup import *\n\n')
 ##         sys.stdout.write('import annotations2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj

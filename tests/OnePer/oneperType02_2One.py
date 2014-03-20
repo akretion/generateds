@@ -619,6 +619,7 @@ class oneperType02_1(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, clientname=None, inner01=None):
+        self.original_tagname_ = None
         self.clientname = clientname
         self.inner01 = inner01
     def factory(*args_, **kwargs_):
@@ -644,6 +645,8 @@ class oneperType02_1(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -703,6 +706,7 @@ class oneperType02_1(GeneratedsSuper):
             obj_ = oneperType02_2.factory()
             obj_.build(child_)
             self.inner01 = obj_
+            obj_.original_tagname_ = 'inner01'
 # end class oneperType02_1
 
 
@@ -713,6 +717,7 @@ class oneperType02_2(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, clientdescription=None):
+        self.original_tagname_ = None
         self.clientdescription = clientdescription
     def factory(*args_, **kwargs_):
         if oneperType02_2.subclass:
@@ -734,6 +739,8 @@ class oneperType02_2(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -813,7 +820,7 @@ def parse(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'root02'
+        rootTag = 'oneperType02_1'
         rootClass = oneperType02_1
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -833,7 +840,7 @@ def parseEtree(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'root02'
+        rootTag = 'oneperType02_1'
         rootClass = oneperType02_1
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -855,9 +862,9 @@ def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'oneperType02_1'
         rootClass = oneperType02_1
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -866,7 +873,7 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="root02",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='')
     return rootObj
 
@@ -876,7 +883,7 @@ def parseLiteral(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'root02'
+        rootTag = 'oneperType02_1'
         rootClass = oneperType02_1
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -885,7 +892,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from oneperType02_1One import *\n\n')
 ##         sys.stdout.write('import oneperType02_1One as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj

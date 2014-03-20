@@ -618,6 +618,7 @@ class carrierType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, fleet=None):
+        self.original_tagname_ = None
         if fleet is None:
             self.fleet = []
         else:
@@ -644,6 +645,8 @@ class carrierType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -713,6 +716,7 @@ class carrierType(GeneratedsSuper):
                 raise NotImplementedError(
                     'Class not implemented for <fleet> element')
             self.fleet.append(obj_)
+            obj_.original_tagname_ = 'fleet'
 # end class carrierType
 
 
@@ -722,6 +726,7 @@ class Vehicle(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, extensiontype_=None):
+        self.original_tagname_ = None
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
         if Vehicle.subclass:
@@ -743,6 +748,8 @@ class Vehicle(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -794,8 +801,8 @@ class Car(Vehicle):
     subclass = None
     superclass = Vehicle
     def __init__(self):
+        self.original_tagname_ = None
         super(Car, self).__init__()
-        pass
     def factory(*args_, **kwargs_):
         if Car.subclass:
             return Car.subclass(*args_, **kwargs_)
@@ -814,6 +821,8 @@ class Car(Vehicle):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -861,8 +870,8 @@ class Plane(Vehicle):
     subclass = None
     superclass = Vehicle
     def __init__(self):
+        self.original_tagname_ = None
         super(Plane, self).__init__()
-        pass
     def factory(*args_, **kwargs_):
         if Plane.subclass:
             return Plane.subclass(*args_, **kwargs_)
@@ -881,6 +890,8 @@ class Plane(Vehicle):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -951,7 +962,7 @@ def parse(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'carrier'
+        rootTag = 'carrierType'
         rootClass = carrierType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -971,7 +982,7 @@ def parseEtree(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'carrier'
+        rootTag = 'carrierType'
         rootClass = carrierType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -993,9 +1004,9 @@ def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'carrierType'
         rootClass = carrierType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1004,7 +1015,7 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="carrier",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='xmlns:target="http://cars.example.com/schema"')
     return rootObj
 
@@ -1014,7 +1025,7 @@ def parseLiteral(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'carrier'
+        rootTag = 'carrierType'
         rootClass = carrierType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1023,7 +1034,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from abstract_type2_sup import *\n\n')
 ##         sys.stdout.write('import abstract_type2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj

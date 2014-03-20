@@ -611,41 +611,36 @@ def _cast(typ, value):
 #
 
 
-class PlantType_single(GeneratedsSuper):
+class oneperType03_1(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('name', 'xs:string', 0),
-        MemberSpec_('', 'xs:string', 0),
-        MemberSpec_('description', 'DescriptionType', 0),
+        MemberSpec_('helpername', 'xs:string', 0),
+        MemberSpec_('inner01', 'oneperType02_2', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, name=None, anytypeobjs_=None, description=None):
+    def __init__(self, helpername=None, inner01=None):
         self.original_tagname_ = None
-        self.name = name
-        self.anytypeobjs_ = anytypeobjs_
-        self.description = description
+        self.helpername = helpername
+        self.inner01 = inner01
     def factory(*args_, **kwargs_):
-        if PlantType_single.subclass:
-            return PlantType_single.subclass(*args_, **kwargs_)
+        if oneperType03_1.subclass:
+            return oneperType03_1.subclass(*args_, **kwargs_)
         else:
-            return PlantType_single(*args_, **kwargs_)
+            return oneperType03_1(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_name(self): return self.name
-    def set_name(self, name): self.name = name
-    def get_anytypeobjs_(self): return self.anytypeobjs_
-    def set_anytypeobjs_(self, anytypeobjs_): self.anytypeobjs_ = anytypeobjs_
-    def get_description(self): return self.description
-    def set_description(self, description): self.description = description
+    def get_helpername(self): return self.helpername
+    def set_helpername(self, helpername): self.helpername = helpername
+    def get_inner01(self): return self.inner01
+    def set_inner01(self, inner01): self.inner01 = inner01
     def hasContent_(self):
         if (
-            self.name is not None or
-            self.anytypeobjs_ is not None or
-            self.description is not None
+            self.helpername is not None or
+            self.inner01 is not None
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='PlantType_single', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='oneperType03_1', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -655,29 +650,27 @@ class PlantType_single(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='PlantType_single')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='oneperType03_1')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='PlantType_single', pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='oneperType03_1', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='PlantType_single'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='oneperType03_1'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='PlantType_single', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='oneperType03_1', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
-        if self.name is not None:
+        if self.helpername is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sname>%s</%sname>%s' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_, eol_))
-        if self.description is not None:
-            self.description.export(outfile, level, namespace_, name_='description', pretty_print=pretty_print)
-        if self.anytypeobjs_ is not None:
-            self.anytypeobjs_.export(outfile, level, namespace_, pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='PlantType_single'):
+            outfile.write('<%shelpername>%s</%shelpername>%s' % (namespace_, self.gds_format_string(quote_xml(self.helpername).encode(ExternalEncoding), input_name='helpername'), namespace_, eol_))
+        if self.inner01 is not None:
+            self.inner01.export(outfile, level, namespace_, name_='inner01', pretty_print=pretty_print)
+    def exportLiteral(self, outfile, level, name_='oneperType03_1'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
@@ -686,19 +679,13 @@ class PlantType_single(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.name is not None:
+        if self.helpername is not None:
             showIndent(outfile, level)
-            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
-        if self.anytypeobjs_ is not None:
+            outfile.write('helpername=%s,\n' % quote_python(self.helpername).encode(ExternalEncoding))
+        if self.inner01 is not None:
             showIndent(outfile, level)
-            outfile.write('anytypeobjs_=model_.anytypeobjs_(\n')
-            self.anytypeobjs_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.description is not None:
-            showIndent(outfile, level)
-            outfile.write('description=model_.DescriptionType(\n')
-            self.description.exportLiteral(outfile, level, name_='description')
+            outfile.write('inner01=model_.oneperType02_2(\n')
+            self.inner01.exportLiteral(outfile, level, name_='inner01')
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node):
@@ -711,62 +698,43 @@ class PlantType_single(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'name':
-            name_ = child_.text
-            name_ = self.gds_validate_string(name_, node, 'name')
-            self.name = name_
-        elif nodeName_ == 'description':
-            obj_ = DescriptionType.factory()
+        if nodeName_ == 'helpername':
+            helpername_ = child_.text
+            helpername_ = self.gds_validate_string(helpername_, node, 'helpername')
+            self.helpername = helpername_
+        elif nodeName_ == 'inner01':
+            obj_ = oneperType02_2.factory()
             obj_.build(child_)
-            self.description = obj_
-            obj_.original_tagname_ = 'description'
-        else:
-            obj_ = self.gds_build_any(child_, 'PlantType_single')
-            if obj_ is not None:
-                self.set_anytypeobjs_(obj_)
-# end class PlantType_single
+            self.inner01 = obj_
+            obj_.original_tagname_ = 'inner01'
+# end class oneperType03_1
 
 
-class PlantType_multiple(GeneratedsSuper):
+class oneperType03_2(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('name', 'xs:string', 0),
-        MemberSpec_('', 'xs:string', 1),
-        MemberSpec_('description', 'DescriptionType', 0),
+        MemberSpec_('helperdescription', 'xs:string', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, name=None, anytypeobjs_=None, description=None):
+    def __init__(self, helperdescription=None):
         self.original_tagname_ = None
-        self.name = name
-        if anytypeobjs_ is None:
-            self.anytypeobjs_ = []
-        else:
-            self.anytypeobjs_ = anytypeobjs_
-        self.description = description
+        self.helperdescription = helperdescription
     def factory(*args_, **kwargs_):
-        if PlantType_multiple.subclass:
-            return PlantType_multiple.subclass(*args_, **kwargs_)
+        if oneperType03_2.subclass:
+            return oneperType03_2.subclass(*args_, **kwargs_)
         else:
-            return PlantType_multiple(*args_, **kwargs_)
+            return oneperType03_2(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_name(self): return self.name
-    def set_name(self, name): self.name = name
-    def get_anytypeobjs_(self): return self.anytypeobjs_
-    def set_anytypeobjs_(self, anytypeobjs_): self.anytypeobjs_ = anytypeobjs_
-    def add_anytypeobjs_(self, value): self.anytypeobjs_.append(value)
-    def insert_anytypeobjs_(self, index, value): self._anytypeobjs_[index] = value
-    def get_description(self): return self.description
-    def set_description(self, description): self.description = description
+    def get_helperdescription(self): return self.helperdescription
+    def set_helperdescription(self, helperdescription): self.helperdescription = helperdescription
     def hasContent_(self):
         if (
-            self.name is not None or
-            self.anytypeobjs_ or
-            self.description is not None
+            self.helperdescription is not None
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='PlantType_multiple', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='oneperType03_2', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -776,29 +744,25 @@ class PlantType_multiple(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='PlantType_multiple')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='oneperType03_2')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='PlantType_multiple', pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='oneperType03_2', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='PlantType_multiple'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='oneperType03_2'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='PlantType_multiple', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='oneperType03_2', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
-        if self.name is not None:
+        if self.helperdescription is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sname>%s</%sname>%s' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_, eol_))
-        if self.description is not None:
-            self.description.export(outfile, level, namespace_, name_='description', pretty_print=pretty_print)
-        for obj_ in self.anytypeobjs_:
-            obj_.export(outfile, level, namespace_, pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='PlantType_multiple'):
+            outfile.write('<%shelperdescription>%s</%shelperdescription>%s' % (namespace_, self.gds_format_string(quote_xml(self.helperdescription).encode(ExternalEncoding), input_name='helperdescription'), namespace_, eol_))
+    def exportLiteral(self, outfile, level, name_='oneperType03_2'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
@@ -807,23 +771,9 @@ class PlantType_multiple(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.name is not None:
+        if self.helperdescription is not None:
             showIndent(outfile, level)
-            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('anytypeobjs_=[\n')
-        level += 1
-        for anytypeobjs_ in self.anytypeobjs_:
-            anytypeobjs_.exportLiteral(outfile, level)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.description is not None:
-            showIndent(outfile, level)
-            outfile.write('description=model_.DescriptionType(\n')
-            self.description.exportLiteral(outfile, level, name_='description')
-            showIndent(outfile, level)
-            outfile.write('),\n')
+            outfile.write('helperdescription=%s,\n' % quote_python(self.helperdescription).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -834,393 +784,15 @@ class PlantType_multiple(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'name':
-            name_ = child_.text
-            name_ = self.gds_validate_string(name_, node, 'name')
-            self.name = name_
-        elif nodeName_ == 'description':
-            obj_ = DescriptionType.factory()
-            obj_.build(child_)
-            self.description = obj_
-            obj_.original_tagname_ = 'description'
-        else:
-            obj_ = self.gds_build_any(child_, 'PlantType_multiple')
-            if obj_ is not None:
-                self.add_anytypeobjs_(obj_)
-# end class PlantType_multiple
-
-
-class DescriptionType(GeneratedsSuper):
-    """A standard complexType."""
-    member_data_items_ = [
-        MemberSpec_('name', 'xs:string', 0),
-        MemberSpec_('size', 'xs:string', 0),
-    ]
-    subclass = None
-    superclass = None
-    def __init__(self, name=None, size=None):
-        self.original_tagname_ = None
-        self.name = name
-        self.size = size
-    def factory(*args_, **kwargs_):
-        if DescriptionType.subclass:
-            return DescriptionType.subclass(*args_, **kwargs_)
-        else:
-            return DescriptionType(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_name(self): return self.name
-    def set_name(self, name): self.name = name
-    def get_size(self): return self.size
-    def set_size(self, size): self.size = size
-    def hasContent_(self):
-        if (
-            self.name is not None or
-            self.size is not None
-        ):
-            return True
-        else:
-            return False
-    def export(self, outfile, level, namespace_='', name_='DescriptionType', namespacedef_='', pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        if self.original_tagname_ is not None:
-            name_ = self.original_tagname_
-        showIndent(outfile, level, pretty_print)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='DescriptionType')
-        if self.hasContent_():
-            outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='DescriptionType', pretty_print=pretty_print)
-            showIndent(outfile, level, pretty_print)
-            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
-        else:
-            outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='DescriptionType'):
-        pass
-    def exportChildren(self, outfile, level, namespace_='', name_='DescriptionType', fromsubclass_=False, pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        if self.name is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sname>%s</%sname>%s' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_, eol_))
-        if self.size is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%ssize>%s</%ssize>%s' % (namespace_, self.gds_format_string(quote_xml(self.size).encode(ExternalEncoding), input_name='size'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='DescriptionType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.name is not None:
-            showIndent(outfile, level)
-            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
-        if self.size is not None:
-            showIndent(outfile, level)
-            outfile.write('size=%s,\n' % quote_python(self.size).encode(ExternalEncoding))
-    def build(self, node):
-        already_processed = set()
-        self.buildAttributes(node, node.attrib, already_processed)
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-        return self
-    def buildAttributes(self, node, attrs, already_processed):
-        pass
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'name':
-            name_ = child_.text
-            name_ = self.gds_validate_string(name_, node, 'name')
-            self.name = name_
-        elif nodeName_ == 'size':
-            size_ = child_.text
-            size_ = self.gds_validate_string(size_, node, 'size')
-            self.size = size_
-# end class DescriptionType
-
-
-class CatalogType(GeneratedsSuper):
-    """A standard complexType."""
-    member_data_items_ = [
-        MemberSpec_('name', 'xs:string', 0),
-        MemberSpec_('catagory', 'xs:integer', 0),
-    ]
-    subclass = None
-    superclass = None
-    def __init__(self, name=None, catagory=None):
-        self.original_tagname_ = None
-        self.name = name
-        self.catagory = catagory
-    def factory(*args_, **kwargs_):
-        if CatalogType.subclass:
-            return CatalogType.subclass(*args_, **kwargs_)
-        else:
-            return CatalogType(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_name(self): return self.name
-    def set_name(self, name): self.name = name
-    def get_catagory(self): return self.catagory
-    def set_catagory(self, catagory): self.catagory = catagory
-    def hasContent_(self):
-        if (
-            self.name is not None or
-            self.catagory is not None
-        ):
-            return True
-        else:
-            return False
-    def export(self, outfile, level, namespace_='', name_='CatalogType', namespacedef_='', pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        if self.original_tagname_ is not None:
-            name_ = self.original_tagname_
-        showIndent(outfile, level, pretty_print)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='CatalogType')
-        if self.hasContent_():
-            outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='CatalogType', pretty_print=pretty_print)
-            showIndent(outfile, level, pretty_print)
-            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
-        else:
-            outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='CatalogType'):
-        pass
-    def exportChildren(self, outfile, level, namespace_='', name_='CatalogType', fromsubclass_=False, pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        if self.name is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sname>%s</%sname>%s' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_, eol_))
-        if self.catagory is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%scatagory>%s</%scatagory>%s' % (namespace_, self.gds_format_integer(self.catagory, input_name='catagory'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='CatalogType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.name is not None:
-            showIndent(outfile, level)
-            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
-        if self.catagory is not None:
-            showIndent(outfile, level)
-            outfile.write('catagory=%d,\n' % self.catagory)
-    def build(self, node):
-        already_processed = set()
-        self.buildAttributes(node, node.attrib, already_processed)
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-        return self
-    def buildAttributes(self, node, attrs, already_processed):
-        pass
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'name':
-            name_ = child_.text
-            name_ = self.gds_validate_string(name_, node, 'name')
-            self.name = name_
-        elif nodeName_ == 'catagory':
-            sval_ = child_.text
-            try:
-                ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
-                raise_parse_error(child_, 'requires integer: %s' % exp)
-            ival_ = self.gds_validate_integer(ival_, node, 'catagory')
-            self.catagory = ival_
-# end class CatalogType
-
-
-class PlantType_single_nochild(GeneratedsSuper):
-    member_data_items_ = [
-        MemberSpec_('', 'xs:string', 0),
-    ]
-    subclass = None
-    superclass = None
-    def __init__(self, anytypeobjs_=None):
-        self.original_tagname_ = None
-        self.anytypeobjs_ = anytypeobjs_
-    def factory(*args_, **kwargs_):
-        if PlantType_single_nochild.subclass:
-            return PlantType_single_nochild.subclass(*args_, **kwargs_)
-        else:
-            return PlantType_single_nochild(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_anytypeobjs_(self): return self.anytypeobjs_
-    def set_anytypeobjs_(self, anytypeobjs_): self.anytypeobjs_ = anytypeobjs_
-    def hasContent_(self):
-        if (
-            self.anytypeobjs_ is not None
-        ):
-            return True
-        else:
-            return False
-    def export(self, outfile, level, namespace_='', name_='PlantType_single_nochild', namespacedef_='', pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        if self.original_tagname_ is not None:
-            name_ = self.original_tagname_
-        showIndent(outfile, level, pretty_print)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='PlantType_single_nochild')
-        if self.hasContent_():
-            outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='PlantType_single_nochild', pretty_print=pretty_print)
-            showIndent(outfile, level, pretty_print)
-            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
-        else:
-            outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='PlantType_single_nochild'):
-        pass
-    def exportChildren(self, outfile, level, namespace_='', name_='PlantType_single_nochild', fromsubclass_=False, pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        if self.anytypeobjs_ is not None:
-            self.anytypeobjs_.export(outfile, level, namespace_, pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='PlantType_single_nochild'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.anytypeobjs_ is not None:
-            showIndent(outfile, level)
-            outfile.write('anytypeobjs_=model_.anytypeobjs_(\n')
-            self.anytypeobjs_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-    def build(self, node):
-        already_processed = set()
-        self.buildAttributes(node, node.attrib, already_processed)
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-        return self
-    def buildAttributes(self, node, attrs, already_processed):
-        pass
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        obj_ = self.gds_build_any(child_, 'PlantType_single_nochild')
-        if obj_ is not None:
-            self.set_anytypeobjs_(obj_)
-# end class PlantType_single_nochild
-
-
-class PlantType_multiple_nochild(GeneratedsSuper):
-    member_data_items_ = [
-        MemberSpec_('', 'xs:string', 1),
-    ]
-    subclass = None
-    superclass = None
-    def __init__(self, anytypeobjs_=None):
-        self.original_tagname_ = None
-        if anytypeobjs_ is None:
-            self.anytypeobjs_ = []
-        else:
-            self.anytypeobjs_ = anytypeobjs_
-    def factory(*args_, **kwargs_):
-        if PlantType_multiple_nochild.subclass:
-            return PlantType_multiple_nochild.subclass(*args_, **kwargs_)
-        else:
-            return PlantType_multiple_nochild(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_anytypeobjs_(self): return self.anytypeobjs_
-    def set_anytypeobjs_(self, anytypeobjs_): self.anytypeobjs_ = anytypeobjs_
-    def add_anytypeobjs_(self, value): self.anytypeobjs_.append(value)
-    def insert_anytypeobjs_(self, index, value): self._anytypeobjs_[index] = value
-    def hasContent_(self):
-        if (
-            self.anytypeobjs_
-        ):
-            return True
-        else:
-            return False
-    def export(self, outfile, level, namespace_='', name_='PlantType_multiple_nochild', namespacedef_='', pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        if self.original_tagname_ is not None:
-            name_ = self.original_tagname_
-        showIndent(outfile, level, pretty_print)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='PlantType_multiple_nochild')
-        if self.hasContent_():
-            outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='PlantType_multiple_nochild', pretty_print=pretty_print)
-            showIndent(outfile, level, pretty_print)
-            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
-        else:
-            outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='PlantType_multiple_nochild'):
-        pass
-    def exportChildren(self, outfile, level, namespace_='', name_='PlantType_multiple_nochild', fromsubclass_=False, pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        for obj_ in self.anytypeobjs_:
-            obj_.export(outfile, level, namespace_, pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='PlantType_multiple_nochild'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('anytypeobjs_=[\n')
-        level += 1
-        for anytypeobjs_ in self.anytypeobjs_:
-            anytypeobjs_.exportLiteral(outfile, level)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-    def build(self, node):
-        already_processed = set()
-        self.buildAttributes(node, node.attrib, already_processed)
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-        return self
-    def buildAttributes(self, node, attrs, already_processed):
-        pass
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        obj_ = self.gds_build_any(child_, 'PlantType_multiple_nochild')
-        if obj_ is not None:
-            self.add_anytypeobjs_(obj_)
-# end class PlantType_multiple_nochild
+        if nodeName_ == 'helperdescription':
+            helperdescription_ = child_.text
+            helperdescription_ = self.gds_validate_string(helperdescription_, node, 'helperdescription')
+            self.helperdescription = helperdescription_
+# end class oneperType03_2
 
 
 GDSClassesMapping = {
-    'description': DescriptionType,
+    'root03': oneperType03_1,
 }
 
 
@@ -1247,8 +819,8 @@ def parse(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'PlantType_single'
-        rootClass = PlantType_single
+        rootTag = 'oneperType03_1'
+        rootClass = oneperType03_1
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -1267,8 +839,8 @@ def parseEtree(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'PlantType_single'
-        rootClass = PlantType_single
+        rootTag = 'oneperType03_1'
+        rootClass = oneperType03_1
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -1291,8 +863,8 @@ def parseString(inString, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'PlantType_single'
-        rootClass = PlantType_single
+        rootTag = 'oneperType03_1'
+        rootClass = oneperType03_1
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -1310,15 +882,15 @@ def parseLiteral(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'PlantType_single'
-        rootClass = PlantType_single
+        rootTag = 'oneperType03_1'
+        rootClass = oneperType03_1
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
 ##     if not silence:
-##         sys.stdout.write('#from anywildcard2_sup import *\n\n')
-##         sys.stdout.write('import anywildcard2_sup as model_\n\n')
+##         sys.stdout.write('#from oneperType03_1One import *\n\n')
+##         sys.stdout.write('import oneperType03_1One as model_\n\n')
 ##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
@@ -1339,10 +911,6 @@ if __name__ == '__main__':
 
 
 __all__ = [
-    "CatalogType",
-    "DescriptionType",
-    "PlantType_multiple",
-    "PlantType_multiple_nochild",
-    "PlantType_single",
-    "PlantType_single_nochild"
+    "oneperType03_1",
+    "oneperType03_2"
 ]

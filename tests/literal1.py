@@ -2,7 +2,7 @@
 
 import out2_sup as model_
 
-rootObj = model_.rootTag(
+rootObj = model_.rootClass(
     comments=[
         model_.comments(
             content_ = [

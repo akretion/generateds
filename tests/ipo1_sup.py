@@ -622,6 +622,7 @@ class PurchaseOrderType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, orderDate=None, shipTo=None, billTo=None, comment=None, items=None):
+        self.original_tagname_ = None
         if isinstance(orderDate, basestring):
             initvalue_ = datetime_.datetime.strptime(orderDate, '%Y-%m-%d').date()
         else:
@@ -662,6 +663,8 @@ class PurchaseOrderType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -745,11 +748,13 @@ class PurchaseOrderType(GeneratedsSuper):
             obj_ = class_obj_.factory()
             obj_.build(child_)
             self.shipTo = obj_
+            obj_.original_tagname_ = 'shipTo'
         elif nodeName_ == 'billTo':
             class_obj_ = self.get_class_obj_(child_, Address)
             obj_ = class_obj_.factory()
             obj_.build(child_)
             self.billTo = obj_
+            obj_.original_tagname_ = 'billTo'
         elif nodeName_ == 'comment':
             comment_ = child_.text
             comment_ = self.gds_validate_string(comment_, node, 'comment')
@@ -758,6 +763,7 @@ class PurchaseOrderType(GeneratedsSuper):
             obj_ = Items.factory()
             obj_.build(child_)
             self.items = obj_
+            obj_.original_tagname_ = 'items'
 # end class PurchaseOrderType
 
 
@@ -768,6 +774,7 @@ class Items(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, item=None):
+        self.original_tagname_ = None
         if item is None:
             self.item = []
         else:
@@ -794,6 +801,8 @@ class Items(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -849,6 +858,7 @@ class Items(GeneratedsSuper):
             obj_ = item.factory()
             obj_.build(child_)
             self.item.append(obj_)
+            obj_.original_tagname_ = 'item'
 # end class Items
 
 
@@ -864,6 +874,7 @@ class item(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, partNum=None, productName=None, quantity=None, USPrice=None, comment=None, shipDate=None):
+        self.original_tagname_ = None
         self.partNum = _cast(None, partNum)
         self.productName = productName
         self.quantity = quantity
@@ -908,6 +919,8 @@ class item(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1022,6 +1035,7 @@ class quantity(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, valueOf_=None):
+        self.original_tagname_ = None
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if quantity.subclass:
@@ -1041,6 +1055,8 @@ class quantity(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1088,6 +1104,7 @@ class Address(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, name=None, street=None, city=None, extensiontype_=None):
+        self.original_tagname_ = None
         self.name = name
         self.street = street
         self.city = city
@@ -1120,6 +1137,8 @@ class Address(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1205,6 +1224,7 @@ class USAddress(Address):
     subclass = None
     superclass = Address
     def __init__(self, name=None, street=None, city=None, state=None, zip=None):
+        self.original_tagname_ = None
         super(USAddress, self).__init__(name, street, city, )
         self.state = state
         self.zip = zip
@@ -1235,6 +1255,8 @@ class USAddress(Address):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1315,6 +1337,7 @@ class UKAddress(Address):
     subclass = None
     superclass = Address
     def __init__(self, name=None, street=None, city=None, category_attr=None, exportCode=None, postcode=None, category=None):
+        self.original_tagname_ = None
         super(UKAddress, self).__init__(name, street, city, )
         self.category_attr = _cast(None, category_attr)
         self.exportCode = _cast(int, exportCode)
@@ -1351,6 +1374,8 @@ class UKAddress(Address):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1473,7 +1498,7 @@ def parse(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'purchaseOrder'
+        rootTag = 'PurchaseOrderType'
         rootClass = PurchaseOrderType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1493,7 +1518,7 @@ def parseEtree(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'purchaseOrder'
+        rootTag = 'PurchaseOrderType'
         rootClass = PurchaseOrderType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1515,9 +1540,9 @@ def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'PurchaseOrderType'
         rootClass = PurchaseOrderType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1526,7 +1551,7 @@ def parseString(inString, silence=False):
     if not silence:
         sys.stdout.write('<?xml version="1.0" ?>\n')
         rootObj.export(
-            sys.stdout, 0, name_="purchaseOrder",
+            sys.stdout, 0, name_=rootTag,
             namespacedef_='xmlns:ipo="http://www.example.com/IPO"')
     return rootObj
 
@@ -1536,7 +1561,7 @@ def parseLiteral(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'purchaseOrder'
+        rootTag = 'PurchaseOrderType'
         rootClass = PurchaseOrderType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1545,7 +1570,7 @@ def parseLiteral(inFileName, silence=False):
     if not silence:
         sys.stdout.write('#from ipo2_sup import *\n\n')
         sys.stdout.write('import ipo2_sup as model_\n\n')
-        sys.stdout.write('rootObj = model_.rootTag(\n')
+        sys.stdout.write('rootObj = model_.rootClass(\n')
         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
         sys.stdout.write(')\n')
     return rootObj

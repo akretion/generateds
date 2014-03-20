@@ -620,6 +620,7 @@ class FooList(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, Foo=None, Bar=None, Baz=None):
+        self.original_tagname_ = None
         self.Foo = Foo
         self.Bar = Bar
         self.Baz = Baz
@@ -649,6 +650,8 @@ class FooList(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -714,14 +717,17 @@ class FooList(GeneratedsSuper):
             obj_ = FooType1.factory()
             obj_.build(child_)
             self.Foo = obj_
+            obj_.original_tagname_ = 'Foo'
         elif nodeName_ == 'Bar':
             obj_ = BarType2.factory()
             obj_.build(child_)
             self.Bar = obj_
+            obj_.original_tagname_ = 'Bar'
         elif nodeName_ == 'Baz':
             obj_ = BazType3.factory()
             obj_.build(child_)
             self.Baz = obj_
+            obj_.original_tagname_ = 'Baz'
 # end class FooList
 
 
@@ -732,6 +738,7 @@ class FooType1(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, FooType=None):
+        self.original_tagname_ = None
         self.FooType = FooType
     def factory(*args_, **kwargs_):
         if FooType1.subclass:
@@ -756,6 +763,8 @@ class FooType1(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -814,6 +823,7 @@ class BarType2(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, BarType=None):
+        self.original_tagname_ = None
         self.BarType = BarType
     def factory(*args_, **kwargs_):
         if BarType2.subclass:
@@ -838,6 +848,8 @@ class BarType2(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -896,6 +908,7 @@ class BazType3(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, BazType=None):
+        self.original_tagname_ = None
         self.BazType = BazType
     def factory(*args_, **kwargs_):
         if BazType3.subclass:
@@ -920,6 +933,8 @@ class BazType3(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1043,9 +1058,9 @@ def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'FooList'
         rootClass = FooList
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1054,7 +1069,7 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="FooList",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='')
     return rootObj
 
@@ -1073,7 +1088,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from anonymous_type2_sup import *\n\n')
 ##         sys.stdout.write('import anonymous_type2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj

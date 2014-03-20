@@ -116,7 +116,7 @@ def parse(inFilename, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'carrier'
+        rootTag = 'carrierType'
         rootClass = supermod.carrierType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -136,7 +136,7 @@ def parseEtree(inFilename, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'carrier'
+        rootTag = 'carrierType'
         rootClass = supermod.carrierType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -160,7 +160,7 @@ def parseString(inString, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'carrier'
+        rootTag = 'carrierType'
         rootClass = supermod.carrierType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -177,9 +177,9 @@ def parseString(inString, silence=False):
 def parseLiteral(inFilename, silence=False):
     doc = parsexml_(inFilename)
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'carrierType'
         rootClass = supermod.carrierType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -188,8 +188,8 @@ def parseLiteral(inFilename, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from abstract_type2_sup import *\n\n')
 ##         sys.stdout.write('import abstract_type2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.carrier(\n')
-##         rootObj.exportLiteral(sys.stdout, 0, name_="carrier")
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
+##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj
 

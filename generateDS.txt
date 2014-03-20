@@ -12,7 +12,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.12b
+:revision: 2.12c
 
 .. version
 
@@ -243,9 +243,11 @@ Here is the usage message displayed by ``generateDS.py``::
                                  Append XXX to the end of each file created.
         --subclass-suffix="XXX"  Append XXX to the generated subclass names.
                                  Default="Sub".
-        --root-element="XXX"     Assume XXX is root element of instance docs.
-                                 Default is first element defined in schema.
-                                 Also see section "Recognizing the top level
+        --root-element="XX"      When parsing, assume XX is root element of
+        --root-element="XX|YY"   instance docs.  Default is first element defined
+                                 in schema.  If YY is added, then YY is used as the
+                                 top level class; if YY omitted XX is the default.
+                                 class. Also see section "Recognizing the top level
                                  element" in the documentation.
         --super="XXX"            Super module name in generated in subclass
                                  module. Default="???"
@@ -326,7 +328,7 @@ Here is the usage message displayed by ``generateDS.py``::
     also generates member specifications in each class (in a dictionary).
 
 
-The following command line flags are recognized by ``generateDS.py``:
+The following command line options are recognized by ``generateDS.py``:
 
 o <filename>
     Write the data representation classes to file filename.
@@ -409,11 +411,16 @@ subclass-suffix=<suffix>
 
         generateDS.py --subclass-suffix="" -s actions.py mydef.xsd
 
-root-element=<element_name>
-    Make element_name the assumed root of instance documents.  The
-    default is the name of the element whose definition is first
-    in the XML Schema document.  This flag effects the parsing
-    functions (for example, parse(), parseString()).
+root-element=<element_name> -OR- <element_name>|<class_name>
+    Make ``element_name`` the assumed root of instance documents.
+    The default is the name of the element whose definition is first
+    in the XML Schema document.  If ``class_name`` is also present
+    (after a vertical bar), then ``class_name`` is assumed to be the
+    name of the class to be created from the root (top level)
+    element when parsing an XML instance document.  If
+    ``class_name`` is omitted, the default class name is the same as
+    ``element_name``.  This flag effects the parsing functions (for
+    example, parse(), parseString(), etc).
 
 super=<module_name>
     Make module_name the name of the superclass module imported

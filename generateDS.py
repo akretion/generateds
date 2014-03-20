@@ -25,9 +25,11 @@ Options:
                              Append XXX to the end of each file created.
     --subclass-suffix="XXX"  Append XXX to the generated subclass names.
                              Default="Sub".
-    --root-element="XXX"     Assume XXX is root element of instance docs.
-                             Default is first element defined in schema.
-                             Also see section "Recognizing the top level
+    --root-element="XX"      When parsing, assume XX is root element of
+    --root-element="XX|YY"   instance docs.  Default is first element defined
+                             in schema.  If YY is added, then YY is used as the
+                             top level class; if YY omitted XX is the default.
+                             class. Also see section "Recognizing the top level
                              element" in the documentation.
     --super="XXX"            Super module name in generated in subclass
                              module. Default="???"
@@ -177,7 +179,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.12b'
+VERSION = '2.12c'
 ##VERSION##
 
 GenerateProperties = 0
@@ -541,11 +543,7 @@ class SimpleTypeElement(XschemaElementBase):
         s1 = '<"%s" SimpleTypeElement instance at 0x%x>' % \
             (self.getName(), id(self))
         return s1
-
-    def __repr__(self):
-        s1 = '<"%s" SimpleTypeElement instance at 0x%x>' % \
-            (self.getName(), id(self))
-        return s1
+    __repr__ = __str__
 
     def resolve_list_type(self):
         if self.isListType():
@@ -1376,6 +1374,7 @@ class XschemaHandler(handler.ContentHandler):
         self.inComplexType = 0
         self.inNonanonymousComplexType = 0
         self.inSequence = 0
+        self.sequenceStack = []
         self.inChoice = 1
         self.inAttribute = 0
         self.attributeGroupLevel = 0
@@ -1449,6 +1448,13 @@ class XschemaHandler(handler.ContentHandler):
             if element.prefix in prefixToNamespaceMap:
                 element.namespace = prefixToNamespaceMap[element.prefix]
 
+            if self.sequenceStack:
+                minOccurs, maxOccurs = self.sequenceStack[-1]
+                if 'minOccurs' not in attrs and minOccurs is not None:
+                    element.attrs['minOccurs'] = minOccurs
+                if 'maxOccurs' not in attrs and maxOccurs is not None:
+                    element.attrs['maxOccurs'] = maxOccurs
+
             if not 'type' in attrs.keys() and not 'ref' in attrs.keys():
                 element.setExplicitDefine(1)
             if len(self.stack) == 1:
@@ -1456,6 +1462,7 @@ class XschemaHandler(handler.ContentHandler):
             if 'substitutionGroup' in attrs.keys() and 'name' in attrs.keys():
                 substituteName = attrs['name']
                 headName = attrs['substitutionGroup']
+                _, headName = get_prefix_and_value(headName)
                 if headName not in SubstitutionGroups:
                     SubstitutionGroups[headName] = []
                 SubstitutionGroups[headName].append(substituteName)
@@ -1483,6 +1490,8 @@ class XschemaHandler(handler.ContentHandler):
             self.stack.append(element)
         elif name == SequenceType:
             self.inSequence = 1
+            self.sequenceStack.append(
+                [attrs.get('minOccurs'), attrs.get('maxOccurs')])
         elif name == ChoiceType:
             self.currentChoice = XschemaElement(attrs)
             self.inChoice = 1
@@ -1692,6 +1701,7 @@ class XschemaHandler(handler.ContentHandler):
             self.inComplexType = 0
         elif name == SequenceType:
             self.inSequence = 0
+            self.sequenceStack.pop()
         elif name == ChoiceType:
             self.currentChoice = None
             self.inChoice = 0
@@ -1826,7 +1836,6 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
             namespace = 'namespace_'
             if child.prefix and 'ref' in child.attrs:
                 namespace = "'%s:'" % child.prefix
-
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
                 "(%s, self.gds_format_string(quote_xml(self.%s)." \
                 "encode(ExternalEncoding), input_name='%s'), " \
@@ -2542,6 +2551,9 @@ def generateExportFn(wrt, prefix, element, namespace, nameSpacesDef):
     wrt("            eol_ = '\\n'\n")
     wrt('        else:\n')
     wrt("            eol_ = ''\n")
+    # We need to be able to export the original tag name.
+    wrt("        if self.original_tagname_ is not None:\n")
+    wrt("            name_ = self.original_tagname_\n")
     wrt('        showIndent(outfile, level, pretty_print)\n')
     wrt("        outfile.write('<%s%s%s' % (namespace_, name_, "
         "namespacedef_ and ' ' + namespacedef_ or '', ))\n")
@@ -3479,7 +3491,7 @@ def generateBuildStandard_1(
         if headChild.getMaxOccurs() > 1:
             substitutionGroup = child.getAttrs().get('substitutionGroup')
             if substitutionGroup is not None:
-                name = substitutionGroup
+                _, name = get_prefix_and_value(substitutionGroup)
             else:
                 name = mappedName
             s1 = "            self.%s.append(obj_)\n" % (name, )
@@ -3491,6 +3503,7 @@ def generateBuildStandard_1(
                 name = headName
             s1 = "            self.%s = obj_\n" % (mappedName, )
         wrt(s1)
+        wrt("            obj_.original_tagname_ = '%s'\n" % (origName, ))
     #
     # If this child is defined in a simpleType, then generate
     #   a validator method.
@@ -3794,6 +3807,11 @@ def generateCtor(wrt, element):
     childCount = countChildren(element, 0)
     s2 = buildCtorArgs_multilevel(element, childCount)
     wrt('    def __init__(self%s):\n' % s2)
+    # Save the original tag name.  This is needed when there is a
+    # xs:substitutionGroup and we later (e.g. during export) do not know
+    # which member of the xs:substitutionGroup this specific element
+    # came from.
+    wrt('        self.original_tagname_ = None\n')
     parentName, parent = getParentName(element)
     if parentName:
         if parentName in AlreadyGenerated:
@@ -3836,9 +3854,7 @@ def generateCtor(wrt, element):
             pythonType = SchemaToPythonTypeMap.get(attrDef.getType())
             attrVal = "_cast(%s, %s)" % (pythonType, name, )
             wrt('        self.%s = %s\n' % (name, attrVal, ))
-        member = 1
     # Generate member initializers in ctor.
-    member = 0
     for child in element.getChildren():
         name = cleanupName(child.getCleanName())
         logging.debug("Constructor child: %s" % name)
@@ -3900,22 +3916,16 @@ def generateCtor(wrt, element):
                     wrt('            self.%s = %s\n' % (name, name))
                 else:
                     wrt('        self.%s = %s\n' % (name, name))
-        member = 1
     eltype = element.getType()
     if (element.getSimpleContent() or
             element.isMixed() or
             eltype in SimpleTypeDict or
             CurrentNamespacePrefix + eltype in OtherSimpleTypes):
         wrt('        self.valueOf_ = valueOf_\n')
-        member = 1
     if element.getAnyAttribute():
         wrt('        self.anyAttributes_ = {}\n')
-        member = 1
     if element.getExtended():
         wrt('        self.extensiontype_ = extensiontype_\n')
-        member = 1
-    if not member:
-        wrt('        pass\n')
     if element.isMixed():
         wrt(MixedCtorInitializers)
 # end generateCtor
@@ -4190,8 +4200,7 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     # If this element is an extension (has a base) and the base has
     #   not been generated, then postpone it.
     if parentName:
-        if (parentName not in AlreadyGenerated and
-                parentName not in SimpleTypeDict):
+        if parentName not in AlreadyGenerated:
             PostponedExtensions.append(element)
             return
     if mapName(element.getName()) in AlreadyGenerated:
@@ -4917,8 +4926,8 @@ def parse(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = '%(name)s'
-        rootClass = %(prefix)s%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = %(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -4937,8 +4946,8 @@ def parseEtree(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = '%(name)s'
-        rootClass = %(prefix)s%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = %(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -4959,10 +4968,10 @@ def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootClass = %(prefix)s%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = %(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -4970,7 +4979,7 @@ def parseString(inString, silence=False):
 #silence#    if not silence:
 #silence#        sys.stdout.write('<?xml version="1.0" ?>\\n')
 #silence#        rootObj.export(
-#silence#            sys.stdout, 0, name_="%(name)s",
+#silence#            sys.stdout, 0, name_=rootTag,
 #silence#            namespacedef_='%(namespacedef)s')
     return rootObj
 
@@ -4980,8 +4989,8 @@ def parseLiteral(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = '%(name)s'
-        rootClass = %(prefix)s%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = %(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -4989,7 +4998,7 @@ def parseLiteral(inFileName, silence=False):
 #silence#    if not silence:
 #silence#        sys.stdout.write('#from %(module_name)s import *\\n\\n')
 #silence#        sys.stdout.write('import %(module_name)s as model_\\n\\n')
-#silence#        sys.stdout.write('rootObj = model_.rootTag(\\n')
+#silence#        sys.stdout.write('rootObj = model_.rootClass(\\n')
 #silence#        rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 #silence#        sys.stdout.write(')\\n')
     return rootObj
@@ -5024,19 +5033,32 @@ def generateMain(outfile, prefix, root):
     exportDictLine += "}\n\n\n"
     outfile.write(exportDictLine)
     children = root.getChildren()
+    rootClass = None
     if children:
         name = RootElement or children[0].getName()
         elType = cleanupName(children[0].getType())
         if RootElement:
-            rootElement = RootElement
+            roots = RootElement.split('|')
+            if len(roots) > 1:
+                rootElement = roots[0]
+                rootClass = roots[1]
+            else:
+                rootElement = roots[0]
         else:
             rootElement = elType
     else:
         name = ''
         if RootElement:
-            rootElement = RootElement
+            roots = RootElement.split('|')
+            if len(roots) > 1:
+                rootElement = roots[0]
+                rootClass = roots[1]
+            else:
+                rootElement = roots[0]
         else:
             rootElement = ''
+    if rootClass is None:
+        rootClass = rootElement
     if Namespacedef:
         namespace = Namespacedef
     elif Targetnamespace:
@@ -5053,7 +5075,8 @@ def generateMain(outfile, prefix, root):
         'name': name,
         'cleanname': cleanupName(name),
         'module_name': os.path.splitext(os.path.basename(outfile.name))[0],
-        'root': rootElement,
+        'rootElement': rootElement,
+        'rootClass': rootClass,
         'namespacedef': namespace,
     }
     s1 = TEMPLATE_MAIN % params
@@ -5355,8 +5378,8 @@ def parse(inFilename, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = '%(name)s'
-        rootClass = supermod.%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = supermod.%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -5375,8 +5398,8 @@ def parseEtree(inFilename, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = '%(name)s'
-        rootClass = supermod.%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = supermod.%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -5399,8 +5422,8 @@ def parseString(inString, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = '%(name)s'
-        rootClass = supermod.%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = supermod.%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -5416,10 +5439,10 @@ def parseString(inString, silence=False):
 def parseLiteral(inFilename, silence=False):
     doc = parsexml_(inFilename)
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootClass = supermod.%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = supermod.%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -5427,8 +5450,8 @@ def parseLiteral(inFilename, silence=False):
 #silence#    if not silence:
 #silence#        sys.stdout.write('#from %(super)s import *\\n\\n')
 #silence#        sys.stdout.write('import %(super)s as model_\\n\\n')
-#silence#        sys.stdout.write('rootObj = model_.%(cleanname)s(\\n')
-#silence#        rootObj.exportLiteral(sys.stdout, 0, name_="%(cleanname)s")
+#silence#        sys.stdout.write('rootObj = model_.rootClass(\\n')
+#silence#        rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 #silence#        sys.stdout.write(')\\n')
     return rootObj
 
@@ -5518,7 +5541,6 @@ def getNamespace(element):
             namespace = 'xmlns:%s="%s"' % (
                 NamespacesDict[Targetnamespace].rstrip(':'),
                 Targetnamespace, )
-
     return namespace
 
 
@@ -5559,19 +5581,32 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
             generateSubclass(
                 wrt, element, prefix, xmlbehavior, behaviors, baseUrl)
         children = root.getChildren()
+        rootClass = None
         if children:
             name = children[0].getName()
             elType = cleanupName(children[0].getType())
             if RootElement:
-                rootElement = RootElement
+                roots = RootElement.split('|')
+                if len(roots) > 1:
+                    rootElement = roots[0]
+                    rootClass = roots[1]
+                else:
+                    rootElement = roots[0]
             else:
                 rootElement = elType
         else:
             name = ''
             if RootElement:
-                rootElement = RootElement
+                roots = RootElement.split('|')
+                if len(roots) > 1:
+                    rootElement = roots[0]
+                    rootClass = roots[1]
+                else:
+                    rootElement = roots[0]
             else:
                 rootElement = ''
+        if rootClass is None:
+            rootClass = rootElement
         if Namespacedef:
             namespace = Namespacedef
         elif Targetnamespace:
@@ -5589,7 +5624,9 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
             'cleanname': cleanupName(name),
             'module_name': os.path.splitext(
                 os.path.basename(subclassFilename))[0],
-            'root': rootElement,
+            'root': root,
+            'rootElement': rootElement,
+            'rootClass': rootClass,
             'namespacedef': namespace,
             'super': superModule,
         }
@@ -5653,7 +5690,6 @@ def getImportsForExternalXsds(root):
                                             type))
             for subChild in child.getChildren():
                 childStack.append(subChild)
-
     return externalImports
 
 
@@ -5674,9 +5710,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
         outfile = os.tmpfile()
     wrt = outfile.write
     processed = []
-
     externalImports = getImportsForExternalXsds(root)
-
     generateHeader(wrt, prefix, externalImports)
     #generateSimpleTypes(outfile, prefix, SimpleTypeDict)
     DelayedElements = []
@@ -5767,7 +5801,6 @@ def strip_namespace(val):
 def get_prefix_and_value(val):
     if ':' in val:
         return val.split(':')
-
     return None, val
 
 
@@ -5865,13 +5898,11 @@ def parseAndGenerate(
         infile = sys.stdin
     else:
         infile = open(xschemaFileName, 'r')
-
     if SingleFileOutput:
         parser = make_parser()
         dh = XschemaHandler()
     ##    parser.setDocumentHandler(dh)
         parser.setContentHandler(dh)
-
         if processIncludes:
             import process_includes
             outfile = StringIO.StringIO()
@@ -5885,7 +5916,6 @@ def parseAndGenerate(
         parser.parse(infile)
         root = dh.getRoot()
         root.annotate()
-
 ##     print '-' * 60
 ##     root.show(sys.stdout, 0)
 ##     print '-' * 60
@@ -5906,7 +5936,6 @@ def parseAndGenerate(
             outfile = open(outfileName, "a")
             outfile.write(exportLine)
             outfile.close()
-
     else:
         import process_includes
         rootPaths = process_includes.get_all_root_file_paths(
@@ -5915,23 +5944,30 @@ def parseAndGenerate(
         roots = []
         rootInfos = []
         for path in rootPaths:
-            rootFile = open(path, 'r')
-
+            if path.startswith('http:') or path.startswith('ftp:'):
+                try:
+                    urlfile = urllib2.urlopen(path)
+                    content = urlfile.read()
+                    urlfile.close()
+                    rootFile = StringIO.StringIO()
+                    rootFile.write(content)
+                    rootFile.seek(0)
+                except urllib2.HTTPError:
+                    msg = "Can't find file %s." % (path, )
+                    raise IOError(msg)
+            else:
+                rootFile = open(path, 'r')
             parser = make_parser()
             dh = XschemaHandler()
             parser.setContentHandler(dh)
             parser.parse(rootFile)
-
             root = dh.getRoot()
             roots.append(root)
             rootFile.close()
-
         for root in roots:
             root.annotate()
-
             moduleName = None
             modulePath = None
-
             # use the first root element to set
             # up the module name and path
             for child in root.getChildren():
@@ -5941,33 +5977,26 @@ def parseAndGenerate(
                         # no need to create a module for
                         # xs: types
                         continue
-
                     # convert to lower camel case if needed.
                     if "-" in typeName:
                         tokens = typeName.split("-")
                         typeName = ''.join([t.title() for t in tokens])
-
                     moduleName = typeName[0].lower() + typeName[1:]
-
                     modulePath = (
                         OutputDirectory +
                         os.sep + moduleName +
                         ModuleSuffix + ".py")
-
                     fqnToModuleNameMap[child.getFullyQualifiedType()] = \
                         moduleName
                     fqnToModuleNameMap[child.getFullyQualifiedName()] = \
                         moduleName
                     break
-
             rootInfos.append((root, modulePath))
-
         for root, modulePath in rootInfos:
             if modulePath:
                 generate(
                     modulePath, subclassFilename, behaviorFilename,
                     prefix, root, superModule)
-
                 # Generate __all__.  When using the parser as a module
                 # it is useful
                 # to isolate important classes from internal ones. This way one
@@ -6249,7 +6278,6 @@ def main():
             OutputDirectory = option[1]
         elif option[0] == "--module-suffix":
             ModuleSuffix = option[1]
-
     if showVersion:
         print 'generateDS.py version %s' % VERSION
         sys.exit(0)

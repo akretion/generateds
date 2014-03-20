@@ -280,7 +280,7 @@ class GenTest(unittest.TestCase):
         result, err = self.execute(cmd)
         self.check_result(result, err, ())
 
-    def test_012_abstracttype(self):
+    def test_012_abstract_type(self):
         cmdTempl = (
             'python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
@@ -297,7 +297,7 @@ class GenTest(unittest.TestCase):
         result, err = self.execute(cmd)
         self.check_result(result, err, ())
 
-    def test_013_procincl(self):
+    def test_013_people_procincl(self):
         cmdTempl = (
             'python generateDS.py --no-dates --no-versions '
             '--silence --member-specs=list -f '
@@ -315,7 +315,7 @@ class GenTest(unittest.TestCase):
         result, err = self.execute(cmd)
         self.check_result(result, err, ())
 
-    def test_014_xsi_type(self):
+    def test_014_ipo(self):
         cmdTempl = (
             'python generateDS.py --no-dates --no-versions '
             '--member-specs=list -f '
@@ -491,6 +491,18 @@ class GenTest(unittest.TestCase):
         cmd = cmdTempl % (t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
         cmd = 'diff OnePer/%sType00_1One.py OnePer/%sType00_2One.py' % (
+            t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ('sys.stdout.write',))
+        cmd = 'diff OnePer/%sType01_1One.py OnePer/%sType01_2One.py' % (
+            t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ('sys.stdout.write',))
+        cmd = 'diff OnePer/%sType02_1One.py OnePer/%sType02_2One.py' % (
+            t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ('sys.stdout.write',))
+        cmd = 'diff OnePer/%sType03_1One.py OnePer/%sType03_2One.py' % (
             t_, t_, )
         result, err = self.execute(cmd)
         self.check_result(result, err, ('sys.stdout.write',))

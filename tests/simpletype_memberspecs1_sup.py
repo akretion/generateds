@@ -619,6 +619,7 @@ class SpecialDate(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, SpecialProperty=None, valueOf_=None):
+        self.original_tagname_ = None
         self.SpecialProperty = _cast(None, SpecialProperty)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
@@ -643,6 +644,8 @@ class SpecialDate(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -701,6 +704,7 @@ class ExtremeDate(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, ExtremeProperty=None, valueOf_=None):
+        self.original_tagname_ = None
         self.ExtremeProperty = _cast(None, ExtremeProperty)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
@@ -725,6 +729,8 @@ class ExtremeDate(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -844,9 +850,9 @@ def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'SpecialDate'
         rootClass = SpecialDate
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -855,7 +861,7 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="SpecialDate",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='xmlns:pl="http://kuhlman.com/people.xsd"')
     return rootObj
 
@@ -874,7 +880,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from simpletype_memberspecs2_sup import *\n\n')
 ##         sys.stdout.write('import simpletype_memberspecs2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj
