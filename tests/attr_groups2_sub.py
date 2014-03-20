@@ -95,7 +95,7 @@ def parse(inFilename, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'getUser'
+        rootTag = 'GetUserReq'
         rootClass = supermod.GetUserReq
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -115,7 +115,7 @@ def parseEtree(inFilename, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'getUser'
+        rootTag = 'GetUserReq'
         rootClass = supermod.GetUserReq
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -139,7 +139,7 @@ def parseString(inString, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'getUser'
+        rootTag = 'GetUserReq'
         rootClass = supermod.GetUserReq
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -156,9 +156,9 @@ def parseString(inString, silence=False):
 def parseLiteral(inFilename, silence=False):
     doc = parsexml_(inFilename)
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'GetUserReq'
         rootClass = supermod.GetUserReq
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -167,8 +167,8 @@ def parseLiteral(inFilename, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from attr_groups2_sup import *\n\n')
 ##         sys.stdout.write('import attr_groups2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.getUser(\n')
-##         rootObj.exportLiteral(sys.stdout, 0, name_="getUser")
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
+##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj
 

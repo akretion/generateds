@@ -214,7 +214,7 @@ def parse(inFilename, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'people'
+        rootTag = 'peopleType'
         rootClass = supermod.peopleType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -234,7 +234,7 @@ def parseEtree(inFilename, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'people'
+        rootTag = 'peopleType'
         rootClass = supermod.peopleType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -258,7 +258,7 @@ def parseString(inString, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'people'
+        rootTag = 'peopleType'
         rootClass = supermod.peopleType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -275,9 +275,9 @@ def parseString(inString, silence=False):
 def parseLiteral(inFilename, silence=False):
     doc = parsexml_(inFilename)
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'peopleType'
         rootClass = supermod.peopleType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -286,8 +286,8 @@ def parseLiteral(inFilename, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from to_etree2_sup import *\n\n')
 ##         sys.stdout.write('import to_etree2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.people(\n')
-##         rootObj.exportLiteral(sys.stdout, 0, name_="people")
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
+##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj
 

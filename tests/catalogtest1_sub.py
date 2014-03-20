@@ -156,9 +156,9 @@ def parseString(inString, silence=False):
 def parseLiteral(inFilename, silence=False):
     doc = parsexml_(inFilename)
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'airplane'
         rootClass = supermod.airplane
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -167,8 +167,8 @@ def parseLiteral(inFilename, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from catalogtest2_sup import *\n\n')
 ##         sys.stdout.write('import catalogtest2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.airplane(\n')
-##         rootObj.exportLiteral(sys.stdout, 0, name_="airplane")
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
+##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj
 

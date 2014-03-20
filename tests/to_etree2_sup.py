@@ -623,6 +623,7 @@ class peopleType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, comments=None, person=None, specialperson=None, programmer=None, python_programmer=None, java_programmer=None):
+        self.original_tagname_ = None
         if comments is None:
             self.comments = []
         else:
@@ -723,28 +724,34 @@ class peopleType(GeneratedsSuper):
             obj_ = commentsType.factory()
             obj_.build(child_)
             self.comments.append(obj_)
+            obj_.original_tagname_ = 'comments'
         elif nodeName_ == 'person':
             class_obj_ = self.get_class_obj_(child_, personType)
             obj_ = class_obj_.factory()
             obj_.build(child_)
             self.person.append(obj_)
+            obj_.original_tagname_ = 'person'
         elif nodeName_ == 'specialperson':
             obj_ = specialperson.factory()
             obj_.build(child_)
             self.specialperson.append(obj_)
+            obj_.original_tagname_ = 'specialperson'
         elif nodeName_ == 'programmer':
             class_obj_ = self.get_class_obj_(child_, programmerType)
             obj_ = class_obj_.factory()
             obj_.build(child_)
             self.programmer.append(obj_)
+            obj_.original_tagname_ = 'programmer'
         elif nodeName_ == 'python-programmer':
             obj_ = python_programmerType.factory()
             obj_.build(child_)
             self.python_programmer.append(obj_)
+            obj_.original_tagname_ = 'python-programmer'
         elif nodeName_ == 'java-programmer':
             obj_ = java_programmerType.factory()
             obj_.build(child_)
             self.java_programmer.append(obj_)
+            obj_.original_tagname_ = 'java-programmer'
 # end class peopleType
 
 
@@ -757,6 +764,7 @@ class commentsType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, emp=None, bold=None, valueOf_=None, mixedclass_=None, content_=None):
+        self.original_tagname_ = None
         if emp is None:
             self.emp = []
         else:
@@ -861,6 +869,7 @@ class personType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, extensiontype_=None):
+        self.original_tagname_ = None
         self.vegetable = _cast(None, vegetable)
         self.fruit = _cast(None, fruit)
         self.ratio = _cast(float, ratio)
@@ -1041,15 +1050,18 @@ class personType(GeneratedsSuper):
             obj_ = hot_agent.factory()
             obj_.build(child_)
             self.hot_agent = obj_
+            obj_.original_tagname_ = 'hot.agent'
         elif nodeName_ == 'agent':
             class_obj_ = self.get_class_obj_(child_, agentType)
             obj_ = class_obj_.factory()
             obj_.build(child_)
             self.agent.append(obj_)
+            obj_.original_tagname_ = 'agent'
         elif nodeName_ == 'promoter':
             obj_ = boosterType.factory()
             obj_.build(child_)
             self.promoter.append(obj_)
+            obj_.original_tagname_ = 'promoter'
         elif nodeName_ == 'description':
             description_ = child_.text
             description_ = self.gds_validate_string(description_, node, 'description')
@@ -1072,8 +1084,8 @@ class specialperson(personType):
     subclass = None
     superclass = personType
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None):
+        self.original_tagname_ = None
         super(specialperson, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, )
-        pass
     def factory(*args_, **kwargs_):
         if specialperson.subclass:
             return specialperson.subclass(*args_, **kwargs_)
@@ -1132,6 +1144,7 @@ class programmerType(personType):
     subclass = None
     superclass = personType
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, extensiontype_=None):
+        self.original_tagname_ = None
         super(programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, extensiontype_, )
         self.language = _cast(None, language)
         self.area = _cast(None, area)
@@ -1431,6 +1444,7 @@ class programmerType(personType):
             obj_ = paramType.factory()
             obj_.build(child_)
             self.elparam = obj_
+            obj_.original_tagname_ = 'elparam'
         elif nodeName_ == 'elarraytypes':
             elarraytypes_ = child_.text
             elarraytypes_ = self.gds_validate_string(elarraytypes_, node, 'elarraytypes')
@@ -1453,6 +1467,7 @@ class paramType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, semantic=None, name=None, flow=None, sid=None, type_=None, id=None, valueOf_=None):
+        self.original_tagname_ = None
         self.semantic = _cast(None, semantic)
         self.name = _cast(None, name)
         self.flow = _cast(None, flow)
@@ -1565,6 +1580,7 @@ class python_programmerType(programmerType):
     subclass = None
     superclass = programmerType
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, drcs_attr=None, nick_name=None, gui_developer=None, favorite_editor=None, flowvalue=None, drcs=None):
+        self.original_tagname_ = None
         super(python_programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
         self.drcs_attr = _cast(None, drcs_attr)
         self.nick_name = _cast(None, nick_name)
@@ -1685,6 +1701,7 @@ class java_programmerType(programmerType):
     subclass = None
     superclass = programmerType
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, status=None, nick_name=None, favorite_editor=None, datetime1=None, datetime2=None, datetime3=None, datetime4=None, datetime5=None):
+        self.original_tagname_ = None
         super(java_programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
         self.status = _cast(None, status)
         self.nick_name = _cast(None, nick_name)
@@ -1813,6 +1830,7 @@ class agentType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, firstname=None, lastname=None, priority=None, info=None, vehicle=None, extensiontype_=None):
+        self.original_tagname_ = None
         self.firstname = firstname
         self.lastname = lastname
         self.priority = priority
@@ -1910,11 +1928,13 @@ class agentType(GeneratedsSuper):
             obj_ = infoType.factory()
             obj_.build(child_)
             self.info = obj_
+            obj_.original_tagname_ = 'info'
         elif nodeName_ == 'vehicle':
             class_obj_ = self.get_class_obj_(child_, vehicleType)
             obj_ = class_obj_.factory()
             obj_.build(child_)
             self.vehicle.append(obj_)
+            obj_.original_tagname_ = 'vehicle'
 # end class agentType
 
 
@@ -1930,6 +1950,7 @@ class special_agentType(agentType):
     subclass = None
     superclass = agentType
     def __init__(self, firstname=None, lastname=None, priority=None, info=None, vehicle=None):
+        self.original_tagname_ = None
         super(special_agentType, self).__init__(firstname, lastname, priority, info, vehicle, )
         self.firstname = firstname
         self.lastname = lastname
@@ -2007,6 +2028,7 @@ class special_agentType(agentType):
             obj_ = infoType.factory()
             obj_.build(child_)
             self.info = obj_
+            obj_.original_tagname_ = 'info'
         super(special_agentType, self).buildChildren(child_, node, nodeName_, True)
 # end class special_agentType
 
@@ -2023,6 +2045,7 @@ class weird_agentType(agentType):
     subclass = None
     superclass = agentType
     def __init__(self, firstname=None, lastname=None, priority=None, info=None, vehicle=None):
+        self.original_tagname_ = None
         super(weird_agentType, self).__init__(firstname, lastname, priority, info, vehicle, )
         self.firstname = firstname
         self.lastname = lastname
@@ -2100,6 +2123,7 @@ class weird_agentType(agentType):
             obj_ = infoType.factory()
             obj_.build(child_)
             self.info = obj_
+            obj_.original_tagname_ = 'info'
         super(weird_agentType, self).buildChildren(child_, node, nodeName_, True)
 # end class weird_agentType
 
@@ -2118,6 +2142,7 @@ class boosterType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, member_id=None, firstname=None, lastname=None, other_name=None, class_=None, other_value=None, type_=None, client_handler=None):
+        self.original_tagname_ = None
         self.member_id = _cast(None, member_id)
         self.firstname = firstname
         self.lastname = lastname
@@ -2261,6 +2286,7 @@ class boosterType(GeneratedsSuper):
             obj_ = client_handlerType.factory()
             obj_.build(child_)
             self.client_handler.append(obj_)
+            obj_.original_tagname_ = 'client-handler'
 # end class boosterType
 
 
@@ -2273,10 +2299,10 @@ class infoType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, rating=None, type_=None, name=None):
+        self.original_tagname_ = None
         self.rating = _cast(float, rating)
         self.type_ = _cast(int, type_)
         self.name = _cast(None, name)
-        pass
     def factory(*args_, **kwargs_):
         if infoType.subclass:
             return infoType.subclass(*args_, **kwargs_)
@@ -2348,6 +2374,7 @@ class vehicleType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, wheelcount=None, extensiontype_=None):
+        self.original_tagname_ = None
         self.wheelcount = wheelcount
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
@@ -2411,6 +2438,7 @@ class automobile(vehicleType):
     subclass = None
     superclass = vehicleType
     def __init__(self, wheelcount=None, drivername=None):
+        self.original_tagname_ = None
         super(automobile, self).__init__(wheelcount, )
         self.drivername = drivername
     def factory(*args_, **kwargs_):
@@ -2462,6 +2490,7 @@ class airplane(vehicleType):
     subclass = None
     superclass = vehicleType
     def __init__(self, wheelcount=None, pilotname=None):
+        self.original_tagname_ = None
         super(airplane, self).__init__(wheelcount, )
         self.pilotname = pilotname
     def factory(*args_, **kwargs_):
@@ -2516,6 +2545,7 @@ class hot_agent(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, firstname='empty\\name', lastname='no \'last\' name', priority=None, startDate=None):
+        self.original_tagname_ = None
         self.firstname = firstname
         self.lastname = lastname
         self.priority = priority
@@ -2615,6 +2645,7 @@ class client_handlerType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, fullname=None, refid=None):
+        self.original_tagname_ = None
         self.fullname = fullname
         self.refid = refid
     def factory(*args_, **kwargs_):
@@ -2717,7 +2748,7 @@ def parse(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'people'
+        rootTag = 'peopleType'
         rootClass = peopleType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -2737,7 +2768,7 @@ def parseEtree(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'people'
+        rootTag = 'peopleType'
         rootClass = peopleType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -2759,9 +2790,9 @@ def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'peopleType'
         rootClass = peopleType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -2770,7 +2801,7 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="people",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='')
     return rootObj
 
@@ -2780,7 +2811,7 @@ def parseLiteral(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'people'
+        rootTag = 'peopleType'
         rootClass = peopleType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -2789,7 +2820,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from to_etree2_sup import *\n\n')
 ##         sys.stdout.write('import to_etree2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj

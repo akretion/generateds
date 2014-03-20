@@ -620,6 +620,7 @@ class PlantType_single(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, name=None, anytypeobjs_=None, description=None):
+        self.original_tagname_ = None
         self.name = name
         self.anytypeobjs_ = anytypeobjs_
         self.description = description
@@ -649,6 +650,8 @@ class PlantType_single(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -716,6 +719,7 @@ class PlantType_single(GeneratedsSuper):
             obj_ = DescriptionType.factory()
             obj_.build(child_)
             self.description = obj_
+            obj_.original_tagname_ = 'description'
         else:
             obj_ = self.gds_build_any(child_, 'PlantType_single')
             if obj_ is not None:
@@ -732,6 +736,7 @@ class PlantType_multiple(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, name=None, anytypeobjs_=None, description=None):
+        self.original_tagname_ = None
         self.name = name
         if anytypeobjs_ is None:
             self.anytypeobjs_ = []
@@ -766,6 +771,8 @@ class PlantType_multiple(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -835,6 +842,7 @@ class PlantType_multiple(GeneratedsSuper):
             obj_ = DescriptionType.factory()
             obj_.build(child_)
             self.description = obj_
+            obj_.original_tagname_ = 'description'
         else:
             obj_ = self.gds_build_any(child_, 'PlantType_multiple')
             if obj_ is not None:
@@ -851,6 +859,7 @@ class DescriptionType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, name=None, size=None):
+        self.original_tagname_ = None
         self.name = name
         self.size = size
     def factory(*args_, **kwargs_):
@@ -876,6 +885,8 @@ class DescriptionType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -945,6 +956,7 @@ class CatalogType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, name=None, catagory=None):
+        self.original_tagname_ = None
         self.name = name
         self.catagory = catagory
     def factory(*args_, **kwargs_):
@@ -970,6 +982,8 @@ class CatalogType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1041,6 +1055,7 @@ class PlantType_single_nochild(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, anytypeobjs_=None):
+        self.original_tagname_ = None
         self.anytypeobjs_ = anytypeobjs_
     def factory(*args_, **kwargs_):
         if PlantType_single_nochild.subclass:
@@ -1062,6 +1077,8 @@ class PlantType_single_nochild(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1120,6 +1137,7 @@ class PlantType_multiple_nochild(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, anytypeobjs_=None):
+        self.original_tagname_ = None
         if anytypeobjs_ is None:
             self.anytypeobjs_ = []
         else:
@@ -1146,6 +1164,8 @@ class PlantType_multiple_nochild(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1269,9 +1289,9 @@ def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'PlantType_single'
         rootClass = PlantType_single
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1280,7 +1300,7 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="PlantType_single",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='')
     return rootObj
 
@@ -1299,7 +1319,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from anywildcard2_sup import *\n\n')
 ##         sys.stdout.write('import anywildcard2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj

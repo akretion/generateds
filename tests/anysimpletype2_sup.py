@@ -619,6 +619,7 @@ class test1element(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, test1attribute=None, test1member=None):
+        self.original_tagname_ = None
         self.test1attribute = _cast(None, test1attribute)
         self.test1member = test1member
     def factory(*args_, **kwargs_):
@@ -643,6 +644,8 @@ class test1element(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -700,6 +703,7 @@ class test1element(GeneratedsSuper):
             obj_ = cimAnySimpleType.factory()
             obj_.build(child_)
             self.test1member = obj_
+            obj_.original_tagname_ = 'test1member'
 # end class test1element
 
 
@@ -710,6 +714,7 @@ class cimAnySimpleType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, valueOf_=None):
+        self.original_tagname_ = None
         self.valueOf_ = valueOf_
         self.anyAttributes_ = {}
     def factory(*args_, **kwargs_):
@@ -734,6 +739,8 @@ class cimAnySimpleType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -882,9 +889,9 @@ def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'test1element'
         rootClass = test1element
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -893,7 +900,7 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="test1element",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='')
     return rootObj
 
@@ -912,7 +919,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from anysimpletype2_sup import *\n\n')
 ##         sys.stdout.write('import anysimpletype2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj

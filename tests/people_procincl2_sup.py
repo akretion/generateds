@@ -624,6 +624,7 @@ class people(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, comments=None, person=None, specialperson=None, programmer=None, python_programmer=None, java_programmer=None):
+        self.original_tagname_ = None
         if comments is None:
             self.comments = []
         else:
@@ -695,6 +696,8 @@ class people(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -820,28 +823,34 @@ class people(GeneratedsSuper):
             obj_ = comments.factory()
             obj_.build(child_)
             self.comments.append(obj_)
+            obj_.original_tagname_ = 'comments'
         elif nodeName_ == 'person':
             class_obj_ = self.get_class_obj_(child_, person)
             obj_ = class_obj_.factory()
             obj_.build(child_)
             self.person.append(obj_)
+            obj_.original_tagname_ = 'person'
         elif nodeName_ == 'specialperson':
             obj_ = specialperson.factory()
             obj_.build(child_)
             self.specialperson.append(obj_)
+            obj_.original_tagname_ = 'specialperson'
         elif nodeName_ == 'programmer':
             class_obj_ = self.get_class_obj_(child_, programmer)
             obj_ = class_obj_.factory()
             obj_.build(child_)
             self.programmer.append(obj_)
+            obj_.original_tagname_ = 'programmer'
         elif nodeName_ == 'python-programmer':
             obj_ = python_programmer.factory()
             obj_.build(child_)
             self.python_programmer.append(obj_)
+            obj_.original_tagname_ = 'python-programmer'
         elif nodeName_ == 'java-programmer':
             obj_ = java_programmer.factory()
             obj_.build(child_)
             self.java_programmer.append(obj_)
+            obj_.original_tagname_ = 'java-programmer'
 # end class people
 
 
@@ -854,6 +863,7 @@ class comments(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, emp=None, bold=None, valueOf_=None, mixedclass_=None, content_=None):
+        self.original_tagname_ = None
         if emp is None:
             self.emp = []
         else:
@@ -902,6 +912,8 @@ class comments(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -995,6 +1007,7 @@ class person(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, extensiontype_=None):
+        self.original_tagname_ = None
         self.vegetable = _cast(None, vegetable)
         self.fruit = _cast(None, fruit)
         self.ratio = _cast(float, ratio)
@@ -1069,6 +1082,8 @@ class person(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1250,10 +1265,12 @@ class person(GeneratedsSuper):
             obj_ = agent.factory()
             obj_.build(child_)
             self.agent.append(obj_)
+            obj_.original_tagname_ = 'agent'
         elif nodeName_ == 'promoter':
             obj_ = booster.factory()
             obj_.build(child_)
             self.promoter.append(obj_)
+            obj_.original_tagname_ = 'promoter'
         elif nodeName_ == 'description':
             description_ = child_.text
             description_ = self.gds_validate_string(description_, node, 'description')
@@ -1267,8 +1284,8 @@ class specialperson(person):
     subclass = None
     superclass = person
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None):
+        self.original_tagname_ = None
         super(specialperson, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, agent, promoter, description, )
-        pass
     def factory(*args_, **kwargs_):
         if specialperson.subclass:
             return specialperson.subclass(*args_, **kwargs_)
@@ -1287,6 +1304,8 @@ class specialperson(person):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1342,6 +1361,7 @@ class param(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, semantic=None, name=None, flow=None, sid=None, type_=None, id=None, valueOf_=None):
+        self.original_tagname_ = None
         self.semantic = _cast(None, semantic)
         self.name = _cast(None, name)
         self.flow = _cast(None, flow)
@@ -1381,6 +1401,8 @@ class param(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1498,6 +1520,7 @@ class agent(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, firstname=None, lastname=None, priority=None, info=None, vehicle=None):
+        self.original_tagname_ = None
         self.firstname = firstname
         self.lastname = lastname
         self.priority = priority
@@ -1540,6 +1563,8 @@ class agent(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1637,6 +1662,7 @@ class agent(GeneratedsSuper):
             obj_ = info.factory()
             obj_.build(child_)
             self.info = obj_
+            obj_.original_tagname_ = 'info'
         elif nodeName_ == 'vehicle':
             type_name_ = child_.attrib.get(
                 '{http://www.w3.org/2001/XMLSchema-instance}type')
@@ -1655,6 +1681,7 @@ class agent(GeneratedsSuper):
                 raise NotImplementedError(
                     'Class not implemented for <vehicle> element')
             self.vehicle.append(obj_)
+            obj_.original_tagname_ = 'vehicle'
 # end class agent
 
 
@@ -1670,6 +1697,7 @@ class special_agent(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, firstname=None, lastname=None, priority=None, info=None):
+        self.original_tagname_ = None
         self.firstname = firstname
         self.lastname = lastname
         self.priority = priority
@@ -1703,6 +1731,8 @@ class special_agent(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1786,6 +1816,7 @@ class special_agent(GeneratedsSuper):
             obj_ = info.factory()
             obj_.build(child_)
             self.info = obj_
+            obj_.original_tagname_ = 'info'
 # end class special_agent
 
 
@@ -1803,6 +1834,7 @@ class booster(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, member_id=None, firstname=None, lastname=None, other_name=None, class_=None, other_value=None, type_=None, client_handler=None):
+        self.original_tagname_ = None
         self.member_id = _cast(None, member_id)
         self.firstname = firstname
         self.lastname = lastname
@@ -1866,6 +1898,8 @@ class booster(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -2017,6 +2051,7 @@ class booster(GeneratedsSuper):
             obj_ = client_handlerType.factory()
             obj_.build(child_)
             self.client_handler.append(obj_)
+            obj_.original_tagname_ = 'client-handler'
 # end class booster
 
 
@@ -2029,10 +2064,10 @@ class info(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, rating=None, type_=None, name=None):
+        self.original_tagname_ = None
         self.rating = _cast(float, rating)
         self.type_ = _cast(int, type_)
         self.name = _cast(None, name)
-        pass
     def factory(*args_, **kwargs_):
         if info.subclass:
             return info.subclass(*args_, **kwargs_)
@@ -2057,6 +2092,8 @@ class info(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -2138,6 +2175,7 @@ class vehicle(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, wheelcount=None, extensiontype_=None):
+        self.original_tagname_ = None
         self.wheelcount = wheelcount
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
@@ -2162,6 +2200,8 @@ class vehicle(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -2230,6 +2270,7 @@ class automobile(vehicle):
     subclass = None
     superclass = vehicle
     def __init__(self, wheelcount=None, drivername=None):
+        self.original_tagname_ = None
         super(automobile, self).__init__(wheelcount, )
         self.drivername = drivername
     def factory(*args_, **kwargs_):
@@ -2253,6 +2294,8 @@ class automobile(vehicle):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -2313,6 +2356,7 @@ class airplane(vehicle):
     subclass = None
     superclass = vehicle
     def __init__(self, wheelcount=None, pilotname=None):
+        self.original_tagname_ = None
         super(airplane, self).__init__(wheelcount, )
         self.pilotname = pilotname
     def factory(*args_, **kwargs_):
@@ -2336,6 +2380,8 @@ class airplane(vehicle):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -2414,6 +2460,7 @@ class programmer(person):
     subclass = None
     superclass = person
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, extensiontype_=None):
+        self.original_tagname_ = None
         super(programmer, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, agent, promoter, description, extensiontype_, )
         self.language = _cast(None, language)
         self.area = _cast(None, area)
@@ -2505,6 +2552,8 @@ class programmer(person):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -2779,6 +2828,7 @@ class programmer(person):
             obj_ = param.factory()
             obj_.build(child_)
             self.elparam = obj_
+            obj_.original_tagname_ = 'elparam'
         elif nodeName_ == 'elarraytypes':
             elarraytypes_ = child_.text
             elarraytypes_ = self.gds_validate_string(elarraytypes_, node, 'elarraytypes')
@@ -2796,6 +2846,7 @@ class client_handlerType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, fullname=None, refid=None):
+        self.original_tagname_ = None
         self.fullname = fullname
         self.refid = refid
     def factory(*args_, **kwargs_):
@@ -2821,6 +2872,8 @@ class client_handlerType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -2897,6 +2950,7 @@ class java_programmer(programmer):
     subclass = None
     superclass = programmer
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, status=None, nick_name=None, favorite_editor=None):
+        self.original_tagname_ = None
         super(java_programmer, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, agent, promoter, description, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eltoken, elshort, ellong, elparam, elarraytypes, )
         self.status = _cast(None, status)
         self.nick_name = _cast(None, nick_name)
@@ -2926,6 +2980,8 @@ class java_programmer(programmer):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -3011,6 +3067,7 @@ class python_programmer(programmer):
     subclass = None
     superclass = programmer
     def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, nick_name=None, favorite_editor=None):
+        self.original_tagname_ = None
         super(python_programmer, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, agent, promoter, description, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eltoken, elshort, ellong, elparam, elarraytypes, )
         self.nick_name = _cast(None, nick_name)
         self.favorite_editor = favorite_editor
@@ -3037,6 +3094,8 @@ class python_programmer(programmer):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -3173,9 +3232,9 @@ def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'people'
         rootClass = people
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -3184,7 +3243,7 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="people",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='')
     return rootObj
 
@@ -3203,7 +3262,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from people_procincl2_sup import *\n\n')
 ##         sys.stdout.write('import people_procincl2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj

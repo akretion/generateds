@@ -177,9 +177,9 @@ def parseString(inString, silence=False):
 def parseLiteral(inFilename, silence=False):
     doc = parsexml_(inFilename)
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'FooList'
         rootClass = supermod.FooList
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -188,8 +188,8 @@ def parseLiteral(inFilename, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from anonymous_type2_sup import *\n\n')
 ##         sys.stdout.write('import anonymous_type2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.FooList(\n')
-##         rootObj.exportLiteral(sys.stdout, 0, name_="FooList")
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
+##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj
 

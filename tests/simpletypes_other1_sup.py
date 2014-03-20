@@ -618,6 +618,7 @@ class simpleTypeTestsType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, simpleTypeTest=None):
+        self.original_tagname_ = None
         if simpleTypeTest is None:
             self.simpleTypeTest = []
         else:
@@ -644,6 +645,8 @@ class simpleTypeTestsType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -727,6 +730,7 @@ class simpleTypeTest(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, datetime1=None, datetime2=None, datetime3=None, datetime4=None, datetime5=None, integerVal1=None, integerVal2=None, stringVal1=None, stringVal2=None, booleanVal1=None, booleanVal2=None, decimalVal1=None, decimalVal2=None, doubleVal1=None, doubleVal2=None, floatVal1=None, floatVal2=None, dateVal1=None, dateVal2=None, dateTimeVal1=None, dateTimeVal2=None):
+        self.original_tagname_ = None
         self.datetime1 = datetime1
         self.datetime2 = datetime2
         self.datetime3 = datetime3
@@ -876,6 +880,8 @@ class simpleTypeTest(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
@@ -1246,7 +1252,7 @@ def parse(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'simpleTypeTests'
+        rootTag = 'simpleTypeTestsType'
         rootClass = simpleTypeTestsType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1266,7 +1272,7 @@ def parseEtree(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'simpleTypeTests'
+        rootTag = 'simpleTypeTestsType'
         rootClass = simpleTypeTestsType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1288,9 +1294,9 @@ def parseString(inString, silence=False):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'simpleTypeTestsType'
         rootClass = simpleTypeTestsType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1299,7 +1305,7 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="simpleTypeTests",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='')
     return rootObj
 
@@ -1309,7 +1315,7 @@ def parseLiteral(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'simpleTypeTests'
+        rootTag = 'simpleTypeTestsType'
         rootClass = simpleTypeTestsType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1318,7 +1324,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from simpletypes_other2_sup import *\n\n')
 ##         sys.stdout.write('import simpletypes_other2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj

@@ -30,7 +30,7 @@ from lxml import etree
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.12b'
+VERSION = '2.12c'
 ##VERSION##
 
 CatalogDict = {}
@@ -309,14 +309,23 @@ def prep_schema(inpath, outpath, options):
 
 
 def process_groups(root):
-    namespaces = {root.prefix: root.nsmap[root.prefix]}
     # Get all the xs:group definitions at top level.
-    pattern = './%s:group' % (root.prefix, )
-    defs = root.xpath(pattern, namespaces=namespaces)
+    if root.prefix:
+        namespaces = {root.prefix: root.nsmap[root.prefix]}
+        pattern = './%s:group' % (root.prefix, )
+        defs = root.xpath(pattern, namespaces=namespaces)
+    else:
+        pattern = './group'
+        defs = root.xpath(pattern)
     defs = [node for node in defs if node.get('name') is not None]
     # Get all the xs:group references (below top level).
-    pattern = './*//%s:group' % (root.prefix, )
-    refs = root.xpath(pattern, namespaces=namespaces)
+    if root.prefix:
+        namespaces = {root.prefix: root.nsmap[root.prefix]}
+        pattern = './*//%s:group' % (root.prefix, )
+        refs = root.xpath(pattern, namespaces=namespaces)
+    else:
+        pattern = './*//group'
+        refs = root.xpath(pattern)
     refs = [node for node in refs if node.get('ref') is not None]
     # Create a dictionary of the named model groups (definitions).
     def_dict = {}
@@ -417,15 +426,16 @@ def replace_group_defs(def_dict, refs):
                 content = content[0]
                 parent = ref_node.getparent()
                 for node in content:
-                    new_node = deepcopy(node)
-                    # Copy minOccurs and maxOccurs attributes to new node.
-                    value = ref_node.get('minOccurs')
-                    if value is not None:
-                        new_node.set('minOccurs', value)
-                    value = ref_node.get('maxOccurs')
-                    if value is not None:
-                        new_node.set('maxOccurs', value)
-                    ref_node.addprevious(new_node)
+                    if not isinstance(node, etree._Comment):
+                        new_node = deepcopy(node)
+                        # Copy minOccurs and maxOccurs attributes to new node.
+                        value = ref_node.get('minOccurs')
+                        if value is not None:
+                            new_node.set('minOccurs', value)
+                        value = ref_node.get('maxOccurs')
+                        if value is not None:
+                            new_node.set('maxOccurs', value)
+                        ref_node.addprevious(new_node)
                 parent.remove(ref_node)
 
 
@@ -450,11 +460,12 @@ def raise_anon_complextypes(root):
         pattern = './*/*//%s:complexType|./*/*//%s:simpleType' % (
             prefix, prefix, )
         element_tag = '{%s}element' % (root.nsmap[prefix], )
+        namespaces = {prefix: root.nsmap[prefix]}
+        defs = root.xpath(pattern, namespaces=namespaces)
     else:
         pattern = './*/*//complexType|./*/*//simpleType'
         element_tag = 'element'
-    namespaces = {prefix: root.nsmap[prefix]}
-    defs = root.xpath(pattern, namespaces=namespaces)
+        defs = root.xpath(pattern)
     for node in defs:
         parent = node.getparent()
         if parent.tag != element_tag:
@@ -527,6 +538,10 @@ def main():
         "-f", "--force", action="store_true",
         dest="force", default=False,
         help="force overwrite without asking")
+    parser.add_option(
+        "--fix-type-names", action="store",
+        dest="fixtypenames", default=None,
+        help="Fix up (replace) complex type names.")
     (options, args) = parser.parse_args()
     if len(args) == 2:
         inpath = args[0]
@@ -544,4 +559,8 @@ def main():
 
 if __name__ == "__main__":
     #import pdb; pdb.set_trace()
-    main()
+    #main()
+    try:
+        main()
+    except:
+        import pdb; pdb.post_mortem()
