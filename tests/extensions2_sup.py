@@ -4,6 +4,19 @@
 #
 # Generated  by generateDS.py.
 #
+# Command line options:
+#   [('--no-dates', ''),
+#    ('--no-versions', ''),
+#    ('--silence', ''),
+#    ('--member-specs', 'list'),
+#    ('-f', ''),
+#    ('-o', 'tests/extensions2_sup.py'),
+#    ('-s', 'tests/extensions2_sub.py'),
+#    ('--super', 'extensions2_sup')]
+#
+# Command line arguments:
+#   ['tests/extensions.xsd']
+#
 
 import sys
 import getopt

@@ -4,6 +4,20 @@
 #
 # Generated  by generateDS.py.
 #
+# Command line options:
+#   [('--no-dates', ''),
+#    ('--no-versions', ''),
+#    ('--silence', ''),
+#    ('--member-specs', 'list'),
+#    ('-f', ''),
+#    ('--one-file-per-xsd', ''),
+#    ('--output-directory', 'tests/OnePer'),
+#    ('--module-suffix', 'One'),
+#    ('--super', 'oneper2_sup')]
+#
+# Command line arguments:
+#   ['tests/oneper00.xsd']
+#
 
 import sys
 import getopt

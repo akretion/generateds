@@ -4,6 +4,19 @@
 #
 # Generated  by generateDS.py.
 #
+# Command line options:
+#   [('--no-dates', ''),
+#    ('--no-versions', ''),
+#    ('--silence', ''),
+#    ('--member-specs', 'list'),
+#    ('-f', ''),
+#    ('-o', 'tests/recursive_simpletype2_sup.py'),
+#    ('-s', 'tests/recursive_simpletype2_sub.py'),
+#    ('--super', 'recursive_simpletype2_sup')]
+#
+# Command line arguments:
+#   ['tests/recursive_simpletype.xsd']
+#
 
 import sys
 import getopt

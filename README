@@ -141,7 +141,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version 2.12c (03/19/2014)
+Version 2.12c (03/28/2014)
 - Fix for  "one module per XSD file" to handle an include or import
   element that refers to a remote schema on the Net (i.e. the
   location is "http:..." or "ftp:...") rather than a file on the
@@ -170,6 +170,11 @@ Version 2.12c (03/19/2014)
   bar).
 - Added support for the ability of an element definition to inherit
   minOccurs and maxOccurs from the xs:sequence that contains it.
+- The command line options and command line arguments used to
+  generate modules are now included as comments near the top of the
+  generated modules.  This will help users later to determine which
+  XML schema and what options were used to generate each module.
+  Thanks to Mikki Weesenaar for suggesting this enhancement.
 
 Version 2.12b (02/10/2014)
 - Fix to the aliasing capability.  You should now be able to alias
