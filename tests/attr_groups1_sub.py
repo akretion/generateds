@@ -4,17 +4,17 @@
 # Generated  by generateDS.py.
 #
 # Command line options:
-#   [('--no-dates', ''),
-#    ('--no-versions', ''),
-#    ('--silence', ''),
-#    ('--member-specs', 'list'),
-#    ('-f', ''),
-#    ('-o', 'tests/attr_groups2_sup.py'),
-#    ('-s', 'tests/attr_groups2_sub.py'),
-#    ('--super', 'attr_groups2_sup')]
+#   ('--no-dates', '')
+#   ('--no-versions', '')
+#   ('--silence', '')
+#   ('--member-specs', 'list')
+#   ('-f', '')
+#   ('-o', 'tests/attr_groups2_sup.py')
+#   ('-s', 'tests/attr_groups2_sub.py')
+#   ('--super', 'attr_groups2_sup')
 #
 # Command line arguments:
-#   ['tests/attr_groups.xsd']
+#   tests/attr_groups.xsd
 #
 
 import sys

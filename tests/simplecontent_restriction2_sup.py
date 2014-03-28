@@ -5,17 +5,17 @@
 # Generated  by generateDS.py.
 #
 # Command line options:
-#   [('--no-dates', ''),
-#    ('--no-versions', ''),
-#    ('--silence', ''),
-#    ('--member-specs', 'list'),
-#    ('-f', ''),
-#    ('-o', 'tests/simplecontent_restriction2_sup.py'),
-#    ('-s', 'tests/simplecontent_restriction2_sub.py'),
-#    ('--super', 'simplecontent_restriction2_sup')]
+#   ('--no-dates', '')
+#   ('--no-versions', '')
+#   ('--silence', '')
+#   ('--member-specs', 'list')
+#   ('-f', '')
+#   ('-o', 'tests/simplecontent_restriction2_sup.py')
+#   ('-s', 'tests/simplecontent_restriction2_sub.py')
+#   ('--super', 'simplecontent_restriction2_sup')
 #
 # Command line arguments:
-#   ['tests/simplecontent_restriction.xsd']
+#   tests/simplecontent_restriction.xsd
 #
 
 import sys

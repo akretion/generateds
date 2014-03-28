@@ -4,17 +4,17 @@
 # Generated  by generateDS.py.
 #
 # Command line options:
-#   [('--no-dates', ''),
-#    ('--no-versions', ''),
-#    ('--silence', ''),
-#    ('--member-specs', 'list'),
-#    ('-f', ''),
-#    ('-o', 'tests/people_procincl2_sup.py'),
-#    ('-s', 'tests/people_procincl2_sub.py'),
-#    ('--super', 'people_procincl2_sup')]
+#   ('--no-dates', '')
+#   ('--no-versions', '')
+#   ('--silence', '')
+#   ('--member-specs', 'list')
+#   ('-f', '')
+#   ('-o', 'tests/people_procincl2_sup.py')
+#   ('-s', 'tests/people_procincl2_sub.py')
+#   ('--super', 'people_procincl2_sup')
 #
 # Command line arguments:
-#   ['tests/people_procincl.xsd']
+#   tests/people_procincl.xsd
 #
 
 import sys

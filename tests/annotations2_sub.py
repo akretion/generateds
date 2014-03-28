@@ -4,17 +4,17 @@
 # Generated  by generateDS.py.
 #
 # Command line options:
-#   [('--no-dates', ''),
-#    ('--no-versions', ''),
-#    ('--silence', ''),
-#    ('--member-specs', 'list'),
-#    ('-f', ''),
-#    ('-o', 'tests/annotations2_sup.py'),
-#    ('-s', 'tests/annotations2_sub.py'),
-#    ('--super', 'annotations2_sup')]
+#   ('--no-dates', '')
+#   ('--no-versions', '')
+#   ('--silence', '')
+#   ('--member-specs', 'list')
+#   ('-f', '')
+#   ('-o', 'tests/annotations2_sup.py')
+#   ('-s', 'tests/annotations2_sub.py')
+#   ('--super', 'annotations2_sup')
 #
 # Command line arguments:
-#   ['tests/annotations.xsd']
+#   tests/annotations.xsd
 #
 
 import sys

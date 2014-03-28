@@ -147,7 +147,6 @@ import logging
 import keyword
 import StringIO
 import textwrap
-import pprint
 
 # Default logger configuration
 logging.basicConfig(
@@ -4896,10 +4895,12 @@ def _cast(typ, value):
 
 
 def format_options_args(options, args):
-    options1 = '\n'.join(
-        ['#   ' + line for line in pprint.pformat(options).split('\n')])
-    args1 = '\n'.join(
-        ['#   ' + line for line in pprint.pformat(args).split('\n')])
+    options1 = '\n'.join(['#   %s' % (item, ) for item in options])
+    args1 = '\n'.join(['#   %s' % (item, ) for item in args])
+##     options1 = '\n'.join(
+##         ['#   ' + line for line in pprint.pformat(options).split('\n')])
+##     args1 = '\n'.join(
+##         ['#   ' + line for line in pprint.pformat(args).split('\n')])
     return options1, args1
 
 

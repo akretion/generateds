@@ -5,16 +5,16 @@
 # Generated  by generateDS.py.
 #
 # Command line options:
-#   [('--no-dates', ''),
-#    ('--no-versions', ''),
-#    ('--member-specs', 'list'),
-#    ('-f', ''),
-#    ('-o', 'tests/ipo2_sup.py'),
-#    ('-s', 'tests/ipo2_sub.py'),
-#    ('--super', 'ipo2_sup')]
+#   ('--no-dates', '')
+#   ('--no-versions', '')
+#   ('--member-specs', 'list')
+#   ('-f', '')
+#   ('-o', 'tests/ipo2_sup.py')
+#   ('-s', 'tests/ipo2_sub.py')
+#   ('--super', 'ipo2_sup')
 #
 # Command line arguments:
-#   ['tests/ipo.xsd']
+#   tests/ipo.xsd
 #
 
 import sys
