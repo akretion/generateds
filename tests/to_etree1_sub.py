@@ -4,19 +4,19 @@
 # Generated  by generateDS.py.
 #
 # Command line options:
-#   [('--no-dates', ''),
-#    ('--no-versions', ''),
-#    ('--silence', ''),
-#    ('--member-specs', 'list'),
-#    ('-f', ''),
-#    ('-o', 'tests/to_etree2_sup.py'),
-#    ('-s', 'tests/to_etree2_sub.py'),
-#    ('--export', 'etree'),
-#    ('--silence', ''),
-#    ('--super', 'to_etree2_sup')]
+#   ('--no-dates', '')
+#   ('--no-versions', '')
+#   ('--silence', '')
+#   ('--member-specs', 'list')
+#   ('-f', '')
+#   ('-o', 'tests/to_etree2_sup.py')
+#   ('-s', 'tests/to_etree2_sub.py')
+#   ('--export', 'etree')
+#   ('--silence', '')
+#   ('--super', 'to_etree2_sup')
 #
 # Command line arguments:
-#   ['tests/to_etree.xsd']
+#   tests/to_etree.xsd
 #
 
 import sys

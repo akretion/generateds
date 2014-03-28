@@ -5,17 +5,17 @@
 # Generated  by generateDS.py.
 #
 # Command line options:
-#   [('--no-dates', ''),
-#    ('--no-versions', ''),
-#    ('--silence', ''),
-#    ('--member-specs', 'list'),
-#    ('-f', ''),
-#    ('-o', 'tests/simpletypes_other2_sup.py'),
-#    ('-s', 'tests/simpletypes_other2_sub.py'),
-#    ('--super', 'simpletypes_other2_sup')]
+#   ('--no-dates', '')
+#   ('--no-versions', '')
+#   ('--silence', '')
+#   ('--member-specs', 'list')
+#   ('-f', '')
+#   ('-o', 'tests/simpletypes_other2_sup.py')
+#   ('-s', 'tests/simpletypes_other2_sub.py')
+#   ('--super', 'simpletypes_other2_sup')
 #
 # Command line arguments:
-#   ['tests/simpletypes_other.xsd']
+#   tests/simpletypes_other.xsd
 #
 
 import sys

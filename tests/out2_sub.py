@@ -4,16 +4,16 @@
 # Generated  by generateDS.py.
 #
 # Command line options:
-#   [('--no-dates', ''),
-#    ('--no-versions', ''),
-#    ('-f', ''),
-#    ('-o', 'tests/out2_sup.py'),
-#    ('-s', 'tests/out2_sub.py'),
-#    ('--super', 'out2_sup'),
-#    ('-u', 'gends_user_methods')]
+#   ('--no-dates', '')
+#   ('--no-versions', '')
+#   ('-f', '')
+#   ('-o', 'tests/out2_sup.py')
+#   ('-s', 'tests/out2_sub.py')
+#   ('--super', 'out2_sup')
+#   ('-u', 'gends_user_methods')
 #
 # Command line arguments:
-#   ['tests/people.xsd']
+#   tests/people.xsd
 #
 
 import sys
