@@ -3,6 +3,20 @@
 #
 # Generated  by generateDS.py.
 #
+# Command line options:
+#   [('--no-dates', ''),
+#    ('--no-versions', ''),
+#    ('--silence', ''),
+#    ('--member-specs', 'list'),
+#    ('-f', ''),
+#    ('-o', 'tests/catalogtest2_sup.py'),
+#    ('-s', 'tests/catalogtest2_sub.py'),
+#    ('--super', 'catalogtest2_sup'),
+#    ('-c', 'tests/catalog.xml')]
+#
+# Command line arguments:
+#   ['tests/catalogtest.xsd']
+#
 
 import sys
 

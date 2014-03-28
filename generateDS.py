@@ -147,6 +147,7 @@ import logging
 import keyword
 import StringIO
 import textwrap
+import pprint
 
 # Default logger configuration
 logging.basicConfig(
@@ -4276,6 +4277,12 @@ TEMPLATE_HEADER = """\
 #
 # Generated %s by generateDS.py%s.
 #
+# Command line options:
+%s
+#
+# Command line arguments:
+%s
+#
 
 import sys
 import getopt
@@ -4888,13 +4895,23 @@ def _cast(typ, value):
 # DUMMY = """
 
 
-def generateHeader(wrt, prefix, externalImports):
+def format_options_args(options, args):
+    options1 = '\n'.join(
+        ['#   ' + line for line in pprint.pformat(options).split('\n')])
+    args1 = '\n'.join(
+        ['#   ' + line for line in pprint.pformat(args).split('\n')])
+    return options1, args1
+
+
+def generateHeader(wrt, prefix, options, args, externalImports):
     tstamp = (not NoDates and time.ctime()) or ''
     if NoVersion:
         version = ''
     else:
         version = ' version %s' % VERSION
-    s1 = TEMPLATE_HEADER % (tstamp, version, ExternalEncoding, )
+    options1, args1 = format_options_args(options, args)
+    s1 = TEMPLATE_HEADER % (
+        tstamp, version, options1, args1, ExternalEncoding, )
     wrt(s1)
     for externalImport in externalImports:
         wrt(externalImport + "\n")
@@ -5290,6 +5307,12 @@ TEMPLATE_SUBCLASS_HEADER = """\
 #
 # Generated %s by generateDS.py%s.
 #
+# Command line options:
+%s
+#
+# Command line arguments:
+%s
+#
 
 import sys
 
@@ -5545,7 +5568,7 @@ def getNamespace(element):
 
 
 def generateSubclasses(root, subclassFilename, behaviorFilename,
-                       prefix, superModule='xxx'):
+                       prefix, options, args, superModule='xxx'):
     subclassFile = makeFile(subclassFilename)
     wrt = subclassFile.write
     if subclassFile:
@@ -5575,7 +5598,9 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
             version = ''
         else:
             version = ' version %s' % VERSION
+        options1, args1 = format_options_args(options, args)
         wrt(TEMPLATE_SUBCLASS_HEADER % (tstamp, version,
+            options1, args1,
             superModule, ExternalEncoding, ))
         for element in ElementsForSubclasses:
             generateSubclass(
@@ -5694,7 +5719,7 @@ def getImportsForExternalXsds(root):
 
 
 def generate(outfileName, subclassFilename, behaviorFilename,
-             prefix, root, superModule):
+             prefix, root, options, args, superModule):
     global DelayedElements, DelayedElements_subclass, AlreadyGenerated
     # Create an output file.
     # Note that even if the user does not request an output file,
@@ -5711,7 +5736,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     wrt = outfile.write
     processed = []
     externalImports = getImportsForExternalXsds(root)
-    generateHeader(wrt, prefix, externalImports)
+    generateHeader(wrt, prefix, options, args, externalImports)
     #generateSimpleTypes(outfile, prefix, SimpleTypeDict)
     DelayedElements = []
     DelayedElements_subclass = []
@@ -5749,7 +5774,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     if subclassFilename:
         generateSubclasses(
             root, subclassFilename, behaviorFilename,
-            prefix, superModule)
+            prefix, options, args, superModule)
 
 
 def makeFile(outFileName):
@@ -5830,55 +5855,10 @@ def is_builtin_simple_type(type_val):
         return False
 
 
-##def process_include(inpath, outpath):
-##    from xml.etree import ElementTree as etree
-##    if inpath:
-##        doc = etree.parse(inpath)
-##        root = doc.getroot()
-##        process_include_tree(root)
-##    else:
-##        s1 = sys.stdin.read()
-##        root = etree.fromstring(s1)
-##        process_include_tree(root)
-##        doc = etree.ElementTree(root)
-##    if outpath:
-##        outfile = make_file(outpath)
-##        if outfile:
-##            doc.write(outfile)
-##            outfile.close()
-##    else:
-##        doc.write(sys.stdout)
-##
-##def process_include_tree(root):
-##    idx = 0
-##    children = root.getchildren()
-##    while idx < len(children):
-##        child = children[idx]
-##        tag = child.tag
-##        if type(tag) == type(""):
-##            tag = NAMESPACE_PAT.sub("", tag)
-##        else:
-##            tag = None
-##        if tag == 'include' and 'schemaLocation' in child.attrib:
-##            root.remove(child)
-##            path = child.attrib['schemaLocation']
-##            if os.path.exists(path):
-##                doc = etree.parse(path)
-##                node = doc.getroot()
-##                process_include_tree(node)
-##                children1 = node.getchildren()
-##                for child1 in children1:
-##                    root.insert(idx, child1)
-##                    idx += 1
-##        else:
-##            process_include_tree(child)
-##            idx += 1
-##        children = root.getchildren()
-
 def parseAndGenerate(
         outfileName, subclassFilename, prefix,
         xschemaFileName, behaviorFilename, catalogFilename,
-        processIncludes, superModule='???'):
+        processIncludes, options, args, superModule='???'):
     global DelayedElements, DelayedElements_subclass, \
         AlreadyGenerated, SaxDelayedElements, \
         AlreadyGenerated_subclass, UserMethodsPath, UserMethodsModule
@@ -5922,7 +5902,7 @@ def parseAndGenerate(
     #debug_show_elements(root)
         generate(
             outfileName, subclassFilename, behaviorFilename,
-            prefix, root, superModule)
+            prefix, root, options, args, superModule)
         # Generate __all__.  When using the parser as a module it is useful
         # to isolate important classes from internal ones. This way one
         # can do a reasonably safe "from parser import *"
@@ -5996,7 +5976,7 @@ def parseAndGenerate(
             if modulePath:
                 generate(
                     modulePath, subclassFilename, behaviorFilename,
-                    prefix, root, superModule)
+                    prefix, root, options, args, superModule)
                 # Generate __all__.  When using the parser as a module
                 # it is useful
                 # to isolate important classes from internal ones. This way one
@@ -6299,7 +6279,7 @@ def main():
     parseAndGenerate(
         outFilename, subclassFilename, prefix,
         xschemaFileName, behaviorFilename, catalogFilename,
-        processIncludes, superModule=superModule)
+        processIncludes, options, args, superModule=superModule)
 
 
 if __name__ == '__main__':

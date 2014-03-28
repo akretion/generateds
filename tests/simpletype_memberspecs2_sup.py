@@ -4,6 +4,19 @@
 #
 # Generated  by generateDS.py.
 #
+# Command line options:
+#   [('--no-dates', ''),
+#    ('--no-versions', ''),
+#    ('--silence', ''),
+#    ('--member-specs', 'list'),
+#    ('-f', ''),
+#    ('-o', 'tests/simpletype_memberspecs2_sup.py'),
+#    ('-s', 'tests/simpletype_memberspecs2_sub.py'),
+#    ('--super', 'simpletype_memberspecs2_sup')]
+#
+# Command line arguments:
+#   ['tests/simpletype_memberspecs.xsd']
+#
 
 import sys
 import getopt

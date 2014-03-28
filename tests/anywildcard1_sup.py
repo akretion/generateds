@@ -4,6 +4,19 @@
 #
 # Generated  by generateDS.py.
 #
+# Command line options:
+#   [('--no-dates', ''),
+#    ('--no-versions', ''),
+#    ('--silence', ''),
+#    ('--member-specs', 'list'),
+#    ('-f', ''),
+#    ('-o', 'tests/anywildcard2_sup.py'),
+#    ('-s', 'tests/anywildcard2_sub.py'),
+#    ('--super', 'anywildcard2_sup')]
+#
+# Command line arguments:
+#   ['tests/anywildcard.xsd']
+#
 
 import sys
 import getopt
