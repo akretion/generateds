@@ -19,6 +19,12 @@
 # Command line arguments:
 #   tests/to_etree.xsd
 #
+# Command line:
+#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/to_etree2_sup.py" -s "tests/to_etree2_sub.py" --export="etree" --silence --super="to_etree2_sup" tests/to_etree.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
 import getopt

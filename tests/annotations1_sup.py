@@ -17,6 +17,12 @@
 # Command line arguments:
 #   tests/annotations.xsd
 #
+# Command line:
+#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/annotations2_sup.py" -s "tests/annotations2_sub.py" --super="annotations2_sup" tests/annotations.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
 import getopt

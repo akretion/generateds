@@ -15,6 +15,12 @@
 # Command line arguments:
 #   tests/people.xsd
 #
+# Command line:
+#   generateDS.py --no-dates --no-versions -f -o "tests/out2_sup.py" -s "tests/out2_sub.py" --super="out2_sup" -u "gends_user_methods" tests/people.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
 

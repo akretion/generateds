@@ -16,6 +16,12 @@
 # Command line arguments:
 #   tests/attr_groups.xsd
 #
+# Command line:
+#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/attr_groups2_sup.py" -s "tests/attr_groups2_sub.py" --super="attr_groups2_sup" tests/attr_groups.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
 

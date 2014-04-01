@@ -17,6 +17,12 @@
 # Command line arguments:
 #   tests/people_procincl.xsd
 #
+# Command line:
+#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/people_procincl2_sup.py" -s "tests/people_procincl2_sub.py" --super="people_procincl2_sup" tests/people_procincl.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
 import getopt

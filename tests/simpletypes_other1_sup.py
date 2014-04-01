@@ -17,6 +17,12 @@
 # Command line arguments:
 #   tests/simpletypes_other.xsd
 #
+# Command line:
+#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/simpletypes_other2_sup.py" -s "tests/simpletypes_other2_sub.py" --super="simpletypes_other2_sup" tests/simpletypes_other.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
 import getopt
