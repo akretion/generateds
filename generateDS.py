@@ -4280,7 +4280,13 @@ TEMPLATE_HEADER = """\
 %s
 #
 # Command line arguments:
-%s
+#   %s
+#
+# Command line:
+#   %s
+#
+# Current working directory (os.getcwd()):
+#   %s
 #
 
 import sys
@@ -4897,11 +4903,19 @@ def _cast(typ, value):
 def format_options_args(options, args):
     options1 = '\n'.join(['#   %s' % (item, ) for item in options])
     args1 = '\n'.join(['#   %s' % (item, ) for item in args])
-##     options1 = '\n'.join(
-##         ['#   ' + line for line in pprint.pformat(options).split('\n')])
-##     args1 = '\n'.join(
-##         ['#   ' + line for line in pprint.pformat(args).split('\n')])
-    return options1, args1
+    program = sys.argv[0]
+    options2 = ''
+    for name, value in options:
+        if value:
+            if name.startswith('--'):
+                options2 += ' %s="%s"' % (name, value, )
+            else:
+                options2 += ' %s "%s"' % (name, value, )
+        else:
+            options2 += ' %s' % name
+    args1 = ' '.join(args)
+    command_line = '%s%s %s' % (program, options2, args1, )
+    return options1, args1, command_line
 
 
 def generateHeader(wrt, prefix, options, args, externalImports):
@@ -4910,9 +4924,13 @@ def generateHeader(wrt, prefix, options, args, externalImports):
         version = ''
     else:
         version = ' version %s' % VERSION
-    options1, args1 = format_options_args(options, args)
+    options1, args1, command_line = format_options_args(options, args)
+    current_working_directory = os.path.split(os.getcwd())[1]
     s1 = TEMPLATE_HEADER % (
-        tstamp, version, options1, args1, ExternalEncoding, )
+        tstamp, version,
+        options1, args1,
+        command_line, current_working_directory,
+        ExternalEncoding, )
     wrt(s1)
     for externalImport in externalImports:
         wrt(externalImport + "\n")
@@ -5312,7 +5330,13 @@ TEMPLATE_SUBCLASS_HEADER = """\
 %s
 #
 # Command line arguments:
-%s
+#   %s
+#
+# Command line:
+#   %s
+#
+# Current working directory (os.getcwd()):
+#   %s
 #
 
 import sys
@@ -5599,9 +5623,11 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
             version = ''
         else:
             version = ' version %s' % VERSION
-        options1, args1 = format_options_args(options, args)
+        options1, args1, command_line = format_options_args(options, args)
+        current_working_directory = os.path.split(os.getcwd())[1]
         wrt(TEMPLATE_SUBCLASS_HEADER % (tstamp, version,
             options1, args1,
+            command_line, current_working_directory,
             superModule, ExternalEncoding, ))
         for element in ElementsForSubclasses:
             generateSubclass(

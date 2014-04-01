@@ -17,6 +17,12 @@
 # Command line arguments:
 #   tests/simplecontent_restriction.xsd
 #
+# Command line:
+#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/simplecontent_restriction2_sup.py" -s "tests/simplecontent_restriction2_sub.py" --super="simplecontent_restriction2_sup" tests/simplecontent_restriction.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
 import getopt

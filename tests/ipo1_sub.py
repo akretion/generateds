@@ -15,6 +15,12 @@
 # Command line arguments:
 #   tests/ipo.xsd
 #
+# Command line:
+#   generateDS.py --no-dates --no-versions --member-specs="list" -f -o "tests/ipo2_sup.py" -s "tests/ipo2_sub.py" --super="ipo2_sup" tests/ipo.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
 

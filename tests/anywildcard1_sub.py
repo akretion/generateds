@@ -16,6 +16,12 @@
 # Command line arguments:
 #   tests/anywildcard.xsd
 #
+# Command line:
+#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/anywildcard2_sup.py" -s "tests/anywildcard2_sub.py" --super="anywildcard2_sup" tests/anywildcard.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
 

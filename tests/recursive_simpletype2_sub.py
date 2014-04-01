@@ -16,6 +16,12 @@
 # Command line arguments:
 #   tests/recursive_simpletype.xsd
 #
+# Command line:
+#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/recursive_simpletype2_sup.py" -s "tests/recursive_simpletype2_sub.py" --super="recursive_simpletype2_sup" tests/recursive_simpletype.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
 

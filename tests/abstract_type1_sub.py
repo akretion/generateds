@@ -16,6 +16,12 @@
 # Command line arguments:
 #   tests/abstract_type.xsd
 #
+# Command line:
+#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/abstract_type2_sup.py" -s "tests/abstract_type2_sub.py" --super="abstract_type2_sup" tests/abstract_type.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
 
