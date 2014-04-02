@@ -179,16 +179,16 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.12c'
+VERSION = '2.12d'
 ##VERSION##
 
 GenerateProperties = 0
 UseGetterSetter = 'new'
 MemberSpecs = None
-DelayedElements = []
-DelayedElements_subclass = []
-AlreadyGenerated = []
-AlreadyGenerated_subclass = []
+DelayedElements = set()
+DelayedElements_subclass = set()
+AlreadyGenerated = set()
+AlreadyGenerated_subclass = set()
 PostponedExtensions = []
 ElementsForSubclasses = []
 ElementDict = {}
@@ -1218,7 +1218,7 @@ class XschemaElement(XschemaElementBase):
 
     def collectElementNames(self, elementNames, count):
         for child in self.children:
-            elementNames.add(mapName(cleanupName(child.cleanName)))
+            elementNames.add(child.getCleanName())
         base = self.getBase()
         if base and base in ElementDict:
             parent = ElementDict[base]
@@ -2222,7 +2222,7 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
         else:
             for child in element.getChildren():
                 unmappedName = child.getName()
-                name = mapName(cleanupName(child.getName()))
+                name = child.getCleanName()
                 child_type = child.getType()
                 if child_type == AnyTypeIdentifier:
                     if child.getMaxOccurs() > 1:
@@ -2469,7 +2469,7 @@ def generateExportChildren(wrt, element, hasChildren, namespace):
             any_type_child = None
             for child in element.getChildren():
                 unmappedName = child.getName()
-                name = mapName(cleanupName(child.getName()))
+                name = child.getCleanName()
                 # fix_abstract
                 type_element = None
                 abstract_child = False
@@ -2532,11 +2532,11 @@ def getParentName(element):
     parentObj = None
     if base and base in ElementDict:
         parentObj = ElementDict[base]
-        parentName = cleanupName(parentObj.getName())
+        parentName = parentObj.getCleanName()
     elif rBase:
         base = element.getRestrictionBase()
         parentObj = ElementDict[base]
-        parentName = cleanupName(parentObj.getName())
+        parentName = parentObj.getCleanName()
     return parentName, parentObj
 
 
@@ -3236,8 +3236,8 @@ def generateBuildMixed_1(wrt, prefix, child, headChild, keyword, delayed):
         if type_element and type_element.isAbstract():
             abstract_child = True
         if not delayed and not child in DelayedElements:
-            DelayedElements.append(child)
-            DelayedElements_subclass.append(child)
+            DelayedElements.add(child)
+            DelayedElements_subclass.add(child)
         wrt("        %s nodeName_ == '%s':\n" % (keyword, origName, ))
         if abstract_child:
             wrt(TEMPLATE_ABSTRACT_CHILD % (mappedName, ))
@@ -3459,8 +3459,8 @@ def generateBuildStandard_1(
         if type_element and type_element.isAbstract():
             abstract_child = True
         if not delayed and not child in DelayedElements:
-            DelayedElements.append(child)
-            DelayedElements_subclass.append(child)
+            DelayedElements.add(child)
+            DelayedElements_subclass.add(child)
         wrt("        %s nodeName_ == '%s':\n" % (keyword, origName, ))
         # Is this a simple type?
         if child.getSimpleType():
@@ -4162,7 +4162,7 @@ def generateHascontentMethod(wrt, element):
         if child.getType() == AnyTypeIdentifier:
             name = 'anytypeobjs_'
         else:
-            name = mapName(cleanupName(child.getName()))
+            name = child.getCleanName()
         if not firstTime:
             wrt(' or\n')
         firstTime = False
@@ -4190,6 +4190,7 @@ def generateHascontentMethod(wrt, element):
 
 def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     logging.debug("Generating class for: %s" % element)
+    mappedName = element.getCleanName()
     parentName, base = getParentName(element)
     logging.debug("Element base: %s" % base)
     if not element.isExplicitDefine():
@@ -4203,9 +4204,9 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
         if parentName not in AlreadyGenerated:
             PostponedExtensions.append(element)
             return
-    if mapName(element.getName()) in AlreadyGenerated:
+    if mappedName in AlreadyGenerated:
         return
-    AlreadyGenerated.append(element.getName())
+    AlreadyGenerated.add(mappedName)
     if element.getMixedExtensionError():
         err_msg('*** Element %s extension chain contains mixed and '
                 'non-mixed content.  Not generated.\n' %
@@ -4234,7 +4235,7 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     parentName, parent = getParentName(element)
     superclass_name = 'None'
     if parentName and parentName in AlreadyGenerated:
-        superclass_name = mapName(cleanupName(parentName))
+        superclass_name = parentName
     wrt('    superclass = %s\n' % (superclass_name, ))
     generateCtor(wrt, element)
     wrt('    def factory(*args_, **kwargs_):\n')
@@ -5062,10 +5063,11 @@ if __name__ == '__main__':
 def generateMain(outfile, prefix, root):
     exportDictLine = "GDSClassesMapping = {\n"
     for classType in MappingTypes:
-        if MappingTypes[classType] in AlreadyGenerated:
+        mappedName = mapName(cleanupName(MappingTypes[classType]))
+        if mappedName in AlreadyGenerated:
             exportDictLine += "    '%s': %s,\n" % (
-                classType,
-                cleanupName(mapName(MappingTypes[classType])))
+                classType, mappedName,
+                )
     exportDictLine += "}\n\n\n"
     outfile.write(exportDictLine)
     children = root.getChildren()
@@ -5284,9 +5286,10 @@ def generateClassBehaviors(wrt, classBehaviors, baseImplUrl):
 def generateSubclass(wrt, element, prefix, xmlbehavior,  behaviors, baseUrl):
     if not element.isComplex():
         return
-    if element.getName() in AlreadyGenerated_subclass:
+    mappedName = element.getCleanName()
+    if mappedName in AlreadyGenerated_subclass:
         return
-    AlreadyGenerated_subclass.append(element.getName())
+    AlreadyGenerated_subclass.add(mappedName)
     name = element.getCleanName()
     wrt('class %s%s%s(supermod.%s):\n' % (prefix, name, SubclassSuffix, name))
     childCount = countChildren(element, 0)
@@ -5754,7 +5757,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     #   because it produces data structures needed during generation of
     #   subclasses.
     MappingTypes.clear()
-    AlreadyGenerated = []
+    AlreadyGenerated = set()
     outfile = None
     if outfileName:
         outfile = makeFile(outfileName)
@@ -5765,8 +5768,8 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     externalImports = getImportsForExternalXsds(root)
     generateHeader(wrt, prefix, options, args, externalImports)
     #generateSimpleTypes(outfile, prefix, SimpleTypeDict)
-    DelayedElements = []
-    DelayedElements_subclass = []
+    DelayedElements = set()
+    DelayedElements_subclass = set()
     elements = root.getChildren()
     generateFromTree(wrt, prefix, elements, processed)
     while 1:
@@ -5889,10 +5892,10 @@ def parseAndGenerate(
     global DelayedElements, DelayedElements_subclass, \
         AlreadyGenerated, SaxDelayedElements, \
         AlreadyGenerated_subclass, UserMethodsPath, UserMethodsModule
-    DelayedElements = []
-    DelayedElements_subclass = []
-    AlreadyGenerated = []
-    AlreadyGenerated_subclass = []
+    DelayedElements = set()
+    DelayedElements_subclass = set()
+    AlreadyGenerated = set()
+    AlreadyGenerated_subclass = set()
     if UserMethodsPath:
         # UserMethodsModule = __import__(UserMethodsPath)
         path_list = UserMethodsPath.split('.')
@@ -5935,7 +5938,7 @@ def parseAndGenerate(
         # can do a reasonably safe "from parser import *"
         if outfileName:
             exportableClassList = [
-                '"%s"' % mapName(cleanupName(name))
+                '"%s"' % name
                 for name in AlreadyGenerated]
             exportableClassList.sort()
             exportableClassNames = ',\n    '.join(exportableClassList)
@@ -6009,7 +6012,7 @@ def parseAndGenerate(
                 # to isolate important classes from internal ones. This way one
                 # can do a reasonably safe "from parser import *"
                 exportableClassList = [
-                    '"%s"' % mapName(cleanupName(name))
+                    '"%s"' % name
                     for name in AlreadyGenerated]
                 exportableClassList.sort()
                 exportableClassNames = ',\n    '.join(exportableClassList)

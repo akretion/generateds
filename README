@@ -141,6 +141,17 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.12d (04/02/2014)
+- Fix for an infinite loop caused by inconsistent use of
+  mapped/clean names with list AlreadyGenerated.  Thanks to Jerome
+  Allasia for catching this and for suggesting a fix.
+- Added a unit test for the use of mapped/clean names, in particular
+  when one xs:complexType is an xs:extension of another.
+- Changed several lists to sets for faster look-up, for example
+  AlreadyGenerated, AlreadyGenerated_subclass, DelayedElements, etc.
+- Cleaned up the use of functions mapName() and cleanupName() to
+  avoid duplicate transformations.
+
 Version 2.12c (03/28/2014)
 - Fix for "one module per XSD file" to handle an include or import
   element that refers to a *remote* schema on the Net (i.e. the

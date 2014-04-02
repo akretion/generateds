@@ -507,6 +507,24 @@ class GenTest(unittest.TestCase):
         result, err = self.execute(cmd)
         self.check_result(result, err, ('sys.stdout.write',))
 
+    def test_023_mapcleanname(self):
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
+            '--silence --member-specs=list -f '
+            '-o tests/%s2_sup.py -s tests/%s2_sub.py '
+            '--super=%s2_sup '
+            'tests/%s.xsd'
+        )
+        t_ = 'mapcleanname'
+        cmd = cmdTempl % (t_, t_, t_, t_, )
+        result, _ = self.execute(cmd, cwd='..')
+        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ('sys.stdout.write',))
+        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ())
+
     def check_result(self, result, err, ignore_strings):
         self.failUnlessEqual(len(result), 0)
         self.failUnlessEqual(len(err), 0)
