@@ -141,6 +141,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.12e (05/12/2014)
+- Fix for formatting error.  Thanks to Nikolay Lavrov for catching
+  this and for providing a fix.
+- Fix to gds_parse_datetime().  The Python datetime module's
+  datetime object uses microseconds, but xs:dateTime uses fractions
+  of a second (e.g. 0.123).  Converted from decimal fraction to
+  microseconds.  Thanks to Mikki Weesenaar for catching this.
+
 Version 2.12d (04/02/2014)
 - Fix for an infinite loop caused by inconsistent use of
   mapped/clean names with list AlreadyGenerated.  Thanks to Jerome

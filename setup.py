@@ -10,10 +10,10 @@ setup(name="generateDS",
     version="2.12d",
 ##VERSION##
     author="Dave Kuhlman",
-    author_email="dkuhlman@rexx.com",
+    author_email="dkuhlman@davekuhlman.org",
     maintainer="Dave Kuhlman",
-    maintainer_email="dkuhlman@rexx.com",
-    url="http://www.rexx.com/~dkuhlman/generateDS.html",
+    maintainer_email="dkuhlman@davekuhlman.org",
+    url="http://www.davekuhlman.org/generateDS.html",
     description="Generate Python data structures and XML parser from Xschema",
     long_description="""\
 generateDS.py generates Python data structures (for example, class

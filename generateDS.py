@@ -3247,7 +3247,8 @@ def generateBuildMixed_1(wrt, prefix, child, headChild, keyword, delayed):
                 wrt("            class_obj_ = self.get_class_obj_("
                     "child_, %s%s)\n" % (
                         prefix, cleanupName(mapName(childType)), ))
-                wrt("            class_obj_ = %s%s.factory()\n")
+                wrt("            class_obj_ = %s%s.factory()\n" % (
+                    prefix, cleanupName(mapName(childType)), ))
             else:
                 wrt("            obj_ = %s%s.factory()\n" % (
                     prefix, cleanupName(mapName(childType))))
@@ -4496,7 +4497,10 @@ except ImportError, exp:
                     tz = GeneratedsSuper._FixedOffsetTZ(
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
-            if len(input_data.split('.')) > 1:
+            time_parts = input_data.split('.')
+            if len(time_parts) > 1:
+                micro_seconds = int(float('0.' + time_parts[1]) * 1000000)
+                input_data = '%%s.%%s' %% (time_parts[0], micro_seconds, )
                 dt = datetime_.datetime.strptime(
                     input_data, '%%Y-%%m-%%dT%%H:%%M:%%S.%%f')
             else:
