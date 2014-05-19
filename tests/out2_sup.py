@@ -673,23 +673,28 @@ class people(GeneratedsSuper):
     def get_comments(self): return self.comments
     def set_comments(self, comments): self.comments = comments
     def add_comments(self, value): self.comments.append(value)
-    def insert_comments(self, index, value): self.comments[index] = value
+    def insert_comments_at(self, index, value): self.comments.insert(index, value)
+    def replace_comments_at(self, index, value): self.comments[index] = value
     def get_person(self): return self.person
     def set_person(self, person): self.person = person
     def add_person(self, value): self.person.append(value)
-    def insert_person(self, index, value): self.person[index] = value
+    def insert_person_at(self, index, value): self.person.insert(index, value)
+    def replace_person_at(self, index, value): self.person[index] = value
     def get_programmer(self): return self.programmer
     def set_programmer(self, programmer): self.programmer = programmer
     def add_programmer(self, value): self.programmer.append(value)
-    def insert_programmer(self, index, value): self.programmer[index] = value
+    def insert_programmer_at(self, index, value): self.programmer.insert(index, value)
+    def replace_programmer_at(self, index, value): self.programmer[index] = value
     def get_python_programmer(self): return self.python_programmer
     def set_python_programmer(self, python_programmer): self.python_programmer = python_programmer
     def add_python_programmer(self, value): self.python_programmer.append(value)
-    def insert_python_programmer(self, index, value): self.python_programmer[index] = value
+    def insert_python_programmer_at(self, index, value): self.python_programmer.insert(index, value)
+    def replace_python_programmer_at(self, index, value): self.python_programmer[index] = value
     def get_java_programmer(self): return self.java_programmer
     def set_java_programmer(self, java_programmer): self.java_programmer = java_programmer
     def add_java_programmer(self, value): self.java_programmer.append(value)
-    def insert_java_programmer(self, index, value): self.java_programmer[index] = value
+    def insert_java_programmer_at(self, index, value): self.java_programmer.insert(index, value)
+    def replace_java_programmer_at(self, index, value): self.java_programmer[index] = value
     def hasContent_(self):
         if (
             self.comments or
@@ -928,7 +933,8 @@ class comments(GeneratedsSuper):
     def get_emp(self): return self.emp
     def set_emp(self, emp): self.emp = emp
     def add_emp(self, value): self.emp.append(value)
-    def insert_emp(self, index, value): self.emp[index] = value
+    def insert_emp_at(self, index, value): self.emp.insert(index, value)
+    def replace_emp_at(self, index, value): self.emp[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
@@ -1104,17 +1110,20 @@ class person(GeneratedsSuper):
     def get_interest(self): return self.interest
     def set_interest(self, interest): self.interest = interest
     def add_interest(self, value): self.interest.append(value)
-    def insert_interest(self, index, value): self.interest[index] = value
+    def insert_interest_at(self, index, value): self.interest.insert(index, value)
+    def replace_interest_at(self, index, value): self.interest[index] = value
     def get_category(self): return self.category
     def set_category(self, category): self.category = category
     def get_agent(self): return self.agent
     def set_agent(self, agent): self.agent = agent
     def add_agent(self, value): self.agent.append(value)
-    def insert_agent(self, index, value): self.agent[index] = value
+    def insert_agent_at(self, index, value): self.agent.insert(index, value)
+    def replace_agent_at(self, index, value): self.agent[index] = value
     def get_promoter(self): return self.promoter
     def set_promoter(self, promoter): self.promoter = promoter
     def add_promoter(self, value): self.promoter.append(value)
-    def insert_promoter(self, index, value): self.promoter[index] = value
+    def insert_promoter_at(self, index, value): self.promoter.insert(index, value)
+    def replace_promoter_at(self, index, value): self.promoter[index] = value
     def get_description(self): return self.description
     def set_description(self, description): self.description = description
     def get_vegetable(self): return self.vegetable
@@ -2777,15 +2786,18 @@ class booster(GeneratedsSuper):
     def get_other_value(self): return self.other_value
     def set_other_value(self, other_value): self.other_value = other_value
     def add_other_value(self, value): self.other_value.append(value)
-    def insert_other_value(self, index, value): self.other_value[index] = value
+    def insert_other_value_at(self, index, value): self.other_value.insert(index, value)
+    def replace_other_value_at(self, index, value): self.other_value[index] = value
     def get_type(self): return self.type_
     def set_type(self, type_): self.type_ = type_
     def add_type(self, value): self.type_.append(value)
-    def insert_type(self, index, value): self.type_[index] = value
+    def insert_type_at(self, index, value): self.type_.insert(index, value)
+    def replace_type_at(self, index, value): self.type_[index] = value
     def get_client_handler(self): return self.client_handler
     def set_client_handler(self, client_handler): self.client_handler = client_handler
     def add_client_handler(self, value): self.client_handler.append(value)
-    def insert_client_handler(self, index, value): self.client_handler[index] = value
+    def insert_client_handler_at(self, index, value): self.client_handler.insert(index, value)
+    def replace_client_handler_at(self, index, value): self.client_handler[index] = value
     def hasContent_(self):
         if (
             self.firstname is not None or
