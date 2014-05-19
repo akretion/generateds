@@ -654,7 +654,8 @@ class carrierType(GeneratedsSuper):
     def get_fleet(self): return self.fleet
     def set_fleet(self, fleet): self.fleet = fleet
     def add_fleet(self, value): self.fleet.append(value)
-    def insert_fleet(self, index, value): self.fleet[index] = value
+    def insert_fleet_at(self, index, value): self.fleet.insert(index, value)
+    def replace_fleet_at(self, index, value): self.fleet[index] = value
     def hasContent_(self):
         if (
             self.fleet

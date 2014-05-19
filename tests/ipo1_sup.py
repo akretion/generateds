@@ -809,7 +809,8 @@ class Items(GeneratedsSuper):
     def get_item(self): return self.item
     def set_item(self, item): self.item = item
     def add_item(self, value): self.item.append(value)
-    def insert_item(self, index, value): self.item[index] = value
+    def insert_item_at(self, index, value): self.item.insert(index, value)
+    def replace_item_at(self, index, value): self.item[index] = value
     def hasContent_(self):
         if (
             self.item

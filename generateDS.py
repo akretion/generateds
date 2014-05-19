@@ -3986,9 +3986,13 @@ def generateGettersAndSetters(wrt, element):
             if child.getMaxOccurs() > 1:
                 wrt('    def add%s(self, value): self.%s.append(value)\n' %
                     (capName, name))
-                wrt('    def insert%s(self, index, value): '
+                suffix = make_gs_name('at')
+                wrt('    def insert%s%s(self, index, value): '
+                    'self.%s.insert(index, value)\n' %
+                    (capName, suffix, name))
+                wrt('    def replace%s%s(self, index, value): '
                     'self.%s[index] = value\n' %
-                    (capName, name))
+                    (capName, suffix, name))
             if GenerateProperties:
                 wrt('    %sProp = property(get%s, set%s)\n' %
                     (unmappedName, capName, capName))
