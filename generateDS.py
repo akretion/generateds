@@ -179,7 +179,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.12d'
+VERSION = '2.12e'
 ##VERSION##
 
 GenerateProperties = 0
@@ -3527,12 +3527,15 @@ def generateBuildStandard_1(
 # end generateBuildStandard_1
 
 
-def transitiveClosure(m, e):
+def transitiveClosure(m, e, seen):
     t = []
+    if e in seen:
+        return t
     if e in m:
         t += m[e]
+        seen.add(e)
         for f in m[e]:
-            t += transitiveClosure(m, f)
+            t += transitiveClosure(m, f, seen)
     return t
 
 
@@ -3552,8 +3555,9 @@ def generateBuildStandard(wrt, prefix, element, keyword, delayed, hasChildren):
             #   substitutionGroup.
             childName = child.getName()
             if childName in SubstitutionGroups:
+                seen = set()
                 for memberName in transitiveClosure(
-                        SubstitutionGroups, childName):
+                        SubstitutionGroups, childName, seen):
                     memberName = cleanupName(memberName)
                     if memberName in ElementDict:
                         member = ElementDict[memberName]
