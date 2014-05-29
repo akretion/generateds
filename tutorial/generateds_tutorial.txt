@@ -3,15 +3,15 @@ generateDS -- Introduction and Tutorial
 ======================================================
 
 :author: Dave Kuhlman
-:address: dkuhlman@rexx.com
-    http://www.rexx.com/~dkuhlman
+:address: dkuhlman@davekuhlman.org
+    http://www.davekuhlman.org
 
 .. Do not modify the following version comments.
    They are used by updateversion.py.
 
 .. version
 
-:revision: 2.12d
+:revision: 2.12e
 
 .. version
 

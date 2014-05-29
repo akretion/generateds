@@ -30,7 +30,7 @@ from lxml import etree
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.12d'
+VERSION = '2.12e'
 ##VERSION##
 
 CatalogDict = {}
@@ -559,8 +559,4 @@ def main():
 
 if __name__ == "__main__":
     #import pdb; pdb.set_trace()
-    #main()
-    try:
-        main()
-    except:
-        import pdb; pdb.post_mortem()
+    main()
