@@ -1455,7 +1455,7 @@ class XschemaHandler(handler.ContentHandler):
                 if 'maxOccurs' not in attrs and maxOccurs is not None:
                     element.attrs['maxOccurs'] = maxOccurs
 
-            if not 'type' in attrs.keys() and not 'ref' in attrs.keys():
+            if 'type' not in attrs.keys() and 'ref' not in attrs.keys():
                 element.setExplicitDefine(1)
             if len(self.stack) == 1:
                 element.setTopLevel(1)
@@ -3235,7 +3235,7 @@ def generateBuildMixed_1(wrt, prefix, child, headChild, keyword, delayed):
             type_element = ElementDict.get(type_name)
         if type_element and type_element.isAbstract():
             abstract_child = True
-        if not delayed and not child in DelayedElements:
+        if not delayed and child not in DelayedElements:
             DelayedElements.add(child)
             DelayedElements_subclass.add(child)
         wrt("        %s nodeName_ == '%s':\n" % (keyword, origName, ))
@@ -3459,7 +3459,7 @@ def generateBuildStandard_1(
             type_element = ElementDict.get(type_name)
         if type_element and type_element.isAbstract():
             abstract_child = True
-        if not delayed and not child in DelayedElements:
+        if not delayed and child not in DelayedElements:
             DelayedElements.add(child)
             DelayedElements_subclass.add(child)
         wrt("        %s nodeName_ == '%s':\n" % (keyword, origName, ))
@@ -5078,8 +5078,7 @@ def generateMain(outfile, prefix, root):
         mappedName = mapName(cleanupName(MappingTypes[classType]))
         if mappedName in AlreadyGenerated:
             exportDictLine += "    '%s': %s,\n" % (
-                classType, mappedName,
-                )
+                classType, mappedName, )
     exportDictLine += "}\n\n\n"
     outfile.write(exportDictLine)
     children = root.getChildren()
@@ -5295,7 +5294,7 @@ def generateClassBehaviors(wrt, classBehaviors, baseImplUrl):
         wrt('\n')
 
 
-def generateSubclass(wrt, element, prefix, xmlbehavior,  behaviors, baseUrl):
+def generateSubclass(wrt, element, prefix, xmlbehavior, behaviors, baseUrl):
     if not element.isComplex():
         return
     mappedName = element.getCleanName()
