@@ -2530,8 +2530,23 @@ Django -- Generating Models and Forms
 ``generateDS.py`` can be used to generate Django models and Django
 forms that represent the data structures defined in an XML Schema.
 
+**Note:** In order to use this capability, you must obtain the
+"source" distribution of ``generateDS.py``.  You can do this either
+(1) by downloading ``generateDS-x.xxy.tar.gz`` from the Python
+Package Index or (2) by downloading the distribution from Bitbucket
+at https://bitbucket.org/dkuhlman/generateds.  In particular,
+installing ``generateDS.py`` using ``pip`` does not give you all the
+files you need in order to use this capability.
+
+*Note:* You only need to obtain the source distribution (so that you
+can copy the files in the ``django/`` directory, for example); you
+do not necessarily need to install from it.  If you have already
+installed ``generateDS.py`` using ``pip`` or ``easy_install``, you
+do not need to re-install from the source tree.
+
 There are support files in the ``django`` directory in the
-distribution.
+source distribution (but *not* in the version install using ``pip``
+or ``easy_install``).
 
 Here is an overview of the process:
 
@@ -2573,8 +2588,9 @@ Now, follow these steps:
        $ mkdir WorkDir
        $ cd WorkDir
 
-2. Copy the files in from the sub directory ``django/`` in the
-   distribution to the current directory::
+2. Copy the files in from the sub directory ``django/`` in the of
+   the source distribution of ``generateDS.py`` to the current
+   directory::
 
        $ cp /my_sources/generateDS-n.nn/django/* .
 

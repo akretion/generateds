@@ -141,16 +141,17 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version 2.12e (05/29/2014)
+Version 2.12e (06/16/2014)
 - Fix for formatting error.  Thanks to Nikolay Lavrov for catching
   this and for providing a fix.
 - Fix to gds_parse_datetime().  The Python datetime module's
   datetime object uses microseconds, but xs:dateTime uses fractions
   of a second (e.g. 0.123).  Converted from decimal fraction to
   microseconds.  Thanks to Mikki Weesenaar for catching this.
-- Modified behavior and names for generated method insert_xxx, so
-  that now we generate insert_xxx_at and replace_xxx_at.  Thanks to
-  Bart Wagenaar for pointing out this deviation from Pythonic style.
+- Modified behavior and names for generated method insert_xxx(which
+  are generated when, e.g., maxOccurs="unbounded"), so that now we
+  generate insert_xxx_at and replace_xxx_at.  Thanks to Bart
+  Wagenaar for pointing out this deviation from Pythonic style.
 - Function transitiveClosure in generateDS.py was susceptible to
   infinite looping.  This seemed to occur when a substitutionGroup
   contains a member with the same name as the head of the
