@@ -2318,6 +2318,9 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
                         wrt("            %s_.to_etree(element, name_='%s', "
                             "mapping_=mapping_)\n" % (
                                 name, unmappedName,))
+    else:
+        wrt("        if self.hasContent_():\n")
+        wrt("            element.text = self.gds_format_string(self.get_valueOf_())\n")
 #end generateToEtreeChildren
 
 
