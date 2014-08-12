@@ -141,6 +141,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.12f (08/12/2014)
+- Fix for substitutionGroup conflict with keyword name mapping.
+  Thanks to Leonid Minchin for finding and helping with this
+  problem.
+- An exception occured when an element had a documentation string
+  that was short (possibly 1 character).  Fixed.  Thanks to Matthias
+  Zaake for finding this and for providing a patch.
+
 Version 2.12e (06/16/2014)
 - Fix for formatting error.  Thanks to Nikolay Lavrov for catching
   this and for providing a fix.
@@ -158,6 +166,9 @@ Version 2.12e (06/16/2014)
   substitutionGroup (but in a different namespace?).  Added a test
   to stop the recursion when this occurs.  Thanks to Stuart Chalk
   for finding and reporting this.
+- Added explanation to the documentation explaining how the source                  
+  distribution (generateDS-x.xxy.tar.gz or Bitbucket) is needed for                 
+  use of the Django model generation capability.                                    
 
 Version 2.12d (04/02/2014)
 - Fix for an infinite loop caused by inconsistent use of

@@ -3493,6 +3493,7 @@ def generateBuildStandard_1(
             substitutionGroup = child.getAttrs().get('substitutionGroup')
             if substitutionGroup is not None:
                 _, name = get_prefix_and_value(substitutionGroup)
+                name = mapName(name)
             else:
                 name = mappedName
             s1 = "            self.%s.append(obj_)\n" % (name, )
@@ -3500,9 +3501,10 @@ def generateBuildStandard_1(
             substitutionGroup = child.getAttrs().get('substitutionGroup')
             if substitutionGroup is not None:
                 name = substitutionGroup
+                name = mapName(name)
             else:
-                name = headName
-            s1 = "            self.%s = obj_\n" % (mappedName, )
+                name = mapName(headName)
+            s1 = "            self.%s = obj_\n" % (name, )
         wrt(s1)
         wrt("            obj_.original_tagname_ = '%s'\n" % (origName, ))
     #
@@ -4233,11 +4235,12 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
         s2 = ' '.join(element.documentation.strip().split())
         s2 = s2.encode('utf-8')
         s2 = textwrap.fill(s2, width=68, subsequent_indent='    ')
-        if s2[0] == '"' or s2[-1] == '"':
-            s2 = '    """ %s """\n' % (s2, )
-        else:
-            s2 = '    """%s"""\n' % (s2, )
-        wrt(s2)
+        if len(s2) > 1:
+            if s2[0] == '"' or s2[-1] == '"':
+                s2 = '    """ %s """\n' % (s2, )
+            else:
+                s2 = '    """%s"""\n' % (s2, )
+            wrt(s2)
     if UserMethodsModule or MemberSpecs:
         generateMemberSpec(wrt, element)
     wrt('    subclass = None\n')
