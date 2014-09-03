@@ -2636,9 +2636,9 @@ def generateExportFn(wrt, prefix, element, namespace, nameSpacesDef):
     if parentName:
         hasAttributes += 1
         elName = element.getCleanName()
-        wrt("        super(%s, self).exportAttributes("
+        wrt("        super(%s%s, self).exportAttributes("
             "outfile, level, already_processed, namespace_, name_='%s')\n" %
-            (elName, name, ))
+            (prefix, elName, name, ))
     hasAttributes += generateExportAttributes(wrt, element, hasAttributes)
     if hasAttributes == 0:
         wrt("        pass\n")
@@ -2652,9 +2652,9 @@ def generateExportFn(wrt, prefix, element, namespace, nameSpacesDef):
     if parentName and not element.getRestrictionBaseObj():
         hasChildren += 1
         elName = element.getCleanName()
-        wrt("        super(%s, self).exportChildren(outfile, level, "
+        wrt("        super(%s%s, self).exportChildren(outfile, level, "
             "namespace_, name_, True, pretty_print=pretty_print)\n" %
-            (elName, ))
+            (prefix, elName, ))
     hasChildren += generateExportChildren(wrt, element, hasChildren, namespace)
     if childCount == 0:   # and not element.isMixed():
         wrt("        pass\n")
@@ -2907,18 +2907,18 @@ def generateExportLiteralFn(wrt, prefix, element):
     if parentName:
         count += 1
         elName = element.getCleanName()
-        wrt("        super(%s, self).exportLiteralAttributes("
+        wrt("        super(%s%s, self).exportLiteralAttributes("
             "outfile, level, already_processed, name_)\n" %
-            (elName, ))
+            (prefix, elName, ))
     if count == 0:
         wrt("        pass\n")
     wrt("    def exportLiteralChildren(self, outfile, level, name_):\n")
     parentName, parent = getParentName(element)
     if parentName:
         elName = element.getCleanName()
-        wrt("        super(%s, self).exportLiteralChildren("
+        wrt("        super(%s%s, self).exportLiteralChildren("
             "outfile, level, name_)\n" %
-            (elName, ))
+            (prefix, elName, ))
     for child in element.getChildren():
         name = child.getName()
         name = cleanupName(name)
@@ -3620,9 +3620,9 @@ def generateBuildFn(wrt, prefix, element, delayed):
     if parentName:
         hasAttributes += 1
         elName = element.getCleanName()
-        wrt('        super(%s, self).buildAttributes('
+        wrt('        super(%s%s, self).buildAttributes('
             'node, attrs, already_processed)\n' %
-            (elName, ))
+            (prefix, elName, ))
     if hasAttributes == 0:
         wrt('        pass\n')
     wrt('    def buildChildren(self, child_, node, nodeName_, '
@@ -3640,8 +3640,8 @@ def generateBuildFn(wrt, prefix, element, delayed):
     base = element.getBase()
     if base and not element.getSimpleContent():
         elName = element.getCleanName()
-        wrt("        super(%s, self).buildChildren("
-            "child_, node, nodeName_, True)\n" % (elName, ))
+        wrt("        super(%s%s, self).buildChildren("
+            "child_, node, nodeName_, True)\n" % (prefix, elName, ))
     if hasChildren == 0:
         wrt("        pass\n")
 # end generateBuildFn
@@ -3812,7 +3812,7 @@ MixedCtorInitializers = '''\
 '''
 
 
-def generateCtor(wrt, element):
+def generateCtor(wrt, prefix, element):
     elName = element.getCleanName()
     childCount = countChildren(element, 0)
     s2 = buildCtorArgs_multilevel(element, childCount)
@@ -3829,10 +3829,10 @@ def generateCtor(wrt, element):
             s2 = ''.join(args)
             if len(args) > 254:
                 wrt('        arglist_ = (%s)\n' % (s2, ))
-                wrt('        super(%s, self).__init__(*arglist_)\n' %
-                    (elName, ))
+                wrt('        super(%s%s, self).__init__(*arglist_)\n' %
+                    (prefix, elName, ))
             else:
-                wrt('        super(%s, self).__init__(%s)\n' % (elName, s2, ))
+                wrt('        super(%s%s, self).__init__(%s)\n' % (prefix, elName, s2, ))
     attrDefs = element.getAttributeDefs()
     for key in attrDefs:
         attrDef = attrDefs[key]
@@ -4168,7 +4168,7 @@ def generateUserMethods(wrt, element):
             wrt(source)
 
 
-def generateHascontentMethod(wrt, element):
+def generateHascontentMethod(wrt, prefix, element):
     wrt('    def hasContent_(self):\n')
     wrt('        if (\n')
     firstTime = True
@@ -4195,7 +4195,7 @@ def generateHascontentMethod(wrt, element):
         if not firstTime:
             wrt(' or\n')
         firstTime = False
-        wrt('            super(%s, self).hasContent_()' % (elName, ))
+        wrt('            super(%s%s, self).hasContent_()' % (prefix, elName, ))
     wrt('\n        ):\n')
     wrt('            return True\n')
     wrt('        else:\n')
@@ -4229,7 +4229,7 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     ElementsForSubclasses.append(element)
     name = element.getCleanName()
     if parentName:
-        s1 = 'class %s%s(%s):\n' % (prefix, name, parentName,)
+        s1 = 'class %s%s(%s%s):\n' % (prefix, name, prefix, parentName,)
     else:
         s1 = 'class %s%s(GeneratedsSuper):\n' % (prefix, name)
     wrt(s1)
@@ -4250,9 +4250,9 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     parentName, parent = getParentName(element)
     superclass_name = 'None'
     if parentName and parentName in AlreadyGenerated:
-        superclass_name = parentName
+        superclass_name = prefix + parentName
     wrt('    superclass = %s\n' % (superclass_name, ))
-    generateCtor(wrt, element)
+    generateCtor(wrt, prefix, element)
     wrt('    def factory(*args_, **kwargs_):\n')
     wrt('        if %s%s.subclass:\n' % (prefix, name))
     wrt('            return %s%s.subclass(*args_, **kwargs_)\n' % (
@@ -4271,7 +4271,7 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
         namespace = NamespacesDict[Targetnamespace]
     else:
         namespace = ''
-    generateHascontentMethod(wrt, element)
+    generateHascontentMethod(wrt, prefix, element)
     if ExportWrite:
         generateExportFn(wrt, prefix, element, namespace, nameSpacesDef)
     if ExportEtree:
@@ -5083,8 +5083,8 @@ def generateMain(outfile, prefix, root):
     for classType in MappingTypes:
         mappedName = mapName(cleanupName(MappingTypes[classType]))
         if mappedName in AlreadyGenerated:
-            exportDictLine += "    '%s': %s,\n" % (
-                classType, mappedName, )
+            exportDictLine += "    '%s': %s%s,\n" % (
+                classType, prefix, mappedName, )
     exportDictLine += "}\n\n\n"
     outfile.write(exportDictLine)
     children = root.getChildren()
@@ -5308,7 +5308,7 @@ def generateSubclass(wrt, element, prefix, xmlbehavior, behaviors, baseUrl):
         return
     AlreadyGenerated_subclass.add(mappedName)
     name = element.getCleanName()
-    wrt('class %s%s%s(supermod.%s):\n' % (prefix, name, SubclassSuffix, name))
+    wrt('class %s%s%s(supermod.%s%s):\n' % (prefix, name, SubclassSuffix, prefix, name))
     childCount = countChildren(element, 0)
     s1 = buildCtorArgs_multilevel(element, childCount)
     wrt('    def __init__(self%s):\n' % s1)
@@ -5335,7 +5335,7 @@ def generateSubclass(wrt, element, prefix, xmlbehavior, behaviors, baseUrl):
             classBehaviors = None
         if classBehaviors:
             generateClassBehaviors(wrt, classBehaviors, baseUrl)
-    wrt('supermod.%s.subclass = %s%s\n' % (name, name, SubclassSuffix))
+    wrt('supermod.%s%s.subclass = %s%s%s\n' % (prefix, name, prefix, name, SubclassSuffix))
     wrt('# end class %s%s%s\n' % (prefix, name, SubclassSuffix))
     wrt('\n\n')
 
@@ -5447,7 +5447,7 @@ def parse(inFilename, silence=False):
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
         rootTag = '%(rootElement)s'
-        rootClass = supermod.%(rootClass)s
+        rootClass = supermod.%(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -5467,7 +5467,7 @@ def parseEtree(inFilename, silence=False):
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
         rootTag = '%(rootElement)s'
-        rootClass = supermod.%(rootClass)s
+        rootClass = supermod.%(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -5491,7 +5491,7 @@ def parseString(inString, silence=False):
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
         rootTag = '%(rootElement)s'
-        rootClass = supermod.%(rootClass)s
+        rootClass = supermod.%(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -5510,7 +5510,7 @@ def parseLiteral(inFilename, silence=False):
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
         rootTag = '%(rootElement)s'
-        rootClass = supermod.%(rootClass)s
+        rootClass = supermod.%(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -5693,6 +5693,7 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
         params = {
             'cap_name': make_gs_name(cleanupName(name)),
             'name': name,
+            'prefix': prefix,
             'cleanname': cleanupName(name),
             'module_name': os.path.splitext(
                 os.path.basename(subclassFilename))[0],
@@ -6339,3 +6340,4 @@ if __name__ == '__main__':
     #except:
     #    import pdb; pdb.post_mortem()
     main()
+
