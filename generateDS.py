@@ -2319,8 +2319,9 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
                             "mapping_=mapping_)\n" % (
                                 name, unmappedName,))
     else:
-        wrt("        if self.hasContent_():\n")
-        wrt("            element.text = self.gds_format_string(self.get_valueOf_())\n")
+        if element.getSimpleContent() or element.isMixed():
+            wrt("        if self.hasContent_():\n")
+            wrt("            element.text = self.gds_format_string(self.get_valueOf_())\n")
 #end generateToEtreeChildren
 
 
