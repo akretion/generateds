@@ -1557,6 +1557,8 @@ class paramType(GeneratedsSuper):
             element.set('type', self.gds_format_string(self.type_))
         if self.id is not None:
             element.set('id', self.gds_format_string(self.id))
+        if self.hasContent_():
+            element.text = self.gds_format_string(self.get_valueOf_())
         if mapping_ is not None:
             mapping_[self] = element
         return element
