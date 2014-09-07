@@ -179,7 +179,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.12e'
+VERSION = '2.12g'
 ##VERSION##
 
 GenerateProperties = 0
@@ -2319,8 +2319,9 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
                             "mapping_=mapping_)\n" % (
                                 name, unmappedName,))
     else:
-        wrt("        if self.hasContent_():\n")
-        wrt("            element.text = self.gds_format_string(self.get_valueOf_())\n")
+        if element.getSimpleContent() or element.isMixed():
+            wrt("        if self.hasContent_():\n")
+            wrt("            element.text = self.gds_format_string(self.get_valueOf_())\n")
 #end generateToEtreeChildren
 
 
