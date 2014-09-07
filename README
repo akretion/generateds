@@ -141,6 +141,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.12g (09/03/2014)
+- Minor fix to function generateToEtreeChildren.  Must generate
+  call to get_valueOf only when defined (i.e. when element is
+  simpleContent or isMixed).
+
 Version 2.12f (08/12/2014)
 - Fix for substitutionGroup conflict with keyword name mapping.
   Thanks to Leonid Minchin for finding and helping with this
