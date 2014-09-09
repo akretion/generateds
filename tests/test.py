@@ -525,6 +525,31 @@ class GenTest(unittest.TestCase):
         result, err = self.execute(cmd)
         self.check_result(result, err, ())
 
+    def test_024_prefix_classname(self):
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
+            '-p tomato_ '
+            '--member-specs=list -f '
+            '-o tests/%s2_sup.py -s tests/%s2_sub.py '
+            '--super=%s2_sup '
+            'tests/%s.xsd'
+        )
+        t_ = 'prefix_classname'
+        cmd = cmdTempl % (t_, t_, t_, t_, )
+        result, _ = self.execute(cmd, cwd='..')
+        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ('sys.stdout.write',))
+        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ())
+        cmdTempl = 'python tests/%s2_sup.py tests/%s.xml > tests/%s2_out.xml'
+        cmd = cmdTempl % (t_, t_, t_, )
+        result, _ = self.execute(cmd, cwd='..')
+        cmd = 'diff %s1_out.xml %s2_out.xml' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ())
+
     def check_result(self, result, err, ignore_strings):
         self.failUnlessEqual(len(result), 0)
         self.failUnlessEqual(len(err), 0)

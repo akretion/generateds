@@ -7,7 +7,7 @@ setup(name="generateDS",
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-    version="2.12g",
+    version="2.13a",
 ##VERSION##
     author="Dave Kuhlman",
     author_email="dkuhlman@davekuhlman.org",

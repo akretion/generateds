@@ -3,7 +3,7 @@ generateDS -- Generate Data Structures from XML Schema
 ======================================================
 
 :author: Dave Kuhlman
-:contact: dkuhlman@pacbell.net
+:contact: dkuhlman@davekuhlman.org
 :address:
     http://www.davekuhlman.org
 
@@ -12,7 +12,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.12g
+:revision: 2.13a
 
 .. version
 

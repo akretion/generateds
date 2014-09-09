@@ -179,7 +179,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.12g'
+VERSION = '2.13a'
 ##VERSION##
 
 GenerateProperties = 0
@@ -4281,7 +4281,7 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
         generateExportLiteralFn(wrt, prefix, element)
     generateBuildFn(wrt, prefix, element, delayed)
     generateUserMethods(wrt, element)
-    wrt('# end class %s\n' % name)
+    wrt('# end class %s%s\n' % (prefix, name, ))
     wrt('\n\n')
 # end generateClasses
 
@@ -5957,7 +5957,7 @@ def parseAndGenerate(
         # can do a reasonably safe "from parser import *"
         if outfileName:
             exportableClassList = [
-                '"%s"' % name
+                '"%s%s"' % (prefix, name, )
                 for name in AlreadyGenerated]
             exportableClassList.sort()
             exportableClassNames = ',\n    '.join(exportableClassList)
@@ -6031,7 +6031,7 @@ def parseAndGenerate(
                 # to isolate important classes from internal ones. This way one
                 # can do a reasonably safe "from parser import *"
                 exportableClassList = [
-                    '"%s"' % name
+                    '"%s%s"' % (prefix, name, )
                     for name in AlreadyGenerated]
                 exportableClassList.sort()
                 exportableClassNames = ',\n    '.join(exportableClassList)
