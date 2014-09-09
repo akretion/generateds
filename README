@@ -141,10 +141,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version 2.12g (09/03/2014)
+Version 2.13a (09/09/2014)
 - Minor fix to function generateToEtreeChildren.  Must generate
   call to get_valueOf only when defined (i.e. when element is
   simpleContent or isMixed).
+- Fix to generation of class name prefixes added with the "-p"
+  command line option.  This fix was added by Christian Ascheberg.
+  Thank you Christian.
+- Added unit test for class name prefixes command line option.
 
 Version 2.12f (08/12/2014)
 - Fix for substitutionGroup conflict with keyword name mapping.
