@@ -141,6 +141,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.13b (09/14/2014)
+- Fixed export of simpleType lists (added "' '.join(data)".  Thanks
+  to Per Rosengren for catching this.
+
 Version 2.13a (09/09/2014)
 - Minor fix to function generateToEtreeChildren.  Must generate
   call to get_valueOf only when defined (i.e. when element is

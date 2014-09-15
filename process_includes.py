@@ -30,7 +30,7 @@ from lxml import etree
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.13a'
+VERSION = '2.13b'
 ##VERSION##
 
 CatalogDict = {}
