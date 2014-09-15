@@ -125,7 +125,7 @@ except ImportError, exp:
         def gds_validate_integer(self, input_data, node, input_name=''):
             return input_data
         def gds_format_integer_list(self, input_data, input_name=''):
-            return '%s' % input_data
+            return '%s' % ' '.join(input_data)
         def gds_validate_integer_list(self, input_data, node, input_name=''):
             values = input_data.split()
             for value in values:
@@ -133,13 +133,13 @@ except ImportError, exp:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of integers')
-            return input_data
+            return values
         def gds_format_float(self, input_data, input_name=''):
             return ('%.15f' % input_data).rstrip('0')
         def gds_validate_float(self, input_data, node, input_name=''):
             return input_data
         def gds_format_float_list(self, input_data, input_name=''):
-            return '%s' % input_data
+            return '%s' % ' '.join(input_data)
         def gds_validate_float_list(self, input_data, node, input_name=''):
             values = input_data.split()
             for value in values:
@@ -147,13 +147,13 @@ except ImportError, exp:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of floats')
-            return input_data
+            return values
         def gds_format_double(self, input_data, input_name=''):
             return '%e' % input_data
         def gds_validate_double(self, input_data, node, input_name=''):
             return input_data
         def gds_format_double_list(self, input_data, input_name=''):
-            return '%s' % input_data
+            return '%s' % ' '.join(input_data)
         def gds_validate_double_list(self, input_data, node, input_name=''):
             values = input_data.split()
             for value in values:
@@ -161,13 +161,13 @@ except ImportError, exp:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of doubles')
-            return input_data
+            return values
         def gds_format_boolean(self, input_data, input_name=''):
             return ('%s' % input_data).lower()
         def gds_validate_boolean(self, input_data, node, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
-            return '%s' % input_data
+            return '%s' % ' '.join(input_data)
         def gds_validate_boolean_list(self, input_data, node, input_name=''):
             values = input_data.split()
             for value in values:
@@ -176,7 +176,7 @@ except ImportError, exp:
                         node,
                         'Requires sequence of booleans '
                         '("true", "1", "false", "0")')
-            return input_data
+            return values
         def gds_validate_datetime(self, input_data, node, input_name=''):
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
