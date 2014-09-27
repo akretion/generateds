@@ -148,6 +148,11 @@ import keyword
 import StringIO
 import textwrap
 
+
+
+#sorry :couldnt pass the filename but with global variable,as i want to use it in validations try to correct this
+xsdFileName=[]
+
 # Default logger configuration
 logging.basicConfig(
     level=logging.DEBUG,
@@ -3928,6 +3933,9 @@ def generateCtor(wrt, prefix, element):
                     wrt('            self.%s = %s\n' % (name, name))
                 else:
                     wrt('        self.%s = %s\n' % (name, name))
+                    #azg: validate if it is a simple type: validation shows warning so no fear that an error would rise
+                    if (child.getSimpleType()):
+                        wrt('        self.validate_%s(self.%s)\n' % (child.getSimpleType(), name))
     eltype = element.getType()
     if (element.getSimpleContent() or
             element.isMixed() or
@@ -3943,12 +3951,122 @@ def generateCtor(wrt, prefix, element):
 # end generateCtor
 
 
-#
-# Attempt to retrieve the body (implementation) of a validator
-#   from a directory containing one file for each simpleType.
-#   The name of the file should be the same as the name of the
-#   simpleType with and optional ".py" extension.
-def getValidatorBody(stName):
+#validate directly from xsd file, no need to specify directory for validation
+def getValidatorBody(stName,typexs,base):    
+#azg 
+    
+    az_s1 = '        if value is not None and all_validtion:\n'
+    from lxml import etree
+    ns = {'xs': 'http://www.w3.org/2001/XMLSchema'}
+    file = xsdFileName[0]
+    tree = etree.parse(file)
+    ns= {"xs": "http://www.w3.org/2001/XMLSchema"}
+
+    #on determine l elemnt ou le type est definit  
+    bases = tree.xpath("//xs:simpleType[@name=$n]/xs:restriction[@base=$b]",namespaces=ns,n=stName,b=base)
+    enumerations = []
+    #une liste qui contient les restrictions deja traitees  
+    already_processed=[]
+    for restriction in bases[0]:
+        restriction_name = restriction.tag
+        if 'pattern' in  restriction_name and 'pattern' not in already_processed:
+            pattern =tree.xpath("//xs:simpleType[@name=$n]/xs:restriction[@base=$b]/xs:pattern/@value",namespaces=ns,n=stName,b=base)[0]
+            #convertir en string si le type n est pas string (car on ne peut pas comparer un pattern qu avec un type string
+            valuestring ='(str(value))'
+            toencode = '% {"value" : value}'
+            if 'string' in base:
+                valuestring ='(value)'
+                toencode = '% {"value" : value}.encode("utf-8")'
+            az_s1+="           a = re_.compile('%(pattern)s')\n" %{"pattern": pattern}
+            az_s1+="           if not a.match%(valuestring)s:\n" % {"valuestring":valuestring}
+            az_s1+="              warnings.warn('Value %(val)s dosent match xsd pattern restriction on %(typename)s' %(express)s )\n" %{ "val":'%(value)s' , "typename" : stName, "express": toencode }
+            already_processed.append('pattern')
+        elif 'enumeration' in  restriction_name and 'enumeration' not in already_processed:
+            enumerations =tree.xpath("//xs:simpleType[@name=$n]/xs:restriction[@base=$b]/xs:enumeration/@value",namespaces=ns,n=stName,b=base)          
+            already_processed.append('enumeration')
+            if len(enumerations)>0:
+                az_s1+="           enumerations=%(enumerations)s\n" % {'enumerations' : enumerations}
+                az_s1+="           enumeration_respectee = False\n"
+                az_s1+="           for enum in enumerations:\n"
+                az_s1+="               if value == enum:\n"    
+                az_s1+="                   enumeration_respectee=True\n"    
+                az_s1+="                   break\n"    
+                az_s1+="           if not enumeration_respectee:\n"
+                az_s1+="               warnings.warn('Value %(val)s dosent match xsd enumeration restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": '% {"value" : value.encode("utf-8")}'}
+        elif 'maxLength' in  restriction_name and 'maxLength' not in already_processed:
+            valuestring ='(str(value))'
+            toencode = '% {"value" : value}'
+            if 'string' in base:
+                valuestring ='(value)' 
+                toencode = '% {"value" : value}.encode("utf-8")'          
+            maxLength =tree.xpath("//xs:simpleType[@name=$n]/xs:restriction[@base=$b]/xs:maxLength/@value",namespaces=ns,n=stName,b=base)[0]          
+            az_s1+="           if len%(valuestring)s > %(maxLength)s:\n" % {'maxLength' : maxLength, "valuestring" :valuestring}
+            az_s1+="               warnings.warn('Value %(val)s dosent match xsd maxLength restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": toencode}
+        elif 'minLength' in  restriction_name and 'minLength' not in already_processed:
+            valuestring ='(str(value))'
+            toencode = '% {"value" : value}'
+            if 'string' in base:
+                valuestring ='(value)' 
+                toencode = '% {"value" : value}.encode("utf-8")'          
+            minLength =tree.xpath("//xs:simpleType[@name=$n]/xs:restriction[@base=$b]/xs:minLength/@value",namespaces=ns,n=stName,b=base)[0]          
+            az_s1+="           if len%(valuestring)s < %(minLength)s:\n" % {'minLength' : minLength, "valuestring" :valuestring}
+            az_s1+="               warnings.warn('Value %(val)s dosent match xsd minLength restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": toencode}
+            already_processed.append('minLength')
+        elif 'minInclusive' in  restriction_name and 'minInclusive' not in already_processed:
+            valuestring ='(value)'
+            toencode = '% {"value" : value}'
+            if 'string' in base:
+                valuestring ='len(str(value))' 
+                toencode = '% {"value" : value}.encode("utf-8")'          
+            minInclusive =tree.xpath("//xs:simpleType[@name=$n]/xs:restriction[@base=$b]/xs:minInclusive/@value",namespaces=ns,n=stName,b=base)[0]          
+            az_s1+="           if %(valuestring)s <= %(minInclusive)s:\n" % {'minInclusive' : minInclusive, "valuestring" :valuestring}
+            az_s1+="               warnings.warn('Value %(val)s dosent match xsd minInclusive restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": toencode }
+            already_processed.append('minInclusive')
+        elif 'maxInclusive' in  restriction_name and 'maxInclusive' not in already_processed:
+            valuestring ='(value)'
+            toencode = '% {"value" : value}'
+            if 'string' in base:
+                valuestring ='len(str(value))' 
+                toencode = '% {"value" : value}.encode("utf-8")'          
+            maxInclusive =tree.xpath("//xs:simpleType[@name=$n]/xs:restriction[@base=$b]/xs:maxInclusive/@value",namespaces=ns,n=stName,b=base)[0]          
+            az_s1+="           if %(valuestring)s >= %(maxInclusive)s:\n" % {'maxInclusive' : maxInclusive, "valuestring" :valuestring}
+            az_s1+="               warnings.warn('Value %(val)s dosent match xsd maxInclusive restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": toencode }
+            already_processed.append('maxInclusive')
+        elif 'totalDigits' in  restriction_name and 'totalDigits' not in already_processed:
+            valuestring ='(str(value))'
+            toencode = '% {"value" : value}'
+            if 'string' in base:
+                valuestring ='(value)' 
+                toencode = '% {"value" : value}.encode("utf-8")'          
+            totalDigits =tree.xpath("//xs:simpleType[@name=$n]/xs:restriction[@base=$b]/xs:totalDigits/@value",namespaces=ns,n=stName,b=base)[0]          
+            az_s1+="           if len%(valuestring)s >= %(totalDigits)s:\n" % {'totalDigits' : totalDigits, "valuestring" :valuestring}
+            az_s1+="               warnings.warn('Value %(val)s dosent match xsd maxInclusive restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": toencode }
+            already_processed.append('totalDigits')
+    
+    
+    
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    az_s1+= '           pass\n'
+    
+    
+    return az_s1
+
+#/azg    
+    
+    
+    
+    
+    
     retrieved = 0
     if ValidatorBodiesBasePath:
         found = 0
@@ -4060,7 +4178,7 @@ def generateValidatorDefs(wrt, element):
                     (typeName, stObj.getBase(), ))
             else:
                 wrt('        # validate type %s\n' % (typeName, ))
-            wrt(getValidatorBody(typeName))
+            wrt(getValidatorBody(typeName,child.getType(),stObj.getBase()))
     attrDefs = element.getAttributeDefs()
     for key in attrDefs:
         attrDef = attrDefs[key]
@@ -4076,7 +4194,7 @@ def generateValidatorDefs(wrt, element):
                     typeName, stObj.getBase(), ))
             else:
                 wrt('        # validate type %s\n' % (typeName, ))
-            wrt(getValidatorBody(typeName))
+            wrt(getValidatorBody(typeName,attrDef.getType(),attrDef.getBase()))
 # end generateValidatorDefs
 
 
@@ -4312,6 +4430,10 @@ import getopt
 import re as re_
 import base64
 import datetime as datetime_
+
+
+all_validtion = True
+
 
 etree_ = None
 Verbose_import_ = False
@@ -6322,6 +6444,7 @@ def main():
             usage()
         else:
             xschemaFileName = args[0]
+            xsdFileName.append(xschemaFileName)
     silent = not outputText
     TEMPLATE_MAIN = fixSilence(TEMPLATE_MAIN, silent)
     TEMPLATE_SUBCLASS_FOOTER = fixSilence(TEMPLATE_SUBCLASS_FOOTER, silent)
