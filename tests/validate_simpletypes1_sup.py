@@ -7,18 +7,17 @@
 # Command line options:
 #   ('--no-dates', '')
 #   ('--no-versions', '')
-#   ('--silence', '')
 #   ('--member-specs', 'list')
 #   ('-f', '')
-#   ('-o', 'tests/anonymous_type2_sup.py')
-#   ('-s', 'tests/anonymous_type2_sub.py')
-#   ('--super', 'anonymous_type2_sup')
+#   ('-o', 'tests/validate_simpletypes2_sup.py')
+#   ('-s', 'tests/validate_simpletypes2_sub.py')
+#   ('--super', 'validate_simpletypes2_sup')
 #
 # Command line arguments:
-#   tests/anonymous_type.xsd
+#   tests/validate_simpletypes.xsd
 #
 # Command line:
-#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/anonymous_type2_sup.py" -s "tests/anonymous_type2_sub.py" --super="anonymous_type2_sup" tests/anonymous_type.xsd
+#   generateDS.py --no-dates --no-versions --member-specs="list" -f -o "tests/validate_simpletypes2_sup.py" -s "tests/validate_simpletypes2_sub.py" --super="validate_simpletypes2_sup" tests/validate_simpletypes.xsd
 #
 # Current working directory (os.getcwd()):
 #   generateds
@@ -638,41 +637,70 @@ def _cast(typ, value):
 #
 
 
-class FooList(GeneratedsSuper):
+class containerType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('Foo', 'FooType1', 0),
-        MemberSpec_('Bar', 'BarType2', 0),
-        MemberSpec_('Baz', 'BazType3', 0),
+        MemberSpec_('sample1', 'simpleOneType', 1),
+        MemberSpec_('sample2_bad', 'simpleOneType', 1),
+        MemberSpec_('sample3_bad', 'simpleOneType', 1),
+        MemberSpec_('sample2', 'simpleTwoType', 1),
     ]
     subclass = None
     superclass = None
-    def __init__(self, Foo=None, Bar=None, Baz=None):
+    def __init__(self, sample1=None, sample2_bad=None, sample3_bad=None, sample2=None):
         self.original_tagname_ = None
-        self.Foo = Foo
-        self.Bar = Bar
-        self.Baz = Baz
-    def factory(*args_, **kwargs_):
-        if FooList.subclass:
-            return FooList.subclass(*args_, **kwargs_)
+        if sample1 is None:
+            self.sample1 = []
         else:
-            return FooList(*args_, **kwargs_)
+            self.sample1 = sample1
+        if sample2_bad is None:
+            self.sample2_bad = []
+        else:
+            self.sample2_bad = sample2_bad
+        if sample3_bad is None:
+            self.sample3_bad = []
+        else:
+            self.sample3_bad = sample3_bad
+        if sample2 is None:
+            self.sample2 = []
+        else:
+            self.sample2 = sample2
+    def factory(*args_, **kwargs_):
+        if containerType.subclass:
+            return containerType.subclass(*args_, **kwargs_)
+        else:
+            return containerType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_Foo(self): return self.Foo
-    def set_Foo(self, Foo): self.Foo = Foo
-    def get_Bar(self): return self.Bar
-    def set_Bar(self, Bar): self.Bar = Bar
-    def get_Baz(self): return self.Baz
-    def set_Baz(self, Baz): self.Baz = Baz
+    def get_sample1(self): return self.sample1
+    def set_sample1(self, sample1): self.sample1 = sample1
+    def add_sample1(self, value): self.sample1.append(value)
+    def insert_sample1_at(self, index, value): self.sample1.insert(index, value)
+    def replace_sample1_at(self, index, value): self.sample1[index] = value
+    def get_sample2_bad(self): return self.sample2_bad
+    def set_sample2_bad(self, sample2_bad): self.sample2_bad = sample2_bad
+    def add_sample2_bad(self, value): self.sample2_bad.append(value)
+    def insert_sample2_bad_at(self, index, value): self.sample2_bad.insert(index, value)
+    def replace_sample2_bad_at(self, index, value): self.sample2_bad[index] = value
+    def get_sample3_bad(self): return self.sample3_bad
+    def set_sample3_bad(self, sample3_bad): self.sample3_bad = sample3_bad
+    def add_sample3_bad(self, value): self.sample3_bad.append(value)
+    def insert_sample3_bad_at(self, index, value): self.sample3_bad.insert(index, value)
+    def replace_sample3_bad_at(self, index, value): self.sample3_bad[index] = value
+    def get_sample2(self): return self.sample2
+    def set_sample2(self, sample2): self.sample2 = sample2
+    def add_sample2(self, value): self.sample2.append(value)
+    def insert_sample2_at(self, index, value): self.sample2.insert(index, value)
+    def replace_sample2_at(self, index, value): self.sample2[index] = value
     def hasContent_(self):
         if (
-            self.Foo is not None or
-            self.Bar is not None or
-            self.Baz is not None
+            self.sample1 or
+            self.sample2_bad or
+            self.sample3_bad or
+            self.sample2
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='FooList', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='containerType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -682,28 +710,438 @@ class FooList(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='FooList')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='containerType')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='FooList', pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='containerType', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='FooList'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='containerType'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='FooList', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='containerType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for sample1_ in self.sample1:
+            sample1_.export(outfile, level, namespace_, name_='sample1', pretty_print=pretty_print)
+        for sample2_bad_ in self.sample2_bad:
+            sample2_bad_.export(outfile, level, namespace_, name_='sample2_bad', pretty_print=pretty_print)
+        for sample3_bad_ in self.sample3_bad:
+            sample3_bad_.export(outfile, level, namespace_, name_='sample3_bad', pretty_print=pretty_print)
+        for sample2_ in self.sample2:
+            sample2_.export(outfile, level, namespace_, name_='sample2', pretty_print=pretty_print)
+    def exportLiteral(self, outfile, level, name_='containerType'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        pass
+    def exportLiteralChildren(self, outfile, level, name_):
+        showIndent(outfile, level)
+        outfile.write('sample1=[\n')
+        level += 1
+        for sample1_ in self.sample1:
+            showIndent(outfile, level)
+            outfile.write('model_.simpleOneType(\n')
+            sample1_.exportLiteral(outfile, level, name_='simpleOneType')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
+        showIndent(outfile, level)
+        outfile.write('sample2_bad=[\n')
+        level += 1
+        for sample2_bad_ in self.sample2_bad:
+            showIndent(outfile, level)
+            outfile.write('model_.simpleOneType(\n')
+            sample2_bad_.exportLiteral(outfile, level, name_='simpleOneType')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
+        showIndent(outfile, level)
+        outfile.write('sample3_bad=[\n')
+        level += 1
+        for sample3_bad_ in self.sample3_bad:
+            showIndent(outfile, level)
+            outfile.write('model_.simpleOneType(\n')
+            sample3_bad_.exportLiteral(outfile, level, name_='simpleOneType')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
+        showIndent(outfile, level)
+        outfile.write('sample2=[\n')
+        level += 1
+        for sample2_ in self.sample2:
+            showIndent(outfile, level)
+            outfile.write('model_.simpleTwoType(\n')
+            sample2_.exportLiteral(outfile, level, name_='simpleTwoType')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        if nodeName_ == 'sample1':
+            obj_ = simpleOneType.factory()
+            obj_.build(child_)
+            self.sample1.append(obj_)
+            obj_.original_tagname_ = 'sample1'
+        elif nodeName_ == 'sample2_bad':
+            obj_ = simpleOneType.factory()
+            obj_.build(child_)
+            self.sample2_bad.append(obj_)
+            obj_.original_tagname_ = 'sample2_bad'
+        elif nodeName_ == 'sample3_bad':
+            obj_ = simpleOneType.factory()
+            obj_.build(child_)
+            self.sample3_bad.append(obj_)
+            obj_.original_tagname_ = 'sample3_bad'
+        elif nodeName_ == 'sample2':
+            obj_ = simpleTwoType.factory()
+            obj_.build(child_)
+            self.sample2.append(obj_)
+            obj_.original_tagname_ = 'sample2'
+# end class containerType
+
+
+class simpleOneType(GeneratedsSuper):
+    member_data_items_ = [
+        MemberSpec_('token_enum_value', ['token_enum_st', 'xs:NMTOKEN'], 0),
+        MemberSpec_('token_enum_value', ['token_enum_st', 'xs:NMTOKEN'], 0),
+        MemberSpec_('integer_range_incl_value', ['integer_range_incl_st', 'xs:integer'], 0),
+        MemberSpec_('integer_range_excl_value', ['integer_range_excl_st', 'xs:integer'], 0),
+        MemberSpec_('min_max_length_value', ['min_max_length_st', 'xs:string'], 0),
+        MemberSpec_('length_value', ['length_st', 'xs:string'], 0),
+        MemberSpec_('totaldigits_value', ['totaldigits_st', 'xs:float'], 0),
+        MemberSpec_('anonymous_float_value', ['anonymous_float_valueType', 'xs:float'], 0),
+    ]
+    subclass = None
+    superclass = None
+    def __init__(self, token_enum_value=None, integer_range_incl_value=None, integer_range_excl_value=None, min_max_length_value=None, length_value=None, totaldigits_value=None, anonymous_float_value=None):
+        self.original_tagname_ = None
+        self.token_enum_value = token_enum_value
+        self.validate_token_enum_st(self.token_enum_value)
+        self.token_enum_value = token_enum_value
+        self.validate_token_enum_st(self.token_enum_value)
+        self.integer_range_incl_value = integer_range_incl_value
+        self.validate_integer_range_incl_st(self.integer_range_incl_value)
+        self.integer_range_excl_value = integer_range_excl_value
+        self.validate_integer_range_excl_st(self.integer_range_excl_value)
+        self.min_max_length_value = min_max_length_value
+        self.validate_min_max_length_st(self.min_max_length_value)
+        self.length_value = length_value
+        self.validate_length_st(self.length_value)
+        self.totaldigits_value = totaldigits_value
+        self.validate_totaldigits_st(self.totaldigits_value)
+        self.anonymous_float_value = anonymous_float_value
+        self.validate_anonymous_float_valueType(self.anonymous_float_value)
+    def factory(*args_, **kwargs_):
+        if simpleOneType.subclass:
+            return simpleOneType.subclass(*args_, **kwargs_)
+        else:
+            return simpleOneType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_token_enum_value(self): return self.token_enum_value
+    def set_token_enum_value(self, token_enum_value): self.token_enum_value = token_enum_value
+    def get_token_enum_value(self): return self.token_enum_value
+    def set_token_enum_value(self, token_enum_value): self.token_enum_value = token_enum_value
+    def get_integer_range_incl_value(self): return self.integer_range_incl_value
+    def set_integer_range_incl_value(self, integer_range_incl_value): self.integer_range_incl_value = integer_range_incl_value
+    def get_integer_range_excl_value(self): return self.integer_range_excl_value
+    def set_integer_range_excl_value(self, integer_range_excl_value): self.integer_range_excl_value = integer_range_excl_value
+    def get_min_max_length_value(self): return self.min_max_length_value
+    def set_min_max_length_value(self, min_max_length_value): self.min_max_length_value = min_max_length_value
+    def get_length_value(self): return self.length_value
+    def set_length_value(self, length_value): self.length_value = length_value
+    def get_totaldigits_value(self): return self.totaldigits_value
+    def set_totaldigits_value(self, totaldigits_value): self.totaldigits_value = totaldigits_value
+    def get_anonymous_float_value(self): return self.anonymous_float_value
+    def set_anonymous_float_value(self, anonymous_float_value): self.anonymous_float_value = anonymous_float_value
+    def validate_token_enum_st(self, value):
+        # Validate type token_enum_st, a restriction on xs:NMTOKEN.
+        if value is not None and Validate_simpletypes_:
+           enumerations = ['float', 'int', 'Name', 'token']
+           enumeration_respectee = False
+           for enum in enumerations:
+               if value == enum:
+                   enumeration_respectee = True
+                   break
+           if not enumeration_respectee:
+               warnings.warn('Value "%(value)s" does not match xsd enumeration restriction on token_enum_st' % {"value" : value.encode("utf-8")} )
+    def validate_integer_range_incl_st(self, value):
+        # Validate type integer_range_incl_st, a restriction on xs:integer.
+        if value is not None and Validate_simpletypes_:
+           if value <= -5:
+               warnings.warn('Value "%(value)s" does not match xsd minInclusive restriction on integer_range_incl_st' % {"value" : value} )
+           if value >= 10:
+               warnings.warn('Value "%(value)s" does not match xsd maxInclusive restriction on integer_range_incl_st' % {"value" : value} )
+    def validate_integer_range_excl_st(self, value):
+        # Validate type integer_range_excl_st, a restriction on xs:integer.
+        if value is not None and Validate_simpletypes_:
+           if value < -5:
+               warnings.warn('Value "%(value)s" does not match xsd minExclusive restriction on integer_range_excl_st' % {"value" : value} )
+           if value > 10:
+               warnings.warn('Value "%(value)s" does not match xsd maxExclusive restriction on integer_range_excl_st' % {"value" : value} )
+    def validate_min_max_length_st(self, value):
+        # Validate type min_max_length_st, a restriction on xs:string.
+        if value is not None and Validate_simpletypes_:
+           if len(value) < 10:
+               warnings.warn('Value "%(value)s" does not match xsd minLength restriction on min_max_length_st' % {"value" : value.encode("utf-8")} )
+           if len(value) > 20:
+               warnings.warn('Value "%(value)s" does not match xsd maxLength restriction on min_max_length_st' % {"value" : value.encode("utf-8")} )
+    def validate_length_st(self, value):
+        # Validate type length_st, a restriction on xs:string.
+        if value is not None and Validate_simpletypes_:
+           if len(value) != 10:
+               warnings.warn('Value "%(value)s" does not match xsd length restriction on length_st' % {"value" : value.encode("utf-8")} )
+    def validate_totaldigits_st(self, value):
+        # Validate type totaldigits_st, a restriction on xs:float.
+        if value is not None and Validate_simpletypes_:
+           if len(str(value)) >= 15:
+               warnings.warn('Value "%(value)s" does not match xsd maxInclusive restriction on totaldigits_st' % {"value" : value} )
+    def validate_anonymous_float_valueType(self, value):
+        # Validate type anonymous_float_valueType, a restriction on xs:float.
+        if value is not None and Validate_simpletypes_:
+           if value <= 1.1:
+               warnings.warn('Value "%(value)s" does not match xsd minInclusive restriction on anonymous_float_valueType' % {"value" : value} )
+           if value >= 4.4:
+               warnings.warn('Value "%(value)s" does not match xsd maxInclusive restriction on anonymous_float_valueType' % {"value" : value} )
+    def hasContent_(self):
+        if (
+            self.token_enum_value is not None or
+            self.token_enum_value is not None or
+            self.integer_range_incl_value is not None or
+            self.integer_range_excl_value is not None or
+            self.min_max_length_value is not None or
+            self.length_value is not None or
+            self.totaldigits_value is not None or
+            self.anonymous_float_value is not None
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='simpleOneType', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='simpleOneType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='simpleOneType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='simpleOneType'):
+        pass
+    def exportChildren(self, outfile, level, namespace_='', name_='simpleOneType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.token_enum_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%stoken_enum_value>%s</%stoken_enum_value>%s' % (namespace_, self.gds_format_string(quote_xml(self.token_enum_value).encode(ExternalEncoding), input_name='token_enum_value'), namespace_, eol_))
+        if self.token_enum_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%stoken_enum_value>%s</%stoken_enum_value>%s' % (namespace_, self.gds_format_string(quote_xml(self.token_enum_value).encode(ExternalEncoding), input_name='token_enum_value'), namespace_, eol_))
+        if self.integer_range_incl_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sinteger_range_incl_value>%s</%sinteger_range_incl_value>%s' % (namespace_, self.gds_format_integer(self.integer_range_incl_value, input_name='integer_range_incl_value'), namespace_, eol_))
+        if self.integer_range_excl_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sinteger_range_excl_value>%s</%sinteger_range_excl_value>%s' % (namespace_, self.gds_format_integer(self.integer_range_excl_value, input_name='integer_range_excl_value'), namespace_, eol_))
+        if self.min_max_length_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%smin_max_length_value>%s</%smin_max_length_value>%s' % (namespace_, self.gds_format_string(quote_xml(self.min_max_length_value).encode(ExternalEncoding), input_name='min_max_length_value'), namespace_, eol_))
+        if self.length_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%slength_value>%s</%slength_value>%s' % (namespace_, self.gds_format_string(quote_xml(self.length_value).encode(ExternalEncoding), input_name='length_value'), namespace_, eol_))
+        if self.totaldigits_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%stotaldigits_value>%s</%stotaldigits_value>%s' % (namespace_, self.gds_format_float(self.totaldigits_value, input_name='totaldigits_value'), namespace_, eol_))
+        if self.anonymous_float_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sanonymous_float_value>%s</%sanonymous_float_value>%s' % (namespace_, self.gds_format_float(self.anonymous_float_value, input_name='anonymous_float_value'), namespace_, eol_))
+    def exportLiteral(self, outfile, level, name_='simpleOneType'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        pass
+    def exportLiteralChildren(self, outfile, level, name_):
+        if self.token_enum_value is not None:
+            showIndent(outfile, level)
+            outfile.write('token_enum_value=%s,\n' % quote_python(self.token_enum_value).encode(ExternalEncoding))
+        if self.token_enum_value is not None:
+            showIndent(outfile, level)
+            outfile.write('token_enum_value=%s,\n' % quote_python(self.token_enum_value).encode(ExternalEncoding))
+        if self.integer_range_incl_value is not None:
+            showIndent(outfile, level)
+            outfile.write('integer_range_incl_value=%d,\n' % self.integer_range_incl_value)
+        if self.integer_range_excl_value is not None:
+            showIndent(outfile, level)
+            outfile.write('integer_range_excl_value=%d,\n' % self.integer_range_excl_value)
+        if self.min_max_length_value is not None:
+            showIndent(outfile, level)
+            outfile.write('min_max_length_value=%s,\n' % quote_python(self.min_max_length_value).encode(ExternalEncoding))
+        if self.length_value is not None:
+            showIndent(outfile, level)
+            outfile.write('length_value=%s,\n' % quote_python(self.length_value).encode(ExternalEncoding))
+        if self.totaldigits_value is not None:
+            showIndent(outfile, level)
+            outfile.write('totaldigits_value=%f,\n' % self.totaldigits_value)
+        if self.anonymous_float_value is not None:
+            showIndent(outfile, level)
+            outfile.write('anonymous_float_value=%f,\n' % self.anonymous_float_value)
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        if nodeName_ == 'token_enum_value':
+            token_enum_value_ = child_.text
+            token_enum_value_ = self.gds_validate_string(token_enum_value_, node, 'token_enum_value')
+            self.token_enum_value = token_enum_value_
+            self.validate_token_enum_st(self.token_enum_value)    # validate type token_enum_st
+        elif nodeName_ == 'token_enum_value':
+            token_enum_value_ = child_.text
+            token_enum_value_ = self.gds_validate_string(token_enum_value_, node, 'token_enum_value')
+            self.token_enum_value = token_enum_value_
+            self.validate_token_enum_st(self.token_enum_value)    # validate type token_enum_st
+        elif nodeName_ == 'integer_range_incl_value':
+            sval_ = child_.text
+            try:
+                ival_ = int(sval_)
+            except (TypeError, ValueError), exp:
+                raise_parse_error(child_, 'requires integer: %s' % exp)
+            ival_ = self.gds_validate_integer(ival_, node, 'integer_range_incl_value')
+            self.integer_range_incl_value = ival_
+            self.validate_integer_range_incl_st(self.integer_range_incl_value)    # validate type integer_range_incl_st
+        elif nodeName_ == 'integer_range_excl_value':
+            sval_ = child_.text
+            try:
+                ival_ = int(sval_)
+            except (TypeError, ValueError), exp:
+                raise_parse_error(child_, 'requires integer: %s' % exp)
+            ival_ = self.gds_validate_integer(ival_, node, 'integer_range_excl_value')
+            self.integer_range_excl_value = ival_
+            self.validate_integer_range_excl_st(self.integer_range_excl_value)    # validate type integer_range_excl_st
+        elif nodeName_ == 'min_max_length_value':
+            min_max_length_value_ = child_.text
+            min_max_length_value_ = self.gds_validate_string(min_max_length_value_, node, 'min_max_length_value')
+            self.min_max_length_value = min_max_length_value_
+            self.validate_min_max_length_st(self.min_max_length_value)    # validate type min_max_length_st
+        elif nodeName_ == 'length_value':
+            length_value_ = child_.text
+            length_value_ = self.gds_validate_string(length_value_, node, 'length_value')
+            self.length_value = length_value_
+            self.validate_length_st(self.length_value)    # validate type length_st
+        elif nodeName_ == 'totaldigits_value':
+            sval_ = child_.text
+            try:
+                fval_ = float(sval_)
+            except (TypeError, ValueError), exp:
+                raise_parse_error(child_, 'requires float or double: %s' % exp)
+            fval_ = self.gds_validate_float(fval_, node, 'totaldigits_value')
+            self.totaldigits_value = fval_
+            self.validate_totaldigits_st(self.totaldigits_value)    # validate type totaldigits_st
+        elif nodeName_ == 'anonymous_float_value':
+            sval_ = child_.text
+            try:
+                fval_ = float(sval_)
+            except (TypeError, ValueError), exp:
+                raise_parse_error(child_, 'requires float or double: %s' % exp)
+            fval_ = self.gds_validate_float(fval_, node, 'anonymous_float_value')
+            self.anonymous_float_value = fval_
+            self.validate_anonymous_float_valueType(self.anonymous_float_value)    # validate type anonymous_float_valueType
+# end class simpleOneType
+
+
+class simpleTwoType(GeneratedsSuper):
+    member_data_items_ = [
+        MemberSpec_('Foo', 'FooType1', 0),
+    ]
+    subclass = None
+    superclass = None
+    def __init__(self, Foo=None):
+        self.original_tagname_ = None
+        self.Foo = Foo
+    def factory(*args_, **kwargs_):
+        if simpleTwoType.subclass:
+            return simpleTwoType.subclass(*args_, **kwargs_)
+        else:
+            return simpleTwoType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_Foo(self): return self.Foo
+    def set_Foo(self, Foo): self.Foo = Foo
+    def hasContent_(self):
+        if (
+            self.Foo is not None
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='simpleTwoType', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='simpleTwoType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='simpleTwoType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='simpleTwoType'):
+        pass
+    def exportChildren(self, outfile, level, namespace_='', name_='simpleTwoType', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
         if self.Foo is not None:
             self.Foo.export(outfile, level, namespace_, name_='Foo', pretty_print=pretty_print)
-        if self.Bar is not None:
-            self.Bar.export(outfile, level, namespace_, name_='Bar', pretty_print=pretty_print)
-        if self.Baz is not None:
-            self.Baz.export(outfile, level, namespace_, name_='Baz', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='FooList'):
+    def exportLiteral(self, outfile, level, name_='simpleTwoType'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
@@ -716,18 +1154,6 @@ class FooList(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('Foo=model_.FooType1(\n')
             self.Foo.exportLiteral(outfile, level, name_='Foo')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.Bar is not None:
-            showIndent(outfile, level)
-            outfile.write('Bar=model_.BarType2(\n')
-            self.Bar.exportLiteral(outfile, level, name_='Bar')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.Baz is not None:
-            showIndent(outfile, level)
-            outfile.write('Baz=model_.BazType3(\n')
-            self.Baz.exportLiteral(outfile, level, name_='Baz')
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node):
@@ -745,17 +1171,7 @@ class FooList(GeneratedsSuper):
             obj_.build(child_)
             self.Foo = obj_
             obj_.original_tagname_ = 'Foo'
-        elif nodeName_ == 'Bar':
-            obj_ = BarType2.factory()
-            obj_.build(child_)
-            self.Bar = obj_
-            obj_.original_tagname_ = 'Bar'
-        elif nodeName_ == 'Baz':
-            obj_ = BazType3.factory()
-            obj_.build(child_)
-            self.Baz = obj_
-            obj_.original_tagname_ = 'Baz'
-# end class FooList
+# end class simpleTwoType
 
 
 class FooType1(GeneratedsSuper):
@@ -779,9 +1195,9 @@ class FooType1(GeneratedsSuper):
     def validate_FooTypeType(self, value):
         # Validate type FooTypeType, a restriction on xs:string.
         if value is not None and Validate_simpletypes_:
-           if len(value) < 10:
+           if len(value) < 12:
                warnings.warn('Value "%(value)s" does not match xsd minLength restriction on FooTypeType' % {"value" : value.encode("utf-8")} )
-           if len(value) > 19:
+           if len(value) > 24:
                warnings.warn('Value "%(value)s" does not match xsd maxLength restriction on FooTypeType' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
@@ -848,190 +1264,13 @@ class FooType1(GeneratedsSuper):
 # end class FooType1
 
 
-class BarType2(GeneratedsSuper):
-    member_data_items_ = [
-        MemberSpec_('BarType', ['BarTypeType', 'xs:string'], 0),
-    ]
-    subclass = None
-    superclass = None
-    def __init__(self, BarType=None):
-        self.original_tagname_ = None
-        self.BarType = BarType
-        self.validate_BarTypeType(self.BarType)
-    def factory(*args_, **kwargs_):
-        if BarType2.subclass:
-            return BarType2.subclass(*args_, **kwargs_)
-        else:
-            return BarType2(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_BarType(self): return self.BarType
-    def set_BarType(self, BarType): self.BarType = BarType
-    def validate_BarTypeType(self, value):
-        # Validate type BarTypeType, a restriction on xs:string.
-        if value is not None and Validate_simpletypes_:
-           if len(value) < 20:
-               warnings.warn('Value "%(value)s" does not match xsd minLength restriction on BarTypeType' % {"value" : value.encode("utf-8")} )
-           if len(value) > 29:
-               warnings.warn('Value "%(value)s" does not match xsd maxLength restriction on BarTypeType' % {"value" : value.encode("utf-8")} )
-    def hasContent_(self):
-        if (
-            self.BarType is not None
-        ):
-            return True
-        else:
-            return False
-    def export(self, outfile, level, namespace_='', name_='BarType2', namespacedef_='', pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        if self.original_tagname_ is not None:
-            name_ = self.original_tagname_
-        showIndent(outfile, level, pretty_print)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='BarType2')
-        if self.hasContent_():
-            outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='BarType2', pretty_print=pretty_print)
-            showIndent(outfile, level, pretty_print)
-            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
-        else:
-            outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='BarType2'):
-        pass
-    def exportChildren(self, outfile, level, namespace_='', name_='BarType2', fromsubclass_=False, pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        if self.BarType is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sBarType>%s</%sBarType>%s' % (namespace_, self.gds_format_string(quote_xml(self.BarType).encode(ExternalEncoding), input_name='BarType'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='BarType2'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.BarType is not None:
-            showIndent(outfile, level)
-            outfile.write('BarType=%s,\n' % quote_python(self.BarType).encode(ExternalEncoding))
-    def build(self, node):
-        already_processed = set()
-        self.buildAttributes(node, node.attrib, already_processed)
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-        return self
-    def buildAttributes(self, node, attrs, already_processed):
-        pass
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'BarType':
-            BarType_ = child_.text
-            BarType_ = self.gds_validate_string(BarType_, node, 'BarType')
-            self.BarType = BarType_
-            self.validate_BarTypeType(self.BarType)    # validate type BarTypeType
-# end class BarType2
-
-
-class BazType3(GeneratedsSuper):
-    member_data_items_ = [
-        MemberSpec_('BazType', ['BazTypeType', 'xs:string'], 0),
-    ]
-    subclass = None
-    superclass = None
-    def __init__(self, BazType=None):
-        self.original_tagname_ = None
-        self.BazType = BazType
-        self.validate_BazTypeType(self.BazType)
-    def factory(*args_, **kwargs_):
-        if BazType3.subclass:
-            return BazType3.subclass(*args_, **kwargs_)
-        else:
-            return BazType3(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_BazType(self): return self.BazType
-    def set_BazType(self, BazType): self.BazType = BazType
-    def validate_BazTypeType(self, value):
-        # Validate type BazTypeType, a restriction on xs:string.
-        if value is not None and Validate_simpletypes_:
-           if len(value) < 30:
-               warnings.warn('Value "%(value)s" does not match xsd minLength restriction on BazTypeType' % {"value" : value.encode("utf-8")} )
-           if len(value) > 39:
-               warnings.warn('Value "%(value)s" does not match xsd maxLength restriction on BazTypeType' % {"value" : value.encode("utf-8")} )
-    def hasContent_(self):
-        if (
-            self.BazType is not None
-        ):
-            return True
-        else:
-            return False
-    def export(self, outfile, level, namespace_='', name_='BazType3', namespacedef_='', pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        if self.original_tagname_ is not None:
-            name_ = self.original_tagname_
-        showIndent(outfile, level, pretty_print)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='BazType3')
-        if self.hasContent_():
-            outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='BazType3', pretty_print=pretty_print)
-            showIndent(outfile, level, pretty_print)
-            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
-        else:
-            outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='BazType3'):
-        pass
-    def exportChildren(self, outfile, level, namespace_='', name_='BazType3', fromsubclass_=False, pretty_print=True):
-        if pretty_print:
-            eol_ = '\n'
-        else:
-            eol_ = ''
-        if self.BazType is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sBazType>%s</%sBazType>%s' % (namespace_, self.gds_format_string(quote_xml(self.BazType).encode(ExternalEncoding), input_name='BazType'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='BazType3'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.BazType is not None:
-            showIndent(outfile, level)
-            outfile.write('BazType=%s,\n' % quote_python(self.BazType).encode(ExternalEncoding))
-    def build(self, node):
-        already_processed = set()
-        self.buildAttributes(node, node.attrib, already_processed)
-        for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, node, nodeName_)
-        return self
-    def buildAttributes(self, node, attrs, already_processed):
-        pass
-    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'BazType':
-            BazType_ = child_.text
-            BazType_ = self.gds_validate_string(BazType_, node, 'BazType')
-            self.BazType = BazType_
-            self.validate_BazTypeType(self.BazType)    # validate type BazTypeType
-# end class BazType3
-
-
 GDSClassesMapping = {
-    'Baz': BazType3,
+    'container': containerType,
+    'sample2_bad': simpleOneType,
+    'sample1': simpleOneType,
+    'sample3_bad': simpleOneType,
+    'sample2': simpleTwoType,
     'Foo': FooType1,
-    'Bar': BarType2,
 }
 
 
@@ -1058,18 +1297,18 @@ def parse(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'FooList'
-        rootClass = FooList
+        rootTag = 'containerType'
+        rootClass = containerType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('<?xml version="1.0" ?>\n')
-##         rootObj.export(
-##             sys.stdout, 0, name_=rootTag,
-##             namespacedef_='',
-##             pretty_print=True)
+    if not silence:
+        sys.stdout.write('<?xml version="1.0" ?>\n')
+        rootObj.export(
+            sys.stdout, 0, name_=rootTag,
+            namespacedef_='',
+            pretty_print=True)
     return rootObj
 
 
@@ -1078,8 +1317,8 @@ def parseEtree(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'FooList'
-        rootClass = FooList
+        rootTag = 'containerType'
+        rootClass = containerType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -1087,12 +1326,12 @@ def parseEtree(inFileName, silence=False):
     mapping = {}
     rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
     reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
-##     if not silence:
-##         content = etree_.tostring(
-##             rootElement, pretty_print=True,
-##             xml_declaration=True, encoding="utf-8")
-##         sys.stdout.write(content)
-##         sys.stdout.write('\n')
+    if not silence:
+        content = etree_.tostring(
+            rootElement, pretty_print=True,
+            xml_declaration=True, encoding="utf-8")
+        sys.stdout.write(content)
+        sys.stdout.write('\n')
     return rootObj, rootElement, mapping, reverse_mapping
 
 
@@ -1102,17 +1341,17 @@ def parseString(inString, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'FooList'
-        rootClass = FooList
+        rootTag = 'containerType'
+        rootClass = containerType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('<?xml version="1.0" ?>\n')
-##         rootObj.export(
-##             sys.stdout, 0, name_=rootTag,
-##             namespacedef_='')
+    if not silence:
+        sys.stdout.write('<?xml version="1.0" ?>\n')
+        rootObj.export(
+            sys.stdout, 0, name_=rootTag,
+            namespacedef_='')
     return rootObj
 
 
@@ -1121,18 +1360,18 @@ def parseLiteral(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'FooList'
-        rootClass = FooList
+        rootTag = 'containerType'
+        rootClass = containerType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('#from anonymous_type2_sup import *\n\n')
-##         sys.stdout.write('import anonymous_type2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootClass(\n')
-##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
-##         sys.stdout.write(')\n')
+    if not silence:
+        sys.stdout.write('#from validate_simpletypes2_sup import *\n\n')
+        sys.stdout.write('import validate_simpletypes2_sup as model_\n\n')
+        sys.stdout.write('rootObj = model_.rootClass(\n')
+        rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
+        sys.stdout.write(')\n')
     return rootObj
 
 
@@ -1150,8 +1389,8 @@ if __name__ == '__main__':
 
 
 __all__ = [
-    "BarType2",
-    "BazType3",
-    "FooList",
-    "FooType1"
+    "FooType1",
+    "containerType",
+    "simpleOneType",
+    "simpleTwoType"
 ]

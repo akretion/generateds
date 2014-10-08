@@ -28,6 +28,11 @@ import getopt
 import re as re_
 import base64
 import datetime as datetime_
+import warnings
+
+
+Validate_simpletypes_ = True
+
 
 etree_ = None
 Verbose_import_ = False
@@ -1449,6 +1454,7 @@ class programmer(person):
         self.ellong = ellong
         self.elparam = elparam
         self.elarraytypes = elarraytypes
+        self.validate_ArrayTypes(self.elarraytypes)
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
         if programmer.subclass:
@@ -1496,7 +1502,15 @@ class programmer(person):
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def validate_ArrayTypes(self, value):
         # Validate type ArrayTypes, a restriction on xs:NMTOKEN.
-        pass
+        if value is not None and Validate_simpletypes_:
+           enumerations = ['float', 'int', 'Name', 'token']
+           enumeration_respectee = False
+           for enum in enumerations:
+               if value == enum:
+                   enumeration_respectee = True
+                   break
+           if not enumeration_respectee:
+               warnings.warn('Value "%(value)s" does not match xsd enumeration restriction on ArrayTypes' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
             self.email is not None or

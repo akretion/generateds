@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<container>
+    <sample1>
+        <token_enum_value>float</token_enum_value>
+        <token_enum_value>float</token_enum_value>
+        <integer_range_incl_value>2</integer_range_incl_value>
+        <integer_range_excl_value>7</integer_range_excl_value>
+        <min_max_length_value>abc def ghi</min_max_length_value>
+        <length_value>0123456789</length_value>
+        <totaldigits_value>12.456</totaldigits_value>
+        <anonymous_float_value>2.2</anonymous_float_value>
+    </sample1>
+    <sample2_bad>
+        <token_enum_value>floatxx</token_enum_value>
+        <token_enum_value>floatxx</token_enum_value>
+        <integer_range_incl_value>22</integer_range_incl_value>
+        <integer_range_excl_value>-40</integer_range_excl_value>
+        <min_max_length_value>mno pqr</min_max_length_value>
+        <length_value>012345</length_value>
+        <totaldigits_value>12.456789000000001</totaldigits_value>
+        <anonymous_float_value>0.2</anonymous_float_value>
+    </sample2_bad>
+    <sample3_bad>
+        <integer_range_incl_value>-50</integer_range_incl_value>
+        <min_max_length_value>asdf asdf asdf adf asdf asdf</min_max_length_value>
+        <length_value>01234567890</length_value>
+        <totaldigits_value>12345678.456789009273052</totaldigits_value>
+        <anonymous_float_value>6.6</anonymous_float_value>
+    </sample3_bad>
+</container>

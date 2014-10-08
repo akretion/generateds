@@ -31,6 +31,11 @@ import getopt
 import re as re_
 import base64
 import datetime as datetime_
+import warnings
+
+
+Validate_simpletypes_ = True
+
 
 etree_ = None
 Verbose_import_ = False
@@ -924,6 +929,7 @@ class personType(GeneratedsSuper):
             self.promoter = promoter
         self.description = description
         self.range_ = range_
+        self.validate_RangeType(self.range_)
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
         if personType.subclass:
@@ -970,7 +976,8 @@ class personType(GeneratedsSuper):
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def validate_RangeType(self, value):
         # Validate type RangeType, a restriction on xs:integer.
-        pass
+        if value is not None and Validate_simpletypes_:
+           pass
     def hasContent_(self):
         if (
             self.name is not None or
@@ -1212,6 +1219,7 @@ class programmerType(personType):
         self.ellong = ellong
         self.elparam = elparam
         self.elarraytypes = elarraytypes
+        self.validate_ArrayTypes(self.elarraytypes)
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
         if programmerType.subclass:
@@ -1261,7 +1269,15 @@ class programmerType(personType):
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def validate_ArrayTypes(self, value):
         # Validate type ArrayTypes, a restriction on xs:NMTOKEN.
-        pass
+        if value is not None and Validate_simpletypes_:
+           enumerations = ['float', 'int', 'Name', 'token']
+           enumeration_respectee = False
+           for enum in enumerations:
+               if value == enum:
+                   enumeration_respectee = True
+                   break
+           if not enumeration_respectee:
+               warnings.warn('Value "%(value)s" does not match xsd enumeration restriction on ArrayTypes' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
             self.email is not None or
@@ -1532,7 +1548,8 @@ class paramType(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def validate_FlowType(self, value):
         # Validate type FlowType, a restriction on xs:integer.
-        pass
+        if value is not None and Validate_simpletypes_:
+           pass
     def hasContent_(self):
         if (
             self.valueOf_
@@ -1624,6 +1641,7 @@ class python_programmerType(programmerType):
         self.gui_developer = _cast(bool, gui_developer)
         self.favorite_editor = favorite_editor
         self.flowvalue = flowvalue
+        self.validate_FlowType(self.flowvalue)
         self.drcs = drcs
     def factory(*args_, **kwargs_):
         if python_programmerType.subclass:
@@ -1645,7 +1663,8 @@ class python_programmerType(programmerType):
     def set_gui_developer(self, gui_developer): self.gui_developer = gui_developer
     def validate_FlowType(self, value):
         # Validate type FlowType, a restriction on xs:integer.
-        pass
+        if value is not None and Validate_simpletypes_:
+           pass
     def hasContent_(self):
         if (
             self.favorite_editor is not None or

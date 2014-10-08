@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="container" type="containerType"/>
+
+    <xs:complexType name="containerType">
+        <xs:sequence>
+            <xs:element name="sample1" type="simpleOneType" maxOccurs="unbounded"/>
+            <xs:element name="sample2_bad" type="simpleOneType" maxOccurs="unbounded"/>
+            <xs:element name="sample3_bad" type="simpleOneType" maxOccurs="unbounded"/>
+            <xs:element name="sample2" type="simpleTwoType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="simpleOneType" mixed="0">
+        <xs:sequence>
+            <xs:element name="token_enum_value" type="token_enum_st"/>
+            <xs:element name="token_enum_value" type="token_enum_st"/>
+            <xs:element name="integer_range_incl_value" type="integer_range_incl_st"/>
+            <xs:element name="integer_range_excl_value" type="integer_range_excl_st"/>
+            <xs:element name="min_max_length_value" type="min_max_length_st"/>
+            <xs:element name="length_value" type="length_st"/>
+            <xs:element name="totaldigits_value" type="totaldigits_st"/>
+            <!-- Test for use of anonymous simple type. -->
+            <xs:element name="anonymous_float_value">
+                <xs:simpleType>
+                    <xs:restriction base="xs:float">
+                        <xs:minInclusive value="1.1"/>
+                        <xs:maxInclusive value="4.4"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <!-- Test for use of an anonymous simple type inside an anonymous complexType. -->
+    <xs:element name="simpleTwoType">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Foo">
+                    <xs:complexType>
+                        <xs:all>
+                            <xs:element name="FooType">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:minLength value="12"/>
+                                        <xs:maxLength value="24"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:element>
+                        </xs:all>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:simpleType name="token_enum_st">
+        <xs:restriction base="xs:NMTOKEN">
+            <xs:enumeration value="float"/>
+            <xs:enumeration value="int"/>
+            <xs:enumeration value="Name"/>
+            <xs:enumeration value="token"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="integer_range_incl_st">
+        <xs:restriction base="xs:integer">
+            <xs:minInclusive value="-5"/>
+            <xs:maxInclusive value="10"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="integer_range_excl_st">
+        <xs:restriction base="xs:integer">
+            <xs:minExclusive value="-5"/>
+            <xs:maxExclusive value="10"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="min_max_length_st">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="10"/>
+            <xs:maxLength value="20"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="length_st">
+        <xs:restriction base="xs:string">
+            <xs:length value="10"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="totaldigits_st">
+        <xs:restriction base="xs:float">
+            <xs:totalDigits value="15"/>
+            <xs:fractionDigits value="5"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

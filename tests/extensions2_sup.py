@@ -29,6 +29,11 @@ import getopt
 import re as re_
 import base64
 import datetime as datetime_
+import warnings
+
+
+Validate_simpletypes_ = True
+
 
 etree_ = None
 Verbose_import_ = False
@@ -1011,6 +1016,7 @@ class simpleFactoidType(GeneratedsSuper):
     def __init__(self, relation=None):
         self.original_tagname_ = None
         self.relation = relation
+        self.validate_RelationType(self.relation)
     def factory(*args_, **kwargs_):
         if simpleFactoidType.subclass:
             return simpleFactoidType.subclass(*args_, **kwargs_)
@@ -1021,7 +1027,15 @@ class simpleFactoidType(GeneratedsSuper):
     def set_relation(self, relation): self.relation = relation
     def validate_RelationType(self, value):
         # Validate type RelationType, a restriction on RelationType2.
-        pass
+        if value is not None and Validate_simpletypes_:
+           enumerations = ['down', 'add']
+           enumeration_respectee = False
+           for enum in enumerations:
+               if value == enum:
+                   enumeration_respectee = True
+                   break
+           if not enumeration_respectee:
+               warnings.warn('Value "%(value)s" does not match xsd enumeration restriction on RelationType' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
             self.relation is not None
@@ -1097,6 +1111,7 @@ class mixedFactoidType(GeneratedsSuper):
     def __init__(self, relation=None, valueOf_=None, mixedclass_=None, content_=None):
         self.original_tagname_ = None
         self.relation = relation
+        self.validate_RelationType(self.relation)
         self.valueOf_ = valueOf_
         if mixedclass_ is None:
             self.mixedclass_ = MixedContainer
@@ -1119,7 +1134,15 @@ class mixedFactoidType(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def validate_RelationType(self, value):
         # Validate type RelationType, a restriction on RelationType2.
-        pass
+        if value is not None and Validate_simpletypes_:
+           enumerations = ['down', 'add']
+           enumeration_respectee = False
+           for enum in enumerations:
+               if value == enum:
+                   enumeration_respectee = True
+                   break
+           if not enumeration_respectee:
+               warnings.warn('Value "%(value)s" does not match xsd enumeration restriction on RelationType' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
             self.relation is not None or
