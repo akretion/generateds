@@ -29,6 +29,11 @@ import getopt
 import re as re_
 import base64
 import datetime as datetime_
+import warnings
+
+
+Validate_simpletypes_ = True
+
 
 etree_ = None
 Verbose_import_ = False
@@ -762,6 +767,7 @@ class FooType1(GeneratedsSuper):
     def __init__(self, FooType=None):
         self.original_tagname_ = None
         self.FooType = FooType
+        self.validate_FooTypeType(self.FooType)
     def factory(*args_, **kwargs_):
         if FooType1.subclass:
             return FooType1.subclass(*args_, **kwargs_)
@@ -772,7 +778,11 @@ class FooType1(GeneratedsSuper):
     def set_FooType(self, FooType): self.FooType = FooType
     def validate_FooTypeType(self, value):
         # Validate type FooTypeType, a restriction on xs:string.
-        pass
+        if value is not None and Validate_simpletypes_:
+           if len(value) < 10:
+               warnings.warn('Value "%(value)s" does not match xsd minLength restriction on FooTypeType' % {"value" : value.encode("utf-8")} )
+           if len(value) > 19:
+               warnings.warn('Value "%(value)s" does not match xsd maxLength restriction on FooTypeType' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
             self.FooType is not None
@@ -847,6 +857,7 @@ class BarType2(GeneratedsSuper):
     def __init__(self, BarType=None):
         self.original_tagname_ = None
         self.BarType = BarType
+        self.validate_BarTypeType(self.BarType)
     def factory(*args_, **kwargs_):
         if BarType2.subclass:
             return BarType2.subclass(*args_, **kwargs_)
@@ -857,7 +868,11 @@ class BarType2(GeneratedsSuper):
     def set_BarType(self, BarType): self.BarType = BarType
     def validate_BarTypeType(self, value):
         # Validate type BarTypeType, a restriction on xs:string.
-        pass
+        if value is not None and Validate_simpletypes_:
+           if len(value) < 20:
+               warnings.warn('Value "%(value)s" does not match xsd minLength restriction on BarTypeType' % {"value" : value.encode("utf-8")} )
+           if len(value) > 29:
+               warnings.warn('Value "%(value)s" does not match xsd maxLength restriction on BarTypeType' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
             self.BarType is not None
@@ -932,6 +947,7 @@ class BazType3(GeneratedsSuper):
     def __init__(self, BazType=None):
         self.original_tagname_ = None
         self.BazType = BazType
+        self.validate_BazTypeType(self.BazType)
     def factory(*args_, **kwargs_):
         if BazType3.subclass:
             return BazType3.subclass(*args_, **kwargs_)
@@ -942,7 +958,11 @@ class BazType3(GeneratedsSuper):
     def set_BazType(self, BazType): self.BazType = BazType
     def validate_BazTypeType(self, value):
         # Validate type BazTypeType, a restriction on xs:string.
-        pass
+        if value is not None and Validate_simpletypes_:
+           if len(value) < 30:
+               warnings.warn('Value "%(value)s" does not match xsd minLength restriction on BazTypeType' % {"value" : value.encode("utf-8")} )
+           if len(value) > 39:
+               warnings.warn('Value "%(value)s" does not match xsd maxLength restriction on BazTypeType' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
             self.BazType is not None

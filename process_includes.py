@@ -30,7 +30,7 @@ from lxml import etree
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.13b'
+VERSION = '2.14a'
 ##VERSION##
 
 CatalogDict = {}
@@ -59,7 +59,8 @@ def process_include_files(
         'force': False,
         'fixtypenames': fixtypenames,
     })
-    prep_schema_doc(infile, outfile, inpath, options)
+    doc = prep_schema_doc(infile, outfile, inpath, options)
+    return doc
 
 
 def get_all_root_file_paths(infile, inpath='', catalogpath=None):

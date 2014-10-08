@@ -3,7 +3,7 @@ generateDS -- Generate Data Structures from XML Schema
 ======================================================
 
 :author: Dave Kuhlman
-:contact: dkuhlman@davekuhlman.org
+:contact: dkuhlman (at) davekuhlman (dot) org
 :address:
     http://www.davekuhlman.org
 
@@ -12,7 +12,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.13b
+:revision: 2.14a
 
 .. version
 
@@ -253,6 +253,11 @@ Here is the usage message displayed by ``generateDS.py``::
                                  module. Default="???"
         --validator-bodies=path  Path to a directory containing files that provide
                                  bodies (implementations) of validator methods.
+        --use-old-simpletype-validators
+                                 Use the old style simpleType validator functions
+                                 stored in a specified directory, instead of the
+                                 new style validators generated directly from the
+                                 XML schema.  See option --validator-bodies.
         --use-getter-setter      Generate getter and setter methods.  Values:
                                  "old" - Name getters/setters getVar()/setVar().
                                  "new" - Name getters/setters get_var()/set_var().
@@ -442,6 +447,18 @@ validator-bodies=<path>
     files, lines with "##" in the first two columns are ignored
     and are not inserted.
 
+use-old-simpletype-validators
+    ``generateDS.py`` is capable of generating validator bodies --
+    the code that validates data content in an XML instance
+    docuement and writes out warning messages if that data does not
+    satisfy the facets in the ``xs:restriction`` in the
+    ``xs:simpleType`` defintion in the XML schema.  Use this option
+    if you want to use your own validation bodies/code defined in a
+    specified directory .  See option ``--validator-bodies`` for
+    information on that.  *Without* this option
+    (``--use-old-simpletype-validators``), the validator code will
+    be generated directly from the XML schema, which is the default.
+
 use-getter-setter
     ``generateDS.py`` now generates getter and setter methods (for
     variable "abc", for example) with the names get_abc() and
@@ -477,7 +494,12 @@ no-process-includes
     Do not process included XML Schema files.  By default,
     generateDS.py will insert content from files referenced by
     ``<include ... />`` elements into the XML Schema to be processed.
-    See section `Include file processing`_.
+    See section `Include file processing`_.  Note that include
+    processing, which is performed in ``process_includes.py`` is
+    required for generating validator bodies from the XML schema,
+    because the Lxml ElementTree produced in ``process_includes.py``
+    is needed to generate the validator code.  So, using this option
+    also turns off automatic generation of validator code.
 
 silence
     Normally, the code generated with generateDS echoes the

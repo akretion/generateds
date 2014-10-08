@@ -29,6 +29,11 @@ import getopt
 import re as re_
 import base64
 import datetime as datetime_
+import warnings
+
+
+Validate_simpletypes_ = True
+
 
 etree_ = None
 Verbose_import_ = False
