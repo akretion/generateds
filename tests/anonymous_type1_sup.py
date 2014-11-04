@@ -25,11 +25,10 @@
 #
 
 import sys
-import getopt
 import re as re_
 import base64
 import datetime as datetime_
-import warnings
+import warnings as warnings_
 
 
 Validate_simpletypes_ = True
@@ -115,36 +114,38 @@ except ImportError, exp:
                 return None
         def gds_format_string(self, input_data, input_name=''):
             return input_data
-        def gds_validate_string(self, input_data, node, input_name=''):
+        def gds_validate_string(self, input_data, node=None, input_name=''):
             if not input_data:
                 return ''
             else:
                 return input_data
         def gds_format_base64(self, input_data, input_name=''):
             return base64.b64encode(input_data)
-        def gds_validate_base64(self, input_data, node, input_name=''):
+        def gds_validate_base64(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer(self, input_data, input_name=''):
             return '%d' % input_data
-        def gds_validate_integer(self, input_data, node, input_name=''):
+        def gds_validate_integer(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer_list(self, input_data, input_name=''):
             return '%s' % ' '.join(input_data)
-        def gds_validate_integer_list(self, input_data, node, input_name=''):
+        def gds_validate_integer_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
-                    float(value)
+                    int(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of integers')
             return values
         def gds_format_float(self, input_data, input_name=''):
             return ('%.15f' % input_data).rstrip('0')
-        def gds_validate_float(self, input_data, node, input_name=''):
+        def gds_validate_float(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_float_list(self, input_data, input_name=''):
             return '%s' % ' '.join(input_data)
-        def gds_validate_float_list(self, input_data, node, input_name=''):
+        def gds_validate_float_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
@@ -154,11 +155,12 @@ except ImportError, exp:
             return values
         def gds_format_double(self, input_data, input_name=''):
             return '%e' % input_data
-        def gds_validate_double(self, input_data, node, input_name=''):
+        def gds_validate_double(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_double_list(self, input_data, input_name=''):
             return '%s' % ' '.join(input_data)
-        def gds_validate_double_list(self, input_data, node, input_name=''):
+        def gds_validate_double_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
@@ -168,11 +170,12 @@ except ImportError, exp:
             return values
         def gds_format_boolean(self, input_data, input_name=''):
             return ('%s' % input_data).lower()
-        def gds_validate_boolean(self, input_data, node, input_name=''):
+        def gds_validate_boolean(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
             return '%s' % ' '.join(input_data)
-        def gds_validate_boolean_list(self, input_data, node, input_name=''):
+        def gds_validate_boolean_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 if value not in ('true', '1', 'false', '0', ):
@@ -181,7 +184,7 @@ except ImportError, exp:
                         'Requires sequence of booleans '
                         '("true", "1", "false", "0")')
             return values
-        def gds_validate_datetime(self, input_data, node, input_name=''):
+        def gds_validate_datetime(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -246,7 +249,7 @@ except ImportError, exp:
                     input_data, '%Y-%m-%dT%H:%M:%S')
             dt = dt.replace(tzinfo=tz)
             return dt
-        def gds_validate_date(self, input_data, node, input_name=''):
+        def gds_validate_date(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
             _svalue = '%04d-%02d-%02d' % (
@@ -292,7 +295,7 @@ except ImportError, exp:
             dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
             dt = dt.replace(tzinfo=tz)
             return dt.date()
-        def gds_validate_time(self, input_data, node, input_name=''):
+        def gds_validate_time(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_time(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -324,6 +327,21 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
+        def gds_validate_simple_patterns(self, patterns, target):
+            # pat is a list of lists of strings/patterns.  We should:
+            # - AND the outer elements
+            # - OR the inner elements
+            found1 = True
+            for patterns1 in patterns:
+                found2 = False
+                for patterns2 in patterns1:
+                    if re_.search(patterns2, target) is not None:
+                        found2 = True
+                        break
+                if not found2:
+                    found1 = False
+                    break
+            return found1
         @classmethod
         def gds_parse_time(cls, input_data):
             tz = None
@@ -779,10 +797,10 @@ class FooType1(GeneratedsSuper):
     def validate_FooTypeType(self, value):
         # Validate type FooTypeType, a restriction on xs:string.
         if value is not None and Validate_simpletypes_:
-           if len(value) < 10:
-               warnings.warn('Value "%(value)s" does not match xsd minLength restriction on FooTypeType' % {"value" : value.encode("utf-8")} )
-           if len(value) > 19:
-               warnings.warn('Value "%(value)s" does not match xsd maxLength restriction on FooTypeType' % {"value" : value.encode("utf-8")} )
+            if len(value) > 19:
+                warnings_.warn('Value "%(value)s" does not match xsd maxLength restriction on FooTypeType' % {"value" : value.encode("utf-8")} )
+            if len(value) < 10:
+                warnings_.warn('Value "%(value)s" does not match xsd minLength restriction on FooTypeType' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
             self.FooType is not None
@@ -869,10 +887,10 @@ class BarType2(GeneratedsSuper):
     def validate_BarTypeType(self, value):
         # Validate type BarTypeType, a restriction on xs:string.
         if value is not None and Validate_simpletypes_:
-           if len(value) < 20:
-               warnings.warn('Value "%(value)s" does not match xsd minLength restriction on BarTypeType' % {"value" : value.encode("utf-8")} )
-           if len(value) > 29:
-               warnings.warn('Value "%(value)s" does not match xsd maxLength restriction on BarTypeType' % {"value" : value.encode("utf-8")} )
+            if len(value) > 29:
+                warnings_.warn('Value "%(value)s" does not match xsd maxLength restriction on BarTypeType' % {"value" : value.encode("utf-8")} )
+            if len(value) < 20:
+                warnings_.warn('Value "%(value)s" does not match xsd minLength restriction on BarTypeType' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
             self.BarType is not None
@@ -959,10 +977,10 @@ class BazType3(GeneratedsSuper):
     def validate_BazTypeType(self, value):
         # Validate type BazTypeType, a restriction on xs:string.
         if value is not None and Validate_simpletypes_:
-           if len(value) < 30:
-               warnings.warn('Value "%(value)s" does not match xsd minLength restriction on BazTypeType' % {"value" : value.encode("utf-8")} )
-           if len(value) > 39:
-               warnings.warn('Value "%(value)s" does not match xsd maxLength restriction on BazTypeType' % {"value" : value.encode("utf-8")} )
+            if len(value) > 39:
+                warnings_.warn('Value "%(value)s" does not match xsd maxLength restriction on BazTypeType' % {"value" : value.encode("utf-8")} )
+            if len(value) < 30:
+                warnings_.warn('Value "%(value)s" does not match xsd minLength restriction on BazTypeType' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
             self.BazType is not None

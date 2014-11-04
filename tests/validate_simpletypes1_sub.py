@@ -93,31 +93,31 @@ ExternalEncoding = 'ascii'
 
 
 class containerTypeSub(supermod.containerType):
-    def __init__(self, sample1=None, sample2_bad=None, sample3_bad=None, sample2=None):
-        super(containerTypeSub, self).__init__(sample1, sample2_bad, sample3_bad, sample2, )
+    def __init__(self, sample1=None, sample2_bad=None, sample3_bad=None, sample4_bad=None, sample2=None):
+        super(containerTypeSub, self).__init__(sample1, sample2_bad, sample3_bad, sample4_bad, sample2, )
 supermod.containerType.subclass = containerTypeSub
 # end class containerTypeSub
 
 
 class simpleOneTypeSub(supermod.simpleOneType):
-    def __init__(self, token_enum_value=None, integer_range_incl_value=None, integer_range_excl_value=None, min_max_length_value=None, length_value=None, totaldigits_value=None, anonymous_float_value=None):
-        super(simpleOneTypeSub, self).__init__(token_enum_value, integer_range_incl_value, integer_range_excl_value, min_max_length_value, length_value, totaldigits_value, anonymous_float_value, )
+    def __init__(self, integer_range_1_value=None, pattern_value=None, token_enum_value=None, integer_range_incl_value=None, integer_range_excl_value=None, min_max_length_value=None, length_value=None, totalDigits_value=None, anonymous_float_value=None, primative_integer=None, primative_float=None):
+        super(simpleOneTypeSub, self).__init__(integer_range_1_value, pattern_value, token_enum_value, integer_range_incl_value, integer_range_excl_value, min_max_length_value, length_value, totalDigits_value, anonymous_float_value, primative_integer, primative_float, )
 supermod.simpleOneType.subclass = simpleOneTypeSub
 # end class simpleOneTypeSub
 
 
 class simpleTwoTypeSub(supermod.simpleTwoType):
-    def __init__(self, Foo=None):
-        super(simpleTwoTypeSub, self).__init__(Foo, )
+    def __init__(self, simpleTwoElementOne=None):
+        super(simpleTwoTypeSub, self).__init__(simpleTwoElementOne, )
 supermod.simpleTwoType.subclass = simpleTwoTypeSub
 # end class simpleTwoTypeSub
 
 
-class FooType1Sub(supermod.FooType1):
-    def __init__(self, FooType=None):
-        super(FooType1Sub, self).__init__(FooType, )
-supermod.FooType1.subclass = FooType1Sub
-# end class FooType1Sub
+class simpleTwoElementOneTypeSub(supermod.simpleTwoElementOneType):
+    def __init__(self, simpleTwoElementTwo=None):
+        super(simpleTwoElementOneTypeSub, self).__init__(simpleTwoElementTwo, )
+supermod.simpleTwoElementOneType.subclass = simpleTwoElementOneTypeSub
+# end class simpleTwoElementOneTypeSub
 
 
 def get_root_tag(node):

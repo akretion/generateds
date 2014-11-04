@@ -191,7 +191,7 @@ GenerateProperties = 0
 UseGetterSetter = 'new'
 UseOldSimpleTypeValidators = False
 SchemaLxmlTree = None
-XsdFileName=[]
+XsdFileName = []
 MemberSpecs = None
 DelayedElements = set()
 DelayedElements_subclass = set()
@@ -1452,22 +1452,19 @@ class XschemaHandler(handler.ContentHandler):
             fqn = element.getFullyQualifiedName()
             if fqn:
                 fqnToElementDict[fqn] = element
-
             if element.prefix in prefixToNamespaceMap:
                 element.namespace = prefixToNamespaceMap[element.prefix]
-
             if self.sequenceStack:
                 minOccurs, maxOccurs = self.sequenceStack[-1]
                 if 'minOccurs' not in attrs and minOccurs is not None:
                     element.attrs['minOccurs'] = minOccurs
                 if 'maxOccurs' not in attrs and maxOccurs is not None:
                     element.attrs['maxOccurs'] = maxOccurs
-
-            if 'type' not in attrs.keys() and 'ref' not in attrs.keys():
+            if 'type' not in attrs and 'ref' not in attrs:
                 element.setExplicitDefine(1)
             if len(self.stack) == 1:
                 element.setTopLevel(1)
-            if 'substitutionGroup' in attrs.keys() and 'name' in attrs.keys():
+            if 'substitutionGroup' in attrs and 'name' in attrs:
                 substituteName = attrs['name']
                 headName = attrs['substitutionGroup']
                 _, headName = get_prefix_and_value(headName)
@@ -1505,21 +1502,29 @@ class XschemaHandler(handler.ContentHandler):
             self.inChoice = 1
         elif name == AttributeType:
             self.inAttribute = 1
-            if 'name' in attrs.keys():
+            if 'name' in attrs:
                 name = attrs['name']
-            elif 'ref' in attrs.keys():
+            elif 'ref' in attrs:
                 name = strip_namespace(attrs['ref'])
             else:
                 name = 'no_attribute_name'
-            if 'type' in attrs.keys():
+            data_type = StringType[0]
+            if 'type' in attrs:
                 data_type = attrs['type']
-            else:
-                data_type = StringType[0]
-            if 'use' in attrs.keys():
+            elif 'ref' in attrs and SchemaLxmlTree is not None:
+                nsmap = {'xs': 'http://www.w3.org/2001/XMLSchema'}
+                attr_types = SchemaLxmlTree.xpath(
+                    "./xs:attribute[@name=$attrname]",
+                    namespaces=nsmap, attrname=name)
+                if attr_types:
+                    data_type1 = attr_types[0].get('type')
+                    if data_type1 is not None:
+                        data_type = data_type1
+            if 'use' in attrs:
                 use = attrs['use']
             else:
                 use = 'optional'
-            if 'default' in attrs.keys():
+            if 'default' in attrs:
                 default = attrs['default']
             else:
                 default = None
@@ -1536,13 +1541,13 @@ class XschemaHandler(handler.ContentHandler):
             if self.attributeGroupLevel >= 1:
                 # We are in an attribute group and are declaring a reference
                 #   to another attribute group.
-                if 'ref' in attrs.keys():
+                if 'ref' in attrs:
                     self.stack[-1].attributeGroup.add(attrs['ref'], None)
             else:
                 # If it has attribute 'name', then we are defining a new
                 #   attribute group.
                 #   Prepare to save it as an attributeGroup.
-                if 'name' in attrs.keys():
+                if 'name' in attrs:
                     name = strip_namespace(attrs['name'])
                     attributeGroup = XschemaAttributeGroup(name)
                     element = XschemaElement(attrs)
@@ -1552,7 +1557,7 @@ class XschemaHandler(handler.ContentHandler):
                     self.stack.append(element)
                 # If it has attribute 'ref', add it to the list of
                 #   attributeGroups for this element/complexType.
-                if 'ref' in attrs.keys():
+                if 'ref' in attrs:
                     self.stack[-1].attributeGroupNameList.append(attrs['ref'])
             self.attributeGroupLevel += 1
         elif name == SimpleContentType:
@@ -1562,7 +1567,7 @@ class XschemaHandler(handler.ContentHandler):
         elif name == ComplexContentType:
             pass
         elif name == ExtensionType:
-            if 'base' in attrs.keys() and len(self.stack) > 0:
+            if 'base' in attrs and len(self.stack) > 0:
                 extensionBase = attrs['base']
                 if (extensionBase in StringType or
                         extensionBase in IDTypes or
@@ -1596,7 +1601,7 @@ class XschemaHandler(handler.ContentHandler):
             elif self.inSimpleType <= 0:
                 # Save the name of the simpleType, but ignore everything
                 #   else about it (for now).
-                if 'name' in attrs.keys():
+                if 'name' in attrs:
                     stName = cleanupName(attrs['name'])
                 elif len(self.stack) > 0:
                     stName = cleanupName(self.stack[-1].getName())
@@ -1617,7 +1622,7 @@ class XschemaHandler(handler.ContentHandler):
                 # If we are in a simpleType, capture the name of
                 #   the restriction base.
                 if ((self.inSimpleType >= 1 or self.inSimpleContent) and
-                        'base' in attrs.keys()):
+                        'base' in attrs):
                     self.stack[-1].setBase(attrs['base'])
                 else:
                     if 'base' in attrs:
@@ -2329,7 +2334,8 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
     else:
         if element.getSimpleContent() or element.isMixed():
             wrt("        if self.hasContent_():\n")
-            wrt("            element.text = self.gds_format_string(self.get_valueOf_())\n")
+            wrt("            element.text = self.gds_format_string"
+                "(self.get_valueOf_())\n")
 #end generateToEtreeChildren
 
 
@@ -3512,7 +3518,7 @@ def generateBuildStandard_1(
         else:
             substitutionGroup = child.getAttrs().get('substitutionGroup')
             if substitutionGroup is not None:
-                name = substitutionGroup
+                _, name = get_prefix_and_value(substitutionGroup)
                 name = mapName(name)
             else:
                 name = mapName(headName)
@@ -3842,7 +3848,8 @@ def generateCtor(wrt, prefix, element):
                 wrt('        super(%s%s, self).__init__(*arglist_)\n' %
                     (prefix, elName, ))
             else:
-                wrt('        super(%s%s, self).__init__(%s)\n' % (prefix, elName, s2, ))
+                wrt('        super(%s%s, self).__init__(%s)\n' % (
+                    prefix, elName, s2, ))
     attrDefs = element.getAttributeDefs()
     for key in attrDefs:
         attrDef = attrDefs[key]
@@ -3959,171 +3966,280 @@ def generateCtor(wrt, prefix, element):
 # find the simple type, either a named simpleType or an anonymous one.
 def find_simple_type_def(tree, stName, element, child, ns, base):
     st = None
+    path1 = ("//xs:complexType[@name=$typeName]"
+             "//xs:element[@name=$childName]/xs:simpleType")
+    path2 = ("//xs:element[@name=$typeName]/xs:complexType//xs:element"
+             "[@name=$childName]/xs:simpleType")
     if stName:
-        st_defs = tree.xpath("//xs:simpleType[@name=$n]", namespaces=ns, n=stName)
+        st_defs = tree.xpath(
+            "//xs:simpleType[@name=$n]",
+            namespaces=ns, n=stName)
         if st_defs:
             st = st_defs[0]
-        else:
+        elif element is not None and child is not None:
             typeName = element.getType()
             childName = child.getName()
             # search for an anonymous simpleType.
-            el_defs = tree.xpath("//xs:complexType[@name=$typeName]//xs:element[@name=$childName]/xs:simpleType",
+            el_defs = tree.xpath(
+                path1,
                 namespaces=ns, typeName=typeName, childName=childName)
             if el_defs:
                 st = el_defs[0]
             else:
-                # search for an anonymous simpleType inside an anonymous complexType.
-                el_defs = tree.xpath("//xs:element[@name=$typeName]/xs:complexType//xs:element[@name=$childName]/xs:simpleType",
+                # search for an anonymous simpleType inside an anonymous
+                # complexType.
+                el_defs = tree.xpath(
+                    path2,
                     namespaces=ns, typeName=typeName, childName=childName)
     return st
 
 
-#validate directly from xsd file, no need to specify directory for validation
+# Generate validation code for each restriction.
+# Recursivly call to process possible chain of base types.
+def processValidatorBodyRestrictions(
+        tree, s1, restrictions, st, ns, stName, base,
+        patterns1):
+    for restriction in restrictions:
+        #
+        # pattern
+        pats1 = restriction.xpath(
+            "./xs:pattern/@value", namespaces=ns)
+        if pats1:
+            pats2 = ['^%s$' % (p1, ) for p1 in pats1]
+            patterns1.append(pats2)
+        #
+        # Check for and generate code for each possible type of restriction.
+        #
+        # enumerations
+        enumerations = restriction.xpath(
+            "./xs:enumeration/@value", namespaces=ns)
+        if enumerations:
+            toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            enumerations = %(enumerations)s\n" % {
+                'enumerations': enumerations}
+            s1 += "            enumeration_respectee = False\n"
+            s1 += "            for enum in enumerations:\n"
+            s1 += "                if value == enum:\n"
+            s1 += "                    enumeration_respectee = True\n"
+            s1 += "                    break\n"
+            s1 += "            if not enumeration_respectee:\n"
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd enumeration restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # maxLength
+        maxLength = restriction.xpath(
+            "./xs:maxLength/@value", namespaces=ns)
+        if maxLength:
+            maxLength = maxLength[0]
+            toencode = '% {"value" : value}'
+            valuestring = '(str(value))'
+            if 'string' in base:
+                valuestring = '(value)'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            if len%(valuestr)s > %(maxLen)s:\n" % {
+                'maxLen': maxLength, "valuestr": valuestring}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd maxLength restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # minLength
+        minLength = restriction.xpath(
+            "./xs:minLength/@value", namespaces=ns)
+        if minLength:
+            minLength = minLength[0]
+            toencode = '% {"value" : value}'
+            valuestring = '(str(value))'
+            if 'string' in base:
+                valuestring = '(value)'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            if len%(valuestr)s < %(minLen)s:\n" % {
+                'minLen': minLength, "valuestr": valuestring}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd minLength restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # length
+        length = restriction.xpath(
+            "./xs:length/@value", namespaces=ns)
+        if length:
+            length = length[0]
+            toencode = '% {"value" : value}'
+            valuestring = '(str(value))'
+            if 'string' in base:
+                valuestring = '(value)'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            if len%(valuestring)s != %(length)s:\n" % {
+                'length': length, "valuestring": valuestring}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd length restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # minInclusive
+        minInclusive = restriction.xpath(
+            "./xs:minInclusive/@value", namespaces=ns)
+        if minInclusive:
+            minIncl = minInclusive[0]
+            toencode = '% {"value" : value}'
+            valuestring = 'value'
+            if 'string' in base:
+                valuestring = 'len(str(value))'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            if %(valuestring)s < %(minIncl)s:\n" % {
+                'minIncl': minIncl, "valuestring": valuestring}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd minInclusive restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # maxInclusive
+        maxInclusive = restriction.xpath(
+            "./xs:maxInclusive/@value", namespaces=ns)
+        if maxInclusive:
+            maxIncl = maxInclusive[0]
+            toencode = '% {"value" : value}'
+            valuestring = 'value'
+            if 'string' in base:
+                valuestring = 'len(str(value))'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            if %(valuestring)s > %(maxIncl)s:\n" % {
+                'maxIncl': maxIncl, "valuestring": valuestring}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd maxInclusive restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # minExclusive
+        minExclusive = restriction.xpath(
+            "./xs:minExclusive/@value", namespaces=ns)
+        if minExclusive:
+            minExclusive = minExclusive[0]
+            toencode = '% {"value" : value}'
+            valstr = 'value'
+            if 'string' in base:
+                valstr = 'len(str(value))'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            if %(valstr)s <= %(minExclusive)s:\n" % {
+                'minExclusive': minExclusive, "valstr": valstr}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd minExclusive restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # maxExclusive
+        maxExclusive = restriction.xpath(
+            "./xs:maxExclusive/@value", namespaces=ns)
+        if maxExclusive:
+            maxExclusive = maxExclusive[0]
+            toencode = '% {"value" : value}'
+            valstr = 'value'
+            if 'string' in base:
+                valstr = 'len(str(value))'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            if %(valstr)s >= %(maxExclusive)s:\n" % {
+                'maxExclusive': maxExclusive, "valstr": valstr}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd maxExclusive restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # totalDigits
+        totalDigits = restriction.xpath(
+            "./xs:totalDigits/@value", namespaces=ns)
+        if totalDigits:
+            totalDigits = totalDigits[0]
+            toencode = '% {"value" : value}'
+            valstr = '(str(value))'
+            if 'string' in base:
+                valstr = '(value)'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            if len%(valstr)s >= %(totalDigits)s:\n" % {
+                'totalDigits': totalDigits, "valstr": valstr}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd maxInclusive restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # Recurse into base simpleType, if it exists.
+        base1 = restriction.get('base')
+        if base1 is not None:
+            st1 = find_simple_type_def(tree, base1, None, None, ns, base)
+            if st1 is not None:
+                restrictions1 = st1.xpath(
+                    "./xs:restriction",
+                    namespaces=ns, n=stName, b=base)
+                if restrictions1:
+                    s2 = processValidatorBodyRestrictions(
+                        tree, '', restrictions1, st1, ns, stName,
+                        base1, patterns1)
+                    s1 += s2
+    return s1
+# end processValidatorBodyRestrictions
+
+
+# Generate validator method bodies.
 def getValidatorBody(stName, base, element, child):
+    s1 = None
+    patterns1 = ''
     if not UseOldSimpleTypeValidators and SchemaLxmlTree is not None:
         # generate validator bodies directly from the XML schema.
-        s1 = '        if value is not None and Validate_simpletypes_:\n'
-        initial_len = len(s1)
         ns = {'xs': 'http://www.w3.org/2001/XMLSchema'}
-        fileName = XsdFileName[0]
         tree = SchemaLxmlTree
-        ns= {"xs": "http://www.w3.org/2001/XMLSchema"}
-        #on determine l elemnt ou le type est definit  
+        # on determine l elemnt ou le type est definit
         st = find_simple_type_def(tree, stName, element, child, ns, base)
         if st is not None:
-            bases = st.xpath("xs:restriction[@base=$b]", namespaces=ns, n=stName, b=base)
-            #une liste qui contient les restrictions deja traitees  
-            already_processed=[]
-            if bases:
-                for restriction in bases[0]:
-                    restriction_name = restriction.tag
-                    if 'pattern' in restriction_name and 'pattern' not in already_processed:
-                        pattern = st.xpath("xs:restriction[@base=$b]/xs:pattern/@value", namespaces=ns, n=stName, b=base)
-                        if pattern:
-                            pattern = pattern[0]
-                            already_processed.append('pattern')
-                            #convertir en string si le type n est pas string (car on ne peut pas comparer un pattern qu avec un type string
-                            valuestring ='(str(value))'
-                            toencode = '% {"value" : value}'
-                            if 'string' in base:
-                                valuestring = '(value)'
-                                toencode = '% {"value" : value.encode("utf-8")}'
-                            s1 += "           a = re_.compile('%(pattern)s')\n" %{"pattern": pattern}
-                            s1 += "           if not a.match%(valuestring)s:\n" % {"valuestring":valuestring}
-                            s1 += "              warnings.warn('Value \"%(val)s\" does not match xsd pattern restriction on %(typename)s' %(express)s )\n" %{ "val":'%(value)s' , "typename" : stName, "express": toencode }
-                    elif 'enumeration' in restriction_name and 'enumeration' not in already_processed:
-                        enumerations = st.xpath("xs:restriction[@base=$b]/xs:enumeration/@value", namespaces=ns, n=stName, b=base)
-                        if enumerations:
-                            already_processed.append('enumeration')
-                            s1 += "           enumerations = %(enumerations)s\n" % {'enumerations' : enumerations}
-                            s1 += "           enumeration_respectee = False\n"
-                            s1 += "           for enum in enumerations:\n"
-                            s1 += "               if value == enum:\n"
-                            s1 += "                   enumeration_respectee = True\n"
-                            s1 += "                   break\n"
-                            s1 += "           if not enumeration_respectee:\n"
-                            s1 += "               warnings.warn('Value \"%(val)s\" does not match xsd enumeration restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": '% {"value" : value.encode("utf-8")}'}
-                    elif 'maxLength' in restriction_name and 'maxLength' not in already_processed:
-                        valuestring = '(str(value))'
-                        toencode = '% {"value" : value}'
-                        if 'string' in base:
-                            valuestring = '(value)' 
-                            toencode = '% {"value" : value.encode("utf-8")}'
-                        maxLength = st.xpath("xs:restriction[@base=$b]/xs:maxLength/@value", namespaces=ns, n=stName, b=base)
-                        if maxLength:
-                            maxLength = maxLength[0]
-                            already_processed.append('maxLength')
-                            s1 += "           if len%(valuestring)s > %(maxLength)s:\n" % {'maxLength' : maxLength, "valuestring" :valuestring}
-                            s1 += "               warnings.warn('Value \"%(val)s\" does not match xsd maxLength restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": toencode}
-                    elif 'minLength' in restriction_name and 'minLength' not in already_processed:
-                        valuestring = '(str(value))'
-                        toencode = '% {"value" : value}'
-                        if 'string' in base:
-                            valuestring = '(value)' 
-                            toencode = '% {"value" : value.encode("utf-8")}'
-                        minLength = st.xpath("xs:restriction[@base=$b]/xs:minLength/@value", namespaces=ns, n=stName, b=base)
-                        if minLength:
-                            minLength = minLength[0]
-                            already_processed.append('minLength')
-                            s1 += "           if len%(valuestring)s < %(minLength)s:\n" % {'minLength' : minLength, "valuestring" :valuestring}
-                            s1 += "               warnings.warn('Value \"%(val)s\" does not match xsd minLength restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": toencode}
-                    elif 'length' in restriction_name and 'length' not in already_processed:
-                        valuestring = '(str(value))'
-                        toencode = '% {"value" : value}'
-                        if 'string' in base:
-                            valuestring = '(value)' 
-                            toencode = '% {"value" : value.encode("utf-8")}'
-                        length = st.xpath("xs:restriction[@base=$b]/xs:length/@value", namespaces=ns, n=stName, b=base)
-                        if length:
-                            length = length[0]
-                            already_processed.append('length')
-                            s1 += "           if len%(valuestring)s != %(length)s:\n" % {'length' : length, "valuestring" :valuestring}
-                            s1 += "               warnings.warn('Value \"%(val)s\" does not match xsd length restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": toencode}
-                    elif 'minInclusive' in  restriction_name and 'minInclusive' not in already_processed:
-                        valuestring = 'value'
-                        toencode = '% {"value" : value}'
-                        if 'string' in base:
-                            valuestring = 'len(str(value))'
-                            toencode = '% {"value" : value.encode("utf-8")}'
-                        minInclusive = st.xpath("xs:restriction[@base=$b]/xs:minInclusive/@value", namespaces=ns, n=stName, b=base)
-                        if minInclusive:
-                            minInclusive = minInclusive[0]
-                            already_processed.append('minInclusive')
-                            s1 += "           if %(valuestring)s <= %(minInclusive)s:\n" % {'minInclusive' : minInclusive, "valuestring" :valuestring}
-                            s1 += "               warnings.warn('Value \"%(val)s\" does not match xsd minInclusive restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": toencode }
-                    elif 'maxInclusive' in  restriction_name and 'maxInclusive' not in already_processed:
-                        valuestring = 'value'
-                        toencode = '% {"value" : value}'
-                        if 'string' in base:
-                            valuestring = 'len(str(value))'
-                            toencode = '% {"value" : value.encode("utf-8")}'
-                        maxInclusive = st.xpath("xs:restriction[@base=$b]/xs:maxInclusive/@value", namespaces=ns, n=stName, b=base)
-                        if maxInclusive:
-                            maxInclusive = maxInclusive[0]
-                            already_processed.append('maxInclusive')
-                            s1 += "           if %(valuestring)s >= %(maxInclusive)s:\n" % {'maxInclusive' : maxInclusive, "valuestring" :valuestring}
-                            s1 += "               warnings.warn('Value \"%(val)s\" does not match xsd maxInclusive restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": toencode }
-                    elif 'minExclusive' in  restriction_name and 'minExclusive' not in already_processed:
-                        valuestring = 'value'
-                        toencode = '% {"value" : value}'
-                        if 'string' in base:
-                            valuestring = 'len(str(value))'
-                            toencode = '% {"value" : value.encode("utf-8")}'
-                        minExclusive = st.xpath("xs:restriction[@base=$b]/xs:minExclusive/@value", namespaces=ns, n=stName, b=base)
-                        if minExclusive:
-                            minExclusive = minExclusive[0]
-                            already_processed.append('minExclusive')
-                            s1 += "           if %(valuestring)s < %(minExclusive)s:\n" % {'minExclusive' : minExclusive, "valuestring" :valuestring}
-                            s1 += "               warnings.warn('Value \"%(val)s\" does not match xsd minExclusive restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": toencode }
-                    elif 'maxExclusive' in restriction_name and 'maxExclusive' not in already_processed:
-                        valuestring = 'value'
-                        toencode = '% {"value" : value}'
-                        if 'string' in base:
-                            valuestring = 'len(str(value))'
-                            toencode = '% {"value" : value.encode("utf-8")}'
-                        maxExclusive = st.xpath("xs:restriction[@base=$b]/xs:maxExclusive/@value", namespaces=ns, n=stName, b=base)
-                        if maxExclusive:
-                            maxExclusive = maxExclusive[0]
-                            already_processed.append('maxExclusive')
-                            s1 += "           if %(valuestring)s > %(maxExclusive)s:\n" % {'maxExclusive' : maxExclusive, "valuestring" :valuestring}
-                            s1 += "               warnings.warn('Value \"%(val)s\" does not match xsd maxExclusive restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": toencode }
-                    elif 'totalDigits' in restriction_name and 'totalDigits' not in already_processed:
-                        valuestring = '(str(value))'
-                        toencode = '% {"value" : value}'
-                        if 'string' in base:
-                            valuestring = '(value)'
-                            toencode = '% {"value" : value.encode("utf-8")}'
-                        totalDigits = st.xpath("xs:restriction[@base=$b]/xs:totalDigits/@value", namespaces=ns, n=stName, b=base)
-                        if totalDigits:
-                            totalDigits = totalDigits[0]
-                            already_processed.append('totalDigits')
-                            s1 += "           if len%(valuestring)s >= %(totalDigits)s:\n" % {'totalDigits' : totalDigits, "valuestring" :valuestring}
-                            s1 += "               warnings.warn('Value \"%(val)s\" does not match xsd maxInclusive restriction on %(typename)s' %(express)s )\n" % {"val":'%(value)s' , "typename" : stName, "express": toencode }
-        if len(s1) == initial_len:
-            s1 += '           pass\n'
-        return s1
+            restrictions = st.xpath(
+                "./xs:restriction",
+                namespaces=ns, n=stName, b=base)
+            # une liste qui contient les restrictions deja traitees
+            if restrictions:
+                s1 = ('        if value is not None and '
+                      'Validate_simpletypes_:\n')
+                initial_len = len(s1)
+                patterns1 = []
+                s1 = processValidatorBodyRestrictions(
+                    tree, s1, restrictions, st, ns, stName, base,
+                    patterns1)
+                if len(s1) == initial_len and not patterns1:
+                    s1 += '            pass\n'
+        if s1 is None:
+            s1 = '        pass\n'
+        return s1, patterns1
+    #
+    # if UseOldSimpleTypeValidators
     else:
-        # if UseOldSimpleTypeValidators -- generate validator bodies from use code.
+        # Generate validator bodies from user code.
         retrieved = 0
         if ValidatorBodiesBasePath:
             found = 0
@@ -4146,7 +4262,7 @@ def getValidatorBody(stName, base, element, child):
                 retrieved = 1
         if not retrieved:
             s1 = '        pass\n'
-        return s1
+        return s1, None
 # end getValidatorBody
 
 
@@ -4235,7 +4351,21 @@ def generateValidatorDefs(wrt, element):
                     (typeName, stObj.getBase(), ))
             else:
                 wrt('        # validate type %s\n' % (typeName, ))
-            wrt(getValidatorBody(typeName, stObj.getBase(), element, child))
+            body, patterns = getValidatorBody(
+                typeName, stObj.getBase(), element, child)
+            wrt(body)
+            if patterns:
+                wrt('            if not self.gds_validate_simple_patterns(\n')
+                wrt('                    self.validate_%s_patterns_, '
+                    'value):\n' % (typeName, ))
+                s1 = ("                warnings_.warn('Value \"%%s\" "
+                      "does not match xsd pattern restrictions: %%s' "
+                      "%% (value.encode('utf-8'), "
+                      "self.validate_%s_patterns_, ))\n" % (typeName, )
+                      )
+                wrt(s1)
+                wrt('    validate_%s_patterns_ = %s\n' % (
+                    typeName, patterns, ))
     attrDefs = element.getAttributeDefs()
     for key in attrDefs:
         attrDef = attrDefs[key]
@@ -4251,7 +4381,21 @@ def generateValidatorDefs(wrt, element):
                     typeName, stObj.getBase(), ))
             else:
                 wrt('        # validate type %s\n' % (typeName, ))
-            wrt(getValidatorBody(typeName, stObj.getBase(), None, None))
+            body, patterns = getValidatorBody(
+                typeName, stObj.getBase(), None, None)
+            wrt(body)
+            if patterns:
+                wrt('            if not self.gds_validate_simple_patterns(\n')
+                wrt('                    self.validate_%s_patterns_, '
+                    'value):\n' % (typeName, ))
+                s1 = ("                warnings_.warn('Value \"%%s\" "
+                      "does not match xsd pattern restrictions: %%s' "
+                      "%% (value.encode('utf-8'), "
+                      "self.validate_%s_patterns_, ))\n" % (typeName, )
+                      )
+                wrt(s1)
+                wrt('    validate_%s_patterns_ = %s\n' % (
+                    typeName, patterns, ))
 # end generateValidatorDefs
 
 
@@ -4483,11 +4627,10 @@ TEMPLATE_HEADER = """\
 #
 
 import sys
-import getopt
 import re as re_
 import base64
 import datetime as datetime_
-import warnings
+import warnings as warnings_
 
 
 Validate_simpletypes_ = True
@@ -4573,36 +4716,38 @@ except ImportError, exp:
                 return None
         def gds_format_string(self, input_data, input_name=''):
             return input_data
-        def gds_validate_string(self, input_data, node, input_name=''):
+        def gds_validate_string(self, input_data, node=None, input_name=''):
             if not input_data:
                 return ''
             else:
                 return input_data
         def gds_format_base64(self, input_data, input_name=''):
             return base64.b64encode(input_data)
-        def gds_validate_base64(self, input_data, node, input_name=''):
+        def gds_validate_base64(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer(self, input_data, input_name=''):
             return '%%d' %% input_data
-        def gds_validate_integer(self, input_data, node, input_name=''):
+        def gds_validate_integer(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer_list(self, input_data, input_name=''):
             return '%%s' %% ' '.join(input_data)
-        def gds_validate_integer_list(self, input_data, node, input_name=''):
+        def gds_validate_integer_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
-                    float(value)
+                    int(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of integers')
             return values
         def gds_format_float(self, input_data, input_name=''):
             return ('%%.15f' %% input_data).rstrip('0')
-        def gds_validate_float(self, input_data, node, input_name=''):
+        def gds_validate_float(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_float_list(self, input_data, input_name=''):
             return '%%s' %% ' '.join(input_data)
-        def gds_validate_float_list(self, input_data, node, input_name=''):
+        def gds_validate_float_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
@@ -4612,11 +4757,12 @@ except ImportError, exp:
             return values
         def gds_format_double(self, input_data, input_name=''):
             return '%%e' %% input_data
-        def gds_validate_double(self, input_data, node, input_name=''):
+        def gds_validate_double(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_double_list(self, input_data, input_name=''):
             return '%%s' %% ' '.join(input_data)
-        def gds_validate_double_list(self, input_data, node, input_name=''):
+        def gds_validate_double_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
@@ -4626,11 +4772,12 @@ except ImportError, exp:
             return values
         def gds_format_boolean(self, input_data, input_name=''):
             return ('%%s' %% input_data).lower()
-        def gds_validate_boolean(self, input_data, node, input_name=''):
+        def gds_validate_boolean(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
             return '%%s' %% ' '.join(input_data)
-        def gds_validate_boolean_list(self, input_data, node, input_name=''):
+        def gds_validate_boolean_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 if value not in ('true', '1', 'false', '0', ):
@@ -4639,7 +4786,7 @@ except ImportError, exp:
                         'Requires sequence of booleans '
                         '("true", "1", "false", "0")')
             return values
-        def gds_validate_datetime(self, input_data, node, input_name=''):
+        def gds_validate_datetime(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -4704,7 +4851,7 @@ except ImportError, exp:
                     input_data, '%%Y-%%m-%%dT%%H:%%M:%%S')
             dt = dt.replace(tzinfo=tz)
             return dt
-        def gds_validate_date(self, input_data, node, input_name=''):
+        def gds_validate_date(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
             _svalue = '%%04d-%%02d-%%02d' %% (
@@ -4750,7 +4897,7 @@ except ImportError, exp:
             dt = datetime_.datetime.strptime(input_data, '%%Y-%%m-%%d')
             dt = dt.replace(tzinfo=tz)
             return dt.date()
-        def gds_validate_time(self, input_data, node, input_name=''):
+        def gds_validate_time(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_time(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -4782,6 +4929,21 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
+        def gds_validate_simple_patterns(self, patterns, target):
+            # pat is a list of lists of strings/patterns.  We should:
+            # - AND the outer elements
+            # - OR the inner elements
+            found1 = True
+            for patterns1 in patterns:
+                found2 = False
+                for patterns2 in patterns1:
+                    if re_.search(patterns2, target) is not None:
+                        found2 = True
+                        break
+                if not found2:
+                    found1 = False
+                    break
+            return found1
         @classmethod
         def gds_parse_time(cls, input_data):
             tz = None
@@ -5490,7 +5652,8 @@ def generateSubclass(wrt, element, prefix, xmlbehavior, behaviors, baseUrl):
         return
     AlreadyGenerated_subclass.add(mappedName)
     name = element.getCleanName()
-    wrt('class %s%s%s(supermod.%s%s):\n' % (prefix, name, SubclassSuffix, prefix, name))
+    wrt('class %s%s%s(supermod.%s%s):\n' % (
+        prefix, name, SubclassSuffix, prefix, name))
     childCount = countChildren(element, 0)
     s1 = buildCtorArgs_multilevel(element, childCount)
     wrt('    def __init__(self%s):\n' % s1)
@@ -5517,7 +5680,8 @@ def generateSubclass(wrt, element, prefix, xmlbehavior, behaviors, baseUrl):
             classBehaviors = None
         if classBehaviors:
             generateClassBehaviors(wrt, classBehaviors, baseUrl)
-    wrt('supermod.%s%s.subclass = %s%s%s\n' % (prefix, name, prefix, name, SubclassSuffix))
+    wrt('supermod.%s%s.subclass = %s%s%s\n' % (
+        prefix, name, prefix, name, SubclassSuffix))
     wrt('# end class %s%s%s\n' % (prefix, name, SubclassSuffix))
     wrt('\n\n')
 
@@ -6527,4 +6691,3 @@ if __name__ == '__main__':
     #except:
     #    import pdb; pdb.post_mortem()
     main()
-

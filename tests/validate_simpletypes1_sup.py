@@ -24,11 +24,10 @@
 #
 
 import sys
-import getopt
 import re as re_
 import base64
 import datetime as datetime_
-import warnings
+import warnings as warnings_
 
 
 Validate_simpletypes_ = True
@@ -114,36 +113,38 @@ except ImportError, exp:
                 return None
         def gds_format_string(self, input_data, input_name=''):
             return input_data
-        def gds_validate_string(self, input_data, node, input_name=''):
+        def gds_validate_string(self, input_data, node=None, input_name=''):
             if not input_data:
                 return ''
             else:
                 return input_data
         def gds_format_base64(self, input_data, input_name=''):
             return base64.b64encode(input_data)
-        def gds_validate_base64(self, input_data, node, input_name=''):
+        def gds_validate_base64(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer(self, input_data, input_name=''):
             return '%d' % input_data
-        def gds_validate_integer(self, input_data, node, input_name=''):
+        def gds_validate_integer(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer_list(self, input_data, input_name=''):
             return '%s' % ' '.join(input_data)
-        def gds_validate_integer_list(self, input_data, node, input_name=''):
+        def gds_validate_integer_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
-                    float(value)
+                    int(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of integers')
             return values
         def gds_format_float(self, input_data, input_name=''):
             return ('%.15f' % input_data).rstrip('0')
-        def gds_validate_float(self, input_data, node, input_name=''):
+        def gds_validate_float(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_float_list(self, input_data, input_name=''):
             return '%s' % ' '.join(input_data)
-        def gds_validate_float_list(self, input_data, node, input_name=''):
+        def gds_validate_float_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
@@ -153,11 +154,12 @@ except ImportError, exp:
             return values
         def gds_format_double(self, input_data, input_name=''):
             return '%e' % input_data
-        def gds_validate_double(self, input_data, node, input_name=''):
+        def gds_validate_double(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_double_list(self, input_data, input_name=''):
             return '%s' % ' '.join(input_data)
-        def gds_validate_double_list(self, input_data, node, input_name=''):
+        def gds_validate_double_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
@@ -167,11 +169,12 @@ except ImportError, exp:
             return values
         def gds_format_boolean(self, input_data, input_name=''):
             return ('%s' % input_data).lower()
-        def gds_validate_boolean(self, input_data, node, input_name=''):
+        def gds_validate_boolean(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
             return '%s' % ' '.join(input_data)
-        def gds_validate_boolean_list(self, input_data, node, input_name=''):
+        def gds_validate_boolean_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 if value not in ('true', '1', 'false', '0', ):
@@ -180,7 +183,7 @@ except ImportError, exp:
                         'Requires sequence of booleans '
                         '("true", "1", "false", "0")')
             return values
-        def gds_validate_datetime(self, input_data, node, input_name=''):
+        def gds_validate_datetime(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -245,7 +248,7 @@ except ImportError, exp:
                     input_data, '%Y-%m-%dT%H:%M:%S')
             dt = dt.replace(tzinfo=tz)
             return dt
-        def gds_validate_date(self, input_data, node, input_name=''):
+        def gds_validate_date(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
             _svalue = '%04d-%02d-%02d' % (
@@ -291,7 +294,7 @@ except ImportError, exp:
             dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
             dt = dt.replace(tzinfo=tz)
             return dt.date()
-        def gds_validate_time(self, input_data, node, input_name=''):
+        def gds_validate_time(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_time(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -323,6 +326,21 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
+        def gds_validate_simple_patterns(self, patterns, target):
+            # pat is a list of lists of strings/patterns.  We should:
+            # - AND the outer elements
+            # - OR the inner elements
+            found1 = True
+            for patterns1 in patterns:
+                found2 = False
+                for patterns2 in patterns1:
+                    if re_.search(patterns2, target) is not None:
+                        found2 = True
+                        break
+                if not found2:
+                    found1 = False
+                    break
+            return found1
         @classmethod
         def gds_parse_time(cls, input_data):
             tz = None
@@ -642,11 +660,12 @@ class containerType(GeneratedsSuper):
         MemberSpec_('sample1', 'simpleOneType', 1),
         MemberSpec_('sample2_bad', 'simpleOneType', 1),
         MemberSpec_('sample3_bad', 'simpleOneType', 1),
+        MemberSpec_('sample4_bad', 'simpleOneType', 1),
         MemberSpec_('sample2', 'simpleTwoType', 1),
     ]
     subclass = None
     superclass = None
-    def __init__(self, sample1=None, sample2_bad=None, sample3_bad=None, sample2=None):
+    def __init__(self, sample1=None, sample2_bad=None, sample3_bad=None, sample4_bad=None, sample2=None):
         self.original_tagname_ = None
         if sample1 is None:
             self.sample1 = []
@@ -660,6 +679,10 @@ class containerType(GeneratedsSuper):
             self.sample3_bad = []
         else:
             self.sample3_bad = sample3_bad
+        if sample4_bad is None:
+            self.sample4_bad = []
+        else:
+            self.sample4_bad = sample4_bad
         if sample2 is None:
             self.sample2 = []
         else:
@@ -685,6 +708,11 @@ class containerType(GeneratedsSuper):
     def add_sample3_bad(self, value): self.sample3_bad.append(value)
     def insert_sample3_bad_at(self, index, value): self.sample3_bad.insert(index, value)
     def replace_sample3_bad_at(self, index, value): self.sample3_bad[index] = value
+    def get_sample4_bad(self): return self.sample4_bad
+    def set_sample4_bad(self, sample4_bad): self.sample4_bad = sample4_bad
+    def add_sample4_bad(self, value): self.sample4_bad.append(value)
+    def insert_sample4_bad_at(self, index, value): self.sample4_bad.insert(index, value)
+    def replace_sample4_bad_at(self, index, value): self.sample4_bad[index] = value
     def get_sample2(self): return self.sample2
     def set_sample2(self, sample2): self.sample2 = sample2
     def add_sample2(self, value): self.sample2.append(value)
@@ -695,6 +723,7 @@ class containerType(GeneratedsSuper):
             self.sample1 or
             self.sample2_bad or
             self.sample3_bad or
+            self.sample4_bad or
             self.sample2
         ):
             return True
@@ -731,6 +760,8 @@ class containerType(GeneratedsSuper):
             sample2_bad_.export(outfile, level, namespace_, name_='sample2_bad', pretty_print=pretty_print)
         for sample3_bad_ in self.sample3_bad:
             sample3_bad_.export(outfile, level, namespace_, name_='sample3_bad', pretty_print=pretty_print)
+        for sample4_bad_ in self.sample4_bad:
+            sample4_bad_.export(outfile, level, namespace_, name_='sample4_bad', pretty_print=pretty_print)
         for sample2_ in self.sample2:
             sample2_.export(outfile, level, namespace_, name_='sample2', pretty_print=pretty_print)
     def exportLiteral(self, outfile, level, name_='containerType'):
@@ -779,6 +810,18 @@ class containerType(GeneratedsSuper):
         showIndent(outfile, level)
         outfile.write('],\n')
         showIndent(outfile, level)
+        outfile.write('sample4_bad=[\n')
+        level += 1
+        for sample4_bad_ in self.sample4_bad:
+            showIndent(outfile, level)
+            outfile.write('model_.simpleOneType(\n')
+            sample4_bad_.exportLiteral(outfile, level, name_='simpleOneType')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
+        showIndent(outfile, level)
         outfile.write('sample2=[\n')
         level += 1
         for sample2_ in self.sample2:
@@ -815,6 +858,11 @@ class containerType(GeneratedsSuper):
             obj_.build(child_)
             self.sample3_bad.append(obj_)
             obj_.original_tagname_ = 'sample3_bad'
+        elif nodeName_ == 'sample4_bad':
+            obj_ = simpleOneType.factory()
+            obj_.build(child_)
+            self.sample4_bad.append(obj_)
+            obj_.original_tagname_ = 'sample4_bad'
         elif nodeName_ == 'sample2':
             obj_ = simpleTwoType.factory()
             obj_.build(child_)
@@ -825,19 +873,27 @@ class containerType(GeneratedsSuper):
 
 class simpleOneType(GeneratedsSuper):
     member_data_items_ = [
+        MemberSpec_('integer_range_1_value', ['integer_range_1_st', 'integer_range_2_st', 'xs:integer'], 0),
+        MemberSpec_('pattern_value', ['pattern_st', 'pattern_1_st', 'min_length_st', 'xs:string'], 0),
         MemberSpec_('token_enum_value', ['token_enum_st', 'xs:NMTOKEN'], 0),
         MemberSpec_('token_enum_value', ['token_enum_st', 'xs:NMTOKEN'], 0),
         MemberSpec_('integer_range_incl_value', ['integer_range_incl_st', 'xs:integer'], 0),
         MemberSpec_('integer_range_excl_value', ['integer_range_excl_st', 'xs:integer'], 0),
         MemberSpec_('min_max_length_value', ['min_max_length_st', 'xs:string'], 0),
         MemberSpec_('length_value', ['length_st', 'xs:string'], 0),
-        MemberSpec_('totaldigits_value', ['totaldigits_st', 'xs:float'], 0),
+        MemberSpec_('totalDigits_value', ['totalDigits_st', 'xs:decimal'], 0),
         MemberSpec_('anonymous_float_value', ['anonymous_float_valueType', 'xs:float'], 0),
+        MemberSpec_('primative_integer', 'xs:integer', 0),
+        MemberSpec_('primative_float', 'xs:float', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, token_enum_value=None, integer_range_incl_value=None, integer_range_excl_value=None, min_max_length_value=None, length_value=None, totaldigits_value=None, anonymous_float_value=None):
+    def __init__(self, integer_range_1_value=None, pattern_value=None, token_enum_value=None, integer_range_incl_value=None, integer_range_excl_value=None, min_max_length_value=None, length_value=None, totalDigits_value=None, anonymous_float_value=None, primative_integer=None, primative_float=None):
         self.original_tagname_ = None
+        self.integer_range_1_value = integer_range_1_value
+        self.validate_integer_range_1_st(self.integer_range_1_value)
+        self.pattern_value = pattern_value
+        self.validate_pattern_st(self.pattern_value)
         self.token_enum_value = token_enum_value
         self.validate_token_enum_st(self.token_enum_value)
         self.token_enum_value = token_enum_value
@@ -850,16 +906,22 @@ class simpleOneType(GeneratedsSuper):
         self.validate_min_max_length_st(self.min_max_length_value)
         self.length_value = length_value
         self.validate_length_st(self.length_value)
-        self.totaldigits_value = totaldigits_value
-        self.validate_totaldigits_st(self.totaldigits_value)
+        self.totalDigits_value = totalDigits_value
+        self.validate_totalDigits_st(self.totalDigits_value)
         self.anonymous_float_value = anonymous_float_value
         self.validate_anonymous_float_valueType(self.anonymous_float_value)
+        self.primative_integer = primative_integer
+        self.primative_float = primative_float
     def factory(*args_, **kwargs_):
         if simpleOneType.subclass:
             return simpleOneType.subclass(*args_, **kwargs_)
         else:
             return simpleOneType(*args_, **kwargs_)
     factory = staticmethod(factory)
+    def get_integer_range_1_value(self): return self.integer_range_1_value
+    def set_integer_range_1_value(self, integer_range_1_value): self.integer_range_1_value = integer_range_1_value
+    def get_pattern_value(self): return self.pattern_value
+    def set_pattern_value(self, pattern_value): self.pattern_value = pattern_value
     def get_token_enum_value(self): return self.token_enum_value
     def set_token_enum_value(self, token_enum_value): self.token_enum_value = token_enum_value
     def get_token_enum_value(self): return self.token_enum_value
@@ -872,69 +934,93 @@ class simpleOneType(GeneratedsSuper):
     def set_min_max_length_value(self, min_max_length_value): self.min_max_length_value = min_max_length_value
     def get_length_value(self): return self.length_value
     def set_length_value(self, length_value): self.length_value = length_value
-    def get_totaldigits_value(self): return self.totaldigits_value
-    def set_totaldigits_value(self, totaldigits_value): self.totaldigits_value = totaldigits_value
+    def get_totalDigits_value(self): return self.totalDigits_value
+    def set_totalDigits_value(self, totalDigits_value): self.totalDigits_value = totalDigits_value
     def get_anonymous_float_value(self): return self.anonymous_float_value
     def set_anonymous_float_value(self, anonymous_float_value): self.anonymous_float_value = anonymous_float_value
+    def get_primative_integer(self): return self.primative_integer
+    def set_primative_integer(self, primative_integer): self.primative_integer = primative_integer
+    def get_primative_float(self): return self.primative_float
+    def set_primative_float(self, primative_float): self.primative_float = primative_float
+    def validate_integer_range_1_st(self, value):
+        # Validate type integer_range_1_st, a restriction on integer_range_2_st.
+        if value is not None and Validate_simpletypes_:
+            if value <= 4:
+                warnings_.warn('Value "%(value)s" does not match xsd minExclusive restriction on integer_range_1_st' % {"value" : value} )
+            if value >= 8:
+                warnings_.warn('Value "%(value)s" does not match xsd maxExclusive restriction on integer_range_1_st' % {"value" : value} )
+    def validate_pattern_st(self, value):
+        # Validate type pattern_st, a restriction on pattern_1_st.
+        if value is not None and Validate_simpletypes_:
+            if len(str(value)) < 10:
+                warnings_.warn('Value "%(value)s" does not match xsd minLength restriction on pattern_st' % {"value" : value} )
+            if not self.gds_validate_simple_patterns(
+                    self.validate_pattern_st_patterns_, value):
+                warnings_.warn('Value "%s" does not match xsd pattern restrictions: %s' % (value.encode('utf-8'), self.validate_pattern_st_patterns_, ))
+    validate_pattern_st_patterns_ = [['^aaa.*zzz$', '^bbb.*xxx$'], ['^.*123.*$', '^.*456.*$']]
     def validate_token_enum_st(self, value):
         # Validate type token_enum_st, a restriction on xs:NMTOKEN.
         if value is not None and Validate_simpletypes_:
-           enumerations = ['float', 'int', 'Name', 'token']
-           enumeration_respectee = False
-           for enum in enumerations:
-               if value == enum:
-                   enumeration_respectee = True
-                   break
-           if not enumeration_respectee:
-               warnings.warn('Value "%(value)s" does not match xsd enumeration restriction on token_enum_st' % {"value" : value.encode("utf-8")} )
+            enumerations = ['float', 'int', 'Name', 'token']
+            enumeration_respectee = False
+            for enum in enumerations:
+                if value == enum:
+                    enumeration_respectee = True
+                    break
+            if not enumeration_respectee:
+                warnings_.warn('Value "%(value)s" does not match xsd enumeration restriction on token_enum_st' % {"value" : value.encode("utf-8")} )
     def validate_integer_range_incl_st(self, value):
         # Validate type integer_range_incl_st, a restriction on xs:integer.
         if value is not None and Validate_simpletypes_:
-           if value <= -5:
-               warnings.warn('Value "%(value)s" does not match xsd minInclusive restriction on integer_range_incl_st' % {"value" : value} )
-           if value >= 10:
-               warnings.warn('Value "%(value)s" does not match xsd maxInclusive restriction on integer_range_incl_st' % {"value" : value} )
+            if value < -5:
+                warnings_.warn('Value "%(value)s" does not match xsd minInclusive restriction on integer_range_incl_st' % {"value" : value} )
+            if value > 10:
+                warnings_.warn('Value "%(value)s" does not match xsd maxInclusive restriction on integer_range_incl_st' % {"value" : value} )
     def validate_integer_range_excl_st(self, value):
         # Validate type integer_range_excl_st, a restriction on xs:integer.
         if value is not None and Validate_simpletypes_:
-           if value < -5:
-               warnings.warn('Value "%(value)s" does not match xsd minExclusive restriction on integer_range_excl_st' % {"value" : value} )
-           if value > 10:
-               warnings.warn('Value "%(value)s" does not match xsd maxExclusive restriction on integer_range_excl_st' % {"value" : value} )
+            if value <= -5:
+                warnings_.warn('Value "%(value)s" does not match xsd minExclusive restriction on integer_range_excl_st' % {"value" : value} )
+            if value >= 10:
+                warnings_.warn('Value "%(value)s" does not match xsd maxExclusive restriction on integer_range_excl_st' % {"value" : value} )
     def validate_min_max_length_st(self, value):
         # Validate type min_max_length_st, a restriction on xs:string.
         if value is not None and Validate_simpletypes_:
-           if len(value) < 10:
-               warnings.warn('Value "%(value)s" does not match xsd minLength restriction on min_max_length_st' % {"value" : value.encode("utf-8")} )
-           if len(value) > 20:
-               warnings.warn('Value "%(value)s" does not match xsd maxLength restriction on min_max_length_st' % {"value" : value.encode("utf-8")} )
+            if len(value) > 20:
+                warnings_.warn('Value "%(value)s" does not match xsd maxLength restriction on min_max_length_st' % {"value" : value.encode("utf-8")} )
+            if len(value) < 10:
+                warnings_.warn('Value "%(value)s" does not match xsd minLength restriction on min_max_length_st' % {"value" : value.encode("utf-8")} )
     def validate_length_st(self, value):
         # Validate type length_st, a restriction on xs:string.
         if value is not None and Validate_simpletypes_:
-           if len(value) != 10:
-               warnings.warn('Value "%(value)s" does not match xsd length restriction on length_st' % {"value" : value.encode("utf-8")} )
-    def validate_totaldigits_st(self, value):
-        # Validate type totaldigits_st, a restriction on xs:float.
+            if len(value) != 10:
+                warnings_.warn('Value "%(value)s" does not match xsd length restriction on length_st' % {"value" : value.encode("utf-8")} )
+    def validate_totalDigits_st(self, value):
+        # Validate type totalDigits_st, a restriction on xs:decimal.
         if value is not None and Validate_simpletypes_:
-           if len(str(value)) >= 15:
-               warnings.warn('Value "%(value)s" does not match xsd maxInclusive restriction on totaldigits_st' % {"value" : value} )
+            if len(str(value)) >= 15:
+                warnings_.warn('Value "%(value)s" does not match xsd maxInclusive restriction on totalDigits_st' % {"value" : value} )
     def validate_anonymous_float_valueType(self, value):
         # Validate type anonymous_float_valueType, a restriction on xs:float.
         if value is not None and Validate_simpletypes_:
-           if value <= 1.1:
-               warnings.warn('Value "%(value)s" does not match xsd minInclusive restriction on anonymous_float_valueType' % {"value" : value} )
-           if value >= 4.4:
-               warnings.warn('Value "%(value)s" does not match xsd maxInclusive restriction on anonymous_float_valueType' % {"value" : value} )
+            if value < 1.1:
+                warnings_.warn('Value "%(value)s" does not match xsd minInclusive restriction on anonymous_float_valueType' % {"value" : value} )
+            if value > 4.4:
+                warnings_.warn('Value "%(value)s" does not match xsd maxInclusive restriction on anonymous_float_valueType' % {"value" : value} )
     def hasContent_(self):
         if (
+            self.integer_range_1_value is not None or
+            self.pattern_value is not None or
             self.token_enum_value is not None or
             self.token_enum_value is not None or
             self.integer_range_incl_value is not None or
             self.integer_range_excl_value is not None or
             self.min_max_length_value is not None or
             self.length_value is not None or
-            self.totaldigits_value is not None or
-            self.anonymous_float_value is not None
+            self.totalDigits_value is not None or
+            self.anonymous_float_value is not None or
+            self.primative_integer is not None or
+            self.primative_float is not None
         ):
             return True
         else:
@@ -964,6 +1050,12 @@ class simpleOneType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.integer_range_1_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sinteger_range_1_value>%s</%sinteger_range_1_value>%s' % (namespace_, self.gds_format_integer(self.integer_range_1_value, input_name='integer_range_1_value'), namespace_, eol_))
+        if self.pattern_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%spattern_value>%s</%spattern_value>%s' % (namespace_, self.gds_format_string(quote_xml(self.pattern_value).encode(ExternalEncoding), input_name='pattern_value'), namespace_, eol_))
         if self.token_enum_value is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%stoken_enum_value>%s</%stoken_enum_value>%s' % (namespace_, self.gds_format_string(quote_xml(self.token_enum_value).encode(ExternalEncoding), input_name='token_enum_value'), namespace_, eol_))
@@ -982,12 +1074,18 @@ class simpleOneType(GeneratedsSuper):
         if self.length_value is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%slength_value>%s</%slength_value>%s' % (namespace_, self.gds_format_string(quote_xml(self.length_value).encode(ExternalEncoding), input_name='length_value'), namespace_, eol_))
-        if self.totaldigits_value is not None:
+        if self.totalDigits_value is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%stotaldigits_value>%s</%stotaldigits_value>%s' % (namespace_, self.gds_format_float(self.totaldigits_value, input_name='totaldigits_value'), namespace_, eol_))
+            outfile.write('<%stotalDigits_value>%s</%stotalDigits_value>%s' % (namespace_, self.gds_format_float(self.totalDigits_value, input_name='totalDigits_value'), namespace_, eol_))
         if self.anonymous_float_value is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sanonymous_float_value>%s</%sanonymous_float_value>%s' % (namespace_, self.gds_format_float(self.anonymous_float_value, input_name='anonymous_float_value'), namespace_, eol_))
+        if self.primative_integer is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sprimative_integer>%s</%sprimative_integer>%s' % (namespace_, self.gds_format_integer(self.primative_integer, input_name='primative_integer'), namespace_, eol_))
+        if self.primative_float is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sprimative_float>%s</%sprimative_float>%s' % (namespace_, self.gds_format_float(self.primative_float, input_name='primative_float'), namespace_, eol_))
     def exportLiteral(self, outfile, level, name_='simpleOneType'):
         level += 1
         already_processed = set()
@@ -997,6 +1095,12 @@ class simpleOneType(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
+        if self.integer_range_1_value is not None:
+            showIndent(outfile, level)
+            outfile.write('integer_range_1_value=%d,\n' % self.integer_range_1_value)
+        if self.pattern_value is not None:
+            showIndent(outfile, level)
+            outfile.write('pattern_value=%s,\n' % quote_python(self.pattern_value).encode(ExternalEncoding))
         if self.token_enum_value is not None:
             showIndent(outfile, level)
             outfile.write('token_enum_value=%s,\n' % quote_python(self.token_enum_value).encode(ExternalEncoding))
@@ -1015,12 +1119,18 @@ class simpleOneType(GeneratedsSuper):
         if self.length_value is not None:
             showIndent(outfile, level)
             outfile.write('length_value=%s,\n' % quote_python(self.length_value).encode(ExternalEncoding))
-        if self.totaldigits_value is not None:
+        if self.totalDigits_value is not None:
             showIndent(outfile, level)
-            outfile.write('totaldigits_value=%f,\n' % self.totaldigits_value)
+            outfile.write('totalDigits_value=%f,\n' % self.totalDigits_value)
         if self.anonymous_float_value is not None:
             showIndent(outfile, level)
             outfile.write('anonymous_float_value=%f,\n' % self.anonymous_float_value)
+        if self.primative_integer is not None:
+            showIndent(outfile, level)
+            outfile.write('primative_integer=%d,\n' % self.primative_integer)
+        if self.primative_float is not None:
+            showIndent(outfile, level)
+            outfile.write('primative_float=%f,\n' % self.primative_float)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1031,7 +1141,21 @@ class simpleOneType(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'token_enum_value':
+        if nodeName_ == 'integer_range_1_value':
+            sval_ = child_.text
+            try:
+                ival_ = int(sval_)
+            except (TypeError, ValueError), exp:
+                raise_parse_error(child_, 'requires integer: %s' % exp)
+            ival_ = self.gds_validate_integer(ival_, node, 'integer_range_1_value')
+            self.integer_range_1_value = ival_
+            self.validate_integer_range_1_st(self.integer_range_1_value)    # validate type integer_range_1_st
+        elif nodeName_ == 'pattern_value':
+            pattern_value_ = child_.text
+            pattern_value_ = self.gds_validate_string(pattern_value_, node, 'pattern_value')
+            self.pattern_value = pattern_value_
+            self.validate_pattern_st(self.pattern_value)    # validate type pattern_st
+        elif nodeName_ == 'token_enum_value':
             token_enum_value_ = child_.text
             token_enum_value_ = self.gds_validate_string(token_enum_value_, node, 'token_enum_value')
             self.token_enum_value = token_enum_value_
@@ -1069,15 +1193,15 @@ class simpleOneType(GeneratedsSuper):
             length_value_ = self.gds_validate_string(length_value_, node, 'length_value')
             self.length_value = length_value_
             self.validate_length_st(self.length_value)    # validate type length_st
-        elif nodeName_ == 'totaldigits_value':
+        elif nodeName_ == 'totalDigits_value':
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
             except (TypeError, ValueError), exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
-            fval_ = self.gds_validate_float(fval_, node, 'totaldigits_value')
-            self.totaldigits_value = fval_
-            self.validate_totaldigits_st(self.totaldigits_value)    # validate type totaldigits_st
+            fval_ = self.gds_validate_float(fval_, node, 'totalDigits_value')
+            self.totalDigits_value = fval_
+            self.validate_totalDigits_st(self.totalDigits_value)    # validate type totalDigits_st
         elif nodeName_ == 'anonymous_float_value':
             sval_ = child_.text
             try:
@@ -1087,29 +1211,45 @@ class simpleOneType(GeneratedsSuper):
             fval_ = self.gds_validate_float(fval_, node, 'anonymous_float_value')
             self.anonymous_float_value = fval_
             self.validate_anonymous_float_valueType(self.anonymous_float_value)    # validate type anonymous_float_valueType
+        elif nodeName_ == 'primative_integer':
+            sval_ = child_.text
+            try:
+                ival_ = int(sval_)
+            except (TypeError, ValueError), exp:
+                raise_parse_error(child_, 'requires integer: %s' % exp)
+            ival_ = self.gds_validate_integer(ival_, node, 'primative_integer')
+            self.primative_integer = ival_
+        elif nodeName_ == 'primative_float':
+            sval_ = child_.text
+            try:
+                fval_ = float(sval_)
+            except (TypeError, ValueError), exp:
+                raise_parse_error(child_, 'requires float or double: %s' % exp)
+            fval_ = self.gds_validate_float(fval_, node, 'primative_float')
+            self.primative_float = fval_
 # end class simpleOneType
 
 
 class simpleTwoType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('Foo', 'FooType1', 0),
+        MemberSpec_('simpleTwoElementOne', 'simpleTwoElementOneType', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, Foo=None):
+    def __init__(self, simpleTwoElementOne=None):
         self.original_tagname_ = None
-        self.Foo = Foo
+        self.simpleTwoElementOne = simpleTwoElementOne
     def factory(*args_, **kwargs_):
         if simpleTwoType.subclass:
             return simpleTwoType.subclass(*args_, **kwargs_)
         else:
             return simpleTwoType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_Foo(self): return self.Foo
-    def set_Foo(self, Foo): self.Foo = Foo
+    def get_simpleTwoElementOne(self): return self.simpleTwoElementOne
+    def set_simpleTwoElementOne(self, simpleTwoElementOne): self.simpleTwoElementOne = simpleTwoElementOne
     def hasContent_(self):
         if (
-            self.Foo is not None
+            self.simpleTwoElementOne is not None
         ):
             return True
         else:
@@ -1139,8 +1279,8 @@ class simpleTwoType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
-        if self.Foo is not None:
-            self.Foo.export(outfile, level, namespace_, name_='Foo', pretty_print=pretty_print)
+        if self.simpleTwoElementOne is not None:
+            self.simpleTwoElementOne.export(outfile, level, namespace_, name_='simpleTwoElementOne', pretty_print=pretty_print)
     def exportLiteral(self, outfile, level, name_='simpleTwoType'):
         level += 1
         already_processed = set()
@@ -1150,10 +1290,10 @@ class simpleTwoType(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.Foo is not None:
+        if self.simpleTwoElementOne is not None:
             showIndent(outfile, level)
-            outfile.write('Foo=model_.FooType1(\n')
-            self.Foo.exportLiteral(outfile, level, name_='Foo')
+            outfile.write('simpleTwoElementOne=model_.simpleTwoElementOneType(\n')
+            self.simpleTwoElementOne.exportLiteral(outfile, level, name_='simpleTwoElementOne')
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node):
@@ -1166,47 +1306,47 @@ class simpleTwoType(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'Foo':
-            obj_ = FooType1.factory()
+        if nodeName_ == 'simpleTwoElementOne':
+            obj_ = simpleTwoElementOneType.factory()
             obj_.build(child_)
-            self.Foo = obj_
-            obj_.original_tagname_ = 'Foo'
+            self.simpleTwoElementOne = obj_
+            obj_.original_tagname_ = 'simpleTwoElementOne'
 # end class simpleTwoType
 
 
-class FooType1(GeneratedsSuper):
+class simpleTwoElementOneType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('FooType', ['FooTypeType', 'xs:string'], 0),
+        MemberSpec_('simpleTwoElementTwo', ['simpleTwoElementTwoType', 'xs:string'], 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, FooType=None):
+    def __init__(self, simpleTwoElementTwo=None):
         self.original_tagname_ = None
-        self.FooType = FooType
-        self.validate_FooTypeType(self.FooType)
+        self.simpleTwoElementTwo = simpleTwoElementTwo
+        self.validate_simpleTwoElementTwoType(self.simpleTwoElementTwo)
     def factory(*args_, **kwargs_):
-        if FooType1.subclass:
-            return FooType1.subclass(*args_, **kwargs_)
+        if simpleTwoElementOneType.subclass:
+            return simpleTwoElementOneType.subclass(*args_, **kwargs_)
         else:
-            return FooType1(*args_, **kwargs_)
+            return simpleTwoElementOneType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_FooType(self): return self.FooType
-    def set_FooType(self, FooType): self.FooType = FooType
-    def validate_FooTypeType(self, value):
-        # Validate type FooTypeType, a restriction on xs:string.
+    def get_simpleTwoElementTwo(self): return self.simpleTwoElementTwo
+    def set_simpleTwoElementTwo(self, simpleTwoElementTwo): self.simpleTwoElementTwo = simpleTwoElementTwo
+    def validate_simpleTwoElementTwoType(self, value):
+        # Validate type simpleTwoElementTwoType, a restriction on xs:string.
         if value is not None and Validate_simpletypes_:
-           if len(value) < 12:
-               warnings.warn('Value "%(value)s" does not match xsd minLength restriction on FooTypeType' % {"value" : value.encode("utf-8")} )
-           if len(value) > 24:
-               warnings.warn('Value "%(value)s" does not match xsd maxLength restriction on FooTypeType' % {"value" : value.encode("utf-8")} )
+            if len(value) > 24:
+                warnings_.warn('Value "%(value)s" does not match xsd maxLength restriction on simpleTwoElementTwoType' % {"value" : value.encode("utf-8")} )
+            if len(value) < 12:
+                warnings_.warn('Value "%(value)s" does not match xsd minLength restriction on simpleTwoElementTwoType' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
-            self.FooType is not None
+            self.simpleTwoElementTwo is not None
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='FooType1', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='simpleTwoElementOneType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -1216,25 +1356,25 @@ class FooType1(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='FooType1')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='simpleTwoElementOneType')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='FooType1', pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='simpleTwoElementOneType', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='FooType1'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='simpleTwoElementOneType'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='FooType1', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='simpleTwoElementOneType', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
-        if self.FooType is not None:
+        if self.simpleTwoElementTwo is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sFooType>%s</%sFooType>%s' % (namespace_, self.gds_format_string(quote_xml(self.FooType).encode(ExternalEncoding), input_name='FooType'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='FooType1'):
+            outfile.write('<%ssimpleTwoElementTwo>%s</%ssimpleTwoElementTwo>%s' % (namespace_, self.gds_format_string(quote_xml(self.simpleTwoElementTwo).encode(ExternalEncoding), input_name='simpleTwoElementTwo'), namespace_, eol_))
+    def exportLiteral(self, outfile, level, name_='simpleTwoElementOneType'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
@@ -1243,9 +1383,9 @@ class FooType1(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.FooType is not None:
+        if self.simpleTwoElementTwo is not None:
             showIndent(outfile, level)
-            outfile.write('FooType=%s,\n' % quote_python(self.FooType).encode(ExternalEncoding))
+            outfile.write('simpleTwoElementTwo=%s,\n' % quote_python(self.simpleTwoElementTwo).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1256,21 +1396,23 @@ class FooType1(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'FooType':
-            FooType_ = child_.text
-            FooType_ = self.gds_validate_string(FooType_, node, 'FooType')
-            self.FooType = FooType_
-            self.validate_FooTypeType(self.FooType)    # validate type FooTypeType
-# end class FooType1
+        if nodeName_ == 'simpleTwoElementTwo':
+            simpleTwoElementTwo_ = child_.text
+            simpleTwoElementTwo_ = self.gds_validate_string(simpleTwoElementTwo_, node, 'simpleTwoElementTwo')
+            self.simpleTwoElementTwo = simpleTwoElementTwo_
+            self.validate_simpleTwoElementTwoType(self.simpleTwoElementTwo)    # validate type simpleTwoElementTwoType
+# end class simpleTwoElementOneType
 
 
 GDSClassesMapping = {
     'container': containerType,
     'sample2_bad': simpleOneType,
+    'simpleTwoElementOne': simpleTwoElementOneType,
+    'simpleTypeData': simpleTwoType,
     'sample1': simpleOneType,
+    'sample4_bad': simpleOneType,
     'sample3_bad': simpleOneType,
     'sample2': simpleTwoType,
-    'Foo': FooType1,
 }
 
 
@@ -1389,8 +1531,8 @@ if __name__ == '__main__':
 
 
 __all__ = [
-    "FooType1",
     "containerType",
     "simpleOneType",
+    "simpleTwoElementOneType",
     "simpleTwoType"
 ]
