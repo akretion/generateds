@@ -3,7 +3,7 @@ generateDS -- Introduction and Tutorial
 ======================================================
 
 :author: Dave Kuhlman
-:address: dkuhlman@davekuhlman.org
+:address: dkuhlman (at) davekuhlman (dot) org
     http://www.davekuhlman.org
 
 .. Do not modify the following version comments.

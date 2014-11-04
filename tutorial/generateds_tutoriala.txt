@@ -12,7 +12,7 @@ Introduction
 
 - You can find additional information about ``generateDS.py`` here:
 
-      http://www.rexx.com/~dkuhlman/generateDS.html
+      http://www.davekuhlman.org/generateDS.html
 
   That documentation is also included in the distribution.
 
@@ -204,7 +204,7 @@ more command line options used by ``generateDS.py`` by typing::
     $ python generateDS.py --help
 
 and by reading the document
-http://www.rexx.com/~dkuhlman/generateDS.html
+http://www.davekuhlman.org/generateDS.html
 
 o
     Generate the superclass module.  This is the module that

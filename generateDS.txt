@@ -196,8 +196,8 @@ librarytemplate_howto.html
 
 And the package building support itself is here:
 `LibraryTemplate --
-http://www.rexx.com/~dkuhlman/librarytemplate0-1.0a.zip
-<http://www.rexx.com/~dkuhlman/librarytemplate0-1.0a.zip>`_.
+http://www.davekuhlman.org/librarytemplate-1.0a.zip
+<http://www.davekuhlman.org/librarytemplate-1.0a.zip>`_.
 It is also included in the generateDS distribution package.
 
 
@@ -458,6 +458,10 @@ use-old-simpletype-validators
     information on that.  *Without* this option
     (``--use-old-simpletype-validators``), the validator code will
     be generated directly from the XML schema, which is the default.
+
+    This option can also be used to generate code that does *no*
+    validation.  See `simpleType and validators`_ and `Turning off
+    validation of simpleType data`_ for more information.
 
 use-getter-setter
     ``generateDS.py`` now generates getter and setter methods (for
@@ -962,8 +966,63 @@ that element has a (non-None) value.
 simpleType and validators
 -------------------------
 
-Here are a few notes that should help you use validator methods to
-enforce restrictions.
+Generating validator bodies from XML schema
+.............................................
+
+If you do *not* use the ``--use-old-simpletype-validators`` command line
+option, then ``generateDS.py`` will generate validation code
+directly from the restrictions specified inside the ``simpleType``
+definitions in your XML schema.
+
+Here is a bit of explanation of what that generated code will do.
+
+- The generated validation code checks the global variable
+  ``Validate_simpletypes_``.  Set that variable to ``False`` to turn
+  off validation.
+
+- In the case of some XML schema built-in simple types, the
+  generated validation code calls ``gds_validate_xxx``, where "xxx"
+  is a base, simple type.  In some cases, you will be able to add
+  additional code to that method to perform custom checking.  See
+  section `Overridable methods`_ for information on how to use and
+  override that class.
+
+- When validation finds data that fails to validate, it generates a
+  warning (using the ``warnings`` module from the Python standard
+  library), not an exception, so that processing continues.
+
+- The validation code is generated in a separate method named
+  ``validate_xxx``, where "xxx" is the name of the data element.
+  This method is called in the ``build`` method as the input data is
+  parsed and instances of the generated classes are created to hold
+  it.  Your own code can also call this method whenever you'd like
+  to perform on the data in that element/field.
+
+- There are rules for how checking should be performed when (1)
+  there are multiple restrictions in a single ``simpleType`` and
+  when there are restrictions in a ``simpleType`` and it base simple
+  types.  ``generateds.py`` attempts to follow those rules in
+  generating validation code.  For information about that, see:
+  http://www.w3.org/TR/xmlschema-2/#rf-facets.  Pattern facets are
+  especially tricky, because pattern restrictions at the same level
+  are OR-ed together, while pattern restrictions at different levels
+  are AND-ed together.  See:
+  http://www.w3.org/TR/xmlschema-2/#rf-pattern.
+
+- The validation method also performs type conversion for some
+  simple types, for example, string to int for integers, string to
+  float for floats, etc.
+
+
+User written validator bodies
+...............................
+
+This is the older, more manual method.  In order to generate code
+that uses this method, use command line option
+``--use-old-simpletype-validators``.
+
+Here are a few notes that should help you *write your own* validator
+methods to enforce restrictions.
 
 - Default behavior -- The generated code, by default, treats the
   value of a member whose type is a ``simpleType`` as if it were
@@ -1071,6 +1130,34 @@ following limitations (among others, I'm sure):
       </xs:element>
 
 - Attributes defined as a simple type are not supported.
+
+
+Turning off validation of ``simpleType`` data
+...............................................
+
+If you do not want validation performed on ``simpleType`` data, you
+have these options:
+
+1. When generating your code, use the
+   ``--use-old-simpletype-validators`` command line option but do
+   *not* use the ``--validator-bodies`` command line option.  This
+   will result in validator methods that have empty bodies (only a
+   ``pass`` statement).
+
+2. Or, when you run your generated code, set the variable
+   ``Validate_simpletypes_`` to ``False``.  This global variable is
+   near the top of your generated module.  It can be set to ``True``
+   or ``False`` before and during processing to turn validation on
+   and off.
+
+
+Additional notes on ``simpleType`` validation
+...............................................
+
+Don't forget that ``xmllint`` can also be used to perform
+validation against the XML scheme.  This validation includes
+checking against ``simpleType`` restrictions.  See
+http://xmlsoft.org/ for more information on ``xmllint``.
 
 
 Include file processing
@@ -2321,9 +2408,10 @@ default methods in the following places:
 - In a class named ``GeneratedsSuper`` in a separate module named
   ``generatedssuper``.  Since this class would replace the
   default implementations, you should provide implementations of
-  all the default methods listed above in that class.  The
-  distribution contains a ``generatedssuper.py`` which you can
-  modify for your specific needs.
+  all the default methods listed above in that class.  To create
+  your own version, copy and paste the default implementation of
+  class ``GeneratedsSuper`` from your generated module into a file
+  named ``generatedssuper.py``, then modify that.
 
 - In individual generated (super) classes (the ones generated with
   the "-o" command line option) using the `User Methods`_ feature.
@@ -2536,8 +2624,8 @@ Suggested uses:
   documents. The following paper discusses and compares this
   technique with the use of XSLT: `XSLT and generateDS --
   Analysis, Comparison, and Evaluation --
-  http://www.rexx.com/~dkuhlman/xsltvsgenerateds.html
-  <http://www.rexx.com/~dkuhlman/xsltvsgenerateds.html>`_.
+  http://www.davekuhlman.org/xsltvsgenerateds.html
+  <http://www.davekuhlman.org/xsltvsgenerateds.html>`_.
 
 - Anything that requires a *customized* tree walk of the XML
   document. Because you can add methods to the generated classes
@@ -2845,16 +2933,8 @@ See also
 
 `Dave's Page`_: My home page, which contains more Python stuff.
 
-.. _`Dave's Page`: http://www.rexx.com/~dkuhlman
-
-
-
+.. _`Dave's Page`: http://www.davekuhlman.org
 
 .. _`ElementTree`: http://effbot.org/zone/element-index.htm
 
-.. _`lxml`: http://codespeak.net/lxml/
-
-
-
-
-
+.. _`lxml`: http://lxml.de/index.html
