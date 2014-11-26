@@ -603,6 +603,8 @@ class XschemaElement(XschemaElementBase):
                         # anonymous types
                         type_val = referencedElement.getName()
                     name_val = ref_val
+            if not type_val:
+                type_val = ref_val
 
         if type_val and not name_val:
             name_val = type_val
