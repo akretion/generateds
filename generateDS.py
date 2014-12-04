@@ -3709,6 +3709,8 @@ def buildCtorArgs_aux(addedArgs, add, element):
         default = attrDef.getDefault()
         mappedName = name.replace(':', '_')
         mappedName = cleanupName(mapName(mappedName))
+        if mappedName == element.getCleanName():
+            mappedName += '_member'
         if mappedName in addedArgs:
             continue
         addedArgs[mappedName] = 1
@@ -3769,6 +3771,8 @@ def buildCtorArgs_aux(addedArgs, add, element):
                 add(", %s='%s'" % (mappedName, default, ))
     for child in element.getChildren():
         cleanName = child.getCleanName()
+        if cleanName == element.getCleanName():
+            cleanName += '_member'
         if cleanName in addedArgs:
             continue
         addedArgs[cleanName] = 1
@@ -3857,35 +3861,43 @@ def generateCtor(wrt, prefix, element):
         attrDef = attrDefs[key]
         mappedName = cleanupName(attrDef.getName())
         name = mapName(mappedName)
+        if name == element.getCleanName():
+            mbrname = name + '_member'
+        else:
+            mbrname = name
         attrType = attrDef.getType()
         if attrType == DateTimeType:
-            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
-                "%s, '%%Y-%%m-%%dT%%H:%%M:%%S')\n" % (name, ))
+                "%s, '%%Y-%%m-%%dT%%H:%%M:%%S')\n" % (mbrname, ))
             wrt("        else:\n")
-            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("            initvalue_ = %s\n" % (mbrname, ))
             wrt("        self.%s = initvalue_\n" % (name, ))
         elif attrType == DateType:
-            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
-                "%s, '%%Y-%%m-%%d').date()\n" % (name, ))
+                "%s, '%%Y-%%m-%%d').date()\n" % (mbrname, ))
             wrt("        else:\n")
-            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("            initvalue_ = %s\n" % (mbrname, ))
             wrt("        self.%s = initvalue_\n" % (name, ))
         elif attrType == TimeType:
-            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
-                "%s, '%%H:%%M:%%S').time()\n" % (name, ))
+                "%s, '%%H:%%M:%%S').time()\n" % (mbrname, ))
             wrt("        else:\n")
-            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("            initvalue_ = %s\n" % (mbrname, ))
             wrt("        self.%s = initvalue_\n" % (name, ))
         else:
             pythonType = SchemaToPythonTypeMap.get(attrDef.getType())
-            attrVal = "_cast(%s, %s)" % (pythonType, name, )
+            attrVal = "_cast(%s, %s)" % (pythonType, mbrname, )
             wrt('        self.%s = %s\n' % (name, attrVal, ))
     # Generate member initializers in ctor.
     for child in element.getChildren():
         name = cleanupName(child.getCleanName())
+        if name == element.getCleanName():
+            mbrname = name + '_member'
+        else:
+            mbrname = name
         logging.debug("Constructor child: %s" % name)
         logging.debug("Dump: %s" % child.__dict__)
         childType = child.getType()
@@ -3898,53 +3910,53 @@ def generateCtor(wrt, prefix, element):
             else:
                 wrt('        self.anytypeobjs_ = anytypeobjs_\n')
         elif childType == DateTimeType and child.getMaxOccurs() <= 1:
-            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
-                "%s, '%%Y-%%m-%%dT%%H:%%M:%%S')\n" % (name, ))
+                "%s, '%%Y-%%m-%%dT%%H:%%M:%%S')\n" % (mbrname, ))
             wrt("        else:\n")
-            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("            initvalue_ = %s\n" % (mbrname, ))
             if child.getMaxOccurs() > 1:
                 wrt("        self.%s.append(initvalue_)\n" % (name, ))
             else:
                 wrt("        self.%s = initvalue_\n" % (name, ))
         elif childType == DateType and child.getMaxOccurs() <= 1:
-            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
-                "%s, '%%Y-%%m-%%d').date()\n" % (name, ))
+                "%s, '%%Y-%%m-%%d').date()\n" % (mbrname, ))
             wrt("        else:\n")
-            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("            initvalue_ = %s\n" % (mbrname, ))
             if child.getMaxOccurs() > 1:
                 wrt("        self.%s.append(initvalue_)\n" % (name, ))
             else:
                 wrt("        self.%s = initvalue_\n" % (name, ))
         elif childType == TimeType and child.getMaxOccurs() <= 1:
-            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
-                "%s, '%%H:%%M:%%S').time()\n" % (name, ))
+                "%s, '%%H:%%M:%%S').time()\n" % (mbrname, ))
             wrt("        else:\n")
-            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("            initvalue_ = %s\n" % (mbrname, ))
             if child.getMaxOccurs() > 1:
                 wrt("        self.%s.append(initvalue_)\n" % (name, ))
             else:
                 wrt("        self.%s = initvalue_\n" % (name, ))
         else:
             if child.getMaxOccurs() > 1:
-                wrt('        if %s is None:\n' % (name, ))
+                wrt('        if %s is None:\n' % (mbrname, ))
                 wrt('            self.%s = []\n' % (name, ))
                 wrt('        else:\n')
-                wrt('            self.%s = %s\n' % (name, name))
+                wrt('            self.%s = %s\n' % (name, mbrname))
             else:
                 typeObj = ElementDict.get(child.getType())
                 if (child.getDefault() and
                         typeObj is not None and
                         typeObj.getSimpleContent()):
-                    wrt('        if %s is None:\n' % (name, ))
+                    wrt('        if %s is None:\n' % (mbrname, ))
                     wrt("            self.%s = globals()['%s']('%s')\n" %
                         (name, child.getType(), child.getDefault(), ))
                     wrt('        else:\n')
-                    wrt('            self.%s = %s\n' % (name, name))
+                    wrt('            self.%s = %s\n' % (name, mbrname))
                 else:
-                    wrt('        self.%s = %s\n' % (name, name))
+                    wrt('        self.%s = %s\n' % (name, mbrname))
                     # validate if it is a simple type.  Validation shows
                     # a warning so no fear that an error would rise.
                     if (child.getSimpleType()):
@@ -5488,8 +5500,6 @@ def buildCtorParams(element, parent, childCount):
     content = []
     addedArgs = {}
     add = content.append
-##     if not element.isMixed():
-##         buildCtorParams_aux(addedArgs, add, parent)
     buildCtorParams_aux(addedArgs, add, parent)
     if element.getSimpleContent() or element.isMixed():
         add("valueOf_, ")
@@ -5510,6 +5520,8 @@ def buildCtorParams_aux(addedArgs, add, element):
         attrDef = attrDefs[key]
         name = attrDef.getName()
         name = cleanupName(mapName(name))
+        if name == element.getCleanName():
+            name += '_member'
         if name not in addedArgs:
             addedArgs[name] = 1
             add('%s, ' % name)
@@ -5518,6 +5530,8 @@ def buildCtorParams_aux(addedArgs, add, element):
             add('anytypeobjs_, ')
         else:
             name = child.getCleanName()
+            if name == element.getCleanName():
+                name += '_member'
             if name not in addedArgs:
                 addedArgs[name] = 1
                 add('%s, ' % name)
