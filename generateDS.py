@@ -2506,13 +2506,13 @@ def generateExportChildren(wrt, element, hasChildren, namespace):
                             fill, name, name,))
                         wrt("%s    %s_.export(outfile, level, namespace_, "
                             "name_='%s', pretty_print=pretty_print)\n" % (
-                                fill, name, name, ))
+                                fill, name, unmappedName, ))
                     elif abstract_child:
                         wrt("%sif self.%s is not None:\n" % (fill, name, ))
                         wrt("%s    self.%s.export(outfile, level, "
                             "namespace_, name_='%s', "
                             "pretty_print=pretty_print)\n" % (
-                                fill, name, name, ))
+                                fill, name, unmappedName, ))
                     elif child.getMaxOccurs() > 1:
                         generateExportFn_2(
                             wrt, child, unmappedName, namespace, '    ')
@@ -4029,6 +4029,7 @@ def processValidatorBodyRestrictions(
             "./xs:enumeration/@value", namespaces=ns)
         if enumerations:
             toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            value = str(value)\n"
             s1 += "            enumerations = %(enumerations)s\n" % {
                 'enumerations': enumerations}
             s1 += "            enumeration_respectee = False\n"
