@@ -12,7 +12,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.14a
+:revision: 2.15a
 
 .. version
 
@@ -1172,13 +1172,6 @@ command line option.
 inserted in the XML Schema by importing and using
 ``process_includes.py``, which is included in the ``generateDS.py``
 distribution.
-
-``process_includes.py`` will use either ``lxml`` or ``ElementTree``,
-but its preference is ``lxml`` because ``lxml`` attempts to preserve
-namespace prefixes.  So if your XML Schemas have ``<include ... />``
-elements in them, you might want to consider installing ``lxml``, even
-though ``ElementTree`` is in the Python standard library for Python
-versions >= 2.5.
 
 The include file processing is capable of retrieve included files
 via FTP and HTTP internet protocols as well as from the local file
@@ -2878,15 +2871,6 @@ While ``generateDS.py`` itself does not process XML Schema
 script scans your XML Schema document and, recursively, documents
 that are included looking for ``include`` elements; it inserts all
 content into a single document, which it writes out.
-
-Since ``process_includes.py`` uses the ElementTree API, in order
-to use ``process_includes.py`` you will need one of the following:
-
-- Python 2.5 or newer -- ElementTree is in the Python-2.5 distribution.  Or,
-
-- `ElementTree`_.  Or,
-
-- `lxml`_ -- another implementation of the ElementTree API.
 
 Here are samples of how you might use ``process_includes.py``, if
 your schema contains ``include`` elements.

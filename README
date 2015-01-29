@@ -141,6 +141,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.15a (02/26/2015)
+- Modifications so that we generate code that can be used by Python 3.
+  Thanks much to Richard Gerkin for this work.
+- Removed possible use of ElementTree.  Lxml is now a requirement
+  for both running generateDS.py itself and for running the
+  generated code.
+
 Version 2.14a (11/26/2014)
 - Fixed export of simpleType lists (added "' '.join(data)".  Thanks
   to Per Rosengren for catching this.
