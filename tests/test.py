@@ -598,6 +598,41 @@ class GenTest(unittest.TestCase):
         result, err = self.execute(cmd)
         self.check_result(result, err, ())
 
+    def test_027_cdata(self):
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
+            '--silence --member-specs=list -f '
+            '-o tests/%s2_sup.py -s tests/%s2_sub.py '
+            '--silence '
+            '--super=%s2_sup '
+            'tests/%s.xsd'
+        )
+        t_ = 'cdata'
+        cmd = cmdTempl % (t_, t_, t_, t_, )
+        result, _ = self.execute(cmd, cwd='..')
+        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ('sys.stdout.write',))
+        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ())
+        import cdata2_sup as cdatalib
+        cdatalist = cdatalib.cdataListType()
+        cdata1 = cdatalib.cdataType()
+        cdata1.set_script("<![CDATA[ccc < ddd & eee]]>")
+        cdatalist.add_cdatalist(cdata1)
+        cdata2 = cdatalib.cdataType()
+        cdata2.set_script(
+            "aaa < bbb <![CDATA[ccc < ddd]]> eee < & fff" +
+            "<<![CDATA[ggg < & hhh]]>& iii < jjj"
+        )
+        cdatalist.add_cdatalist(cdata2)
+        with open('%s2.xml' % t_, 'w') as outfile:
+            cdatalist.export(outfile, 0)
+        cmd = 'diff %s1.xml %s2.xml' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ())
+
     def check_result(self, result, err, ignore_strings):
         self.failUnlessEqual(len(result), 0)
         self.failUnlessEqual(len(err), 0)
