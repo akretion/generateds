@@ -47,8 +47,16 @@ $commands = [
   "diff -u prefix_classname1_sup.py prefix_classname2_sup.py",
   "diff -u validate_simpletypes1_sub.py validate_simpletypes2_sub.py",
   "diff -u validate_simpletypes1_sup.py validate_simpletypes2_sup.py",
+  "diff -u validate_simpletypes1_warnings.txt validate_simpletypes2_warnings.txt",
   "diff -u reference_simpletype1_sub.py reference_simpletype2_sub.py",
   "diff -u reference_simpletype1_sup.py reference_simpletype2_sup.py",
+  "diff -u OnePer/oneperType00_2One.py OnePer/oneperType00_1One.py",
+  "diff -u OnePer/oneperType01_2One.py OnePer/oneperType01_1One.py",
+  "diff -u OnePer/oneperType02_2One.py OnePer/oneperType02_1One.py",
+  "diff -u OnePer/oneperType03_2One.py OnePer/oneperType03_1One.py",
+  "diff -u cdata1_sub.py cdata2_sub.py",
+  "diff -u cdata1_sup.py cdata2_sup.py",
+  "diff -u cdata1.xml cdata2.xml",
 ]
 
 def check

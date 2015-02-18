@@ -10,15 +10,16 @@
 #   ('--silence', '')
 #   ('--member-specs', 'list')
 #   ('-f', '')
-#   ('-o', 'tests/attr_groups2_sup.py')
-#   ('-s', 'tests/attr_groups2_sub.py')
-#   ('--super', 'attr_groups2_sup')
+#   ('-o', 'tests/cdata2_sup.py')
+#   ('-s', 'tests/cdata2_sub.py')
+#   ('--silence', '')
+#   ('--super', 'cdata2_sup')
 #
 # Command line arguments:
-#   tests/attr_groups.xsd
+#   tests/cdata.xsd
 #
 # Command line:
-#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/attr_groups2_sup.py" -s "tests/attr_groups2_sub.py" --super="attr_groups2_sup" tests/attr_groups.xsd
+#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/cdata2_sup.py" -s "tests/cdata2_sub.py" --silence --super="cdata2_sup" tests/cdata.xsd
 #
 # Current working directory (os.getcwd()):
 #   generateds
@@ -626,63 +627,37 @@ def _cast(typ, value):
 #
 
 
-class GetUserReq(GeneratedsSuper):
+class cdataListType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('value04', 'xsd:integer', 0),
-        MemberSpec_('value05', 'xsd:string', 0),
-        MemberSpec_('value06', 'xsd:integer', 0),
-        MemberSpec_('value07', 'xsd:integer', 0),
-        MemberSpec_('value01', 'xsd:string', 0),
-        MemberSpec_('value02', 'xsd:integer', 0),
-        MemberSpec_('value03', 'xsd:string', 0),
-        MemberSpec_('sequence', 'xsd:unsignedLong', 0),
-        MemberSpec_('returnedTags', 'xsd:string', 0),
+        MemberSpec_('cdatalist', 'cdataType', 1),
     ]
     subclass = None
     superclass = None
-    def __init__(self, value04=None, value05=None, value06=None, value07=None, value01=None, value02=None, value03=None, sequence=None, returnedTags=None):
+    def __init__(self, cdatalist=None):
         self.original_tagname_ = None
-        self.value04 = _cast(int, value04)
-        self.value05 = _cast(None, value05)
-        self.value06 = _cast(int, value06)
-        self.value07 = _cast(int, value07)
-        self.value01 = _cast(None, value01)
-        self.value02 = _cast(int, value02)
-        self.value03 = _cast(None, value03)
-        self.sequence = _cast(int, sequence)
-        self.returnedTags = returnedTags
-    def factory(*args_, **kwargs_):
-        if GetUserReq.subclass:
-            return GetUserReq.subclass(*args_, **kwargs_)
+        if cdatalist is None:
+            self.cdatalist = []
         else:
-            return GetUserReq(*args_, **kwargs_)
+            self.cdatalist = cdatalist
+    def factory(*args_, **kwargs_):
+        if cdataListType.subclass:
+            return cdataListType.subclass(*args_, **kwargs_)
+        else:
+            return cdataListType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_returnedTags(self): return self.returnedTags
-    def set_returnedTags(self, returnedTags): self.returnedTags = returnedTags
-    def get_value04(self): return self.value04
-    def set_value04(self, value04): self.value04 = value04
-    def get_value05(self): return self.value05
-    def set_value05(self, value05): self.value05 = value05
-    def get_value06(self): return self.value06
-    def set_value06(self, value06): self.value06 = value06
-    def get_value07(self): return self.value07
-    def set_value07(self, value07): self.value07 = value07
-    def get_value01(self): return self.value01
-    def set_value01(self, value01): self.value01 = value01
-    def get_value02(self): return self.value02
-    def set_value02(self, value02): self.value02 = value02
-    def get_value03(self): return self.value03
-    def set_value03(self, value03): self.value03 = value03
-    def get_sequence(self): return self.sequence
-    def set_sequence(self, sequence): self.sequence = sequence
+    def get_cdatalist(self): return self.cdatalist
+    def set_cdatalist(self, cdatalist): self.cdatalist = cdatalist
+    def add_cdatalist(self, value): self.cdatalist.append(value)
+    def insert_cdatalist_at(self, index, value): self.cdatalist.insert(index, value)
+    def replace_cdatalist_at(self, index, value): self.cdatalist[index] = value
     def hasContent_(self):
         if (
-            self.returnedTags is not None
+            self.cdatalist
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='GetUserReq', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='cdataListType', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -692,90 +667,44 @@ class GetUserReq(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='GetUserReq')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='cdataListType')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='GetUserReq', pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='cdataListType', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='GetUserReq'):
-        if self.value04 is not None and 'value04' not in already_processed:
-            already_processed.add('value04')
-            outfile.write(' value04="%s"' % self.gds_format_integer(self.value04, input_name='value04'))
-        if self.value05 is not None and 'value05' not in already_processed:
-            already_processed.add('value05')
-            outfile.write(' value05=%s' % (self.gds_format_string(quote_attrib(self.value05).encode(ExternalEncoding), input_name='value05'), ))
-        if self.value06 is not None and 'value06' not in already_processed:
-            already_processed.add('value06')
-            outfile.write(' value06="%s"' % self.gds_format_integer(self.value06, input_name='value06'))
-        if self.value07 is not None and 'value07' not in already_processed:
-            already_processed.add('value07')
-            outfile.write(' value07="%s"' % self.gds_format_integer(self.value07, input_name='value07'))
-        if self.value01 is not None and 'value01' not in already_processed:
-            already_processed.add('value01')
-            outfile.write(' value01=%s' % (self.gds_format_string(quote_attrib(self.value01).encode(ExternalEncoding), input_name='value01'), ))
-        if self.value02 is not None and 'value02' not in already_processed:
-            already_processed.add('value02')
-            outfile.write(' value02="%s"' % self.gds_format_integer(self.value02, input_name='value02'))
-        if self.value03 is not None and 'value03' not in already_processed:
-            already_processed.add('value03')
-            outfile.write(' value03=%s' % (self.gds_format_string(quote_attrib(self.value03).encode(ExternalEncoding), input_name='value03'), ))
-        if self.sequence is not None and 'sequence' not in already_processed:
-            already_processed.add('sequence')
-            outfile.write(' sequence="%s"' % self.gds_format_integer(self.sequence, input_name='sequence'))
-    def exportChildren(self, outfile, level, namespace_='', name_='GetUserReq', fromsubclass_=False, pretty_print=True):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='cdataListType'):
+        pass
+    def exportChildren(self, outfile, level, namespace_='', name_='cdataListType', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
-        if self.returnedTags is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%sreturnedTags>%s</%sreturnedTags>%s' % (namespace_, self.gds_format_string(quote_xml(self.returnedTags).encode(ExternalEncoding), input_name='returnedTags'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='GetUserReq'):
+        for cdatalist_ in self.cdatalist:
+            cdatalist_.export(outfile, level, namespace_, name_='cdatalist', pretty_print=pretty_print)
+    def exportLiteral(self, outfile, level, name_='cdataListType'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.value04 is not None and 'value04' not in already_processed:
-            already_processed.add('value04')
-            showIndent(outfile, level)
-            outfile.write('value04=%d,\n' % (self.value04,))
-        if self.value05 is not None and 'value05' not in already_processed:
-            already_processed.add('value05')
-            showIndent(outfile, level)
-            outfile.write('value05="%s",\n' % (self.value05,))
-        if self.value06 is not None and 'value06' not in already_processed:
-            already_processed.add('value06')
-            showIndent(outfile, level)
-            outfile.write('value06=%d,\n' % (self.value06,))
-        if self.value07 is not None and 'value07' not in already_processed:
-            already_processed.add('value07')
-            showIndent(outfile, level)
-            outfile.write('value07=%d,\n' % (self.value07,))
-        if self.value01 is not None and 'value01' not in already_processed:
-            already_processed.add('value01')
-            showIndent(outfile, level)
-            outfile.write('value01="%s",\n' % (self.value01,))
-        if self.value02 is not None and 'value02' not in already_processed:
-            already_processed.add('value02')
-            showIndent(outfile, level)
-            outfile.write('value02=%d,\n' % (self.value02,))
-        if self.value03 is not None and 'value03' not in already_processed:
-            already_processed.add('value03')
-            showIndent(outfile, level)
-            outfile.write('value03="%s",\n' % (self.value03,))
-        if self.sequence is not None and 'sequence' not in already_processed:
-            already_processed.add('sequence')
-            showIndent(outfile, level)
-            outfile.write('sequence=%d,\n' % (self.sequence,))
+        pass
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.returnedTags is not None:
+        showIndent(outfile, level)
+        outfile.write('cdatalist=[\n')
+        level += 1
+        for cdatalist_ in self.cdatalist:
             showIndent(outfile, level)
-            outfile.write('returnedTags=%s,\n' % quote_python(self.returnedTags).encode(ExternalEncoding))
+            outfile.write('model_.cdataType(\n')
+            cdatalist_.exportLiteral(outfile, level, name_='cdataType')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -784,63 +713,100 @@ class GetUserReq(GeneratedsSuper):
             self.buildChildren(child, node, nodeName_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('value04', node)
-        if value is not None and 'value04' not in already_processed:
-            already_processed.add('value04')
-            try:
-                self.value04 = int(value)
-            except ValueError as exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('value05', node)
-        if value is not None and 'value05' not in already_processed:
-            already_processed.add('value05')
-            self.value05 = value
-        value = find_attr_value_('value06', node)
-        if value is not None and 'value06' not in already_processed:
-            already_processed.add('value06')
-            try:
-                self.value06 = int(value)
-            except ValueError as exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('value07', node)
-        if value is not None and 'value07' not in already_processed:
-            already_processed.add('value07')
-            try:
-                self.value07 = int(value)
-            except ValueError as exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('value01', node)
-        if value is not None and 'value01' not in already_processed:
-            already_processed.add('value01')
-            self.value01 = value
-        value = find_attr_value_('value02', node)
-        if value is not None and 'value02' not in already_processed:
-            already_processed.add('value02')
-            try:
-                self.value02 = int(value)
-            except ValueError as exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('value03', node)
-        if value is not None and 'value03' not in already_processed:
-            already_processed.add('value03')
-            self.value03 = value
-        value = find_attr_value_('sequence', node)
-        if value is not None and 'sequence' not in already_processed:
-            already_processed.add('sequence')
-            try:
-                self.sequence = int(value)
-            except ValueError as exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+        pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'returnedTags':
-            returnedTags_ = child_.text
-            returnedTags_ = self.gds_validate_string(returnedTags_, node, 'returnedTags')
-            self.returnedTags = returnedTags_
-# end class GetUserReq
+        if nodeName_ == 'cdatalist':
+            obj_ = cdataType.factory()
+            obj_.build(child_)
+            self.cdatalist.append(obj_)
+            obj_.original_tagname_ = 'cdatalist'
+# end class cdataListType
+
+
+class cdataType(GeneratedsSuper):
+    member_data_items_ = [
+        MemberSpec_('script', 'xs:string', 0),
+    ]
+    subclass = None
+    superclass = None
+    def __init__(self, script=None):
+        self.original_tagname_ = None
+        self.script = script
+    def factory(*args_, **kwargs_):
+        if cdataType.subclass:
+            return cdataType.subclass(*args_, **kwargs_)
+        else:
+            return cdataType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_script(self): return self.script
+    def set_script(self, script): self.script = script
+    def hasContent_(self):
+        if (
+            self.script is not None
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='cdataType', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='cdataType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='cdataType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='cdataType'):
+        pass
+    def exportChildren(self, outfile, level, namespace_='', name_='cdataType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.script is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sscript>%s</%sscript>%s' % (namespace_, self.gds_format_string(quote_xml(self.script).encode(ExternalEncoding), input_name='script'), namespace_, eol_))
+    def exportLiteral(self, outfile, level, name_='cdataType'):
+        level += 1
+        already_processed = set()
+        self.exportLiteralAttributes(outfile, level, already_processed, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        pass
+    def exportLiteralChildren(self, outfile, level, name_):
+        if self.script is not None:
+            showIndent(outfile, level)
+            outfile.write('script=%s,\n' % quote_python(self.script).encode(ExternalEncoding))
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        if nodeName_ == 'script':
+            script_ = child_.text
+            script_ = self.gds_validate_string(script_, node, 'script')
+            self.script = script_
+# end class cdataType
 
 
 GDSClassesMapping = {
-    'getUser': GetUserReq,
+    'cdatalist': cdataType,
+    'cdata': cdataListType,
 }
 
 
@@ -867,8 +833,8 @@ def parse(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'GetUserReq'
-        rootClass = GetUserReq
+        rootTag = 'cdataListType'
+        rootClass = cdataListType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -887,8 +853,8 @@ def parseEtree(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'GetUserReq'
-        rootClass = GetUserReq
+        rootTag = 'cdataListType'
+        rootClass = cdataListType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -911,8 +877,8 @@ def parseString(inString, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'GetUserReq'
-        rootClass = GetUserReq
+        rootTag = 'cdataListType'
+        rootClass = cdataListType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -930,15 +896,15 @@ def parseLiteral(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'GetUserReq'
-        rootClass = GetUserReq
+        rootTag = 'cdataListType'
+        rootClass = cdataListType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
 ##     if not silence:
-##         sys.stdout.write('#from attr_groups2_sup import *\n\n')
-##         sys.stdout.write('import attr_groups2_sup as model_\n\n')
+##         sys.stdout.write('#from cdata2_sup import *\n\n')
+##         sys.stdout.write('import cdata2_sup as model_\n\n')
 ##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
@@ -959,5 +925,6 @@ if __name__ == '__main__':
 
 
 __all__ = [
-    "GetUserReq"
+    "cdataListType",
+    "cdataType"
 ]
