@@ -3545,8 +3545,12 @@ def generateBuildStandard_1(
 ##             mappedName, mappedName, ))
     typeName = child.getSimpleType()
     if typeName and typeName in SimpleTypeDict:
-        wrt("            self.validate_%s(self.%s)    # validate type %s\n" % (
-            typeName, mappedName, typeName, ))
+        if child.getMaxOccurs() > 1:
+            wrt("            self.validate_%s(self.%s[-1])    # validate type %s\n" % (
+                typeName, mappedName, typeName, ))
+        else:
+            wrt("            self.validate_%s(self.%s)    # validate type %s\n" % (
+                typeName, mappedName, typeName, ))
 # end generateBuildStandard_1
 
 
