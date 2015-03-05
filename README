@@ -141,6 +141,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.15b (03/04/2015)
+- Fix to generation of simpleType validation code for list (unbounded)
+  elements.  Thanks to wobanator for this fix.
+
 Version 2.15a (02/18/2015)
 - Modifications so that we generate code that can be used by Python 3.
   Thanks much to Richard Gerkin for this work.
