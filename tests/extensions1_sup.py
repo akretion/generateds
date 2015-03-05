@@ -1104,7 +1104,8 @@ class simpleFactoidType(GeneratedsSuper):
             relation_ = child_.text
             relation_ = self.gds_validate_string(relation_, node, 'relation')
             self.relation = relation_
-            self.validate_RelationType(self.relation)    # validate type RelationType
+            # validate type RelationType
+            self.validate_RelationType(self.relation)
 # end class simpleFactoidType
 
 

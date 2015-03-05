@@ -1104,7 +1104,8 @@ class personType(GeneratedsSuper):
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'range')
             self.range_ = ival_
-            self.validate_RangeType(self.range_)    # validate type RangeType
+            # validate type RangeType
+            self.validate_RangeType(self.range_)
 # end class personType
 
 
@@ -1489,7 +1490,8 @@ class programmerType(personType):
             elarraytypes_ = child_.text
             elarraytypes_ = self.gds_validate_string(elarraytypes_, node, 'elarraytypes')
             self.elarraytypes = elarraytypes_
-            self.validate_ArrayTypes(self.elarraytypes)    # validate type ArrayTypes
+            # validate type ArrayTypes
+            self.validate_ArrayTypes(self.elarraytypes)
         super(programmerType, self).buildChildren(child_, node, nodeName_, True)
 # end class programmerType
 
@@ -1723,7 +1725,8 @@ class python_programmerType(programmerType):
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'flowvalue')
             self.flowvalue = ival_
-            self.validate_FlowType(self.flowvalue)    # validate type FlowType
+            # validate type FlowType
+            self.validate_FlowType(self.flowvalue)
         elif nodeName_ == 'drcs':
             drcs_ = child_.text
             drcs_ = self.gds_validate_string(drcs_, node, 'drcs')
