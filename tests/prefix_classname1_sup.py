@@ -1673,7 +1673,8 @@ class tomato_programmer(tomato_person):
             elarraytypes_ = child_.text
             elarraytypes_ = self.gds_validate_string(elarraytypes_, node, 'elarraytypes')
             self.elarraytypes = elarraytypes_
-            self.validate_ArrayTypes(self.elarraytypes)    # validate type ArrayTypes
+            # validate type ArrayTypes
+            self.validate_ArrayTypes(self.elarraytypes)
         super(tomato_programmer, self).buildChildren(child_, node, nodeName_, True)
 # end class tomato_programmer
 

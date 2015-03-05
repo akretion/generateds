@@ -1120,22 +1120,26 @@ class simpleOneType(GeneratedsSuper):
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'integer_range_1_value')
             self.integer_range_1_value = ival_
-            self.validate_integer_range_1_st(self.integer_range_1_value)    # validate type integer_range_1_st
+            # validate type integer_range_1_st
+            self.validate_integer_range_1_st(self.integer_range_1_value)
         elif nodeName_ == 'pattern_value':
             pattern_value_ = child_.text
             pattern_value_ = self.gds_validate_string(pattern_value_, node, 'pattern_value')
             self.pattern_value = pattern_value_
-            self.validate_pattern_st(self.pattern_value)    # validate type pattern_st
+            # validate type pattern_st
+            self.validate_pattern_st(self.pattern_value)
         elif nodeName_ == 'token_enum_value':
             token_enum_value_ = child_.text
             token_enum_value_ = self.gds_validate_string(token_enum_value_, node, 'token_enum_value')
             self.token_enum_value = token_enum_value_
-            self.validate_token_enum_st(self.token_enum_value)    # validate type token_enum_st
+            # validate type token_enum_st
+            self.validate_token_enum_st(self.token_enum_value)
         elif nodeName_ == 'token_enum_value':
             token_enum_value_ = child_.text
             token_enum_value_ = self.gds_validate_string(token_enum_value_, node, 'token_enum_value')
             self.token_enum_value = token_enum_value_
-            self.validate_token_enum_st(self.token_enum_value)    # validate type token_enum_st
+            # validate type token_enum_st
+            self.validate_token_enum_st(self.token_enum_value)
         elif nodeName_ == 'integer_range_incl_value':
             sval_ = child_.text
             try:
@@ -1144,7 +1148,8 @@ class simpleOneType(GeneratedsSuper):
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'integer_range_incl_value')
             self.integer_range_incl_value = ival_
-            self.validate_integer_range_incl_st(self.integer_range_incl_value)    # validate type integer_range_incl_st
+            # validate type integer_range_incl_st
+            self.validate_integer_range_incl_st(self.integer_range_incl_value)
         elif nodeName_ == 'integer_range_excl_value':
             sval_ = child_.text
             try:
@@ -1153,17 +1158,20 @@ class simpleOneType(GeneratedsSuper):
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'integer_range_excl_value')
             self.integer_range_excl_value = ival_
-            self.validate_integer_range_excl_st(self.integer_range_excl_value)    # validate type integer_range_excl_st
+            # validate type integer_range_excl_st
+            self.validate_integer_range_excl_st(self.integer_range_excl_value)
         elif nodeName_ == 'min_max_length_value':
             min_max_length_value_ = child_.text
             min_max_length_value_ = self.gds_validate_string(min_max_length_value_, node, 'min_max_length_value')
             self.min_max_length_value = min_max_length_value_
-            self.validate_min_max_length_st(self.min_max_length_value)    # validate type min_max_length_st
+            # validate type min_max_length_st
+            self.validate_min_max_length_st(self.min_max_length_value)
         elif nodeName_ == 'length_value':
             length_value_ = child_.text
             length_value_ = self.gds_validate_string(length_value_, node, 'length_value')
             self.length_value = length_value_
-            self.validate_length_st(self.length_value)    # validate type length_st
+            # validate type length_st
+            self.validate_length_st(self.length_value)
         elif nodeName_ == 'totalDigits_value':
             sval_ = child_.text
             try:
@@ -1172,7 +1180,8 @@ class simpleOneType(GeneratedsSuper):
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'totalDigits_value')
             self.totalDigits_value = fval_
-            self.validate_totalDigits_st(self.totalDigits_value)    # validate type totalDigits_st
+            # validate type totalDigits_st
+            self.validate_totalDigits_st(self.totalDigits_value)
         elif nodeName_ == 'anonymous_float_value':
             sval_ = child_.text
             try:
@@ -1181,7 +1190,8 @@ class simpleOneType(GeneratedsSuper):
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'anonymous_float_value')
             self.anonymous_float_value = fval_
-            self.validate_anonymous_float_valueType(self.anonymous_float_value)    # validate type anonymous_float_valueType
+            # validate type anonymous_float_valueType
+            self.validate_anonymous_float_valueType(self.anonymous_float_value)
         elif nodeName_ == 'primative_integer':
             sval_ = child_.text
             try:
@@ -1371,7 +1381,8 @@ class simpleTwoElementOneType(GeneratedsSuper):
             simpleTwoElementTwo_ = child_.text
             simpleTwoElementTwo_ = self.gds_validate_string(simpleTwoElementTwo_, node, 'simpleTwoElementTwo')
             self.simpleTwoElementTwo = simpleTwoElementTwo_
-            self.validate_simpleTwoElementTwoType(self.simpleTwoElementTwo)    # validate type simpleTwoElementTwoType
+            # validate type simpleTwoElementTwoType
+            self.validate_simpleTwoElementTwoType(self.simpleTwoElementTwo)
 # end class simpleTwoElementOneType
 
 

@@ -30,5 +30,5 @@ tests/validate_simpletypes2_sup.py:926: UserWarning: Value "aaa12zzz" does not m
   warnings_.warn('Value "%(value)s" does not match xsd minLength restriction on pattern_st' % {"value" : value} )
 tests/validate_simpletypes2_sup.py:929: UserWarning: Value "aaa12zzz" does not match xsd pattern restrictions: [['^aaa.*zzz$', '^bbb.*xxx$'], ['^.*123.*$', '^.*456.*$']]
   warnings_.warn('Value "%s" does not match xsd pattern restrictions: %s' % (value.encode('utf-8'), self.validate_pattern_st_patterns_, ))
-tests/validate_simpletypes2_sup.py:1312: UserWarning: Value "pqrst" does not match xsd minLength restriction on simpleTwoElementTwoType
+tests/validate_simpletypes2_sup.py:1322: UserWarning: Value "pqrst" does not match xsd minLength restriction on simpleTwoElementTwoType
   warnings_.warn('Value "%(value)s" does not match xsd minLength restriction on simpleTwoElementTwoType' % {"value" : value.encode("utf-8")} )

@@ -832,7 +832,8 @@ class FooType1(GeneratedsSuper):
             FooType_ = child_.text
             FooType_ = self.gds_validate_string(FooType_, node, 'FooType')
             self.FooType = FooType_
-            self.validate_FooTypeType(self.FooType)    # validate type FooTypeType
+            # validate type FooTypeType
+            self.validate_FooTypeType(self.FooType)
 # end class FooType1
 
 
@@ -922,7 +923,8 @@ class BarType2(GeneratedsSuper):
             BarType_ = child_.text
             BarType_ = self.gds_validate_string(BarType_, node, 'BarType')
             self.BarType = BarType_
-            self.validate_BarTypeType(self.BarType)    # validate type BarTypeType
+            # validate type BarTypeType
+            self.validate_BarTypeType(self.BarType)
 # end class BarType2
 
 
@@ -1012,7 +1014,8 @@ class BazType3(GeneratedsSuper):
             BazType_ = child_.text
             BazType_ = self.gds_validate_string(BazType_, node, 'BazType')
             self.BazType = BazType_
-            self.validate_BazTypeType(self.BazType)    # validate type BazTypeType
+            # validate type BazTypeType
+            self.validate_BazTypeType(self.BazType)
 # end class BazType3
 
 
