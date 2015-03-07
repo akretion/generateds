@@ -184,7 +184,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.15a'
+VERSION = '2.15b'
 ##VERSION##
 
 GenerateProperties = 0
@@ -678,7 +678,7 @@ class XschemaElement(XschemaElementBase):
             typeName = self.name
         if typeName and not self.fullyQualifiedType:
             namespace = self.targetNamespace
-            if self.prefix:
+            if self.prefix and self.prefix in prefixToNamespaceMap:
                 xmlns = prefixToNamespaceMap[self.prefix]
                 if xmlns:
                     namespace = xmlns
@@ -6094,7 +6094,10 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     #
     # Generate the elements that were postponed because we had not
     #   yet generated their base class.
-    while 1:
+    maxLoops = 100
+    loops = 0
+    while loops <= maxLoops:
+        loops += 1
         if len(PostponedExtensions) <= 0:
             break
         element = PostponedExtensions.pop()
@@ -6105,6 +6108,9 @@ def generate(outfileName, subclassFilename, behaviorFilename,
                 generateClasses(wrt, prefix, element, 1)
             else:
                 PostponedExtensions.insert(0, element)
+    if loops >= maxLoops:
+        sys.stderr.write('\n*** maxLoops exceeded.  Something is wrong with '
+                         '--one-file-per-xsd.\n\n')
     #
     # Disable the generation of SAX handler/parser.
     # It failed when we stopped putting simple types into ElementDict.
@@ -6223,7 +6229,6 @@ def parseAndGenerate(
     if SingleFileOutput:
         parser = make_parser()
         dh = XschemaHandler()
-    ##    parser.setDocumentHandler(dh)
         parser.setContentHandler(dh)
         if processIncludes:
             import process_includes
@@ -6239,10 +6244,6 @@ def parseAndGenerate(
         parser.parse(infile)
         root = dh.getRoot()
         root.annotate()
-##     print '-' * 60
-##     root.show(sys.stdout, 0)
-##     print '-' * 60
-    #debug_show_elements(root)
         generate(
             outfileName, subclassFilename, behaviorFilename,
             prefix, root, options, args, superModule)
@@ -6259,7 +6260,7 @@ def parseAndGenerate(
             outfile = open(outfileName, "a")
             outfile.write(exportLine)
             outfile.close()
-    else:
+    else:    # not SingleFileOutput
         import process_includes
         rootPaths = process_includes.get_all_root_file_paths(
             infile, inpath=xschemaFileName,

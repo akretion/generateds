@@ -144,6 +144,10 @@ Change history
 Version 2.15b (03/04/2015)
 - Fix to generation of simpleType validation code for list (unbounded)
   elements.  Thanks to wobanator for this fix.
+- Fix to code for --one-file-per-xsd.  Added check to avoid an
+  infinite loop schemas not suitable to --one-file-per-xsd.  Thanks
+  Michael Vezie for catching this and for identifying relevant
+  location in the code.
 
 Version 2.15a (02/18/2015)
 - Modifications so that we generate code that can be used by Python 3.
