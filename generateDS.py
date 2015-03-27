@@ -152,6 +152,8 @@ import logging
 import keyword
 import StringIO
 import textwrap
+import hashlib
+import operator
 
 # Default logger configuration
 logging.basicConfig(
@@ -198,6 +200,7 @@ DelayedElements_subclass = set()
 AlreadyGenerated = set()
 AlreadyGenerated_subclass = set()
 PostponedExtensions = []
+LoopcheckOneperChecksums = set()
 ElementsForSubclasses = []
 ElementDict = {}
 fqnToElementDict = {}
@@ -6059,6 +6062,15 @@ def getImportsForExternalXsds(root):
     return externalImports
 
 
+def isNewState():
+    state = reduce(operator.concat, PostponedExtensions)
+    sum = hashlib.sha1(str(state)).hexdigest()
+    if sum in LoopcheckOneperChecksums:
+        return False
+    LoopcheckOneperChecksums.add(sum)
+    return True
+
+
 def generate(outfileName, subclassFilename, behaviorFilename,
              prefix, root, options, args, superModule):
     global DelayedElements, DelayedElements_subclass, AlreadyGenerated
@@ -6094,11 +6106,10 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     #
     # Generate the elements that were postponed because we had not
     #   yet generated their base class.
-    maxLoops = 100
-    loops = 0
-    while loops <= maxLoops:
-        loops += 1
-        if len(PostponedExtensions) <= 0:
+    while len(PostponedExtensions) > 0:
+        if not isNewState():
+            sys.stderr.write('\n*** maxLoops exceeded.  Something is '
+                             'wrong with --one-file-per-xsd.\n\n')
             break
         element = PostponedExtensions.pop()
         parentName, parent = getParentName(element)
@@ -6108,9 +6119,17 @@ def generate(outfileName, subclassFilename, behaviorFilename,
                 generateClasses(wrt, prefix, element, 1)
             else:
                 PostponedExtensions.insert(0, element)
-    if loops >= maxLoops:
-        sys.stderr.write('\n*** maxLoops exceeded.  Something is wrong with '
-                         '--one-file-per-xsd.\n\n')
+##     while 1:
+##         if len(PostponedExtensions) <= 0:
+##             break
+##         element = PostponedExtensions.pop()
+##         parentName, parent = getParentName(element)
+##         if parentName:
+##             if (parentName in AlreadyGenerated or
+##                     parentName in SimpleTypeDict):
+##                 generateClasses(wrt, prefix, element, 1)
+##             else:
+##                 PostponedExtensions.insert(0, element)
     #
     # Disable the generation of SAX handler/parser.
     # It failed when we stopped putting simple types into ElementDict.
