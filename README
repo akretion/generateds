@@ -147,7 +147,8 @@ Version 2.15b (03/04/2015)
 - Fix to code for --one-file-per-xsd.  Added check to avoid an
   infinite loop schemas not suitable to --one-file-per-xsd.  Thanks
   Michael Vezie for catching this and for identifying relevant
-  location in the code.
+  location in the code.  And, thanks to George David for providing a
+  better fix than mine.
 
 Version 2.15a (02/18/2015)
 - Modifications so that we generate code that can be used by Python 3.
