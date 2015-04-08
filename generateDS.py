@@ -1814,7 +1814,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
     mappedName = mapName(cleanName)
     child_type = child.getType()
     if child_type == DateTimeType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
             "(namespace_, self.gds_format_datetime(self.%s, " \
@@ -1822,7 +1827,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
             (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == DateType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
             "(namespace_, self.gds_format_date(self.%s, " \
@@ -1830,7 +1840,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
             (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == TimeType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
             "(namespace_, self.gds_format_time(self.%s, " \
@@ -1840,7 +1855,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
     elif (child_type in StringType or
             child_type == TokenType or
             child_type in DateTimeGroupType):
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         # fixlist
         if (child.getSimpleType() in SimpleTypeDict and
@@ -1865,7 +1885,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
             child_type == NonPositiveIntegerType or
             child_type == NegativeIntegerType or
             child_type == NonNegativeIntegerType):
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != %s:\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -1879,7 +1904,17 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
                 (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == BooleanType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            if default == 'true':
+                wrt('%s        if not self.%s:\n' % (fill, mappedName, ))
+            elif default == 'false':
+                wrt('%s        if self.%s:\n' % (fill, mappedName, ))
+            else:
+                wrt('%s        if self.%s is not None:\n' % (
+                    fill, mappedName, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -1895,7 +1930,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
         wrt(s1)
     elif (child_type == FloatType or
             child_type == DecimalType):
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != %s:\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -1909,7 +1949,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
                 (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == DoubleType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != %s:\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -2071,7 +2116,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
     child_type = child.getType()
     # fix_simpletype
     if child_type == DateTimeType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
             "(namespace_, self.gds_format_datetime(" \
@@ -2079,7 +2129,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
             (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == DateType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
             "(namespace_, self.gds_format_date(" \
@@ -2087,7 +2142,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
             (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == TimeType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
             "(namespace_, self.gds_format_time(" \
@@ -2097,7 +2157,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
     elif (child_type in StringType or
             child_type == TokenType or
             child_type in DateTimeGroupType):
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         # fixlist
         if (child.getSimpleType() in SimpleTypeDict and
@@ -2119,7 +2184,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
             child_type == NonPositiveIntegerType or
             child_type == NegativeIntegerType or
             child_type == NonNegativeIntegerType):
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != %s:\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -2133,7 +2203,17 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
                 (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == BooleanType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            if default == 'true':
+                wrt('%s        if not self.%s:\n' % (fill, mappedName, ))
+            elif default == 'false':
+                wrt('%s        if self.%s:\n' % (fill, mappedName, ))
+            else:
+                wrt('%s        if self.%s is not None:\n' % (
+                    fill, mappedName, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -2149,7 +2229,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
         wrt(s1)
     elif (child_type == FloatType or
             child_type == DecimalType):
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != %s:\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -2163,7 +2248,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
                 (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == DoubleType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != %s:\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -2404,9 +2494,29 @@ def generateExportAttributes(wrt, element, hasAttributes):
                 orig_name = name
             cleanName = mapName(cleanupName(name))
             if True:            # attrDef.getUse() == 'optional':
-                wrt("        if self.%s is not None and '%s' not in "
-                    "already_processed:\n" % (
-                        cleanName, cleanName, ))
+                default = attrDef.getDefault()
+                if default is None:
+                    s1 = '        if self.%s is not None and ' % (cleanName, )
+                else:
+                    attr_type = attrDef.getType()
+                    if (attr_type in StringType or
+                            attr_type == TokenType or
+                            attr_type in DateTimeGroupType):
+                        s1 = '        if self.%s != "%s" and ' % (
+                            cleanName, default, )
+                    elif attr_type == BooleanType:
+                        if default == 'true':
+                            s1 = '        if not self.%s and ' % (cleanName, )
+                        elif default == 'false':
+                            s1 = '        if self.%s and ' % (cleanName, )
+                        else:
+                            s1 = '        if self.%s is not None and ' % (
+                                cleanName, )
+                    else:
+                        s1 = '        if self.%s != %s and ' % (
+                            cleanName, default, )
+                s1 += "'%s' not in already_processed:\n" % (cleanName, )
+                wrt(s1)
                 wrt("            already_processed.add('%s')\n" % (
                     cleanName, ))
                 indent = "    "
@@ -4528,7 +4638,24 @@ def generateHascontentMethod(wrt, prefix, element):
         if child.getMaxOccurs() > 1:
             wrt('            self.%s' % (name, ))
         else:
-            wrt('            self.%s is not None' % (name, ))
+            default = child.getDefault()
+            if default is None:
+                wrt('            self.%s is not None' % (name, ))
+            else:
+                child_type = child.getType()
+                if (child_type in StringType or
+                        child_type == TokenType or
+                        child_type in DateTimeGroupType):
+                    wrt('            self.%s != "%s"' % (name, default, ))
+                elif child_type == BooleanType:
+                    if default == 'true':
+                        wrt('            not self.%s' % (name, ))
+                    elif default == 'false':
+                        wrt('            self.%s' % (name, ))
+                    else:
+                        wrt('            self.%s is not None' % (name, ))
+                else:
+                    wrt('            self.%s != %s' % (name, default, ))
     if element.getSimpleContent() or element.isMixed():
         if not firstTime:
             wrt(' or\n')
@@ -6063,7 +6190,9 @@ def getImportsForExternalXsds(root):
 
 
 def isNewState():
-    state = reduce(operator.concat, PostponedExtensions)
+    state = reduce(
+        operator.concat,
+        (str(id(item)) for item in PostponedExtensions))
     sum = hashlib.sha1(str(state)).hexdigest()
     if sum in LoopcheckOneperChecksums:
         return False
