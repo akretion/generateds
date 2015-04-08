@@ -2625,8 +2625,8 @@ class hot_agent(GeneratedsSuper):
     def set_anyAttributes_(self, anyAttributes_): self.anyAttributes_ = anyAttributes_
     def hasContent_(self):
         if (
-            self.firstname is not None or
-            self.lastname is not None or
+            self.firstname != "empty\name" or
+            self.lastname != "no 'last' name" or
             self.priority is not None or
             self.startDate is not None
         ):
