@@ -91,6 +91,7 @@ Options:
                                      to XML)
                              Example: "write etree"
                              Default: "write"
+    --preserve-cdata-tags    Preserve CDATA tags.  Default: False
     -q, --no-questions       Do not ask questions, for example,
                              force overwrite.
     --session=mysession.session
@@ -251,6 +252,7 @@ FixTypeNames = None
 SingleFileOutput = True
 OutputDirectory = None
 ModuleSuffix = ""
+PreserveCdataTags = False
 
 SchemaToPythonTypeMap = {}
 
@@ -3461,7 +3463,12 @@ def generateBuildStandard_1(
                 childType in DateTimeGroupType or
                 child.isListType())):
         wrt("        %s nodeName_ == '%s':\n" % (keyword, origName, ))
-        wrt("            %s_ = child_.text\n" % name)
+        if PreserveCdataTags:
+            wrt("            mo_ = PRESERVE_CDATA_TAGS_PAT.search("
+                "etree_.tostring(child_).strip())\n")
+            wrt("            %s_ = mo_.group(1)\n" % name)
+        else:
+            wrt("            %s_ = child_.text\n" % name)
         if childType == TokenType:
             wrt('            %s_ = re_.sub('
                 'String_cleanup_pat_, " ", %s_).strip()\n' % (name, name))
@@ -4788,12 +4795,12 @@ from lxml import etree as etree_
 Validate_simpletypes_ = True
 
 
-def parsexml_(*args, **kwargs):
-    if 'parser' not in kwargs:
+def parsexml_(infile, parser=None, **kwargs):
+    if parser is None:
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
-        kwargs['parser'] = etree_.ETCompatXMLParser()
-    doc = etree_.parse(*args, **kwargs)
+        parser = etree_.ETCompatXMLParser()
+    doc = etree_.parse(infile, parser=parser, **kwargs)
     return doc
 
 #
@@ -5130,7 +5137,7 @@ Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\\n\\r\\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
 CDATA_pattern_ = re_.compile(r"<!\\[CDATA\\[.*?\\]\\]>", re_.DOTALL)
-
+%s
 #
 # Support/utility functions.
 #
@@ -5410,11 +5417,18 @@ def generateHeader(wrt, prefix, options, args, externalImports):
         version = ' version %s' % VERSION
     options1, args1, command_line = format_options_args(options, args)
     current_working_directory = os.path.split(os.getcwd())[1]
+    if PreserveCdataTags:
+        preserve_cdata_tags_pat = \
+            "PRESERVE_CDATA_TAGS_PAT = re_.compile(r'^<.+?>(.*)<.+>$')\n"
+    else:
+        preserve_cdata_tags_pat = ""
     s1 = TEMPLATE_HEADER % (
         tstamp, version,
         options1, args1,
         command_line, current_working_directory,
-        ExternalEncoding, )
+        ExternalEncoding,
+        preserve_cdata_tags_pat,
+    )
     wrt(s1)
     for externalImport in externalImports:
         wrt(externalImport + "\n")
@@ -5442,7 +5456,7 @@ def get_root_tag(node):
 
 
 def parse(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+%(preserve_cdata_tags)s    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -5462,7 +5476,7 @@ def parse(inFileName, silence=False):
 
 
 def parseEtree(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+%(preserve_cdata_tags)s    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -5486,7 +5500,7 @@ def parseEtree(inFileName, silence=False):
 
 def parseString(inString, silence=False):
     from StringIO import StringIO
-    doc = parsexml_(StringIO(inString))
+%(preserve_cdata_tags)s    doc = parsexml_(StringIO(inString), parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -5505,7 +5519,7 @@ def parseString(inString, silence=False):
 
 
 def parseLiteral(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+%(preserve_cdata_tags)s    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -5599,6 +5613,12 @@ def generateMain(outfile, prefix, root):
         'rootClass': rootClass,
         'namespacedef': namespace,
     }
+    if PreserveCdataTags:
+        params['preserve_cdata_tags'] = \
+            "    parser = etree_.ETCompatXMLParser(strip_cdata=False)\n"
+    else:
+        params['preserve_cdata_tags'] = "    parser = None\n"
+        params['preserve_cdata_tags_pat'] = ""
     s1 = TEMPLATE_MAIN % params
     outfile.write(s1)
 
@@ -5833,12 +5853,12 @@ from lxml import etree as etree_
 
 import %s as supermod
 
-def parsexml_(*args, **kwargs):
-    if 'parser' not in kwargs:
+def parsexml_(infile, parser=None, **kwargs):
+    if parser is None:
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
-        kwargs['parser'] = etree_.ETCompatXMLParser()
-    doc = etree_.parse(*args, **kwargs)
+        parser = etree_.ETCompatXMLParser()
+    doc = etree_.parse(infile, parser=parser, **kwargs)
     return doc
 
 #
@@ -5865,7 +5885,7 @@ def get_root_tag(node):
 
 
 def parse(inFilename, silence=False):
-    doc = parsexml_(inFilename)
+%(preserve_cdata_tags)s    doc = parsexml_(inFilename, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -5885,7 +5905,7 @@ def parse(inFilename, silence=False):
 
 
 def parseEtree(inFilename, silence=False):
-    doc = parsexml_(inFilename)
+%(preserve_cdata_tags)s    doc = parsexml_(inFilename, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -5909,7 +5929,7 @@ def parseEtree(inFilename, silence=False):
 
 def parseString(inString, silence=False):
     from StringIO import StringIO
-    doc = parsexml_(StringIO(inString))
+%(preserve_cdata_tags)s    doc = parsexml_(StringIO(inString), parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -5928,7 +5948,7 @@ def parseString(inString, silence=False):
 
 
 def parseLiteral(inFilename, silence=False):
-    doc = parsexml_(inFilename)
+%(preserve_cdata_tags)s    doc = parsexml_(inFilename, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -6126,6 +6146,12 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
             'namespacedef': namespace,
             'super': superModule,
         }
+        if PreserveCdataTags:
+            params['preserve_cdata_tags'] = \
+                "    parser = etree_.ETCompatXMLParser(strip_cdata=False)\n"
+        else:
+            params['preserve_cdata_tags'] = \
+                "    parser = None\n"
         wrt(TEMPLATE_SUBCLASS_FOOTER % params)
         subclassFile.close()
 
@@ -6577,7 +6603,8 @@ def main():
         ExternalEncoding, MemberSpecs, NoQuestions, \
         ExportWrite, ExportEtree, ExportLiteral, \
         FixTypeNames, SingleFileOutput, OutputDirectory, \
-        ModuleSuffix, UseOldSimpleTypeValidators
+        ModuleSuffix, UseOldSimpleTypeValidators, \
+        PreserveCdataTags
     outputText = True
     args = sys.argv[1:]
     try:
@@ -6594,6 +6621,7 @@ def main():
                 'version', 'export=',
                 'one-file-per-xsd', 'output-directory=',
                 'module-suffix=', 'use-old-simpletype-validators',
+                'preserve-cdata-tags',
             ])
     except getopt.GetoptError:
         usage()
@@ -6752,6 +6780,8 @@ def main():
             OutputDirectory = option[1]
         elif option[0] == "--module-suffix":
             ModuleSuffix = option[1]
+        elif option[0] == "--preserve-cdata-tags":
+            PreserveCdataTags = True
     if showVersion:
         print('generateDS.py version %s' % VERSION)
         sys.exit(0)

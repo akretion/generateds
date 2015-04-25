@@ -37,12 +37,12 @@ from lxml import etree as etree_
 Validate_simpletypes_ = True
 
 
-def parsexml_(*args, **kwargs):
-    if 'parser' not in kwargs:
+def parsexml_(infile, parser=None, **kwargs):
+    if parser is None:
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
-        kwargs['parser'] = etree_.ETCompatXMLParser()
-    doc = etree_.parse(*args, **kwargs)
+        parser = etree_.ETCompatXMLParser()
+    doc = etree_.parse(infile, parser=parser, **kwargs)
     return doc
 
 #
@@ -2796,7 +2796,8 @@ def get_root_tag(node):
 
 
 def parse(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -2816,7 +2817,8 @@ def parse(inFileName, silence=False):
 
 
 def parseEtree(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -2840,7 +2842,8 @@ def parseEtree(inFileName, silence=False):
 
 def parseString(inString, silence=False):
     from StringIO import StringIO
-    doc = parsexml_(StringIO(inString))
+    parser = None
+    doc = parsexml_(StringIO(inString), parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -2859,7 +2862,8 @@ def parseString(inString, silence=False):
 
 
 def parseLiteral(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
