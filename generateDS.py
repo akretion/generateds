@@ -5207,16 +5207,7 @@ def quote_python(inStr):
             return '\"\"\"%%s\"\"\"' %% s1
 
 
-def get_all_text_(node):
-    if node.text is not None:
-        text = node.text
-    else:
-        text = ''
-    for child in node:
-        if child.tail is not None:
-            text += child.tail
-    return text
-
+%s
 
 def find_attr_value_(attr_name, node):
     attrs = node.attrib
@@ -5409,6 +5400,40 @@ def format_options_args(options, args):
     return options1, args1, command_line
 
 
+Preserve_cdata_get_all_text1 = """\
+PRESERVE_CDATA_TAGS_PAT1 = re_.compile(r'^<.+?>(.*?)</?[a-zA-Z0-9\-]+>.*$')
+PRESERVE_CDATA_TAGS_PAT2 = re_.compile(r'^<.+?>.*?</.+?>(.*)$')
+
+
+def get_all_text_(node):
+    if node.text is not None:
+        mo_ = PRESERVE_CDATA_TAGS_PAT1.search(etree_.tostring(node).strip())
+        if mo_ is not None:
+            text = mo_.group(1)
+    else:
+        text = ''
+    for child in node:
+        if child.tail is not None:
+            mo_ = PRESERVE_CDATA_TAGS_PAT2.search(
+                etree_.tostring(child).strip())
+            if mo_ is not None:
+                text += mo_.group(1)
+    return text
+"""
+
+Preserve_cdata_get_all_text2 = """\
+def get_all_text_(node):
+    if node.text is not None:
+        text = node.text
+    else:
+        text = ''
+    for child in node:
+        if child.tail is not None:
+            text += child.tail
+    return text
+"""
+
+
 def generateHeader(wrt, prefix, options, args, externalImports):
     tstamp = (not NoDates and time.ctime()) or ''
     if NoVersion:
@@ -5419,15 +5444,18 @@ def generateHeader(wrt, prefix, options, args, externalImports):
     current_working_directory = os.path.split(os.getcwd())[1]
     if PreserveCdataTags:
         preserve_cdata_tags_pat = \
-            "PRESERVE_CDATA_TAGS_PAT = re_.compile(r'^<.+?>(.*)<.+>$')\n"
+            "PRESERVE_CDATA_TAGS_PAT = re_.compile(r'^<.+?>(.*)<.+>$')\n\n"
+        preserve_cdata_get_text = Preserve_cdata_get_all_text1
     else:
         preserve_cdata_tags_pat = ""
+        preserve_cdata_get_text = Preserve_cdata_get_all_text2
     s1 = TEMPLATE_HEADER % (
         tstamp, version,
         options1, args1,
         command_line, current_working_directory,
         ExternalEncoding,
         preserve_cdata_tags_pat,
+        preserve_cdata_get_text,
     )
     wrt(s1)
     for externalImport in externalImports:
