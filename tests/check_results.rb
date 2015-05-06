@@ -57,10 +57,14 @@ $commands = [
   "diff -u cdata1_sub.py cdata2_sub.py",
   "diff -u cdata1_sup.py cdata2_sup.py",
   "diff -u cdata1.xml cdata2.xml",
+  "diff -u defaults_coverage1_sub.py defaults_coverage2_sub.py",
+  "diff -u defaults_coverage1_sup.py defaults_coverage2_sup.py",
+  "diff -u defaults_cases1_sub.py defaults_cases2_sub.py",
+  "diff -u defaults_cases1_sup.py defaults_cases2_sup.py",
 ]
 
 def check
-  puts $divider
+  #puts $divider
   error_count = 0
   $commands.each do |command|
     infile = IO.popen command
