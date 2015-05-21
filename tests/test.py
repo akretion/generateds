@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import os
 import subprocess
 import getopt
 import unittest
@@ -8,11 +9,12 @@ from lxml import etree
 
 
 class GenTest(unittest.TestCase):
-    def execute(self, cmd, cwd=None):
+    def execute(self, cmd, cwd=None, env=None):
         p = subprocess.Popen(
             cmd, cwd=cwd,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            shell=True)
+            shell=True,
+            env=env)
         stdout, stderr = p.communicate()
         return stdout, stderr
 
@@ -662,6 +664,37 @@ class GenTest(unittest.TestCase):
         t_ = 'defaults_cases'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
+        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ('sys.stdout.write',))
+        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ())
+        cmdTempl = 'python tests/%s2_sup.py tests/%s.xml > tests/%s2_out.xml'
+        cmd = cmdTempl % (t_, t_, t_, )
+        result, _ = self.execute(cmd, cwd='..')
+        cmd = 'diff %s1_out.xml %s2_out.xml' % (t_, t_, )
+        result, err = self.execute(cmd)
+        self.check_result(result, err, ())
+
+    def test_030_nested_def(self):
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
+            '--member-specs=list -f '
+            '-o tests/%s2_sup.py -s tests/%s2_sub.py '
+            '--super=%s2_sup '
+            'tests/%s.xsd'
+        )
+        t_ = 'nested_def'
+        cmd = cmdTempl % (t_, t_, t_, t_, )
+        env = os.environ
+        directory = os.getcwd()
+        env['PYTHONPATH'] = directory
+        result, stderr = self.execute(cmd, cwd='..', env=env)
+        if stderr:
+            sys.stderr.write(stderr)
+            sys.stderr.write('\n')
+            raise RuntimeError('error while generating nested_def modules')
         cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
         result, err = self.execute(cmd)
         self.check_result(result, err, ('sys.stdout.write',))
