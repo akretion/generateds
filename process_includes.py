@@ -22,6 +22,11 @@ import itertools
 from copy import deepcopy
 from lxml import etree
 
+try:
+    from gds_inner_name_map import Inner_name_map
+except ImportError:
+    Inner_name_map = None
+
 
 #
 # Globals and constants
@@ -30,12 +35,23 @@ from lxml import etree
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.15b'
+VERSION = '2.16a'
 ##VERSION##
 
 CatalogDict = {}
 # the base url to use for all relative paths in the catalog
 CatalogBaseUrl = None
+
+
+#
+# Exceptions
+
+class SchemaIOError(IOError):
+    pass
+
+
+class InnerNameMapError(Exception):
+    pass
 
 
 def load_catalog(catalogpath):
@@ -91,16 +107,9 @@ class Params(object):
     def __setattr__(self, name, value):
         if name not in self.members:
             raise AttributeError('Class %s has no set-able attribute "%s"' % (
-                self.__class__.__name__,  name, ))
+                self.__class__.__name__, name, ))
         self.__dict__[name] = value
 
-
-class SchemaIOError(IOError):
-    pass
-
-
-class RaiseComplexTypesError(Exception):
-    pass
 
 #
 # Functions for internal use and testing
@@ -475,12 +484,44 @@ def raise_anon_complextypes(root):
         if not name:
             continue
         type_name = '%sType' % (name, )
-        type_name, def_count = unique_name(type_name, def_names, def_count)
+        if Inner_name_map is None:
+            type_name, def_count = unique_name(type_name, def_names, def_count)
+        else:
+            type_name = map_inner_name(node, Inner_name_map)
         def_names.add(type_name)
         parent.set('type', type_name)
         node.set('name', type_name)
         # Move the complexType node to top level.
         root.append(node)
+
+
+def map_inner_name(node, inner_name_map):
+    """Use a user-supplied mapping table to look up a name for this class/type.
+    """
+    # find the name for the enclosing type definition and
+    # the name of the type definition that encloses that.
+    node1 = node
+    name2 = node1.get('name')
+    while name2 is None:
+        node1 = node1.getparent()
+        if node1 is None:
+            raise InnerNameMapError('cannot find parent with "name" attribute')
+        name2 = node1.get('name')
+    node1 = node1.getparent()
+    name1 = node1.get('name')
+    while name1 is None:
+        node1 = node1.getparent()
+        if node1 is None:
+            raise InnerNameMapError('cannot find parent with "name" attribute')
+        name1 = node1.get('name')
+    new_name = inner_name_map.get((name1, name2))
+    if new_name is None:
+        msg1 = '("{}", "{}")'.format(
+            name1, name2)
+        sys.stderr.write('\n*** error.  Must add entry to inner_name_map:\n')
+        sys.stderr.write('\n    {}: "xxxx",\n\n'.format(msg1))
+        raise InnerNameMapError('mapping missing for {}'.format(msg1))
+    return new_name
 
 
 #
@@ -498,11 +539,10 @@ def collect_type_names(node):
     else:
         pattern = './/complexType|.//simpleType|.//element'
         elements = node.xpath(pattern)
-    names = [
+    names = {
         el.attrib['name'] for el in elements if
         'name' in el.attrib and el.getchildren()
-    ]
-    names = set(names)
+    }
     return names
 
 
