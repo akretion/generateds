@@ -476,11 +476,7 @@ class GDSParseError(Exception):
 
 
 def raise_parse_error(node, msg):
-    if XMLParser_import_library == XMLParser_import_lxml:
-        msg = '%s (element %s/line %d)' % (
-            msg, node.tag, node.sourceline, )
-    else:
-        msg = '%s (element %s)' % (msg, node.tag, )
+    msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline, )
     raise GDSParseError(msg)
 
 
