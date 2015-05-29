@@ -1768,7 +1768,69 @@ convenience method ``gds_reverse_node_mapping`` from superclass
 ``GeneratedsSuper``.  Again, see the code above for an example.
 
 
-How-to Use the generated source code
+Specifying names for anonymous nested type definitions
+--------------------------------------------------------
+
+``generateDS.py`` automatically assigns names for types (and the
+classes generated from them), when that type definition (for
+example, ``xs:complexType``) does not have a name and it is nested
+inside another type definition.  However, these assigned names, in
+part because of the need to make them unique, can be difficult to
+predict.
+
+Therefore, ``generateDS.py`` provides a way to specify the names of
+the Python classes generated from these anonymous, nested types.  To
+do so, follow these steps:
+
+1. Create a module named ``gds_inner_name_map``
+   (``gds_inner_name_map.py``).
+   
+2. Place that module where Python can import it when you run
+   ``generateDS.py``.  You can do this either by adding an
+   additional directory to the environment variable ``PYTHONPATH``
+   or by placing ``gds_inner_name_map.py`` in a directory that is
+   already on Python's search path for modules.  You can check this
+   by running the following Python code snippet::
+
+       import sys
+       print sys.path
+
+   Also see: https://docs.python.org/2/library/sys.html#sys.path
+
+3. In module ``gds_inner_name_map``, define a global variable
+   ``Inner_name_map``.  The value of this variable should be a
+   dictionary that maps 2-tuples containing (a) the name of the
+   grandparent type and (b) the name of the parent type onto the new
+   name.
+
+If ``generateDS.py`` cannot import ``Inner_name_map`` from
+``gds_inner_name_map``, then it will, by default, generate unique
+names.  In particular, it automatically generates names for
+anonymous, nested types when the following Python statement fails::
+
+    from gds_inner_name_map import Inner_name_map
+
+Here is an example of module ``gds_inner_name_map.py``::
+
+    Inner_name_map = {
+        ("classAType", "inner"): "inner_001",
+        ("classBType", "inner"): "inner_002",
+    }
+
+Usage hints:
+
+- When ``generateDS.py`` succeeds in importing ``Inner_name_map``
+  from ``gds_inner_name_map``, but *cannot* find one of the required
+  mappings in that dictionary, it will throw an exception and print
+  out the missing mapping.  You can copy this line; paste it into
+  your ``gds_inner_name_map.py``; and edit it so as to specify the
+  class name of your choice.
+
+- Make sure that the names you specify are unique within your XML
+  schema.
+
+
+How to use the generated source code
 =======================================
 
 The parsing functions
@@ -2922,3 +2984,5 @@ See also
 .. _`ElementTree`: http://effbot.org/zone/element-index.htm
 
 .. _`lxml`: http://lxml.de/index.html
+
+.. vim:ft=rst:

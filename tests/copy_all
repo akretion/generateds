@@ -45,3 +45,9 @@ cp OnePer/oneperType03_1One.py OnePer/oneperType03_2One.py
 cp cdata2_sup.py cdata1_sup.py
 cp cdata2_sub.py cdata1_sub.py
 cp cdata2.xml cdata1.xml
+cp defaults_coverage2_sup.py defaults_coverage1_sup.py
+cp defaults_coverage2_sub.py defaults_coverage1_sub.py
+cp defaults_cases2_sup.py defaults_cases1_sup.py
+cp defaults_cases2_sub.py defaults_cases1_sub.py
+cp nested_def2_sup.py nested_def1_sup.py
+cp nested_def2_sub.py nested_def1_sub.py

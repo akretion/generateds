@@ -220,7 +220,7 @@ They are used by updateversion.py. -->
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">revision:</th><td class="field-body">2.15b</td>
+<tr class="field"><th class="field-name">revision:</th><td class="field-body">2.16a</td>
 </tr>
 </tbody>
 </table>
@@ -229,7 +229,7 @@ They are used by updateversion.py. -->
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">date:</th><td class="field-body">April 16, 2015</td>
+<tr class="field"><th class="field-name">date:</th><td class="field-body">May 21, 2015</td>
 </tr>
 </tbody>
 </table>
@@ -331,57 +331,58 @@ to process the contents of an XML document.</td>
 <li><a class="reference internal" href="#mapping-generateds-objects-to-lxml-elements-and-back" id="id60">11.10.1&nbsp;&nbsp;&nbsp;Mapping generateDS objects to Lxml Elements and back</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#specifying-names-for-anonymous-nested-type-definitions" id="id61">11.11&nbsp;&nbsp;&nbsp;Specifying names for anonymous nested type definitions</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#how-to-use-the-generated-source-code" id="id61">12&nbsp;&nbsp;&nbsp;How-to Use the generated source code</a><ul class="auto-toc">
-<li><a class="reference internal" href="#the-parsing-functions" id="id62">12.1&nbsp;&nbsp;&nbsp;The parsing functions</a></li>
-<li><a class="reference internal" href="#recognizing-the-top-level-element" id="id63">12.2&nbsp;&nbsp;&nbsp;Recognizing the top level element</a></li>
-<li><a class="reference internal" href="#the-export-methods" id="id64">12.3&nbsp;&nbsp;&nbsp;The export methods</a><ul class="auto-toc">
-<li><a class="reference internal" href="#method-export" id="id65">12.3.1&nbsp;&nbsp;&nbsp;Method export</a></li>
-<li><a class="reference internal" href="#method-exportliteral" id="id66">12.3.2&nbsp;&nbsp;&nbsp;Method <tt class="docutils literal">exportLiteral</tt></a><ul class="auto-toc">
-<li><a class="reference internal" href="#what-it-does" id="id67">12.3.2.1&nbsp;&nbsp;&nbsp;What It Does</a></li>
-<li><a class="reference internal" href="#why-you-might-care" id="id68">12.3.2.2&nbsp;&nbsp;&nbsp;Why You Might Care</a></li>
-<li><a class="reference internal" href="#how-to-use-it" id="id69">12.3.2.3&nbsp;&nbsp;&nbsp;How to use it</a></li>
+<li><a class="reference internal" href="#how-to-use-the-generated-source-code" id="id62">12&nbsp;&nbsp;&nbsp;How to use the generated source code</a><ul class="auto-toc">
+<li><a class="reference internal" href="#the-parsing-functions" id="id63">12.1&nbsp;&nbsp;&nbsp;The parsing functions</a></li>
+<li><a class="reference internal" href="#recognizing-the-top-level-element" id="id64">12.2&nbsp;&nbsp;&nbsp;Recognizing the top level element</a></li>
+<li><a class="reference internal" href="#the-export-methods" id="id65">12.3&nbsp;&nbsp;&nbsp;The export methods</a><ul class="auto-toc">
+<li><a class="reference internal" href="#method-export" id="id66">12.3.1&nbsp;&nbsp;&nbsp;Method export</a></li>
+<li><a class="reference internal" href="#method-exportliteral" id="id67">12.3.2&nbsp;&nbsp;&nbsp;Method <tt class="docutils literal">exportLiteral</tt></a><ul class="auto-toc">
+<li><a class="reference internal" href="#what-it-does" id="id68">12.3.2.1&nbsp;&nbsp;&nbsp;What It Does</a></li>
+<li><a class="reference internal" href="#why-you-might-care" id="id69">12.3.2.2&nbsp;&nbsp;&nbsp;Why You Might Care</a></li>
+<li><a class="reference internal" href="#how-to-use-it" id="id70">12.3.2.3&nbsp;&nbsp;&nbsp;How to use it</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#exporting-compact-xml-documents" id="id70">12.3.3&nbsp;&nbsp;&nbsp;Exporting compact XML documents</a></li>
+<li><a class="reference internal" href="#exporting-compact-xml-documents" id="id71">12.3.3&nbsp;&nbsp;&nbsp;Exporting compact XML documents</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#building-instances" id="id71">12.4&nbsp;&nbsp;&nbsp;Building instances</a></li>
-<li><a class="reference internal" href="#using-the-subclass-module" id="id72">12.5&nbsp;&nbsp;&nbsp;Using the subclass module</a></li>
-<li><a class="reference internal" href="#elements-with-attributes-but-no-nested-children" id="id73">12.6&nbsp;&nbsp;&nbsp;Elements with attributes but no nested children</a></li>
-<li><a class="reference internal" href="#id4" id="id74">12.7&nbsp;&nbsp;&nbsp;Mixed content</a></li>
-<li><a class="reference internal" href="#id6" id="id75">12.8&nbsp;&nbsp;&nbsp;anyAttribute</a></li>
-<li><a class="reference internal" href="#user-methods" id="id76">12.9&nbsp;&nbsp;&nbsp;User Methods</a></li>
-<li><a class="reference internal" href="#overridable-methods" id="id77">12.10&nbsp;&nbsp;&nbsp;Overridable methods</a></li>
-<li><a class="reference internal" href="#the-element-name-to-class-name-dictionary" id="id78">12.11&nbsp;&nbsp;&nbsp;The element name to class name dictionary</a></li>
+<li><a class="reference internal" href="#building-instances" id="id72">12.4&nbsp;&nbsp;&nbsp;Building instances</a></li>
+<li><a class="reference internal" href="#using-the-subclass-module" id="id73">12.5&nbsp;&nbsp;&nbsp;Using the subclass module</a></li>
+<li><a class="reference internal" href="#elements-with-attributes-but-no-nested-children" id="id74">12.6&nbsp;&nbsp;&nbsp;Elements with attributes but no nested children</a></li>
+<li><a class="reference internal" href="#id4" id="id75">12.7&nbsp;&nbsp;&nbsp;Mixed content</a></li>
+<li><a class="reference internal" href="#id6" id="id76">12.8&nbsp;&nbsp;&nbsp;anyAttribute</a></li>
+<li><a class="reference internal" href="#user-methods" id="id77">12.9&nbsp;&nbsp;&nbsp;User Methods</a></li>
+<li><a class="reference internal" href="#overridable-methods" id="id78">12.10&nbsp;&nbsp;&nbsp;Overridable methods</a></li>
+<li><a class="reference internal" href="#the-element-name-to-class-name-dictionary" id="id79">12.11&nbsp;&nbsp;&nbsp;The element name to class name dictionary</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#one-per-generating-separate-files-from-imported-included-schemas" id="id79">13&nbsp;&nbsp;&nbsp;&quot;One Per&quot; -- generating separate files from imported/included schemas</a></li>
-<li><a class="reference internal" href="#how-to-modify-the-generated-code" id="id80">14&nbsp;&nbsp;&nbsp;How to modify the generated code</a><ul class="auto-toc">
-<li><a class="reference internal" href="#adding-features-to-class-definitions" id="id81">14.1&nbsp;&nbsp;&nbsp;Adding features to class definitions</a></li>
+<li><a class="reference internal" href="#one-per-generating-separate-files-from-imported-included-schemas" id="id80">13&nbsp;&nbsp;&nbsp;&quot;One Per&quot; -- generating separate files from imported/included schemas</a></li>
+<li><a class="reference internal" href="#how-to-modify-the-generated-code" id="id81">14&nbsp;&nbsp;&nbsp;How to modify the generated code</a><ul class="auto-toc">
+<li><a class="reference internal" href="#adding-features-to-class-definitions" id="id82">14.1&nbsp;&nbsp;&nbsp;Adding features to class definitions</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#examples-and-demonstrations" id="id82">15&nbsp;&nbsp;&nbsp;Examples and demonstrations</a><ul class="auto-toc">
-<li><a class="reference internal" href="#django-generating-models-and-forms" id="id83">15.1&nbsp;&nbsp;&nbsp;Django -- Generating Models and Forms</a><ul class="auto-toc">
-<li><a class="reference internal" href="#how-to-generate-django-models-and-forms" id="id84">15.1.1&nbsp;&nbsp;&nbsp;How to generate Django models and forms</a></li>
-<li><a class="reference internal" href="#how-it-works" id="id85">15.1.2&nbsp;&nbsp;&nbsp;How it works</a></li>
+<li><a class="reference internal" href="#examples-and-demonstrations" id="id83">15&nbsp;&nbsp;&nbsp;Examples and demonstrations</a><ul class="auto-toc">
+<li><a class="reference internal" href="#django-generating-models-and-forms" id="id84">15.1&nbsp;&nbsp;&nbsp;Django -- Generating Models and Forms</a><ul class="auto-toc">
+<li><a class="reference internal" href="#how-to-generate-django-models-and-forms" id="id85">15.1.1&nbsp;&nbsp;&nbsp;How to generate Django models and forms</a></li>
+<li><a class="reference internal" href="#how-it-works" id="id86">15.1.2&nbsp;&nbsp;&nbsp;How it works</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#sample-code-and-extensions" id="id86">16&nbsp;&nbsp;&nbsp;Sample code and extensions</a><ul class="auto-toc">
-<li><a class="reference internal" href="#capturing-xs-date-elements-as-dates" id="id87">16.1&nbsp;&nbsp;&nbsp;Capturing xs:date elements as dates</a></li>
+<li><a class="reference internal" href="#sample-code-and-extensions" id="id87">16&nbsp;&nbsp;&nbsp;Sample code and extensions</a><ul class="auto-toc">
+<li><a class="reference internal" href="#capturing-xs-date-elements-as-dates" id="id88">16.1&nbsp;&nbsp;&nbsp;Capturing xs:date elements as dates</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#limitations-of-generateds" id="id88">17&nbsp;&nbsp;&nbsp;Limitations of generateDS</a><ul class="auto-toc">
-<li><a class="reference internal" href="#xml-schema-limitations" id="id89">17.1&nbsp;&nbsp;&nbsp;XML Schema limitations</a></li>
-<li><a class="reference internal" href="#large-documents" id="id90">17.2&nbsp;&nbsp;&nbsp;Large documents</a></li>
+<li><a class="reference internal" href="#limitations-of-generateds" id="id89">17&nbsp;&nbsp;&nbsp;Limitations of generateDS</a><ul class="auto-toc">
+<li><a class="reference internal" href="#xml-schema-limitations" id="id90">17.1&nbsp;&nbsp;&nbsp;XML Schema limitations</a></li>
+<li><a class="reference internal" href="#large-documents" id="id91">17.2&nbsp;&nbsp;&nbsp;Large documents</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#includes-the-xml-schema-include-element" id="id91">18&nbsp;&nbsp;&nbsp;Includes -- The XML schema include element</a></li>
-<li><a class="reference internal" href="#acknowledgments" id="id92">19&nbsp;&nbsp;&nbsp;Acknowledgments</a></li>
-<li><a class="reference internal" href="#see-also" id="id93">20&nbsp;&nbsp;&nbsp;See also</a></li>
+<li><a class="reference internal" href="#includes-the-xml-schema-include-element" id="id92">18&nbsp;&nbsp;&nbsp;Includes -- The XML schema include element</a></li>
+<li><a class="reference internal" href="#acknowledgments" id="id93">19&nbsp;&nbsp;&nbsp;Acknowledgments</a></li>
+<li><a class="reference internal" href="#see-also" id="id94">20&nbsp;&nbsp;&nbsp;See also</a></li>
 </ul>
 </div>
 <div class="section" id="introduction">
@@ -1948,11 +1949,71 @@ convenience method <tt class="docutils literal">gds_reverse_node_mapping</tt> fr
 <tt class="docutils literal">GeneratedsSuper</tt>.  Again, see the code above for an example.</p>
 </div>
 </div>
+<div class="section" id="specifying-names-for-anonymous-nested-type-definitions">
+<h2><a class="toc-backref" href="#id61">11.11&nbsp;&nbsp;&nbsp;Specifying names for anonymous nested type definitions</a></h2>
+<p><tt class="docutils literal">generateDS.py</tt> automatically assigns names for types (and the
+classes generated from them), when that type definition (for
+example, <tt class="docutils literal">xs:complexType</tt>) does not have a name and it is nested
+inside another type definition.  However, these assigned names, in
+part because of the need to make them unique, can be difficult to
+predict.</p>
+<p>Therefore, <tt class="docutils literal">generateDS.py</tt> provides a way to specify the names of
+the Python classes generated from these anonymous, nested types.  To
+do so, follow these steps:</p>
+<ol class="arabic">
+<li><p class="first">Create a module named <tt class="docutils literal">gds_inner_name_map</tt>
+(<tt class="docutils literal">gds_inner_name_map.py</tt>).</p>
+</li>
+<li><p class="first">Place that module where Python can import it when you run
+<tt class="docutils literal">generateDS.py</tt>.  You can do this either by adding an
+additional directory to the environment variable <tt class="docutils literal">PYTHONPATH</tt>
+or by placing <tt class="docutils literal">gds_inner_name_map.py</tt> in a directory that is
+already on Python's search path for modules.  You can check this
+by running the following Python code snippet:</p>
+<pre class="literal-block">
+import sys
+print sys.path
+</pre>
+<p>Also see: <a class="reference external" href="https://docs.python.org/2/library/sys.html#sys.path">https://docs.python.org/2/library/sys.html#sys.path</a></p>
+</li>
+<li><p class="first">In module <tt class="docutils literal">gds_inner_name_map</tt>, define a global variable
+<tt class="docutils literal">Inner_name_map</tt>.  The value of this variable should be a
+dictionary that maps 2-tuples containing (a) the name of the
+grandparent type and (b) the name of the parent type onto the new
+name.</p>
+</li>
+</ol>
+<p>If <tt class="docutils literal">generateDS.py</tt> cannot import <tt class="docutils literal">Inner_name_map</tt> from
+<tt class="docutils literal">gds_inner_name_map</tt>, then it will, by default, generate unique
+names.  In particular, it automatically generates names for
+anonymous, nested types when the following Python statement fails:</p>
+<pre class="literal-block">
+from gds_inner_name_map import Inner_name_map
+</pre>
+<p>Here is an example of module <tt class="docutils literal">gds_inner_name_map.py</tt>:</p>
+<pre class="literal-block">
+Inner_name_map = {
+    (&quot;classAType&quot;, &quot;inner&quot;): &quot;inner_001&quot;,
+    (&quot;classBType&quot;, &quot;inner&quot;): &quot;inner_002&quot;,
+}
+</pre>
+<p>Usage hints:</p>
+<ul class="simple">
+<li>When <tt class="docutils literal">generateDS.py</tt> succeeds in importing <tt class="docutils literal">Inner_name_map</tt>
+from <tt class="docutils literal">gds_inner_name_map</tt>, but <em>cannot</em> find one of the required
+mappings in that dictionary, it will throw an exception and print
+out the missing mapping.  You can copy this line; paste it into
+your <tt class="docutils literal">gds_inner_name_map.py</tt>; and edit it so as to specify the
+class name of your choice.</li>
+<li>Make sure that the names you specify are unique within your XML
+schema.</li>
+</ul>
+</div>
 </div>
 <div class="section" id="how-to-use-the-generated-source-code">
-<h1><a class="toc-backref" href="#id61">12&nbsp;&nbsp;&nbsp;How-to Use the generated source code</a></h1>
+<h1><a class="toc-backref" href="#id62">12&nbsp;&nbsp;&nbsp;How to use the generated source code</a></h1>
 <div class="section" id="the-parsing-functions">
-<h2><a class="toc-backref" href="#id62">12.1&nbsp;&nbsp;&nbsp;The parsing functions</a></h2>
+<h2><a class="toc-backref" href="#id63">12.1&nbsp;&nbsp;&nbsp;The parsing functions</a></h2>
 <p>The simplest use is to call one of the parsing functions in the
 generated source file. You may be able to use one of these
 functions without change, or can modify one to fit your needs.
@@ -1978,7 +2039,7 @@ rootObject = people.parse('people.xml')
 </pre>
 </div>
 <div class="section" id="recognizing-the-top-level-element">
-<h2><a class="toc-backref" href="#id63">12.2&nbsp;&nbsp;&nbsp;Recognizing the top level element</a></h2>
+<h2><a class="toc-backref" href="#id64">12.2&nbsp;&nbsp;&nbsp;Recognizing the top level element</a></h2>
 <p>It might be that the generated module, when parsing an XML instance
 document, does not, by default, recognize the top level (root)
 element in an instance document.  This might happen because
@@ -2099,14 +2160,14 @@ function can parse and export it.</p>
 </ol>
 </div>
 <div class="section" id="the-export-methods">
-<h2><a class="toc-backref" href="#id64">12.3&nbsp;&nbsp;&nbsp;The export methods</a></h2>
+<h2><a class="toc-backref" href="#id65">12.3&nbsp;&nbsp;&nbsp;The export methods</a></h2>
 <p>The generated classes contain methods <tt class="docutils literal">export</tt> and
 <tt class="docutils literal">exportLiteral</tt> which can be called to export classes to several
 text formats, in particular to an XML instance document and a
 Python module containing Python literals.  See the generated parse
 functions for examples showing how to call the export methods.</p>
 <div class="section" id="method-export">
-<h3><a class="toc-backref" href="#id65">12.3.1&nbsp;&nbsp;&nbsp;Method export</a></h3>
+<h3><a class="toc-backref" href="#id66">12.3.1&nbsp;&nbsp;&nbsp;Method export</a></h3>
 <p>The export method in generated classes writes out an XML document
 that represents the instance that contains it and its child
 elements.  So, for example, if your instance tree was created by
@@ -2115,14 +2176,14 @@ one of the parsing functions described above, then calling
 document, differing only with respect to ignorable white space.</p>
 </div>
 <div class="section" id="method-exportliteral">
-<h3><a class="toc-backref" href="#id66">12.3.2&nbsp;&nbsp;&nbsp;Method <tt class="docutils literal">exportLiteral</tt></a></h3>
+<h3><a class="toc-backref" href="#id67">12.3.2&nbsp;&nbsp;&nbsp;Method <tt class="docutils literal">exportLiteral</tt></a></h3>
 <p><tt class="docutils literal">generateDS.py</tt> generates Python classes that represent the
 elements in an XML document, given an Xschema definition of the
 XML document type. The <tt class="docutils literal">exportLiteral</tt> method will export a
 Python literal representation of the Python instances of the
 classes that represent an XML document.</p>
 <div class="section" id="what-it-does">
-<h4><a class="toc-backref" href="#id67">12.3.2.1&nbsp;&nbsp;&nbsp;What It Does</a></h4>
+<h4><a class="toc-backref" href="#id68">12.3.2.1&nbsp;&nbsp;&nbsp;What It Does</a></h4>
 <p>When <tt class="docutils literal">generateDS.py</tt> generates the Python source code for your
 classes, this new feature also generates an <tt class="docutils literal">exportLiteral</tt>
 method in each class. If you call this method on the root
@@ -2136,7 +2197,7 @@ that you can import to (re-)create instances of the classes that
 represent your XML document.</p>
 </div>
 <div class="section" id="why-you-might-care">
-<h4><a class="toc-backref" href="#id68">12.3.2.2&nbsp;&nbsp;&nbsp;Why You Might Care</a></h4>
+<h4><a class="toc-backref" href="#id69">12.3.2.2&nbsp;&nbsp;&nbsp;Why You Might Care</a></h4>
 <p><tt class="docutils literal">generateDS.py</tt> was designed and built with the assumption that
 we are <em>not</em> interested in marking up text content at all.  What
 we really want is a way to represent structured and nested date in
@@ -2179,13 +2240,13 @@ import.</li>
 </ul>
 </div>
 <div class="section" id="how-to-use-it">
-<h4><a class="toc-backref" href="#id69">12.3.2.3&nbsp;&nbsp;&nbsp;How to use it</a></h4>
+<h4><a class="toc-backref" href="#id70">12.3.2.3&nbsp;&nbsp;&nbsp;How to use it</a></h4>
 <p>See the generated function <tt class="docutils literal">parseLiteral</tt> for an example of how
 to use <tt class="docutils literal">exportLiteral</tt>.</p>
 </div>
 </div>
 <div class="section" id="exporting-compact-xml-documents">
-<h3><a class="toc-backref" href="#id70">12.3.3&nbsp;&nbsp;&nbsp;Exporting compact XML documents</a></h3>
+<h3><a class="toc-backref" href="#id71">12.3.3&nbsp;&nbsp;&nbsp;Exporting compact XML documents</a></h3>
 <p>You can also export &quot;compact&quot; XML documents.  A compact document is
 one that is exported <em>without</em> the ignorable whitespace that is used
 to produce pretty printed documents.  In contrast, a pretty printed
@@ -2199,7 +2260,7 @@ default.</p>
 </div>
 </div>
 <div class="section" id="building-instances">
-<h2><a class="toc-backref" href="#id71">12.4&nbsp;&nbsp;&nbsp;Building instances</a></h2>
+<h2><a class="toc-backref" href="#id72">12.4&nbsp;&nbsp;&nbsp;Building instances</a></h2>
 <p>If you have an instance of a minidom node that represents an
 element in an XML document, you can also use the 'build' member
 function to populate an instance of the corresponding class. Here
@@ -2219,7 +2280,7 @@ for child in rootNode.childNodes:
 </pre>
 </div>
 <div class="section" id="using-the-subclass-module">
-<h2><a class="toc-backref" href="#id72">12.5&nbsp;&nbsp;&nbsp;Using the subclass module</a></h2>
+<h2><a class="toc-backref" href="#id73">12.5&nbsp;&nbsp;&nbsp;Using the subclass module</a></h2>
 <p>If you choose to use the generated subclass module, and I
 encourage you to do so, you may need to edit and modify that
 file. Here are some of the things that you must do (look for
@@ -2246,14 +2307,14 @@ accessed through getter and setter methods in the class in which
 they are referenced.</p>
 </div>
 <div class="section" id="elements-with-attributes-but-no-nested-children">
-<h2><a class="toc-backref" href="#id73">12.6&nbsp;&nbsp;&nbsp;Elements with attributes but no nested children</a></h2>
+<h2><a class="toc-backref" href="#id74">12.6&nbsp;&nbsp;&nbsp;Elements with attributes but no nested children</a></h2>
 <p>Element definitions that contain attributes but <em>no</em> nested child
 elements provide access to their data content through getter and
 setter methods <tt class="docutils literal">getValueOf_</tt> and <tt class="docutils literal">setValueOf_</tt> and member
 variable <tt class="docutils literal">valueOf_</tt>.</p>
 </div>
 <div class="section" id="id4">
-<span id="id3"></span><h2><a class="toc-backref" href="#id74">12.7&nbsp;&nbsp;&nbsp;Mixed content</a></h2>
+<span id="id3"></span><h2><a class="toc-backref" href="#id75">12.7&nbsp;&nbsp;&nbsp;Mixed content</a></h2>
 <p>The goal of <tt class="docutils literal">generateDS.py</tt> is to support data structures
 represented in XML as opposed to text mark-up.  However, it does
 provides some support for mixed content.  But, for mixed content,
@@ -2321,7 +2382,7 @@ elements, character data is captured in a member variable
 <tt class="docutils literal">getValueOf_</tt> and <tt class="docutils literal">setValueOf_</tt>.</p>
 </div>
 <div class="section" id="id6">
-<span id="id5"></span><h2><a class="toc-backref" href="#id75">12.8&nbsp;&nbsp;&nbsp;anyAttribute</a></h2>
+<span id="id5"></span><h2><a class="toc-backref" href="#id76">12.8&nbsp;&nbsp;&nbsp;anyAttribute</a></h2>
 <p>For elements that specify <tt class="docutils literal">anyAttributes</tt>, <tt class="docutils literal">generateDS.py</tt>
 produces a class containing the following:</p>
 <ul class="simple">
@@ -2342,7 +2403,7 @@ are <em>not</em> stored in the dictionary <tt class="docutils literal">anyAttrib
 <tt class="docutils literal">anyAttribute</tt> element in the XML Schema</p>
 </div>
 <div class="section" id="user-methods">
-<h2><a class="toc-backref" href="#id76">12.9&nbsp;&nbsp;&nbsp;User Methods</a></h2>
+<h2><a class="toc-backref" href="#id77">12.9&nbsp;&nbsp;&nbsp;User Methods</a></h2>
 <p><tt class="docutils literal">generateDS.py</tt> provides a mechanism that enables you to attach
 user defined methods to specific generated classes.  In order to
 do so, create a Python module containing specifications of those
@@ -2464,7 +2525,7 @@ source code and the class_name pattern in each specification.</li>
 </ol>
 </div>
 <div class="section" id="overridable-methods">
-<h2><a class="toc-backref" href="#id77">12.10&nbsp;&nbsp;&nbsp;Overridable methods</a></h2>
+<h2><a class="toc-backref" href="#id78">12.10&nbsp;&nbsp;&nbsp;Overridable methods</a></h2>
 <p><tt class="docutils literal">generateDS.py</tt> generates calls to several methods that each have
 a default implementation in a superclass.  The default superclass
 with default implementations is included in the generated code.
@@ -2583,7 +2644,7 @@ option for <tt class="docutils literal">generateDS.py</tt>.</p>
 </ul>
 </div>
 <div class="section" id="the-element-name-to-class-name-dictionary">
-<h2><a class="toc-backref" href="#id78">12.11&nbsp;&nbsp;&nbsp;The element name to class name dictionary</a></h2>
+<h2><a class="toc-backref" href="#id79">12.11&nbsp;&nbsp;&nbsp;The element name to class name dictionary</a></h2>
 <p><tt class="docutils literal">generateDS.py</tt> automatically generates a dictionary that maps
 element/complexType names to the names of the class generated for
 that complexType definition.  This dictionary is named
@@ -2592,7 +2653,7 @@ with the &quot;-o&quot; option.</p>
 </div>
 </div>
 <div class="section" id="one-per-generating-separate-files-from-imported-included-schemas">
-<h1><a class="toc-backref" href="#id79">13&nbsp;&nbsp;&nbsp;&quot;One Per&quot; -- generating separate files from imported/included schemas</a></h1>
+<h1><a class="toc-backref" href="#id80">13&nbsp;&nbsp;&nbsp;&quot;One Per&quot; -- generating separate files from imported/included schemas</a></h1>
 <p>The <tt class="docutils literal"><span class="pre">--one-file-per-xsd</span></tt> command line option enables you to
 generate a separate Python module for each XML schema that is
 imported or included (using <tt class="docutils literal">&lt;xs:import&gt;</tt> or <tt class="docutils literal">&lt;xs:include&gt;</tt>) by
@@ -2645,11 +2706,11 @@ directory into a Python package.</p>
 </ul>
 </div>
 <div class="section" id="how-to-modify-the-generated-code">
-<h1><a class="toc-backref" href="#id80">14&nbsp;&nbsp;&nbsp;How to modify the generated code</a></h1>
+<h1><a class="toc-backref" href="#id81">14&nbsp;&nbsp;&nbsp;How to modify the generated code</a></h1>
 <p>This section attempts to explain how to modify and add features to
 the generated code.</p>
 <div class="section" id="adding-features-to-class-definitions">
-<h2><a class="toc-backref" href="#id81">14.1&nbsp;&nbsp;&nbsp;Adding features to class definitions</a></h2>
+<h2><a class="toc-backref" href="#id82">14.1&nbsp;&nbsp;&nbsp;Adding features to class definitions</a></h2>
 <p>You can add new member definitions to a generated class. Look at
 the 'export' and 'exportLiteral' member functions for examples of
 how to access member variables and how to walk nested
@@ -2694,7 +2755,7 @@ parser, for example, since generating the file.</li>
 </div>
 </div>
 <div class="section" id="examples-and-demonstrations">
-<h1><a class="toc-backref" href="#id82">15&nbsp;&nbsp;&nbsp;Examples and demonstrations</a></h1>
+<h1><a class="toc-backref" href="#id83">15&nbsp;&nbsp;&nbsp;Examples and demonstrations</a></h1>
 <p>Under the directory Demos are several examples:</p>
 <ul class="simple">
 <li>Demos/People provides a simple demonstration of generating
@@ -2720,7 +2781,7 @@ containing explicit control logic, the order in which nodes of
 the parsed XML document are visited is under your control.</li>
 </ul>
 <div class="section" id="django-generating-models-and-forms">
-<h2><a class="toc-backref" href="#id83">15.1&nbsp;&nbsp;&nbsp;Django -- Generating Models and Forms</a></h2>
+<h2><a class="toc-backref" href="#id84">15.1&nbsp;&nbsp;&nbsp;Django -- Generating Models and Forms</a></h2>
 <p><tt class="docutils literal">generateDS.py</tt> can be used to generate Django models and Django
 forms that represent the data structures defined in an XML Schema.</p>
 <p><strong>Note:</strong> In order to use this capability, you must obtain the
@@ -2748,7 +2809,7 @@ or <tt class="docutils literal">easy_install</tt>).</p>
 </ul>
 <p>The script <tt class="docutils literal">gends_run_gen_django.py</tt> performs these three steps.</p>
 <div class="section" id="how-to-generate-django-models-and-forms">
-<h3><a class="toc-backref" href="#id84">15.1.1&nbsp;&nbsp;&nbsp;How to generate Django models and forms</a></h3>
+<h3><a class="toc-backref" href="#id85">15.1.1&nbsp;&nbsp;&nbsp;How to generate Django models and forms</a></h3>
 <p><strong>Warning:</strong> Running this script attempts to over-write the
 following files in the current directory:</p>
 <ul class="simple">
@@ -2793,7 +2854,7 @@ Django application.</p>
 </ol>
 </div>
 <div class="section" id="how-it-works">
-<h3><a class="toc-backref" href="#id85">15.1.2&nbsp;&nbsp;&nbsp;How it works</a></h3>
+<h3><a class="toc-backref" href="#id86">15.1.2&nbsp;&nbsp;&nbsp;How it works</a></h3>
 <p>Here are a few notes that might be helpful if and when you need to
 do some debugging or extend the current capabilities or write a new
 &quot;meta-app&quot; that uses the same approach but does something new and
@@ -2820,9 +2881,9 @@ root super class of all generated data representation classes.</p>
 </div>
 </div>
 <div class="section" id="sample-code-and-extensions">
-<h1><a class="toc-backref" href="#id86">16&nbsp;&nbsp;&nbsp;Sample code and extensions</a></h1>
+<h1><a class="toc-backref" href="#id87">16&nbsp;&nbsp;&nbsp;Sample code and extensions</a></h1>
 <div class="section" id="capturing-xs-date-elements-as-dates">
-<h2><a class="toc-backref" href="#id87">16.1&nbsp;&nbsp;&nbsp;Capturing xs:date elements as dates</a></h2>
+<h2><a class="toc-backref" href="#id88">16.1&nbsp;&nbsp;&nbsp;Capturing xs:date elements as dates</a></h2>
 <p>The following extension employs a user method (see <a class="reference internal" href="#user-methods">User
 Methods</a>) in order to capture elements defined as xs:date as date
 objects.</p>
@@ -2891,9 +2952,9 @@ import types
 </div>
 </div>
 <div class="section" id="limitations-of-generateds">
-<h1><a class="toc-backref" href="#id88">17&nbsp;&nbsp;&nbsp;Limitations of generateDS</a></h1>
+<h1><a class="toc-backref" href="#id89">17&nbsp;&nbsp;&nbsp;Limitations of generateDS</a></h1>
 <div class="section" id="xml-schema-limitations">
-<h2><a class="toc-backref" href="#id89">17.1&nbsp;&nbsp;&nbsp;XML Schema limitations</a></h2>
+<h2><a class="toc-backref" href="#id90">17.1&nbsp;&nbsp;&nbsp;XML Schema limitations</a></h2>
 <p>There are things in Xschema that are not supported. You will have
 to use a restricted sub-set of Xschema to define your data
 structures. See above for supported features. See people.xsd and
@@ -2902,7 +2963,7 @@ people.xml for examples.</p>
 does not work.</p>
 </div>
 <div class="section" id="large-documents">
-<h2><a class="toc-backref" href="#id90">17.2&nbsp;&nbsp;&nbsp;Large documents</a></h2>
+<h2><a class="toc-backref" href="#id91">17.2&nbsp;&nbsp;&nbsp;Large documents</a></h2>
 <p><strong>Warning</strong> -- This section describes an optional generated SAX
 parser which, I believe, is currently broken for all but the
 simplest schemas.  Generation of a SAX parser has not been updated
@@ -2929,7 +2990,7 @@ memory problem to some extent when the minidom parser is used.</p>
 </div>
 </div>
 <div class="section" id="includes-the-xml-schema-include-element">
-<h1><a class="toc-backref" href="#id91">18&nbsp;&nbsp;&nbsp;Includes -- The XML schema include element</a></h1>
+<h1><a class="toc-backref" href="#id92">18&nbsp;&nbsp;&nbsp;Includes -- The XML schema include element</a></h1>
 <p>While <tt class="docutils literal">generateDS.py</tt> itself does not process XML Schema
 <tt class="docutils literal">include</tt> elements, the distribution provides a script
 <tt class="docutils literal">process_includes.py</tt> that can be used as a preprocessor.  This
@@ -2954,7 +3015,7 @@ $ python process_includes.py --help
 </pre>
 </div>
 <div class="section" id="acknowledgments">
-<h1><a class="toc-backref" href="#id92">19&nbsp;&nbsp;&nbsp;Acknowledgments</a></h1>
+<h1><a class="toc-backref" href="#id93">19&nbsp;&nbsp;&nbsp;Acknowledgments</a></h1>
 <p>Many thanks to those who have used <tt class="docutils literal">generateDS.py</tt> and have
 contributed their comments and suggestions.  These comments have
 been valuable both in teaching me about things I needed to know in
@@ -2968,15 +3029,16 @@ following among others:</p>
 </ul>
 </div>
 <div class="section" id="see-also">
-<h1><a class="toc-backref" href="#id93">20&nbsp;&nbsp;&nbsp;See also</a></h1>
+<h1><a class="toc-backref" href="#id94">20&nbsp;&nbsp;&nbsp;See also</a></h1>
 <p><a class="reference external" href="http://www.python.org">Python</a>: The Python home page.</p>
 <p><a class="reference external" href="http://www.davekuhlman.org">Dave's Page</a>: My home page, which contains more Python stuff.</p>
+<!-- vim:ft=rst: -->
 </div>
 </div>
 <div class="footer">
 <hr class="footer" />
 <a class="reference external" href="generateDS.txt">View document source</a>.
-Generated on: 2015-04-16 21:32 UTC.
+Generated on: 2015-05-21 18:14 UTC.
 Generated by <a class="reference external" href="http://docutils.sourceforge.net/">Docutils</a> from <a class="reference external" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> source.
 
 </div>
