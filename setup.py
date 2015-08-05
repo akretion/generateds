@@ -32,6 +32,9 @@ XML document.""",
 ##         "gui.generateds_gui",
 ##         "gui.generateds_gui_session",
 ##         ],
+    py_modules=[
+        "process_includes", 
+        ],
     # include_package_data=True,
     packages = [
         "libgenerateDS",

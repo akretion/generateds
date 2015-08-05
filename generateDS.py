@@ -247,7 +247,7 @@ CurrentNamespacePrefix = 'xs:'
 AnyTypeIdentifier = '__ANY__'
 ExportWrite = True
 ExportEtree = False
-ExportLiteral = True
+ExportLiteral = False
 FixTypeNames = None
 SingleFileOutput = True
 OutputDirectory = None
@@ -2755,9 +2755,9 @@ def generateExportFn(wrt, prefix, element, namespace, nameSpacesDef):
                                 name, quote_attrib(value), ))
                         else:
                             unique_counter += 1
-                            outfile.write(' xmlns:yyy%d=\"%s\"' % (
+                            outfile.write(' xmlns:%d=\"%s\"' % (
                                 unique_counter, namespace, ))
-                            outfile.write(' yyy%d:%s=%s' % (
+                            outfile.write(' %d:%s=%s' % (
                                 unique_counter, name, quote_attrib(value), ))
                 else:
                     if name not in already_processed:

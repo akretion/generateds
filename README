@@ -141,6 +141,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.17a (05/28/2015)
+- Modified setup.py so that process_includes.py is installed where
+  it can be imported.
+- Changed default settings for export -- Default is now to generate
+  only the normal export methods, instead of both normal and
+  literal.  See command line option --export.
+
 Version 2.16a (05/28/2015)
 - Added new command line option ("--preserve-cdata-tags") that
   causes generation of code that contains a special parser to retain
