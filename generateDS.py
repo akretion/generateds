@@ -92,6 +92,11 @@ Options:
                              Example: "write etree"
                              Default: "write"
     --preserve-cdata-tags    Preserve CDATA tags.  Default: False
+    --cleanup-name-dict=<replacement-map>
+                             Specifies replacement pairs when cleaning up
+                             names.
+                             Example: "{':': 'colon', '-': 'dash', '.': 'dot'}"
+                             Default: "{':': '_', '-': '_', '.': '_'}"
     -q, --no-questions       Do not ask questions, for example,
                              force overwrite.
     --session=mysession.session
@@ -213,6 +218,7 @@ NoVersion = False
 Dirpath = []
 ExternalEncoding = sys.getdefaultencoding()
 Namespacedef = ''
+CleanupNameDict = {':': '_', '-': '_', '.': '_'}
 
 NamespacesDict = {}
 prefixToNamespaceMap = {}
@@ -6348,9 +6354,9 @@ def mapName(oldName):
 
 
 def cleanupName(oldName):
-    newName = oldName.replace(':', '_')
-    newName = newName.replace('-', '_')
-    newName = newName.replace('.', '_')
+    newName = oldName
+    for o, n in CleanupNameDict.iteritems():
+        newName = newName.replace(o, n)
     return newName
 
 
@@ -6628,7 +6634,7 @@ def main():
         ExportWrite, ExportEtree, ExportLiteral, \
         FixTypeNames, SingleFileOutput, OutputDirectory, \
         ModuleSuffix, UseOldSimpleTypeValidators, \
-        PreserveCdataTags
+        PreserveCdataTags, CleanupNameDict
     outputText = True
     args = sys.argv[1:]
     try:
@@ -6645,7 +6651,7 @@ def main():
                 'version', 'export=',
                 'one-file-per-xsd', 'output-directory=',
                 'module-suffix=', 'use-old-simpletype-validators',
-                'preserve-cdata-tags',
+                'preserve-cdata-tags', 'cleanup-name-dict=',
             ])
     except getopt.GetoptError:
         usage()
@@ -6806,6 +6812,23 @@ def main():
             ModuleSuffix = option[1]
         elif option[0] == "--preserve-cdata-tags":
             PreserveCdataTags = True
+        elif option[0] == '--cleanup-name-dict':
+            cleanup_str = option[1]
+            from ast import literal_eval
+            try:
+                cleanup_dict = literal_eval(cleanup_str)
+            except ValueError:
+                raise RuntimeError(
+                    'Unable to parse option --cleanup-name-dict.')
+            if type(cleanup_dict) != dict:
+                raise RuntimeError(
+                    'Option --cleanup-name-dict must be a dictionary.')
+            for k, v in cleanup_dict.iteritems():
+                if type(k) not in (str, unicode) or type(v) not in (str, unicode):
+                    raise RuntimeError(
+                        'Option --cleanup-name-dict containt invalid element.')
+            CleanupNameDict = cleanup_dict
+
     if showVersion:
         print('generateDS.py version %s' % VERSION)
         sys.exit(0)
