@@ -5397,7 +5397,8 @@ def format_options_args(options, args):
 
 
 Preserve_cdata_get_all_text1 = """\
-PRESERVE_CDATA_TAGS_PAT1 = re_.compile(r'^<.+?>(.*?)</?[a-zA-Z0-9\-]+>.*$')
+PRESERVE_CDATA_TAGS_PAT1 = re_.compile(
+    r'^<.+?>(.*?)</?[a-zA-Z0-9\-]+>(?!.*</?[a-zA-Z0-9\-]+>)')
 PRESERVE_CDATA_TAGS_PAT2 = re_.compile(r'^<.+?>.*?</.+?>(.*)$')
 
 

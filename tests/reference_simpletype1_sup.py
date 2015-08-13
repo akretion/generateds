@@ -696,28 +696,6 @@ class dummy(GeneratedsSuper):
         if self.test_normal_element is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%stest_normal_element>%s</%stest_normal_element>%s' % (namespace_, self.gds_format_integer(self.test_normal_element, input_name='test_normal_element'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='dummy'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.test_ref_attr is not None and 'test_ref_attr' not in already_processed:
-            already_processed.add('test_ref_attr')
-            showIndent(outfile, level)
-            outfile.write('test_ref_attr=%d,\n' % (self.test_ref_attr,))
-        if self.test_normal_attr is not None and 'test_normal_attr' not in already_processed:
-            already_processed.add('test_normal_attr')
-            showIndent(outfile, level)
-            outfile.write('test_normal_attr=%d,\n' % (self.test_normal_attr,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.test_ref_element is not None:
-            showIndent(outfile, level)
-            outfile.write('test_ref_element=%d,\n' % self.test_ref_element)
-        if self.test_normal_element is not None:
-            showIndent(outfile, level)
-            outfile.write('test_normal_element=%d,\n' % self.test_normal_element)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

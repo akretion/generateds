@@ -730,75 +730,6 @@ class containerType(GeneratedsSuper):
             sample4_bad_.export(outfile, level, namespace_, name_='sample4_bad', pretty_print=pretty_print)
         for sample2_ in self.sample2:
             sample2_.export(outfile, level, namespace_, name_='sample2', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='containerType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('sample1=[\n')
-        level += 1
-        for sample1_ in self.sample1:
-            showIndent(outfile, level)
-            outfile.write('model_.simpleOneType(\n')
-            sample1_.exportLiteral(outfile, level, name_='simpleOneType')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('sample2_bad=[\n')
-        level += 1
-        for sample2_bad_ in self.sample2_bad:
-            showIndent(outfile, level)
-            outfile.write('model_.simpleOneType(\n')
-            sample2_bad_.exportLiteral(outfile, level, name_='simpleOneType')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('sample3_bad=[\n')
-        level += 1
-        for sample3_bad_ in self.sample3_bad:
-            showIndent(outfile, level)
-            outfile.write('model_.simpleOneType(\n')
-            sample3_bad_.exportLiteral(outfile, level, name_='simpleOneType')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('sample4_bad=[\n')
-        level += 1
-        for sample4_bad_ in self.sample4_bad:
-            showIndent(outfile, level)
-            outfile.write('model_.simpleOneType(\n')
-            sample4_bad_.exportLiteral(outfile, level, name_='simpleOneType')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('sample2=[\n')
-        level += 1
-        for sample2_ in self.sample2:
-            showIndent(outfile, level)
-            outfile.write('model_.simpleTwoType(\n')
-            sample2_.exportLiteral(outfile, level, name_='simpleTwoType')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1053,51 +984,6 @@ class simpleOneType(GeneratedsSuper):
         if self.primative_float is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sprimative_float>%s</%sprimative_float>%s' % (namespace_, self.gds_format_float(self.primative_float, input_name='primative_float'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='simpleOneType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.integer_range_1_value is not None:
-            showIndent(outfile, level)
-            outfile.write('integer_range_1_value=%d,\n' % self.integer_range_1_value)
-        if self.pattern_value is not None:
-            showIndent(outfile, level)
-            outfile.write('pattern_value=%s,\n' % quote_python(self.pattern_value).encode(ExternalEncoding))
-        if self.token_enum_value is not None:
-            showIndent(outfile, level)
-            outfile.write('token_enum_value=%s,\n' % quote_python(self.token_enum_value).encode(ExternalEncoding))
-        if self.token_enum_value is not None:
-            showIndent(outfile, level)
-            outfile.write('token_enum_value=%s,\n' % quote_python(self.token_enum_value).encode(ExternalEncoding))
-        if self.integer_range_incl_value is not None:
-            showIndent(outfile, level)
-            outfile.write('integer_range_incl_value=%d,\n' % self.integer_range_incl_value)
-        if self.integer_range_excl_value is not None:
-            showIndent(outfile, level)
-            outfile.write('integer_range_excl_value=%d,\n' % self.integer_range_excl_value)
-        if self.min_max_length_value is not None:
-            showIndent(outfile, level)
-            outfile.write('min_max_length_value=%s,\n' % quote_python(self.min_max_length_value).encode(ExternalEncoding))
-        if self.length_value is not None:
-            showIndent(outfile, level)
-            outfile.write('length_value=%s,\n' % quote_python(self.length_value).encode(ExternalEncoding))
-        if self.totalDigits_value is not None:
-            showIndent(outfile, level)
-            outfile.write('totalDigits_value=%f,\n' % self.totalDigits_value)
-        if self.anonymous_float_value is not None:
-            showIndent(outfile, level)
-            outfile.write('anonymous_float_value=%f,\n' % self.anonymous_float_value)
-        if self.primative_integer is not None:
-            showIndent(outfile, level)
-            outfile.write('primative_integer=%d,\n' % self.primative_integer)
-        if self.primative_float is not None:
-            showIndent(outfile, level)
-            outfile.write('primative_float=%f,\n' % self.primative_float)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1258,21 +1144,6 @@ class simpleTwoType(GeneratedsSuper):
             eol_ = ''
         if self.simpleTwoElementOne is not None:
             self.simpleTwoElementOne.export(outfile, level, namespace_, name_='simpleTwoElementOne', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='simpleTwoType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.simpleTwoElementOne is not None:
-            showIndent(outfile, level)
-            outfile.write('simpleTwoElementOne=model_.simpleTwoElementOneType(\n')
-            self.simpleTwoElementOne.exportLiteral(outfile, level, name_='simpleTwoElementOne')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1351,18 +1222,6 @@ class simpleTwoElementOneType(GeneratedsSuper):
         if self.simpleTwoElementTwo is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%ssimpleTwoElementTwo>%s</%ssimpleTwoElementTwo>%s' % (namespace_, self.gds_format_string(quote_xml(self.simpleTwoElementTwo).encode(ExternalEncoding), input_name='simpleTwoElementTwo'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='simpleTwoElementOneType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.simpleTwoElementTwo is not None:
-            showIndent(outfile, level)
-            outfile.write('simpleTwoElementTwo=%s,\n' % quote_python(self.simpleTwoElementTwo).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

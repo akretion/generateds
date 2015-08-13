@@ -141,6 +141,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version2.17b (08/05/2015)
+- Fix to regex pattern used to capture "<![CDATA[ ... ]]>".  The old
+  pattern was dropping ending characters when the content contained
+  HTML/XML markup.  Thanks to Adrian Cook for this fix.
+
 Version 2.17a (05/28/2015)
 - Modified setup.py so that process_includes.py is installed where
   it can be imported.

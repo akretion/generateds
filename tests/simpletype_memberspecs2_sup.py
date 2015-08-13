@@ -674,21 +674,6 @@ class SpecialDate(GeneratedsSuper):
             outfile.write(' SpecialProperty=%s' % (self.gds_format_string(quote_attrib(self.SpecialProperty).encode(ExternalEncoding), input_name='SpecialProperty'), ))
     def exportChildren(self, outfile, level, namespace_='pl:', name_='SpecialDate', fromsubclass_=False, pretty_print=True):
         pass
-    def exportLiteral(self, outfile, level, name_='SpecialDate'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.SpecialProperty is not None and 'SpecialProperty' not in already_processed:
-            already_processed.add('SpecialProperty')
-            showIndent(outfile, level)
-            outfile.write('SpecialProperty="%s",\n' % (self.SpecialProperty,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -758,21 +743,6 @@ class ExtremeDate(GeneratedsSuper):
             already_processed.add('ExtremeProperty')
             outfile.write(' ExtremeProperty=%s' % (self.gds_format_string(quote_attrib(self.ExtremeProperty).encode(ExternalEncoding), input_name='ExtremeProperty'), ))
     def exportChildren(self, outfile, level, namespace_='pl:', name_='ExtremeDate', fromsubclass_=False, pretty_print=True):
-        pass
-    def exportLiteral(self, outfile, level, name_='ExtremeDate'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.ExtremeProperty is not None and 'ExtremeProperty' not in already_processed:
-            already_processed.add('ExtremeProperty')
-            showIndent(outfile, level)
-            outfile.write('ExtremeProperty="%s",\n' % (self.ExtremeProperty,))
-    def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
         already_processed = set()

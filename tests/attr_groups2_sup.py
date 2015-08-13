@@ -729,49 +729,6 @@ class GetUserReq(GeneratedsSuper):
         if self.returnedTags is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sreturnedTags>%s</%sreturnedTags>%s' % (namespace_, self.gds_format_string(quote_xml(self.returnedTags).encode(ExternalEncoding), input_name='returnedTags'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='GetUserReq'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.value04 is not None and 'value04' not in already_processed:
-            already_processed.add('value04')
-            showIndent(outfile, level)
-            outfile.write('value04=%d,\n' % (self.value04,))
-        if self.value05 is not None and 'value05' not in already_processed:
-            already_processed.add('value05')
-            showIndent(outfile, level)
-            outfile.write('value05="%s",\n' % (self.value05,))
-        if self.value06 is not None and 'value06' not in already_processed:
-            already_processed.add('value06')
-            showIndent(outfile, level)
-            outfile.write('value06=%d,\n' % (self.value06,))
-        if self.value07 is not None and 'value07' not in already_processed:
-            already_processed.add('value07')
-            showIndent(outfile, level)
-            outfile.write('value07=%d,\n' % (self.value07,))
-        if self.value01 is not None and 'value01' not in already_processed:
-            already_processed.add('value01')
-            showIndent(outfile, level)
-            outfile.write('value01="%s",\n' % (self.value01,))
-        if self.value02 is not None and 'value02' not in already_processed:
-            already_processed.add('value02')
-            showIndent(outfile, level)
-            outfile.write('value02=%d,\n' % (self.value02,))
-        if self.value03 is not None and 'value03' not in already_processed:
-            already_processed.add('value03')
-            showIndent(outfile, level)
-            outfile.write('value03="%s",\n' % (self.value03,))
-        if self.sequence is not None and 'sequence' not in already_processed:
-            already_processed.add('sequence')
-            showIndent(outfile, level)
-            outfile.write('sequence=%d,\n' % (self.sequence,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.returnedTags is not None:
-            showIndent(outfile, level)
-            outfile.write('returnedTags=%s,\n' % quote_python(self.returnedTags).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

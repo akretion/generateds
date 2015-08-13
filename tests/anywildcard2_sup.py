@@ -688,30 +688,6 @@ class PlantType_single(GeneratedsSuper):
             self.description.export(outfile, level, namespace_, name_='description', pretty_print=pretty_print)
         if self.anytypeobjs_ is not None:
             self.anytypeobjs_.export(outfile, level, namespace_, pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='PlantType_single'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.name is not None:
-            showIndent(outfile, level)
-            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
-        if self.anytypeobjs_ is not None:
-            showIndent(outfile, level)
-            outfile.write('anytypeobjs_=model_.anytypeobjs_(\n')
-            self.anytypeobjs_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.description is not None:
-            showIndent(outfile, level)
-            outfile.write('description=model_.DescriptionType(\n')
-            self.description.exportLiteral(outfile, level, name_='description')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -809,32 +785,6 @@ class PlantType_multiple(GeneratedsSuper):
             self.description.export(outfile, level, namespace_, name_='description', pretty_print=pretty_print)
         for obj_ in self.anytypeobjs_:
             obj_.export(outfile, level, namespace_, pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='PlantType_multiple'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.name is not None:
-            showIndent(outfile, level)
-            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('anytypeobjs_=[\n')
-        level += 1
-        for anytypeobjs_ in self.anytypeobjs_:
-            anytypeobjs_.exportLiteral(outfile, level)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.description is not None:
-            showIndent(outfile, level)
-            outfile.write('description=model_.DescriptionType(\n')
-            self.description.exportLiteral(outfile, level, name_='description')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -922,21 +872,6 @@ class DescriptionType(GeneratedsSuper):
         if self.size is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%ssize>%s</%ssize>%s' % (namespace_, self.gds_format_string(quote_xml(self.size).encode(ExternalEncoding), input_name='size'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='DescriptionType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.name is not None:
-            showIndent(outfile, level)
-            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
-        if self.size is not None:
-            showIndent(outfile, level)
-            outfile.write('size=%s,\n' % quote_python(self.size).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1019,21 +954,6 @@ class CatalogType(GeneratedsSuper):
         if self.catagory is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%scatagory>%s</%scatagory>%s' % (namespace_, self.gds_format_integer(self.catagory, input_name='catagory'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='CatalogType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.name is not None:
-            showIndent(outfile, level)
-            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
-        if self.catagory is not None:
-            showIndent(outfile, level)
-            outfile.write('catagory=%d,\n' % self.catagory)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1110,21 +1030,6 @@ class PlantType_single_nochild(GeneratedsSuper):
             eol_ = ''
         if self.anytypeobjs_ is not None:
             self.anytypeobjs_.export(outfile, level, namespace_, pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='PlantType_single_nochild'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.anytypeobjs_ is not None:
-            showIndent(outfile, level)
-            outfile.write('anytypeobjs_=model_.anytypeobjs_(\n')
-            self.anytypeobjs_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1197,23 +1102,6 @@ class PlantType_multiple_nochild(GeneratedsSuper):
             eol_ = ''
         for obj_ in self.anytypeobjs_:
             obj_.export(outfile, level, namespace_, pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='PlantType_multiple_nochild'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('anytypeobjs_=[\n')
-        level += 1
-        for anytypeobjs_ in self.anytypeobjs_:
-            anytypeobjs_.exportLiteral(outfile, level)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
