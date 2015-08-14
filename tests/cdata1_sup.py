@@ -680,27 +680,6 @@ class cdataListType(GeneratedsSuper):
             eol_ = ''
         for cdatalist_ in self.cdatalist:
             cdatalist_.export(outfile, level, namespace_, name_='cdatalist', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='cdataListType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('cdatalist=[\n')
-        level += 1
-        for cdatalist_ in self.cdatalist:
-            showIndent(outfile, level)
-            outfile.write('model_.cdataType(\n')
-            cdatalist_.exportLiteral(outfile, level, name_='cdataType')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -771,18 +750,6 @@ class cdataType(GeneratedsSuper):
         if self.script is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sscript>%s</%sscript>%s' % (namespace_, self.gds_format_string(quote_xml(self.script).encode(ExternalEncoding), input_name='script'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='cdataType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.script is not None:
-            showIndent(outfile, level)
-            outfile.write('script=%s,\n' % quote_python(self.script).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

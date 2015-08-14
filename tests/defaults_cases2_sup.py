@@ -692,39 +692,6 @@ class DefaultTypes(GeneratedsSuper):
             default1_.export(outfile, level, namespace_, name_='default1', pretty_print=pretty_print)
         for default2_ in self.default2:
             default2_.export(outfile, level, namespace_, name_='default2', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='DefaultTypes'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('default1=[\n')
-        level += 1
-        for default1_ in self.default1:
-            showIndent(outfile, level)
-            outfile.write('model_.DefaultType1(\n')
-            default1_.exportLiteral(outfile, level, name_='DefaultType1')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('default2=[\n')
-        level += 1
-        for default2_ in self.default2:
-            showIndent(outfile, level)
-            outfile.write('model_.DefaultType2(\n')
-            default2_.exportLiteral(outfile, level, name_='DefaultType2')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -856,39 +823,6 @@ class DefaultType1(GeneratedsSuper):
         if self.default04 != 54.32:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sdefault04>%s</%sdefault04>%s' % (namespace_, self.gds_format_double(self.default04, input_name='default04'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='DefaultType1'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.normal01 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal01=%d,\n' % self.normal01)
-        if self.normal02 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal02=%s,\n' % quote_python(self.normal02).encode(ExternalEncoding))
-        if self.default01 is not None:
-            showIndent(outfile, level)
-            outfile.write('default01=%d,\n' % self.default01)
-        if self.default02 is not None:
-            showIndent(outfile, level)
-            outfile.write('default02=%s,\n' % quote_python(self.default02).encode(ExternalEncoding))
-        if self.normal03 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal03=%f,\n' % self.normal03)
-        if self.normal04 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal04=%e,\n' % self.normal04)
-        if self.default03 is not None:
-            showIndent(outfile, level)
-            outfile.write('default03=%f,\n' % self.default03)
-        if self.default04 is not None:
-            showIndent(outfile, level)
-            outfile.write('default04=%e,\n' % self.default04)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1025,31 +959,6 @@ class DefaultType2(GeneratedsSuper):
             already_processed.add('attrdefault02')
             outfile.write(' attrdefault02="%s"' % self.gds_format_integer(self.attrdefault02, input_name='attrdefault02'))
     def exportChildren(self, outfile, level, namespace_='', name_='DefaultType2', fromsubclass_=False, pretty_print=True):
-        pass
-    def exportLiteral(self, outfile, level, name_='DefaultType2'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.attrdefault01 is not None and 'attrdefault01' not in already_processed:
-            already_processed.add('attrdefault01')
-            showIndent(outfile, level)
-            outfile.write('attrdefault01="%s",\n' % (self.attrdefault01,))
-        if self.attrnormal01 is not None and 'attrnormal01' not in already_processed:
-            already_processed.add('attrnormal01')
-            showIndent(outfile, level)
-            outfile.write('attrnormal01="%s",\n' % (self.attrnormal01,))
-        if self.attrnormal02 is not None and 'attrnormal02' not in already_processed:
-            already_processed.add('attrnormal02')
-            showIndent(outfile, level)
-            outfile.write('attrnormal02=%d,\n' % (self.attrnormal02,))
-        if self.attrdefault02 is not None and 'attrdefault02' not in already_processed:
-            already_processed.add('attrdefault02')
-            showIndent(outfile, level)
-            outfile.write('attrdefault02=%d,\n' % (self.attrdefault02,))
-    def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
         already_processed = set()

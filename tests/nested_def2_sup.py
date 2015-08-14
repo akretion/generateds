@@ -679,27 +679,6 @@ class containerType(GeneratedsSuper):
             self.item1.export(outfile, level, namespace_, name_='item1', pretty_print=pretty_print)
         if self.item2 is not None:
             self.item2.export(outfile, level, namespace_, name_='item2', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='containerType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.item1 is not None:
-            showIndent(outfile, level)
-            outfile.write('item1=model_.classAType(\n')
-            self.item1.exportLiteral(outfile, level, name_='item1')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.item2 is not None:
-            showIndent(outfile, level)
-            outfile.write('item2=model_.classBType(\n')
-            self.item2.exportLiteral(outfile, level, name_='item2')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -774,21 +753,6 @@ class classAType(GeneratedsSuper):
             eol_ = ''
         if self.inner is not None:
             self.inner.export(outfile, level, namespace_, name_='inner', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='classAType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.inner is not None:
-            showIndent(outfile, level)
-            outfile.write('inner=model_.inner_001(\n')
-            self.inner.exportLiteral(outfile, level, name_='inner')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -858,21 +822,6 @@ class classBType(GeneratedsSuper):
             eol_ = ''
         if self.inner is not None:
             self.inner.export(outfile, level, namespace_, name_='inner', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='classBType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.inner is not None:
-            showIndent(outfile, level)
-            outfile.write('inner=model_.inner_002(\n')
-            self.inner.exportLiteral(outfile, level, name_='inner')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -944,23 +893,6 @@ class inner_001(GeneratedsSuper):
             already_processed.add('attrA2')
             outfile.write(' attrA2=%s' % (self.gds_format_string(quote_attrib(self.attrA2).encode(ExternalEncoding), input_name='attrA2'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='inner_001', fromsubclass_=False, pretty_print=True):
-        pass
-    def exportLiteral(self, outfile, level, name_='inner_001'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.attrA1 is not None and 'attrA1' not in already_processed:
-            already_processed.add('attrA1')
-            showIndent(outfile, level)
-            outfile.write('attrA1="%s",\n' % (self.attrA1,))
-        if self.attrA2 is not None and 'attrA2' not in already_processed:
-            already_processed.add('attrA2')
-            showIndent(outfile, level)
-            outfile.write('attrA2="%s",\n' % (self.attrA2,))
-    def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
         already_processed = set()
@@ -1036,23 +968,6 @@ class inner_002(GeneratedsSuper):
             already_processed.add('attrB2')
             outfile.write(' attrB2=%s' % (self.gds_format_string(quote_attrib(self.attrB2).encode(ExternalEncoding), input_name='attrB2'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='inner_002', fromsubclass_=False, pretty_print=True):
-        pass
-    def exportLiteral(self, outfile, level, name_='inner_002'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.attrB1 is not None and 'attrB1' not in already_processed:
-            already_processed.add('attrB1')
-            showIndent(outfile, level)
-            outfile.write('attrB1="%s",\n' % (self.attrB1,))
-        if self.attrB2 is not None and 'attrB2' not in already_processed:
-            already_processed.add('attrB2')
-            showIndent(outfile, level)
-            outfile.write('attrB2="%s",\n' % (self.attrB2,))
-    def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
         already_processed = set()

@@ -690,24 +690,6 @@ class PersonType(GeneratedsSuper):
         if self.lname is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%slname>%s</%slname>%s' % (namespace_, self.gds_format_string(quote_xml(self.lname).encode(ExternalEncoding), input_name='lname'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='PersonType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.personId is not None:
-            showIndent(outfile, level)
-            outfile.write('personId=%d,\n' % self.personId)
-        if self.fname is not None:
-            showIndent(outfile, level)
-            outfile.write('fname=%s,\n' % quote_python(self.fname).encode(ExternalEncoding))
-        if self.lname is not None:
-            showIndent(outfile, level)
-            outfile.write('lname=%s,\n' % quote_python(self.lname).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

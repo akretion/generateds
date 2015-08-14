@@ -682,24 +682,6 @@ class oneperType02_1(GeneratedsSuper):
             outfile.write('<%sclientname>%s</%sclientname>%s' % (namespace_, self.gds_format_string(quote_xml(self.clientname).encode(ExternalEncoding), input_name='clientname'), namespace_, eol_))
         if self.inner01 is not None:
             self.inner01.export(outfile, level, namespace_, name_='inner01', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='oneperType02_1'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.clientname is not None:
-            showIndent(outfile, level)
-            outfile.write('clientname=%s,\n' % quote_python(self.clientname).encode(ExternalEncoding))
-        if self.inner01 is not None:
-            showIndent(outfile, level)
-            outfile.write('inner01=model_.oneperType02_2(\n')
-            self.inner01.exportLiteral(outfile, level, name_='inner01')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -774,18 +756,6 @@ class oneperType02_2(GeneratedsSuper):
         if self.clientdescription is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sclientdescription>%s</%sclientdescription>%s' % (namespace_, self.gds_format_string(quote_xml(self.clientdescription).encode(ExternalEncoding), input_name='clientdescription'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='oneperType02_2'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.clientdescription is not None:
-            showIndent(outfile, level)
-            outfile.write('clientdescription=%s,\n' % quote_python(self.clientdescription).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

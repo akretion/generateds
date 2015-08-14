@@ -40,6 +40,7 @@ class GenTest(unittest.TestCase):
         cmd = (
             'python generateDS.py --no-dates --no-versions -f '
             '-o tests/out2_sup.py -s tests/out2_sub.py '
+            '--export="write literal" '
             '--super=out2_sup -u gends_user_methods tests/people.xsd'
         )
         stdout, stderr = self.execute(cmd, cwd='..')

@@ -682,24 +682,6 @@ class oneperType01_1(GeneratedsSuper):
             outfile.write('<%susername>%s</%susername>%s' % (namespace_, self.gds_format_string(quote_xml(self.username).encode(ExternalEncoding), input_name='username'), namespace_, eol_))
         if self.inner01 is not None:
             self.inner01.export(outfile, level, namespace_, name_='inner01', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='oneperType01_1'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.username is not None:
-            showIndent(outfile, level)
-            outfile.write('username=%s,\n' % quote_python(self.username).encode(ExternalEncoding))
-        if self.inner01 is not None:
-            showIndent(outfile, level)
-            outfile.write('inner01=model_.oneperType01_2(\n')
-            self.inner01.exportLiteral(outfile, level, name_='inner01')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -774,18 +756,6 @@ class oneperType01_2(GeneratedsSuper):
         if self.userdescription is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%suserdescription>%s</%suserdescription>%s' % (namespace_, self.gds_format_string(quote_xml(self.userdescription).encode(ExternalEncoding), input_name='userdescription'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='oneperType01_2'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.userdescription is not None:
-            showIndent(outfile, level)
-            outfile.write('userdescription=%s,\n' % quote_python(self.userdescription).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

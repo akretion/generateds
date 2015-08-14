@@ -745,87 +745,6 @@ class people(GeneratedsSuper):
             python_programmer_.export(outfile, level, namespace_, name_='python-programmer', pretty_print=pretty_print)
         for java_programmer_ in self.java_programmer:
             java_programmer_.export(outfile, level, namespace_, name_='java-programmer', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='people'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('comments=[\n')
-        level += 1
-        for comments_ in self.comments:
-            showIndent(outfile, level)
-            outfile.write('model_.comments(\n')
-            comments_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('person=[\n')
-        level += 1
-        for person_ in self.person:
-            showIndent(outfile, level)
-            outfile.write('model_.person(\n')
-            person_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('specialperson=[\n')
-        level += 1
-        for specialperson_ in self.specialperson:
-            showIndent(outfile, level)
-            outfile.write('model_.specialperson(\n')
-            specialperson_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('programmer=[\n')
-        level += 1
-        for programmer_ in self.programmer:
-            showIndent(outfile, level)
-            outfile.write('model_.programmer(\n')
-            programmer_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('python_programmer=[\n')
-        level += 1
-        for python_programmer_ in self.python_programmer:
-            showIndent(outfile, level)
-            outfile.write('model_.python_programmer(\n')
-            python_programmer_.exportLiteral(outfile, level, name_='python-programmer')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('java_programmer=[\n')
-        level += 1
-        for java_programmer_ in self.java_programmer:
-            showIndent(outfile, level)
-            outfile.write('model_.java_programmer(\n')
-            java_programmer_.exportLiteral(outfile, level, name_='java-programmer')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -950,30 +869,6 @@ class comments(GeneratedsSuper):
         if not fromsubclass_:
             for item_ in self.content_:
                 item_.export(outfile, level, item_.name, namespace_, pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='comments'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('content_ = [\n')
-        for item_ in self.content_:
-            item_.exportLiteral(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        pass
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1158,76 +1053,6 @@ class person(GeneratedsSuper):
         if self.description is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sdescription>%s</%sdescription>%s' % (namespace_, self.gds_format_string(quote_xml(self.description).encode(ExternalEncoding), input_name='description'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='person'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.vegetable is not None and 'vegetable' not in already_processed:
-            already_processed.add('vegetable')
-            showIndent(outfile, level)
-            outfile.write('vegetable="%s",\n' % (self.vegetable,))
-        if self.fruit is not None and 'fruit' not in already_processed:
-            already_processed.add('fruit')
-            showIndent(outfile, level)
-            outfile.write('fruit="%s",\n' % (self.fruit,))
-        if self.ratio is not None and 'ratio' not in already_processed:
-            already_processed.add('ratio')
-            showIndent(outfile, level)
-            outfile.write('ratio=%f,\n' % (self.ratio,))
-        if self.id is not None and 'id' not in already_processed:
-            already_processed.add('id')
-            showIndent(outfile, level)
-            outfile.write('id=%d,\n' % (self.id,))
-        if self.value is not None and 'value' not in already_processed:
-            already_processed.add('value')
-            showIndent(outfile, level)
-            outfile.write('value="%s",\n' % (self.value,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.name is not None:
-            showIndent(outfile, level)
-            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('interest=[\n')
-        level += 1
-        for interest_ in self.interest:
-            showIndent(outfile, level)
-            outfile.write('%s,\n' % quote_python(interest_).encode(ExternalEncoding))
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.category is not None:
-            showIndent(outfile, level)
-            outfile.write('category=%d,\n' % self.category)
-        showIndent(outfile, level)
-        outfile.write('agent=[\n')
-        level += 1
-        for agent_ in self.agent:
-            showIndent(outfile, level)
-            outfile.write('model_.agent(\n')
-            agent_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('promoter=[\n')
-        level += 1
-        for promoter_ in self.promoter:
-            showIndent(outfile, level)
-            outfile.write('model_.booster(\n')
-            promoter_.exportLiteral(outfile, level, name_='booster')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.description is not None:
-            showIndent(outfile, level)
-            outfile.write('description=%s,\n' % quote_python(self.description).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1343,16 +1168,6 @@ class specialperson(person):
         super(specialperson, self).exportAttributes(outfile, level, already_processed, namespace_, name_='specialperson')
     def exportChildren(self, outfile, level, namespace_='', name_='specialperson', fromsubclass_=False, pretty_print=True):
         super(specialperson, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='specialperson'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(specialperson, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(specialperson, self).exportLiteralChildren(outfile, level, name_)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1456,41 +1271,6 @@ class param(GeneratedsSuper):
             already_processed.add('id')
             outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='param', fromsubclass_=False, pretty_print=True):
-        pass
-    def exportLiteral(self, outfile, level, name_='param'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.semantic is not None and 'semantic' not in already_processed:
-            already_processed.add('semantic')
-            showIndent(outfile, level)
-            outfile.write('semantic="%s",\n' % (self.semantic,))
-        if self.name is not None and 'name' not in already_processed:
-            already_processed.add('name')
-            showIndent(outfile, level)
-            outfile.write('name="%s",\n' % (self.name,))
-        if self.flow is not None and 'flow' not in already_processed:
-            already_processed.add('flow')
-            showIndent(outfile, level)
-            outfile.write('flow=%s,\n' % (self.flow,))
-        if self.sid is not None and 'sid' not in already_processed:
-            already_processed.add('sid')
-            showIndent(outfile, level)
-            outfile.write('sid="%s",\n' % (self.sid,))
-        if self.type_ is not None and 'type_' not in already_processed:
-            already_processed.add('type_')
-            showIndent(outfile, level)
-            outfile.write('type_="%s",\n' % (self.type_,))
-        if self.id is not None and 'id' not in already_processed:
-            already_processed.add('id')
-            showIndent(outfile, level)
-            outfile.write('id="%s",\n' % (self.id,))
-    def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
         already_processed = set()
@@ -1619,42 +1399,6 @@ class agent(GeneratedsSuper):
             self.info.export(outfile, level, namespace_, name_='info', pretty_print=pretty_print)
         for vehicle_ in self.vehicle:
             vehicle_.export(outfile, level, namespace_, name_='vehicle', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='agent'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.firstname is not None:
-            showIndent(outfile, level)
-            outfile.write('firstname=%s,\n' % quote_python(self.firstname).encode(ExternalEncoding))
-        if self.lastname is not None:
-            showIndent(outfile, level)
-            outfile.write('lastname=%s,\n' % quote_python(self.lastname).encode(ExternalEncoding))
-        if self.priority is not None:
-            showIndent(outfile, level)
-            outfile.write('priority=%f,\n' % self.priority)
-        if self.info is not None:
-            showIndent(outfile, level)
-            outfile.write('info=model_.info(\n')
-            self.info.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        showIndent(outfile, level)
-        outfile.write('vehicle=[\n')
-        level += 1
-        for vehicle_ in self.vehicle:
-            showIndent(outfile, level)
-            outfile.write('model_.vehicle(\n')
-            vehicle_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1785,30 +1529,6 @@ class special_agent(GeneratedsSuper):
             outfile.write('<%spriority>%s</%spriority>%s' % (namespace_, self.gds_format_float(self.priority, input_name='priority'), namespace_, eol_))
         if self.info is not None:
             self.info.export(outfile, level, namespace_, name_='info', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='special-agent'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.firstname is not None:
-            showIndent(outfile, level)
-            outfile.write('firstname=%s,\n' % quote_python(self.firstname).encode(ExternalEncoding))
-        if self.lastname is not None:
-            showIndent(outfile, level)
-            outfile.write('lastname=%s,\n' % quote_python(self.lastname).encode(ExternalEncoding))
-        if self.priority is not None:
-            showIndent(outfile, level)
-            outfile.write('priority=%f,\n' % self.priority)
-        if self.info is not None:
-            showIndent(outfile, level)
-            outfile.write('info=model_.info(\n')
-            self.info.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1966,60 +1686,6 @@ class booster(GeneratedsSuper):
             outfile.write('<%stype>%s</%stype>%s' % (namespace_, self.gds_format_float(type_, input_name='type'), namespace_, eol_))
         for client_handler_ in self.client_handler:
             client_handler_.export(outfile, level, namespace_, name_='client-handler', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='booster'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.member_id is not None and 'member_id' not in already_processed:
-            already_processed.add('member_id')
-            showIndent(outfile, level)
-            outfile.write('member_id="%s",\n' % (self.member_id,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.firstname is not None:
-            showIndent(outfile, level)
-            outfile.write('firstname=%s,\n' % quote_python(self.firstname).encode(ExternalEncoding))
-        if self.lastname is not None:
-            showIndent(outfile, level)
-            outfile.write('lastname=%s,\n' % quote_python(self.lastname).encode(ExternalEncoding))
-        if self.other_name is not None:
-            showIndent(outfile, level)
-            outfile.write('other_name=%f,\n' % self.other_name)
-        if self.class_ is not None:
-            showIndent(outfile, level)
-            outfile.write('class_=%f,\n' % self.class_)
-        showIndent(outfile, level)
-        outfile.write('other_value=[\n')
-        level += 1
-        for other_value_ in self.other_value:
-            showIndent(outfile, level)
-            outfile.write('%f,\n' % other_value_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('type_=[\n')
-        level += 1
-        for type_ in self.type_:
-            showIndent(outfile, level)
-            outfile.write('%f,\n' % type_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('client_handler=[\n')
-        level += 1
-        for client_handler_ in self.client_handler:
-            showIndent(outfile, level)
-            outfile.write('model_.client_handlerType(\n')
-            client_handler_.exportLiteral(outfile, level, name_='client-handlerType')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -2142,27 +1808,6 @@ class info(GeneratedsSuper):
             outfile.write(' name=%s' % (self.gds_format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
     def exportChildren(self, outfile, level, namespace_='', name_='info', fromsubclass_=False, pretty_print=True):
         pass
-    def exportLiteral(self, outfile, level, name_='info'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.rating is not None and 'rating' not in already_processed:
-            already_processed.add('rating')
-            showIndent(outfile, level)
-            outfile.write('rating=%f,\n' % (self.rating,))
-        if self.type_ is not None and 'type_' not in already_processed:
-            already_processed.add('type_')
-            showIndent(outfile, level)
-            outfile.write('type_=%d,\n' % (self.type_,))
-        if self.name is not None and 'name' not in already_processed:
-            already_processed.add('name')
-            showIndent(outfile, level)
-            outfile.write('name="%s",\n' % (self.name,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -2253,18 +1898,6 @@ class vehicle(GeneratedsSuper):
         if self.wheelcount is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%swheelcount>%s</%swheelcount>%s' % (namespace_, self.gds_format_integer(self.wheelcount, input_name='wheelcount'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='vehicle'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.wheelcount is not None:
-            showIndent(outfile, level)
-            outfile.write('wheelcount=%d,\n' % self.wheelcount)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -2344,19 +1977,6 @@ class automobile(vehicle):
         if self.drivername is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sdrivername>%s</%sdrivername>%s' % (namespace_, self.gds_format_string(quote_xml(self.drivername).encode(ExternalEncoding), input_name='drivername'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='automobile'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(automobile, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(automobile, self).exportLiteralChildren(outfile, level, name_)
-        if self.drivername is not None:
-            showIndent(outfile, level)
-            outfile.write('drivername=%s,\n' % quote_python(self.drivername).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -2430,19 +2050,6 @@ class airplane(vehicle):
         if self.pilotname is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%spilotname>%s</%spilotname>%s' % (namespace_, self.gds_format_string(quote_xml(self.pilotname).encode(ExternalEncoding), input_name='pilotname'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='airplane'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(airplane, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(airplane, self).exportLiteralChildren(outfile, level, name_)
-        if self.pilotname is not None:
-            showIndent(outfile, level)
-            outfile.write('pilotname=%s,\n' % quote_python(self.pilotname).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -2663,76 +2270,6 @@ class programmer(person):
         if self.elarraytypes is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%selarraytypes>%s</%selarraytypes>%s' % (namespace_, self.gds_format_string(quote_xml(self.elarraytypes).encode(ExternalEncoding), input_name='elarraytypes'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='programmer'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.language is not None and 'language' not in already_processed:
-            already_processed.add('language')
-            showIndent(outfile, level)
-            outfile.write('language="%s",\n' % (self.language,))
-        if self.area is not None and 'area' not in already_processed:
-            already_processed.add('area')
-            showIndent(outfile, level)
-            outfile.write('area="%s",\n' % (self.area,))
-        if self.attrnegint is not None and 'attrnegint' not in already_processed:
-            already_processed.add('attrnegint')
-            showIndent(outfile, level)
-            outfile.write('attrnegint=%d,\n' % (self.attrnegint,))
-        if self.attrposint is not None and 'attrposint' not in already_processed:
-            already_processed.add('attrposint')
-            showIndent(outfile, level)
-            outfile.write('attrposint=%d,\n' % (self.attrposint,))
-        if self.attrnonnegint is not None and 'attrnonnegint' not in already_processed:
-            already_processed.add('attrnonnegint')
-            showIndent(outfile, level)
-            outfile.write('attrnonnegint=%d,\n' % (self.attrnonnegint,))
-        if self.attrnonposint is not None and 'attrnonposint' not in already_processed:
-            already_processed.add('attrnonposint')
-            showIndent(outfile, level)
-            outfile.write('attrnonposint=%d,\n' % (self.attrnonposint,))
-        super(programmer, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(programmer, self).exportLiteralChildren(outfile, level, name_)
-        if self.email is not None:
-            showIndent(outfile, level)
-            outfile.write('email=%s,\n' % quote_python(self.email).encode(ExternalEncoding))
-        if self.elposint is not None:
-            showIndent(outfile, level)
-            outfile.write('elposint=%d,\n' % self.elposint)
-        if self.elnonposint is not None:
-            showIndent(outfile, level)
-            outfile.write('elnonposint=%d,\n' % self.elnonposint)
-        if self.elnegint is not None:
-            showIndent(outfile, level)
-            outfile.write('elnegint=%d,\n' % self.elnegint)
-        if self.elnonnegint is not None:
-            showIndent(outfile, level)
-            outfile.write('elnonnegint=%d,\n' % self.elnonnegint)
-        if self.eldate is not None:
-            showIndent(outfile, level)
-            outfile.write('eldate=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.eldate, input_name='eldate'))
-        if self.eltoken is not None:
-            showIndent(outfile, level)
-            outfile.write('eltoken=%s,\n' % quote_python(self.eltoken).encode(ExternalEncoding))
-        if self.elshort is not None:
-            showIndent(outfile, level)
-            outfile.write('elshort=%d,\n' % self.elshort)
-        if self.ellong is not None:
-            showIndent(outfile, level)
-            outfile.write('ellong=%d,\n' % self.ellong)
-        if self.elparam is not None:
-            showIndent(outfile, level)
-            outfile.write('elparam=model_.param(\n')
-            self.elparam.exportLiteral(outfile, level, name_='elparam')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.elarraytypes is not None:
-            showIndent(outfile, level)
-            outfile.write('elarraytypes=%s,\n' % quote_python(self.elarraytypes).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -2935,21 +2472,6 @@ class client_handlerType(GeneratedsSuper):
         if self.refid is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%srefid>%s</%srefid>%s' % (namespace_, self.gds_format_integer(self.refid, input_name='refid'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='client-handlerType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.fullname is not None:
-            showIndent(outfile, level)
-            outfile.write('fullname=%s,\n' % quote_python(self.fullname).encode(ExternalEncoding))
-        if self.refid is not None:
-            showIndent(outfile, level)
-            outfile.write('refid=%d,\n' % self.refid)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -3047,27 +2569,6 @@ class java_programmer(programmer):
         if self.favorite_editor is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sfavorite-editor>%s</%sfavorite-editor>%s' % (namespace_, self.gds_format_string(quote_xml(self.favorite_editor).encode(ExternalEncoding), input_name='favorite-editor'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='java-programmer'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.add('status')
-            showIndent(outfile, level)
-            outfile.write('status="%s",\n' % (self.status,))
-        if self.nick_name is not None and 'nick_name' not in already_processed:
-            already_processed.add('nick_name')
-            showIndent(outfile, level)
-            outfile.write('nick_name="%s",\n' % (self.nick_name,))
-        super(java_programmer, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(java_programmer, self).exportLiteralChildren(outfile, level, name_)
-        if self.favorite_editor is not None:
-            showIndent(outfile, level)
-            outfile.write('favorite_editor=%s,\n' % quote_python(self.favorite_editor).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -3158,23 +2659,6 @@ class python_programmer(programmer):
         if self.favorite_editor is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sfavorite-editor>%s</%sfavorite-editor>%s' % (namespace_, self.gds_format_string(quote_xml(self.favorite_editor).encode(ExternalEncoding), input_name='favorite-editor'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='python-programmer'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.nick_name is not None and 'nick_name' not in already_processed:
-            already_processed.add('nick_name')
-            showIndent(outfile, level)
-            outfile.write('nick_name="%s",\n' % (self.nick_name,))
-        super(python_programmer, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(python_programmer, self).exportLiteralChildren(outfile, level, name_)
-        if self.favorite_editor is not None:
-            showIndent(outfile, level)
-            outfile.write('favorite_editor=%s,\n' % quote_python(self.favorite_editor).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
