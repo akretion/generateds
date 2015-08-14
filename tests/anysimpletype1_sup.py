@@ -679,24 +679,6 @@ class test1element(GeneratedsSuper):
             eol_ = ''
         if self.test1member is not None:
             self.test1member.export(outfile, level, namespace_, name_='test1member', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='test1element'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.test1attribute is not None and 'test1attribute' not in already_processed:
-            already_processed.add('test1attribute')
-            showIndent(outfile, level)
-            outfile.write('test1attribute=%s,\n' % (self.test1attribute,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.test1member is not None:
-            showIndent(outfile, level)
-            outfile.write('test1member=model_.cimAnySimpleType(\n')
-            self.test1member.exportLiteral(outfile, level, name_='test1member')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -786,9 +768,9 @@ class cimAnySimpleType(GeneratedsSuper):
                                 name, quote_attrib(value), ))
                         else:
                             unique_counter += 1
-                            outfile.write(' xmlns:yyy%d="%s"' % (
+                            outfile.write(' xmlns:%d="%s"' % (
                                 unique_counter, namespace, ))
-                            outfile.write(' yyy%d:%s=%s' % (
+                            outfile.write(' %d:%s=%s' % (
                                 unique_counter, name, quote_attrib(value), ))
                 else:
                     if name not in already_processed:
@@ -797,20 +779,6 @@ class cimAnySimpleType(GeneratedsSuper):
                             name, quote_attrib(value), ))
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='cimAnySimpleType', fromsubclass_=False, pretty_print=True):
-        pass
-    def exportLiteral(self, outfile, level, name_='cimAnySimpleType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        for name, value in self.anyAttributes_.items():
-            showIndent(outfile, level)
-            outfile.write('%s="%s",\n' % (name, value,))
-    def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
         already_processed = set()

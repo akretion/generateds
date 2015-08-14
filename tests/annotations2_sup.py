@@ -684,24 +684,6 @@ class document1Type(GeneratedsSuper):
             outfile.write('<%scomments>%s</%scomments>%s' % (namespace_, self.gds_format_string(quote_xml(self.comments).encode(ExternalEncoding), input_name='comments'), namespace_, eol_))
         if self.otherdoc is not None:
             self.otherdoc.export(outfile, level, namespace_, name_='otherdoc', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='document1Type'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.comments is not None:
-            showIndent(outfile, level)
-            outfile.write('comments=%s,\n' % quote_python(self.comments).encode(ExternalEncoding))
-        if self.otherdoc is not None:
-            showIndent(outfile, level)
-            outfile.write('otherdoc=model_.document2Type(\n')
-            self.otherdoc.exportLiteral(outfile, level, name_='otherdoc')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -794,27 +776,6 @@ class document2Type(GeneratedsSuper):
             outfile.write('<%srating>%s</%srating>%s' % (namespace_, self.gds_format_integer(self.rating, input_name='rating'), namespace_, eol_))
         if self.anotherdoc is not None:
             self.anotherdoc.export(outfile, level, namespace_, name_='anotherdoc', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='document2Type'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.comments is not None:
-            showIndent(outfile, level)
-            outfile.write('comments=%s,\n' % quote_python(self.comments).encode(ExternalEncoding))
-        if self.rating is not None:
-            showIndent(outfile, level)
-            outfile.write('rating=%d,\n' % self.rating)
-        if self.anotherdoc is not None:
-            showIndent(outfile, level)
-            outfile.write('anotherdoc=model_.document3Type(\n')
-            self.anotherdoc.exportLiteral(outfile, level, name_='anotherdoc')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -906,21 +867,6 @@ class document3Type(GeneratedsSuper):
         if self.rating is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%srating>%s</%srating>%s' % (namespace_, self.gds_format_integer(self.rating, input_name='rating'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='document3Type'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.comments is not None:
-            showIndent(outfile, level)
-            outfile.write('comments=%s,\n' % quote_python(self.comments).encode(ExternalEncoding))
-        if self.rating is not None:
-            showIndent(outfile, level)
-            outfile.write('rating=%d,\n' % self.rating)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

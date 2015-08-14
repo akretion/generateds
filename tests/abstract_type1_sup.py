@@ -679,27 +679,6 @@ class carrierType(GeneratedsSuper):
             eol_ = ''
         for fleet_ in self.fleet:
             fleet_.export(outfile, level, namespace_, name_='fleet', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='carrierType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('fleet=[\n')
-        level += 1
-        for fleet_ in self.fleet:
-            showIndent(outfile, level)
-            outfile.write('model_.Vehicle(\n')
-            fleet_.exportLiteral(outfile, level, name_='Vehicle')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -780,16 +759,6 @@ class Vehicle(GeneratedsSuper):
         pass
     def exportChildren(self, outfile, level, namespace_='target:', name_='Vehicle', fromsubclass_=False, pretty_print=True):
         pass
-    def exportLiteral(self, outfile, level, name_='Vehicle'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -850,17 +819,6 @@ class Car(Vehicle):
     def exportChildren(self, outfile, level, namespace_='target:', name_='Car', fromsubclass_=False, pretty_print=True):
         super(Car, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
         pass
-    def exportLiteral(self, outfile, level, name_='Car'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(Car, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(Car, self).exportLiteralChildren(outfile, level, name_)
-        pass
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -918,17 +876,6 @@ class Plane(Vehicle):
         super(Plane, self).exportAttributes(outfile, level, already_processed, namespace_, name_='Plane')
     def exportChildren(self, outfile, level, namespace_='target:', name_='Plane', fromsubclass_=False, pretty_print=True):
         super(Plane, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
-        pass
-    def exportLiteral(self, outfile, level, name_='Plane'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(Plane, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(Plane, self).exportLiteralChildren(outfile, level, name_)
         pass
     def build(self, node):
         already_processed = set()

@@ -680,27 +680,6 @@ class DefaultTypes(GeneratedsSuper):
             self.default1.export(outfile, level, namespace_, name_='default1', pretty_print=pretty_print)
         if self.default2 is not None:
             self.default2.export(outfile, level, namespace_, name_='default2', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='DefaultTypes'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.default1 is not None:
-            showIndent(outfile, level)
-            outfile.write('default1=model_.DefaultType1(\n')
-            self.default1.exportLiteral(outfile, level, name_='default1')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.default2 is not None:
-            showIndent(outfile, level)
-            outfile.write('default2=model_.DefaultType2(\n')
-            self.default2.exportLiteral(outfile, level, name_='default2')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -928,66 +907,6 @@ class DefaultType1(GeneratedsSuper):
         if self.normal08 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%snormal08>%s</%snormal08>%s' % (namespace_, self.gds_format_datetime(self.normal08, input_name='normal08'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='DefaultType1'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.default01 is not None:
-            showIndent(outfile, level)
-            outfile.write('default01=%d,\n' % self.default01)
-        if self.normal01 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal01=%d,\n' % self.normal01)
-        if self.default02 is not None:
-            showIndent(outfile, level)
-            outfile.write('default02=%s,\n' % quote_python(self.default02).encode(ExternalEncoding))
-        if self.normal02 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal02=%s,\n' % quote_python(self.normal02).encode(ExternalEncoding))
-        if self.default03 is not None:
-            showIndent(outfile, level)
-            outfile.write('default03=%f,\n' % self.default03)
-        if self.normal03 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal03=%f,\n' % self.normal03)
-        if self.default04 is not None:
-            showIndent(outfile, level)
-            outfile.write('default04=%e,\n' % self.default04)
-        if self.normal04 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal04=%e,\n' % self.normal04)
-        if self.default05a is not None:
-            showIndent(outfile, level)
-            outfile.write('default05a=%s,\n' % self.default05a)
-        if self.default05b is not None:
-            showIndent(outfile, level)
-            outfile.write('default05b=%s,\n' % self.default05b)
-        if self.normal05 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal05=%s,\n' % self.normal05)
-        if self.default06 is not None:
-            showIndent(outfile, level)
-            outfile.write('default06=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.default06, input_name='default06'))
-        if self.normal06 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal06=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.normal06, input_name='normal06'))
-        if self.default07 is not None:
-            showIndent(outfile, level)
-            outfile.write('default07=model_.GeneratedsSuper.gds_parse_time("%s"),\n' % self.gds_format_time(self.default07, input_name='default07'))
-        if self.normal07 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal07=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.normal07, input_name='normal07'))
-        if self.default08 is not None:
-            showIndent(outfile, level)
-            outfile.write('default08=model_.GeneratedsSuper.gds_parse_datetime("%s"),\n' % self.gds_format_datetime(self.default08, input_name='default08'))
-        if self.normal08 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal08=model_.GeneratedsSuper.gds_parse_datetime("%s"),\n' % self.gds_format_datetime(self.normal08, input_name='normal08'))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1315,66 +1234,6 @@ class DefaultType2(GeneratedsSuper):
         if self.normal08 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%snormal08>%s</%snormal08>%s' % (namespace_, self.gds_format_datetime(self.normal08, input_name='normal08'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='DefaultType2'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.default01 is not None:
-            showIndent(outfile, level)
-            outfile.write('default01=%d,\n' % self.default01)
-        if self.normal01 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal01=%d,\n' % self.normal01)
-        if self.default02 is not None:
-            showIndent(outfile, level)
-            outfile.write('default02=%s,\n' % quote_python(self.default02).encode(ExternalEncoding))
-        if self.normal02 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal02=%s,\n' % quote_python(self.normal02).encode(ExternalEncoding))
-        if self.default03 is not None:
-            showIndent(outfile, level)
-            outfile.write('default03=%f,\n' % self.default03)
-        if self.normal03 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal03=%f,\n' % self.normal03)
-        if self.default04 is not None:
-            showIndent(outfile, level)
-            outfile.write('default04=%e,\n' % self.default04)
-        if self.normal04 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal04=%e,\n' % self.normal04)
-        if self.default05a is not None:
-            showIndent(outfile, level)
-            outfile.write('default05a=%s,\n' % self.default05a)
-        if self.default05b is not None:
-            showIndent(outfile, level)
-            outfile.write('default05b=%s,\n' % self.default05b)
-        if self.normal05 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal05=%s,\n' % self.normal05)
-        if self.default06 is not None:
-            showIndent(outfile, level)
-            outfile.write('default06=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.default06, input_name='default06'))
-        if self.normal06 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal06=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.normal06, input_name='normal06'))
-        if self.default07 is not None:
-            showIndent(outfile, level)
-            outfile.write('default07=model_.GeneratedsSuper.gds_parse_time("%s"),\n' % self.gds_format_time(self.default07, input_name='default07'))
-        if self.normal07 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal07=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.normal07, input_name='normal07'))
-        if self.default08 is not None:
-            showIndent(outfile, level)
-            outfile.write('default08=model_.GeneratedsSuper.gds_parse_datetime("%s"),\n' % self.gds_format_datetime(self.default08, input_name='default08'))
-        if self.normal08 is not None:
-            showIndent(outfile, level)
-            outfile.write('normal08=model_.GeneratedsSuper.gds_parse_datetime("%s"),\n' % self.gds_format_datetime(self.normal08, input_name='normal08'))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

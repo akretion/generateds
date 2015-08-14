@@ -703,36 +703,6 @@ class complex_type01(GeneratedsSuper):
             outfile.write('<%sfloat_value01>%s</%sfloat_value01>%s' % (namespace_, self.gds_format_float(self.float_value01, input_name='float_value01'), namespace_, eol_))
         if self.field01 is not None:
             self.field01.export(outfile, level, namespace_, name_='field01', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='complex-type01'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.string_value01 is not None:
-            showIndent(outfile, level)
-            outfile.write('string_value01=%s,\n' % quote_python(self.string_value01).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('integer_value01=[\n')
-        level += 1
-        for integer_value01_ in self.integer_value01:
-            showIndent(outfile, level)
-            outfile.write('%d,\n' % integer_value01_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.float_value01 is not None:
-            showIndent(outfile, level)
-            outfile.write('float_value01=%f,\n' % self.float_value01)
-        if self.field01 is not None:
-            showIndent(outfile, level)
-            outfile.write('field01=model_.complex_type02(\n')
-            self.field01.exportLiteral(outfile, level, name_='field01')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -852,30 +822,6 @@ class complex_type02(GeneratedsSuper):
         if self.float_value02 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sfloat_value02>%s</%sfloat_value02>%s' % (namespace_, self.gds_format_float(self.float_value02, input_name='float_value02'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='complex-type02'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.string_value02 is not None:
-            showIndent(outfile, level)
-            outfile.write('string_value02=%s,\n' % quote_python(self.string_value02).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('integer_value02=[\n')
-        level += 1
-        for integer_value02_ in self.integer_value02:
-            showIndent(outfile, level)
-            outfile.write('%d,\n' % integer_value02_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.float_value02 is not None:
-            showIndent(outfile, level)
-            outfile.write('float_value02=%f,\n' % self.float_value02)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -989,31 +935,6 @@ class complex_type03(complex_type02):
         if self.float_value03 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sfloat_value03>%s</%sfloat_value03>%s' % (namespace_, self.gds_format_float(self.float_value03, input_name='float_value03'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='complex-type03'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(complex_type03, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(complex_type03, self).exportLiteralChildren(outfile, level, name_)
-        if self.string_value03 is not None:
-            showIndent(outfile, level)
-            outfile.write('string_value03=%s,\n' % quote_python(self.string_value03).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('integer_value03=[\n')
-        level += 1
-        for integer_value03_ in self.integer_value03:
-            showIndent(outfile, level)
-            outfile.write('%d,\n' % integer_value03_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.float_value03 is not None:
-            showIndent(outfile, level)
-            outfile.write('float_value03=%f,\n' % self.float_value03)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1129,30 +1050,6 @@ class type_(GeneratedsSuper):
         if self.float_value02 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sfloat_value02>%s</%sfloat_value02>%s' % (namespace_, self.gds_format_float(self.float_value02, input_name='float_value02'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='type'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.string_value02 is not None:
-            showIndent(outfile, level)
-            outfile.write('string_value02=%s,\n' % quote_python(self.string_value02).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('integer_value02=[\n')
-        level += 1
-        for integer_value02_ in self.integer_value02:
-            showIndent(outfile, level)
-            outfile.write('%d,\n' % integer_value02_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.float_value02 is not None:
-            showIndent(outfile, level)
-            outfile.write('float_value02=%f,\n' % self.float_value02)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1266,31 +1163,6 @@ class complex_type04(type_):
         if self.float_value03 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sfloat_value03>%s</%sfloat_value03>%s' % (namespace_, self.gds_format_float(self.float_value03, input_name='float_value03'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='complex-type04'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(complex_type04, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(complex_type04, self).exportLiteralChildren(outfile, level, name_)
-        if self.string_value03 is not None:
-            showIndent(outfile, level)
-            outfile.write('string_value03=%s,\n' % quote_python(self.string_value03).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('integer_value03=[\n')
-        level += 1
-        for integer_value03_ in self.integer_value03:
-            showIndent(outfile, level)
-            outfile.write('%d,\n' % integer_value03_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.float_value03 is not None:
-            showIndent(outfile, level)
-            outfile.write('float_value03=%f,\n' % self.float_value03)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1406,30 +1278,6 @@ class build_(GeneratedsSuper):
         if self.float_value02 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sfloat_value02>%s</%sfloat_value02>%s' % (namespace_, self.gds_format_float(self.float_value02, input_name='float_value02'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='build'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.string_value02 is not None:
-            showIndent(outfile, level)
-            outfile.write('string_value02=%s,\n' % quote_python(self.string_value02).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('integer_value02=[\n')
-        level += 1
-        for integer_value02_ in self.integer_value02:
-            showIndent(outfile, level)
-            outfile.write('%d,\n' % integer_value02_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.float_value02 is not None:
-            showIndent(outfile, level)
-            outfile.write('float_value02=%f,\n' % self.float_value02)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1543,31 +1391,6 @@ class complex_type05(build_):
         if self.float_value03 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sfloat_value03>%s</%sfloat_value03>%s' % (namespace_, self.gds_format_float(self.float_value03, input_name='float_value03'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='complex-type05'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(complex_type05, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(complex_type05, self).exportLiteralChildren(outfile, level, name_)
-        if self.string_value03 is not None:
-            showIndent(outfile, level)
-            outfile.write('string_value03=%s,\n' % quote_python(self.string_value03).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('integer_value03=[\n')
-        level += 1
-        for integer_value03_ in self.integer_value03:
-            showIndent(outfile, level)
-            outfile.write('%d,\n' % integer_value03_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.float_value03 is not None:
-            showIndent(outfile, level)
-            outfile.write('float_value03=%f,\n' % self.float_value03)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

@@ -309,6 +309,12 @@ Here is the usage message displayed by ``generateDS.py``::
                                          to XML)
                                  Example: "write etree"
                                  Default: "write"
+        --preserve-cdata-tags    Preserve CDATA tags.  Default: False
+        --cleanup-name-dict=<replacement-map>
+                                 Specifies replacement pairs when cleaning up
+                                 names.
+                                 Example: "{':': 'colon', '-': 'dash', '.': 'dot'}"
+                                 Default: "{':': '_', '-': '_', '.': '_'}"
         -q, --no-questions       Do not ask questions, for example,
                                  force overwrite.
         --session=mysession.session
@@ -565,6 +571,25 @@ export
     For example: ``--export="write etree"`` and ``--export="write"``.  The
     default is: ``--export="write literal"``.
 
+preserve-cdata-tags
+    Preserve CDATA tags.  Normally, CDATA tags ("<![CDATA[ ... ]]>")
+    are dropped while parsing an XML instance document.  If this
+    option is included, the generated code will preserve those tags
+    and will write them out during export.  The default is False.
+
+cleanup-name-dict=<replacement-map>
+    Specifies replacement pairs to be used when cleaning up names.
+    Must be a string representation of a Python dictionary.  The
+    keys and values in this dictionary must be strings. The
+    intension is to enable us to replace special characters in names
+    that would cause the generation of invalid Python names, for
+    example the names of generated classes.  However, since a simple
+    string replacement is performed, you can replace any single
+    character or sequence of characters by any other single
+    character or sequence of characters.  Example: ``{':': 'colon',
+    '-': 'dash', '.': 'dot'}``.  Default when omitted: ``{':': '_',
+    '-': '_', '.': '_'}``.
+
 q, no-questions
     Do not ask questions.  For example, if the "-f" command line
     option is omitted and the ouput file exists, then generateDS.py
@@ -650,6 +675,17 @@ child elements and attributes as members of the generated class,
 this is a name conflict.  Therefore, where such conflicts exist,
 generateDS.py modifies the name of the attribute by adding "_attr"
 to its name.
+
+
+Cleaning up names with special characters etc.
+................................................
+
+``generateDS.py`` attempts to clean up names that contain special
+characters.  For example, a complexType whose name contains a dash
+would generate a Python class with an invalid name.  But, you can
+use this facility to make other changes to names as well.  See the
+notes on the command line option ``--cleanup-name-dict`` for more on
+this.
 
 
 The graphical user interface -- How to use it

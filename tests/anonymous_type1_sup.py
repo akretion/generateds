@@ -687,33 +687,6 @@ class FooList(GeneratedsSuper):
             self.Bar.export(outfile, level, namespace_, name_='Bar', pretty_print=pretty_print)
         if self.Baz is not None:
             self.Baz.export(outfile, level, namespace_, name_='Baz', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='FooList'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.Foo is not None:
-            showIndent(outfile, level)
-            outfile.write('Foo=model_.FooType1(\n')
-            self.Foo.exportLiteral(outfile, level, name_='Foo')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.Bar is not None:
-            showIndent(outfile, level)
-            outfile.write('Bar=model_.BarType2(\n')
-            self.Bar.exportLiteral(outfile, level, name_='Bar')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.Baz is not None:
-            showIndent(outfile, level)
-            outfile.write('Baz=model_.BazType3(\n')
-            self.Baz.exportLiteral(outfile, level, name_='Baz')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -802,18 +775,6 @@ class FooType1(GeneratedsSuper):
         if self.FooType is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sFooType>%s</%sFooType>%s' % (namespace_, self.gds_format_string(quote_xml(self.FooType).encode(ExternalEncoding), input_name='FooType'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='FooType1'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.FooType is not None:
-            showIndent(outfile, level)
-            outfile.write('FooType=%s,\n' % quote_python(self.FooType).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -893,18 +854,6 @@ class BarType2(GeneratedsSuper):
         if self.BarType is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sBarType>%s</%sBarType>%s' % (namespace_, self.gds_format_string(quote_xml(self.BarType).encode(ExternalEncoding), input_name='BarType'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='BarType2'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.BarType is not None:
-            showIndent(outfile, level)
-            outfile.write('BarType=%s,\n' % quote_python(self.BarType).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -984,18 +933,6 @@ class BazType3(GeneratedsSuper):
         if self.BazType is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sBazType>%s</%sBazType>%s' % (namespace_, self.gds_format_string(quote_xml(self.BazType).encode(ExternalEncoding), input_name='BazType'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='BazType3'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.BazType is not None:
-            showIndent(outfile, level)
-            outfile.write('BazType=%s,\n' % quote_python(self.BazType).encode(ExternalEncoding))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

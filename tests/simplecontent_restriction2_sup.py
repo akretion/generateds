@@ -723,45 +723,6 @@ class IdentifierType(GeneratedsSuper):
             outfile.write(' xsi:type="%s"' % self.extensiontype_)
     def exportChildren(self, outfile, level, namespace_='', name_='IdentifierType', fromsubclass_=False, pretty_print=True):
         pass
-    def exportLiteral(self, outfile, level, name_='IdentifierType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.schemeDataURI is not None and 'schemeDataURI' not in already_processed:
-            already_processed.add('schemeDataURI')
-            showIndent(outfile, level)
-            outfile.write('schemeDataURI="%s",\n' % (self.schemeDataURI,))
-        if self.schemeID is not None and 'schemeID' not in already_processed:
-            already_processed.add('schemeID')
-            showIndent(outfile, level)
-            outfile.write('schemeID="%s",\n' % (self.schemeID,))
-        if self.schemeAgencyName is not None and 'schemeAgencyName' not in already_processed:
-            already_processed.add('schemeAgencyName')
-            showIndent(outfile, level)
-            outfile.write('schemeAgencyName="%s",\n' % (self.schemeAgencyName,))
-        if self.schemeAgencyID is not None and 'schemeAgencyID' not in already_processed:
-            already_processed.add('schemeAgencyID')
-            showIndent(outfile, level)
-            outfile.write('schemeAgencyID="%s",\n' % (self.schemeAgencyID,))
-        if self.schemeName is not None and 'schemeName' not in already_processed:
-            already_processed.add('schemeName')
-            showIndent(outfile, level)
-            outfile.write('schemeName="%s",\n' % (self.schemeName,))
-        if self.schemeVersionID is not None and 'schemeVersionID' not in already_processed:
-            already_processed.add('schemeVersionID')
-            showIndent(outfile, level)
-            outfile.write('schemeVersionID="%s",\n' % (self.schemeVersionID,))
-        if self.schemeURI is not None and 'schemeURI' not in already_processed:
-            already_processed.add('schemeURI')
-            showIndent(outfile, level)
-            outfile.write('schemeURI="%s",\n' % (self.schemeURI,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -857,19 +818,6 @@ class BillOfResourcesIDType(IdentifierType):
     def exportChildren(self, outfile, level, namespace_='', name_='BillOfResourcesIDType', fromsubclass_=False, pretty_print=True):
         super(BillOfResourcesIDType, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
         pass
-    def exportLiteral(self, outfile, level, name_='BillOfResourcesIDType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(BillOfResourcesIDType, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(BillOfResourcesIDType, self).exportLiteralChildren(outfile, level, name_)
-        pass
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -933,19 +881,6 @@ class BillOfMaterialIDType(IdentifierType):
         super(BillOfMaterialIDType, self).exportAttributes(outfile, level, already_processed, namespace_, name_='BillOfMaterialIDType')
     def exportChildren(self, outfile, level, namespace_='', name_='BillOfMaterialIDType', fromsubclass_=False, pretty_print=True):
         super(BillOfMaterialIDType, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
-        pass
-    def exportLiteral(self, outfile, level, name_='BillOfMaterialIDType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-        showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(BillOfMaterialIDType, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(BillOfMaterialIDType, self).exportLiteralChildren(outfile, level, name_)
         pass
     def build(self, node):
         already_processed = set()
