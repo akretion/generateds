@@ -92,11 +92,12 @@ Options:
                              Example: "write etree"
                              Default: "write"
     --preserve-cdata-tags    Preserve CDATA tags.  Default: False
-    --cleanup-name-dict=<replacement-map>
-                             Specifies replacement pairs when cleaning up
-                             names.
-                             Example: "{':': 'colon', '-': 'dash', '.': 'dot'}"
-                             Default: "{':': '_', '-': '_', '.': '_'}"
+    --cleanup-name-list=<replacement-map>
+                             Specifies list of 2-tuples used for cleaning names.
+                             First element is a regular expression search 
+                             pattern and second is a replacement.
+                             Example: "[('[-:.]', '_'), ('^__', 'Special')]"
+                             Default: "[('[-:.]', '_')]"
     -q, --no-questions       Do not ask questions, for example,
                              force overwrite.
     --session=mysession.session
@@ -160,6 +161,7 @@ import StringIO
 import textwrap
 import hashlib
 import operator
+import re
 
 # Default logger configuration
 logging.basicConfig(
@@ -218,7 +220,7 @@ NoVersion = False
 Dirpath = []
 ExternalEncoding = sys.getdefaultencoding()
 Namespacedef = ''
-CleanupNameDict = {':': '_', '-': '_', '.': '_'}
+CleanupNameList = [(re.compile('[-:.]'), '_')]
 
 NamespacesDict = {}
 prefixToNamespaceMap = {}
@@ -6355,8 +6357,8 @@ def mapName(oldName):
 
 def cleanupName(oldName):
     newName = oldName
-    for o, n in CleanupNameDict.iteritems():
-        newName = newName.replace(o, n)
+    for pattern, repl in CleanupNameList:
+        newName = re.sub(pattern, repl, newName)
     return newName
 
 
@@ -6634,7 +6636,7 @@ def main():
         ExportWrite, ExportEtree, ExportLiteral, \
         FixTypeNames, SingleFileOutput, OutputDirectory, \
         ModuleSuffix, UseOldSimpleTypeValidators, \
-        PreserveCdataTags, CleanupNameDict
+        PreserveCdataTags, CleanupNameList
     outputText = True
     args = sys.argv[1:]
     try:
@@ -6651,7 +6653,7 @@ def main():
                 'version', 'export=',
                 'one-file-per-xsd', 'output-directory=',
                 'module-suffix=', 'use-old-simpletype-validators',
-                'preserve-cdata-tags', 'cleanup-name-dict=',
+                'preserve-cdata-tags', 'cleanup-name-list=',
             ])
     except getopt.GetoptError:
         usage()
@@ -6812,22 +6814,32 @@ def main():
             ModuleSuffix = option[1]
         elif option[0] == "--preserve-cdata-tags":
             PreserveCdataTags = True
-        elif option[0] == '--cleanup-name-dict':
+        elif option[0] == '--cleanup-name-list':
             cleanup_str = option[1]
             from ast import literal_eval
             try:
-                cleanup_dict = literal_eval(cleanup_str)
+                cleanup_list = literal_eval(cleanup_str)
             except ValueError:
                 raise RuntimeError(
-                    'Unable to parse option --cleanup-name-dict.')
-            if type(cleanup_dict) != dict:
+                    'Unable to parse option --cleanup-name-list.')
+            if type(cleanup_list) not in (list, tuple):
                 raise RuntimeError(
-                    'Option --cleanup-name-dict must be a dictionary.')
-            for k, v in cleanup_dict.iteritems():
-                if type(k) not in (str, unicode) or type(v) not in (str, unicode):
+                    'Option --cleanup-name-list must be a list or a tuple.')
+            CleanupNameList = []
+            for cleanup_pair in cleanup_list:
+                if type(cleanup_pair) not in (list, tuple) \
+                   or len(cleanup_pair) != 2 \
+                   or type(cleanup_pair[0]) not in (str, unicode) \
+                   or type(cleanup_pair[1]) not in (str, unicode):
                     raise RuntimeError(
-                        'Option --cleanup-name-dict containt invalid element.')
-            CleanupNameDict = cleanup_dict
+                        'Option --cleanup-name-list contains invalid element.')
+                try:
+                    CleanupNameList.append(
+                        (re.compile(cleanup_pair[0]), cleanup_pair[1]))
+                except Exception:
+                    raise RuntimeError(
+                        'Option --cleanup-name-list contains invalid pattern "%s".'
+                        % cleanup_pair[0])
 
     if showVersion:
         print('generateDS.py version %s' % VERSION)
