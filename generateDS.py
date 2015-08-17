@@ -93,9 +93,9 @@ Options:
                              Default: "write"
     --preserve-cdata-tags    Preserve CDATA tags.  Default: False
     --cleanup-name-list=<replacement-map>
-                             Specifies list of 2-tuples used for cleaning names.
-                             First element is a regular expression search 
-                             pattern and second is a replacement.
+                             Specifies list of 2-tuples used for cleaning
+                             names.  First element is a regular expression
+                             search pattern and second is a replacement.
                              Example: "[('[-:.]', '_'), ('^__', 'Special')]"
                              Default: "[('[-:.]', '_')]"
     -q, --no-questions       Do not ask questions, for example,
@@ -194,7 +194,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.16a'
+VERSION = '2.17a'
 ##VERSION##
 
 GenerateProperties = 0
@@ -6828,10 +6828,10 @@ def main():
                     'Option --cleanup-name-list must be a list or a tuple.')
             CleanupNameList = []
             for cleanup_pair in cleanup_list:
-                if type(cleanup_pair) not in (list, tuple) \
-                   or len(cleanup_pair) != 2 \
-                   or type(cleanup_pair[0]) not in (str, unicode) \
-                   or type(cleanup_pair[1]) not in (str, unicode):
+                if (type(cleanup_pair) not in (list, tuple) or
+                        len(cleanup_pair) != 2 or
+                        not isinstance(cleanup_pair[0], basestring) or
+                        not isinstance(cleanup_pair[1], basestring)):
                     raise RuntimeError(
                         'Option --cleanup-name-list contains invalid element.')
                 try:
@@ -6839,7 +6839,8 @@ def main():
                         (re.compile(cleanup_pair[0]), cleanup_pair[1]))
                 except Exception:
                     raise RuntimeError(
-                        'Option --cleanup-name-list contains invalid pattern "%s".'
+                        'Option --cleanup-name-list contains invalid '
+                        'pattern "%s".'
                         % cleanup_pair[0])
 
     if showVersion:

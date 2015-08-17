@@ -61,6 +61,8 @@ $commands = [
   "diff -u defaults_coverage1_sup.py defaults_coverage2_sup.py",
   "diff -u defaults_cases1_sub.py defaults_cases2_sub.py",
   "diff -u defaults_cases1_sup.py defaults_cases2_sup.py",
+  "diff -u cleanupname1_sub.py cleanupname2_sub.py",
+  "diff -u cleanupname1_sup.py cleanupname2_sup.py",
 ]
 
 def check

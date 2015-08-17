@@ -8,7 +8,7 @@ How to package a generateDS.py generated library
 
 .. version
 
-:revision: 2.16a
+:revision: 2.17a
 
 .. version
 
