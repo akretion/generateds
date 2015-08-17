@@ -141,7 +141,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version2.18a (08/13/2015)
+Version2.17a (08/17/2015)
+- Modified setup.py so that process_includes.py is installed where
+  it can be imported.
+- Changed default settings for export -- Default is now to generate
+  only the normal export methods, instead of both normal and
+  literal.  See command line option --export.
 - Fix to regex pattern used to capture "<![CDATA[ ... ]]>".  The old
   pattern was dropping ending characters when the content contained
   HTML/XML markup.  Thanks to Adrian Cook for this fix.
@@ -150,14 +155,9 @@ Version2.18a (08/13/2015)
   be used to clean up special characters and other patterns in
   names.  There are some notes in the document; search for
   "cleanup-name" in generateDS.html.  Thanks to Fedor Tyurin for
-  this fix.
-
-Version 2.17a (05/28/2015)
-- Modified setup.py so that process_includes.py is installed where
-  it can be imported.
-- Changed default settings for export -- Default is now to generate
-  only the normal export methods, instead of both normal and
-  literal.  See command line option --export.
+  suggesting and implementing this enhancement.
+- Added unit test for enhanced cleanupName.  Added documentation to
+  generateDS.txt.
 
 Version 2.16a (05/28/2015)
 - Added new command line option ("--preserve-cdata-tags") that

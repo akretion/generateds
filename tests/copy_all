@@ -51,3 +51,5 @@ cp defaults_cases2_sup.py defaults_cases1_sup.py
 cp defaults_cases2_sub.py defaults_cases1_sub.py
 cp nested_def2_sup.py nested_def1_sup.py
 cp nested_def2_sub.py nested_def1_sub.py
+cp cleanupname2_sup.py cleanupname1_sup.py
+cp cleanupname2_sub.py cleanupname1_sub.py

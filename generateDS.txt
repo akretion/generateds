@@ -12,7 +12,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.16a
+:revision: 2.17a
 
 .. version
 
@@ -310,11 +310,12 @@ Here is the usage message displayed by ``generateDS.py``::
                                  Example: "write etree"
                                  Default: "write"
         --preserve-cdata-tags    Preserve CDATA tags.  Default: False
-        --cleanup-name-dict=<replacement-map>
-                                 Specifies replacement pairs when cleaning up
-                                 names.
-                                 Example: "{':': 'colon', '-': 'dash', '.': 'dot'}"
-                                 Default: "{':': '_', '-': '_', '.': '_'}"
+        --cleanup-name-list=<replacement-map>
+                                 Specifies list of 2-tuples used for cleaning
+                                 names.  First element is a regular expression
+                                 search pattern and second is a replacement.
+                                 Example: "[('[-:.]', '_'), ('^__', 'Special')]"
+                                 Default: "[('[-:.]', '_')]"
         -q, --no-questions       Do not ask questions, for example,
                                  force overwrite.
         --session=mysession.session
@@ -338,6 +339,9 @@ Here is the usage message displayed by ``generateDS.py``::
     creates sample_lib.py superclass and sample_app1.py subclass modules;
     also generates member specifications in each class (in a dictionary).
 
+
+Command line options
+----------------------
 
 The following command line options are recognized by ``generateDS.py``:
 
@@ -577,18 +581,26 @@ preserve-cdata-tags
     option is included, the generated code will preserve those tags
     and will write them out during export.  The default is False.
 
-cleanup-name-dict=<replacement-map>
+cleanup-name-list=<replacement-map>
     Specifies replacement pairs to be used when cleaning up names.
-    Must be a string representation of a Python dictionary.  The
-    keys and values in this dictionary must be strings. The
-    intension is to enable us to replace special characters in names
-    that would cause the generation of invalid Python names, for
-    example the names of generated classes.  However, since a simple
-    string replacement is performed, you can replace any single
-    character or sequence of characters by any other single
-    character or sequence of characters.  Example: ``{':': 'colon',
-    '-': 'dash', '.': 'dot'}``.  Default when omitted: ``{':': '_',
-    '-': '_', '.': '_'}``.
+    Must be a string representation of a Python list of 2-tuples.
+    The values of each pair (2-tuple) must be strings.  The first
+    item of each pair is a pattern and must be a valid Python
+    regular expression (see
+    https://docs.python.org/2/library/re.html#module-re) The second
+    item of each pair is a string that will replace anything matched
+    by the pattern.  Also see `Cleaning up names with special characters etc.`_
+    
+    The intension is to enable us to replace
+    special characters in names that would cause the generation of
+    invalid Python names, for example the names of generated
+    classes.  However, since a string replacement is
+    performed, you can replace any single character or sequence of
+    characters by any other single character or sequence of
+    characters.  Example:
+    ``[(':', 'colon'), ('-', 'dash'), ('.', 'dot')]``.
+    
+    The default when omitted is ``[('[-:.]', '_')]``.
 
 q, no-questions
     Do not ask questions.  For example, if the "-f" command line
@@ -625,8 +637,8 @@ version
     exit.
 
 
-Name conflicts
---------------
+Name conflicts etc.
+---------------------
 
 Conflicts with Python keywords
 ..............................
@@ -683,13 +695,48 @@ Cleaning up names with special characters etc.
 ``generateDS.py`` attempts to clean up names that contain special
 characters.  For example, a complexType whose name contains a dash
 would generate a Python class with an invalid name.  But, you can
-use this facility to make other changes to names as well.  See the
-notes on the command line option ``--cleanup-name-dict`` for more on
-this.
+use this facility to make other changes to names as well.
+
+The command line option ``--cleanup-name-list`` specifies
+replacement pairs to be used when cleaning up (and modifying) names.
+The value of this option must be a string representation of a Python
+list of 2-tuples.  The values of each pair (2-tuple) must be
+strings.  The first item of each pair is a pattern and must be a
+valid Python regular expression (see
+https://docs.python.org/2/library/re.html#module-re) The second item
+of each pair is a string that will replace anything matched by the
+pattern.  The intension is to enable us to replace special
+characters in names that would cause the generation of invalid
+Python names, for example the names of generated classes.  However,
+since a string replacement is performed, you can replace any single
+character or sequence of characters by any other single character or
+sequence of characters.
+
+For example, the following option, in addition to performing the
+default replacements of "-", ":", and "." by an underscore, would
+also replace the string "Type" when it occurs at the end of a name,
+by "Class"::
+
+    --cleanup-name-list="[('[-:.]', '_'), ('Type$', 'Class')]"
+
+This would cause the name "big-data-Type" to become "big_data_Class".
+
+The default when this option is omitted is ``[('[-:.]', '_')]``.
+
+The order of replacements performed is the same as the order of the
+tuples in the list.  So, replacements performed by pattern
+replacement pairs (2-tuples) later in the list (to the right) will
+be performed after those earlier (to the left), and may overwrite
+earlier replacements.
+
+See the notes on the command line option ``--cleanup-name-list`` for
+more on this.  Or, run ``$ generateDS.py --help``.
 
 
 The graphical user interface -- How to use it
 ==============================================================
+
+**Note:** The graphical user interface is no longer supported.
 
 Here are a few notes on how to use the GUI front-end.
 
