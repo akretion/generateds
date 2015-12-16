@@ -645,7 +645,7 @@ class SpecialDate(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -663,7 +663,7 @@ class SpecialDate(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='SpecialDate')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='', name_='SpecialDate', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -715,7 +715,7 @@ class ExtremeDate(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -733,7 +733,7 @@ class ExtremeDate(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='ExtremeDate')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='', name_='ExtremeDate', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -785,7 +785,7 @@ class singleExtremeDate(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -803,7 +803,7 @@ class singleExtremeDate(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='singleExtremeDate')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='', name_='singleExtremeDate', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -1085,7 +1085,7 @@ class mixedFactoidType(GeneratedsSuper):
     def hasContent_(self):
         if (
             self.relation is not None or
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -1171,7 +1171,7 @@ class BaseType(GeneratedsSuper):
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def hasContent_(self):
         if (
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -1189,7 +1189,7 @@ class BaseType(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='BaseType')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='', name_='BaseType', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -1261,7 +1261,7 @@ class DerivedType(BaseType):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            self.valueOf_ or
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_ or
             super(DerivedType, self).hasContent_()
         ):
             return True
@@ -1280,7 +1280,7 @@ class DerivedType(BaseType):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='DerivedType')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='', name_='DerivedType', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -1342,7 +1342,7 @@ class MyInteger(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -1360,7 +1360,7 @@ class MyInteger(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='MyInteger')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='', name_='MyInteger', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -1412,7 +1412,7 @@ class MyBoolean(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -1430,7 +1430,7 @@ class MyBoolean(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='MyBoolean')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='', name_='MyBoolean', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -1482,7 +1482,7 @@ class MyFloat(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -1500,7 +1500,7 @@ class MyFloat(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='MyFloat')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='', name_='MyFloat', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -1552,7 +1552,7 @@ class MyDouble(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -1570,7 +1570,7 @@ class MyDouble(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='MyDouble')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='', name_='MyDouble', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
