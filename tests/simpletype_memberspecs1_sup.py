@@ -645,7 +645,7 @@ class SpecialDate(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -663,7 +663,7 @@ class SpecialDate(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='SpecialDate')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='pl:', name_='SpecialDate', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -715,7 +715,7 @@ class ExtremeDate(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -733,7 +733,7 @@ class ExtremeDate(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='ExtremeDate')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='pl:', name_='ExtremeDate', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:

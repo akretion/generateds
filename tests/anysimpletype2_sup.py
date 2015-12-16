@@ -722,7 +722,7 @@ class cimAnySimpleType(GeneratedsSuper):
     def set_anyAttributes_(self, anyAttributes_): self.anyAttributes_ = anyAttributes_
     def hasContent_(self):
         if (
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -740,7 +740,7 @@ class cimAnySimpleType(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='cimAnySimpleType')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='', name_='cimAnySimpleType', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:

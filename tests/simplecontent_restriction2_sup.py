@@ -672,7 +672,7 @@ class IdentifierType(GeneratedsSuper):
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def hasContent_(self):
         if (
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -690,7 +690,7 @@ class IdentifierType(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='IdentifierType')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='', name_='IdentifierType', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -789,7 +789,7 @@ class BillOfResourcesIDType(IdentifierType):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            self.valueOf_ or
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_ or
             super(BillOfResourcesIDType, self).hasContent_()
         ):
             return True
@@ -808,7 +808,7 @@ class BillOfResourcesIDType(IdentifierType):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='BillOfResourcesIDType')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='', name_='BillOfResourcesIDType', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -853,7 +853,7 @@ class BillOfMaterialIDType(IdentifierType):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            self.valueOf_ or
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_ or
             super(BillOfMaterialIDType, self).hasContent_()
         ):
             return True
@@ -872,7 +872,7 @@ class BillOfMaterialIDType(IdentifierType):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='BillOfMaterialIDType')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
             self.exportChildren(outfile, level + 1, namespace_='', name_='BillOfMaterialIDType', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:

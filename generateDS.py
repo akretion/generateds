@@ -326,6 +326,7 @@ def set_type_constants(nameSpace):
         PositiveIntegerType, NegativeIntegerType, \
         NonPositiveIntegerType, NonNegativeIntegerType, \
         BooleanType, FloatType, DoubleType, \
+        NumericTypes, \
         ElementType, ComplexTypeType, GroupType, SequenceType, ChoiceType, \
         AttributeGroupType, AttributeType, SchemaType, \
         DateTimeType, DateType, TimeType, \
@@ -401,6 +402,17 @@ def set_type_constants(nameSpace):
         nameSpace + 'Name',
         nameSpace + 'language',
     )
+    NumericTypes = set([
+        IntegerType,
+        DecimalType,
+        PositiveIntegerType,
+        NegativeIntegerType,
+        NonPositiveIntegerType,
+        NonNegativeIntegerType,
+        FloatType,
+        DoubleType,
+    ])
+    NumericTypes.update(set(IntegerType))
     Base64Type = nameSpace + 'base64Binary'
     TokenType = nameSpace + 'token'
     NameType = nameSpace + 'Name'
@@ -1349,6 +1361,45 @@ class XschemaAttribute:
         if self.data_type in SimpleElementDict:
             typeObj = SimpleElementDict[self.data_type]
             typeObjType = typeObj.getRawType()
+
+##        if self.data_type in SimpleElementDict:
+##            typeObj = SimpleElementDict[self.data_type]
+##            typeObjType = typeObj.getRawType()
+
+##        if strip_namespace(self.data_type) in SimpleTypeDict:
+##            typeObj = SimpleTypeDict[strip_namespace(self.data_type)]
+##            typeObjType = typeObj.getBase()
+
+            if (typeObjType in StringType or
+                    typeObjType == TokenType or
+                    typeObjType in DateTimeGroupType or
+                    typeObjType == Base64Type or
+                    typeObjType in IntegerType or
+                    typeObjType == DecimalType or
+                    typeObjType == PositiveIntegerType or
+                    typeObjType == NegativeIntegerType or
+                    typeObjType == NonPositiveIntegerType or
+                    typeObjType == NonNegativeIntegerType or
+                    typeObjType == BooleanType or
+                    typeObjType == FloatType or
+                    typeObjType == DoubleType):
+                returnType = typeObjType
+        return returnType
+
+    def getBaseType(self):
+        returnType = self.data_type
+##        if self.data_type in SimpleElementDict:
+##            typeObj = SimpleElementDict[self.data_type]
+##            typeObjType = typeObj.getRawType()
+
+##        if self.data_type in SimpleElementDict:
+##            typeObj = SimpleElementDict[self.data_type]
+##            typeObjType = typeObj.getRawType()
+
+        if strip_namespace(self.data_type) in SimpleTypeDict:
+            typeObj = SimpleTypeDict[strip_namespace(self.data_type)]
+            typeObjType = typeObj.getBase()
+
             if (typeObjType in StringType or
                     typeObjType == TokenType or
                     typeObjType in DateTimeGroupType or
@@ -2508,7 +2559,7 @@ def generateExportAttributes(wrt, element, hasAttributes):
                 if default is None:
                     s1 = '        if self.%s is not None and ' % (cleanName, )
                 else:
-                    attr_type = attrDef.getType()
+                    attr_type = attrDef.getBaseType()
                     if (attr_type in StringType or
                             attr_type == TokenType or
                             attr_type in DateTimeGroupType):
@@ -2522,8 +2573,11 @@ def generateExportAttributes(wrt, element, hasAttributes):
                         else:
                             s1 = '        if self.%s is not None and ' % (
                                 cleanName, )
-                    else:
+                    elif attr_type in NumericTypes:
                         s1 = '        if self.%s != %s and ' % (
+                            cleanName, default, )
+                    else:
+                        s1 = '        if self.%s != "%s" and ' % (
                             cleanName, default, )
                 s1 += "'%s' not in already_processed:\n" % (cleanName, )
                 wrt(s1)
@@ -2721,7 +2775,9 @@ def generateExportFn(wrt, prefix, element, namespace, nameSpacesDef):
         if element.getSimpleContent():
             wrt("            outfile.write('>')\n")
             if not element.isMixed():
-                wrt("            outfile.write(str(self.valueOf_).encode("
+                wrt("            outfile.write((quote_xml(self.valueOf_) "
+                    "if type(self.valueOf_) is str else "
+                    "str(self.valueOf_)).encode("
                     "ExternalEncoding))\n")
         else:
             wrt("            outfile.write('>%s' % (eol_, ))\n")
@@ -4675,7 +4731,8 @@ def generateHascontentMethod(wrt, prefix, element):
         if not firstTime:
             wrt(' or\n')
         firstTime = False
-        wrt('            self.valueOf_')
+        wrt('            1 if type(self.valueOf_) '
+            'in [int,float] else self.valueOf_')
     parentName, parent = getParentName(element)
     if parentName:
         elName = element.getCleanName()

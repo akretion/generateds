@@ -1,6 +1,6 @@
-         ================================================
-         generateDS.py -- Generate Python Data Structures
-         ================================================
+================================================
+generateDS.py -- Generate Python Data Structures
+================================================
 
 ----------
 What is it
@@ -141,7 +141,25 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version2.17b (12/16/2015)
+
+- Fixed quoting of simpleContent so that, e.g., "&amp;" is exported
+  as "&amp;" and not as "&".  Thanks to Ardan Patwardha for
+  reporting this and contributing a fix.
+- Fix to generation of exportAttributes so that the test for already
+  generated is properly quoted.  Thanks to Naresh Shenoy for
+  reporting this and for contributing a fix.
+- Another fix related to the unquoted constant in exportAttributes.
+  A simple fix had a bad conflict.  Thanks to Christian Rasmussen
+  for focusing my attention on this one.
+- Fix for xs:simpleContent that extends type xs:float (or xs:integer
+  or other numeric types).  When set to numeric zero (for example,
+  after parsing the instance doc), the value was not being exported.
+  Thanks to Ardan Patwardhan for diagnosing this and for
+  contributing the fix.
+
 Version2.17a (08/17/2015)
+
 - Modified setup.py so that process_includes.py is installed where
   it can be imported.
 - Changed default settings for export -- Default is now to generate
@@ -160,6 +178,7 @@ Version2.17a (08/17/2015)
   generateDS.txt.
 
 Version 2.16a (05/28/2015)
+
 - Added new command line option ("--preserve-cdata-tags") that
   causes generation of code that contains a special parser to retain
   CDATA tags.  Thanks to Adrian Cook for reporting this, for
@@ -175,6 +194,7 @@ Version 2.16a (05/28/2015)
   this.
 
 Version 2.15b (04/07/2015)
+
 - Fix to generation of simpleType validation code for list (unbounded)
   elements.  Thanks to wobanator for this fix.
 - Fix to code for --one-file-per-xsd.  Added check to avoid an
@@ -189,6 +209,7 @@ Version 2.15b (04/07/2015)
 - Added unit tests for the above default value enhancement.
 
 Version 2.15a (02/18/2015)
+
 - Modifications so that we generate code that can be used by Python 3.
   Thanks much to Richard Gerkin for this work.
 - Removed possible use of ElementTree.  Lxml is now a requirement
@@ -200,6 +221,7 @@ Version 2.15a (02/18/2015)
   helping with a fix.
 
 Version 2.14a (11/26/2014)
+
 - Fixed export of simpleType lists (added "' '.join(data)".  Thanks
   to Per Rosengren for catching this.
 - Added new style validation of simpleType data.  Validation
@@ -218,6 +240,7 @@ Version 2.14a (11/26/2014)
   prefix was not being stripped in some cases.
 
 Version 2.13a (09/09/2014)
+
 - Minor fix to function generateToEtreeChildren.  Must generate
   call to get_valueOf only when defined (i.e. when element is
   simpleContent or isMixed).
@@ -227,6 +250,7 @@ Version 2.13a (09/09/2014)
 - Added unit test for class name prefixes command line option.
 
 Version 2.12f (08/12/2014)
+
 - Fix for substitutionGroup conflict with keyword name mapping.
   Thanks to Leonid Minchin for finding and helping with this
   problem.
@@ -235,6 +259,7 @@ Version 2.12f (08/12/2014)
   Zaake for finding this and for providing a patch.
 
 Version 2.12e (06/16/2014)
+
 - Fix for formatting error.  Thanks to Nikolay Lavrov for catching
   this and for providing a fix.
 - Fix to gds_parse_datetime().  The Python datetime module's
@@ -256,6 +281,7 @@ Version 2.12e (06/16/2014)
   use of the Django model generation capability.                                    
 
 Version 2.12d (04/02/2014)
+
 - Fix for an infinite loop caused by inconsistent use of
   mapped/clean names with list AlreadyGenerated.  Thanks to Jerome
   Allasia for catching this and for suggesting a fix.
@@ -267,6 +293,7 @@ Version 2.12d (04/02/2014)
   avoid duplicate transformations.
 
 Version 2.12c (03/28/2014)
+
 - Fix for "one module per XSD file" to handle an include or import
   element that refers to a *remote* schema on the Net (i.e. the
   location is "http:..." or "ftp:...") rather than a file on the
@@ -305,6 +332,7 @@ Version 2.12c (03/28/2014)
   enhancement.
 
 Version 2.12b (02/10/2014)
+
 - Fix to the aliasing capability.  You should now be able to alias
   one element to another, and by doing so, only generate the
   targeted alias.  See notes on generateds_config.py in the
@@ -322,6 +350,7 @@ Version 2.12b (02/10/2014)
   (https://bitbucket.org/dkuhlman/generateds) or the tar achive.
 
 Version 2.12a (10/29/2013)
+
 - A name conflict issue caused by naming anonymous types.  An
   anonymous type is a complexType that does not have a name
   attribute and that is nested inside an element that does not have
@@ -346,6 +375,7 @@ Version 2.12a (10/29/2013)
   Thank you Logan.
 
 Version 2.11a (08/16/2013)
+
 - Added ability to use XML catalog to find included/imported
   schemas.  The -c command line option has been added to support
   this.  Thanks to George David for implementing this enhancement.
@@ -363,12 +393,15 @@ Version 2.11a (08/16/2013)
   Thanks to Rinat Yangurazov for catching this.
 
 Version 2.10b (07/22/2013)
+
 - Changed flag for generating getters and setters.  Removed flag
   --use-old-getter-setter.  Replaced it with new flag
   --use-getter-setter, which can have the following values:
+
      "old" - Name getters/setters getVar()/setVar().
      "new" - Name getters/setters get_var()/set_var().
      "none" - Do not generate getter/setter methods.
+
   The default is "new".  See the help (use --help option) or see the
   doc (generateDS.txt/generateDS.html) for more on this.  Thanks to
   Mike Vella for suggesting this.
@@ -376,6 +409,7 @@ Version 2.10b (07/22/2013)
   from "xx" to "_".
 
 Version 2.10a (05/29/2013)
+
 - Added ability to produce mapping (a dict) during call to
   to_etree() that maps gDS instances to their associated etree
   elements.  Also added convenience method gds_reverse_node_mapping
@@ -416,6 +450,7 @@ Version 2.10a (05/29/2013)
   by gDS.
 
 Version 2.9a (02/21/2013)
+
 - Added support for exporting to an Lxml element tree.  The element
   tree can then be serialized to XML, e.g. using Lxml
   etree.tostring().  This innovation is by Logan Owen, who also did
@@ -447,11 +482,13 @@ Version 2.9a (02/21/2013)
   particular, support for xs:anyAttribute).
 
 Version 2.8c (provisional) (01/30/2013)
+
 - Changed generated check for attributes that are already_processed
   to use a set object rather than a list.  Since sets are hashed, I
   believe that lookup is faster.
 
 Version 2.8b (01/30/2013)
+
 - Fixed missing underscore in reference to member names in
   generateExportLiteralFn_2.  Thanks to Sergii Chernysh for
   reporting this.
@@ -468,6 +505,7 @@ Version 2.8b (01/30/2013)
   https://bitbucket.org/dkuhlman/generateds
 
 Version 2.8a (01/10/2013)
+
   * Fix to process_includes.py so as to remove the limitation on the
     number of unique names it can generate when raising anonymous
     types to the top level.  Thanks to Daniel Browne for help with
@@ -508,6 +546,7 @@ Version 2.8a (01/10/2013)
     Browne for catching this.
 
 Version 2.7c (08/06/2012)
+
   * Added xs:hexBinary to the list of string types in generateDS.py
     and django/generatedssuper.py.  Effectively, we are generating
     the same code for types xs:base64Binary and xs:hexBinary.  That
@@ -527,6 +566,7 @@ Version 2.7c (08/06/2012)
     it; see section titled "Exporting compact XML documents".
 
 Version 2.7b (12/10/2011)
+
   * Fix for xs:any in buildChildren in an element defined with no
     other children so that we do not generate "else:" clause without
     an "if ...:".  Thanks to Keith Robertson for help with this.
@@ -539,6 +579,7 @@ Version 2.7b (12/10/2011)
   * Added xs:time to list of handled simple (date, time) types.
 
 Version 2.7a (11/04/2011)
+
   * Fix for case where a child is defined with a reference (ref="")
     to a complexType (rather than a simpleType) and the complexType
     is abstract.
@@ -547,6 +588,7 @@ Version 2.7a (11/04/2011)
   * Added unit test for xs:any.
 
 Version 2.6b (10/13/2011)
+
   * Fix for case where a child element is declared with a type that
     is a simpleType whose restriction base is another simpleType
     that is referred to with a namespace prefix.  With this fix we
@@ -583,6 +625,7 @@ Version 2.6b (10/13/2011)
     xs:anyURI and xs:duration.
 
 Version 2.6a (07/28/2011)
+
   * Fix to capture xs:/xsd:/etc namespace prefix from schema.  Was
     not setting global variable XsdNameSpace.  Thanks to Frank Liauw
     for focusing my attention on this one.
@@ -640,6 +683,7 @@ Version 2.6a (07/28/2011)
   * Added xs:byte to the list of integer types.
 
 Version 2.5a (06/06/2011)
+
   * Fix for generation of default value in parameters for the
     constructors.
   * Fix for lookup of attribute value in generated buildAttributes
@@ -664,6 +708,7 @@ Version 2.5a (06/06/2011)
     different directories.
 
 Version 2.4c (03/21/2011)
+
   * Added minimal support for unsignedLong, unsignedInt, and
     unsignedByte.
   * Made the retrieval of the parent (superclass) name and parent
@@ -687,12 +732,14 @@ Version 2.4c (03/21/2011)
     http://www.w3.org/TR/2004/REC-xmlschema-0-20041028/#DerivByRestrict
 
 Version 2.4b (02/21/2011)
+
   * Fix to generation the superclass in the class statement header
     line.  Formerly we did not correctly pick-up the superclass
     name (from extension base="").  Thanks to Timo Sugliani for
     finding this bug.
 
 Version 2.4a (02/16/2011)
+
   * A few fixes to format of some error messages.
   * Clean-up names in the exportableClassList (__all__).
   * Modify reading session object/doc to use lxml instead of
@@ -720,6 +767,7 @@ Version 2.4a (02/16/2011)
     out this fix.
 
 Version 2.3b (12/28/2010)
+
   * Fix for simpleTypes defined as a restriction whose (ultimate)
     base type is a pre-defined simple type which were not generating
     correct (type-specific) code in build method.  Thanks to
@@ -728,12 +776,12 @@ Version 2.3b (12/28/2010)
     attribute where the type was not being recognized.
   * Fix so that we recognize some other simple types as xs:string
     type (e.g. xs:NMTOKEN, xs:ID, xs:Name).
-  * To do:
-    - If a simpleType is a restriction on another simpleType and
-      the base simpleType definition is declared as a list, we are
-      not recognizing that it is a list.
+  * To do -- If a simpleType is a restriction on another simpleType and
+    the base simpleType definition is declared as a list, we are
+    not recognizing that it is a list.
 
 Version 2.3a (12/02/2010)
+
   * Added generatation of code to handle attributes inherited by a
     restriction from its base type and the types that the base
     extends (i.e.  from a restriction base class and its
@@ -742,13 +790,16 @@ Version 2.3a (12/02/2010)
     a type that is an extension: special characters (e.g. dash)
     were not being cleaned/mapped.  Reported by Koen Smets; thanks.
   * To do:
+
     - In a restriction, inherited attributes can be "prohibited". 
       It would be nice if gDS would do something to block their
       use.
     - When:
+
           AbstractElement mixed=false and
           Element1 mixed=true base=AbstractElement and
           Element2 mixed=FALSE base=AbstractElement 
+
       Incorrect parse code is generated for Element2.
       Reported by Jaime Cepas.
     - It might be desirable if the getter functions could be asked
@@ -762,9 +813,10 @@ Version 2.3a (12/02/2010)
       excoding of Python code and of string literals (unicode, utf-8).
 
 Version 2.2b (11/10/2010)
+
   * Added generation of __all__ global variable containing a list
     of generated class names.  This enables you to do a reasonably
-    safe "from mymodule import *.  It's sorted, so it also gives
+    safe "from mymodule import \*".  It's sorted, so it also gives
     you something in the way of an alphabetical table of contents
     of the generated classes.  Thanks to Jaime Cepas for this.
   * Added another fix so that the generated code for mixed content
@@ -790,6 +842,7 @@ Version 2.2b (11/10/2010)
     manually until I can figure out a fix.
 
 Version 2.2a (9/14/2010)
+
   * Changes for coding consistency -- Used wrt() pervasively
     instead of outfile.write().
   * Re-write of process_includes.py -- It now handles
@@ -807,9 +860,11 @@ Version 2.2a (9/14/2010)
     maps the name "range" to "rangeType" so that if the schema defines
     a complexType "range", generateDS.py will generate a class named
     "rangeType":
+
         NameTable = {
             'range': 'rangeType',
             }
+
     See the doc for more on this.
   * Instead of using the lower() function from the string module,
     added a function to the GeneratedsSuper class and used the string
@@ -823,6 +878,7 @@ Version 2.2a (9/14/2010)
     values.
         
 Version 2.1d (8/23/2010)
+
   * Fix to indentation of generated code in the build method for
     type checking of NonNegativeIntegerType.
   * Fix to generation parameters in call to superclass constructor. 
@@ -836,6 +892,7 @@ Version 2.1d (8/23/2010)
     available during export.
 
 Version 2.1c (8/8/2010)
+
   * Fix to functions parse, parseString, and parseLiteral so that
     they start the build with the correct root class.  I believe
     that there yet is another case that this does not handle,
@@ -850,9 +907,11 @@ Version 2.1c (8/8/2010)
     duplicate arguments.
   * Added a comment to the generated superclass module at the top
     that specifies the utf-8 source code encoding:
+
         # -*- coding: utf-8 -*- 
 
 Version 2.1b (8/2/2010)
+
   * Fix to generation of export functions.  If no children, must
     generate "pass" statement.
   * Changed generated get_all_text function so that it uses an "if"
@@ -861,15 +920,18 @@ Version 2.1b (8/2/2010)
     Python.
 
 Version 2.1a (7/8/2010)
+
   * Added ability to capture annotation/documentation element text
     as doc-strings in the generated classes.  Thanks to
     Roy Williams for suggesting this and for guidance.
 
 Version 2.0b (6/24/2010)
+
   * Fix to generation of export method so that valueOf_ is exported
     when childCount == 0 and not isMixed.
 
 Version 2.0a (6/21/2010)
+
   * Switched to use of lxml/ElementTree in generated files. 
     Thanks to Biswanath Patel and Jaime Huerta Cepas for
     encouraging me to implement the switch to lxml/ElementTree.
@@ -877,7 +939,7 @@ Version 2.0a (6/21/2010)
     and parseLiteral() so that they automatically recognize the
     root element of an instance XML document and call the build
     method of the appropriate class.
-  * Fix to hasContent_ method so that so that in elements defined
+  * Fix to hasContent_ method so that in elements defined
     with extension-base, the superclass is checked also.
   * For classes that must call an overridden method m in the
     superclass, switched to use "super(superclassname, self).m(...)"
@@ -889,10 +951,12 @@ Version 2.0a (6/21/2010)
     imports (for example collada_schema_1_5.xsd).
 
 Version 1.20g (5/21/2010)
+
   * Update to documentation -- Added a section on suggested ways to
     handle/recognize different top level (root) elements.
 
 Version 1.20f (5/3/2010)
+
   * Fix to generation of export so that anyAttribute does not cause
     duplicate attributes to be exported.
   * Fix so that we do a better job of determining whether a
@@ -901,11 +965,12 @@ Version 1.20f (5/3/2010)
   * Fix to generation of constructors so that (1) valueOf_ is
     intialized in subclass modules and (2) valueOf_ is initialized
     to None (rather than '').
-  To do: Extend the --root-element flag so that we can specify both
+  * To do: Extend the --root-element flag so that we can specify both
     the tag name and the element/type name.  Sometimes they are
     different.
 
 Version 1.20e (2/8/2010)
+
   * Fixed error that caused incorrect tag name to be exported
     when the tag name contains special characters and the tag name is
     different from the type name.
@@ -913,6 +978,7 @@ Version 1.20e (2/8/2010)
     distribution file.
 
 Version 1.20d (2/3/2010)
+
   * Updated version number/info in genereateds_gui.py.
   * Fix to process_includes.py -- Handle include elements and
     import elements in the same way.  In particular, allow both to
@@ -926,6 +992,7 @@ Version 1.20d (2/3/2010)
   * Added missing files in the tests/ directory to the distribution.
 
 Version 1.20c (1/1/2010)
+
   * Replaced symbolic links in the distribution with hard links. 
     Symbolic links do not work on MS Windows.
   * Fix to the use of the subprocess module in generateds_gui.py,
@@ -939,6 +1006,7 @@ Version 1.20c (1/1/2010)
     patch.  Also added a unit test for this case.
 
 Version 1.20b (12/14/2009)
+
   * Fix to process_includes.py so that it handles relative paths
     in include/import elements in the schema.
   * Various fixes and additions to the GUI front-end, e.g. added
@@ -955,6 +1023,7 @@ Version 1.20b (12/14/2009)
     See http://gensc.org).  Thank you, Erica.
   * generateDS.py can now generate bindings for the following
     (rather large) schemas:
+
     - gcdml -- Genomic Contextual Data Markup Language --
       See http://gensc.org
     - Collada -- 3D Asset Exchange Schema 1.5 -- See
@@ -965,10 +1034,12 @@ Version 1.20b (12/14/2009)
       http://www.fpml.org/
 
 Version 1.20a (12/01/2009)
+
   * Added first version of the GUI front-end.  See the generateDS
     doc (generateDS.html).
 
 Version 1.19a (10/21/2009)
+
   * Enhancement to the table of information generated in each class
     when the --member-specs=list|dict command line option is used. 
     For a complexType defined as a simpleType, we now generate a
@@ -976,9 +1047,12 @@ Version 1.19a (10/21/2009)
     name "valueOf_".  Thanks to Ryan Leslie for much help and
     guidance with these changes.
     Example:
+
         'valueOf_': MemberSpec_('valueOf_', [u'RelationType', 
             u'RelationType2', u'xs:string'], 0),
+
     Note the following incompatible changes:
+
       - _MemberSpec changed to MemberSpec_ -- We want avoid posible
         name conflicts, not make it "weakly hidden".  See the Python
         style guide for more on this
@@ -988,6 +1062,7 @@ Version 1.19a (10/21/2009)
         if the types is a list and the single type if not a list.
       - Method MemberSpec_.get_data_type_chain() is a new method that
         returns the entire list of data types.
+
     The new tutorial (see tutorial/tutorial.html in the
     distribution) has an example of the use of the MemberSpec
     feature.
@@ -1000,6 +1075,7 @@ Version 1.19a (10/21/2009)
   * There is now a preliminary version of a tutorial.
 
 Version 1.18f (9/14/2009)
+
   * Fixes to process_includes.py from Mihai Ibanescu.  These fixes
     address namespace and namespace prefix problems for XML tree
     that is copied into a document.  Thanks Mihai.
@@ -1019,6 +1095,7 @@ Version 1.18f (9/14/2009)
     Ryan Leslie.
 
 Version 1.18e (9/1/2009)
+
   * Added patch from Mihai Ibanescu which handles and expands
     groups.  Also added Mihai's unit test for groups.  Thank you,
     Mihai.
@@ -1031,6 +1108,7 @@ Version 1.18e (9/1/2009)
     differences.  Thanks again to Mihai.
 
 Version 1.18d (8/26/2009)
+
   * Automatic detection of the namespace prefix used in the schema
     document.  Thanks to Mihai Ibanescu for this enhancement.
   * Fix to deal conflicts with generateDS's internal function
@@ -1047,6 +1125,7 @@ Version 1.18d (8/26/2009)
     one element.  Thanks to Chris Allan for this fix.
 
 Version 1.18c (8/11/2009)
+
   * Small changes related to check for mixed content.
   * Enhancement to generation of hasContent_() method to check for items
     with maxOccurs > 1.
@@ -1055,6 +1134,7 @@ Version 1.18c (8/11/2009)
     skipped when the element is mixed.
 
 Version 1.18b (7/29/2009)
+
   * Fix for exception with simpleType that is an extension of 
     another simpleType.
   * Change to mixed extension chain -- Will now generate class.
@@ -1069,6 +1149,7 @@ Version 1.18b (7/29/2009)
     to stdout.
 
 Version 1.18a (7/14/2009)
+
   * Added command line flag --member-specs to generate the member
     specifications as described in "User Methods" section of the doc.
     The member specs can be a list or a dictionary.
@@ -1078,6 +1159,7 @@ Version 1.18a (7/14/2009)
     generated by generateDS.py.
 
 Version 1.17d (7/2/2009)
+
   * Fix for generation of recursively defined simpleTypes, e.g.
     a simpleType defined as a restriction of another simpleType.
     (see fix_simpletype comment in generateDS.py)
@@ -1086,6 +1168,7 @@ Version 1.17d (7/2/2009)
     correctly and fixed failure to initialize a local variable.
 
 Version 1.17c (6/24/2009)
+
   * Fix for error generating code for exporting related to
     simpleType.
   * Fix for syntax error in export of boolean types.
@@ -1095,10 +1178,12 @@ Version 1.17c (6/24/2009)
     command line option is used.
 
 Version 1.17b (6/10/2009)
+
   * Fix so that generateDS.py will still work with Python 2.4. 
     Thanks to Dave Sugar for that.
 
 Version 1.17a (5/20/2009)
+
   * Modified export of children of type xs:string so that
     (1) if None, not exported and (2) if not None but an
     empty string, exported (example "<aa></aa>").
@@ -1116,6 +1201,7 @@ Version 1.17a (5/20/2009)
     xs:string, xs:integer, etc.
 
 Version 1.16e (4/28/2009)
+
   * Eliminated generation of SAX parser.  I'm sure it no longer
     worked, anyway.
   * Fix to export of CDATA characters, provided by Kerim Mansour.
@@ -1133,22 +1219,27 @@ Version 1.16e (4/28/2009)
     any more anyway.
 
 Version 1.16d (3/25/2009)
+
   * Fixes to generation of the exportLiteral functions.  We
     can now do exportLiteral, then import the resulting file 
     in Python.  See generated parseLiteral() for an example.
   * Added an additional parameter to the export() methods.
     Now, you can call export() as follows:
+
         rootObj.export(outfile, 0,
             namespacedef_='xmlns:abc="http://www.abc.com/namespacelo"')
+
     which will insert the namespace prefix definition in the
     exported root element.
   * Added new command line option --namespacedef= to specify
     the namespacedef_ to be passed in by the generated
     parse() and parseString() functions.  Example use:
+
         generateDS.py --namespacedef='xmlns:abc="http://www.abc.com/"'
             -o out.py myschema.xsd
 
 Version 1.16c (3/13/2009)
+
   * One more fix for abstract types -- When the implementation
     element/class for an abstract class exports itself, it adds
     the xsi:type="class_name" attribute.
@@ -1160,10 +1251,12 @@ Version 1.16c (3/13/2009)
     attribute values.  Thanks to Kerim Mansour for help with this.
 
 Version 1.16b (3/9/2009)
+
   * Added support for restriction/list, i.e. a list of words
     separated by whitespace.
 
 Version 1.16a (2/16/2009)
+
   * Generated export methods now check for empty content and 
     write out <xx ... /> rather than <xx ...></xx> if empty.
   * All generated constructors (__init__()) now initialize
@@ -1175,6 +1268,7 @@ Version 1.16a (2/16/2009)
     use of self.xxx rather than self.get_xxx().
 
 Version 1.15d (1/22/2009)
+
   * Fix to setup.py so that it also installs process_includes.py.
   * Enhancements to process_includes.py so that it can also
     retrieve included files via ftp and http.
@@ -1182,19 +1276,23 @@ Version 1.15d (1/22/2009)
   * The above changes are all from Arne Grimstrup.  Thank you Arne.
 
 Version 1.15c (11/26/2008)
+
   * Added switch (--silence) to cause generateDS.py to generate
     parsing functions that do not write output to stdout.  This fix
     contributed by Al Niessner.
 
 Version 1.15b (11/24/2008)
+
   * Added Amnon Janiv's fixes for attribute groups and for logging.
 
 Version 1.15a (11/20/2008)
+
   * Added support for abstract elements/types.  See:
     http://www.w3.org/TR/xmlschema-0/#abstract
     Thanks to Luigi Paioro for help with this.
 
 Version 1.14g (10/17/2008)
+
   * Fix in generation of exportChildren (omitted "_" in "namespace".
 
 Version 1.14f (10/06/2008)
@@ -1414,9 +1512,10 @@ Version 1.7b (11/15/04)
     the root.
 
 Version 1.7a (10/28/04)
-  Thanks very much to Lloyd Kvam for help with these fixes and
-  improvements.  His ideas, suggestions, and work have been
-  extremely valuable.
+
+  * Thanks very much to Lloyd Kvam for help with these fixes and
+    improvements.  His ideas, suggestions, and work have been
+    extremely valuable.
   * Implementd partial support for <xsd:extension base="">.
     Limitation: extension elements cannot override members
     defined in a base.
@@ -1431,6 +1530,7 @@ Version 1.7a (10/28/04)
     maxOccurs given a value other than "1" or "unbounded".
 
 Version 1.6d (10/1/04)
+
   * Several bug fixes.
   * Added command-line flag --subclass-suffix="X".  Changes the
     suffix appended to the class name in subclass files.  Default
@@ -1450,6 +1550,7 @@ Version 1.6d (10/1/04)
     nested.
 
 Version 1.6c (9/15/04)
+
   * generateDS.py was not walking lower levels of the tree data
     structure collected by the SAX parser that describes the
     classes to be generated.  Now, function generate() calls
@@ -1464,6 +1565,7 @@ Version 1.6c (9/15/04)
     build(), etc.
 
 Version 1.6b (9/10/04, yet again)
+
   * Still fixing bug related to generating all the sub-class
     stubs.  All sub-classes were not being generated when no
     superclasses were generated (-o flag omitted), because there
@@ -1473,10 +1575,12 @@ Version 1.6b (9/10/04, yet again)
     temp file if they are not requested.
 
 Version 1.6b (8/26/04, again)
+
   * Fixed bug -- complexTypes defined in-line were omitted from the
     sub-class file.  Now these sub-classes are being generated.
 
 Version 1.6b (8/18/04)
+
   * Added ability to access the text content of elements that are
     defined but have *no* nested elements.  The member variable is
     "valueOf_" (note underscore which will hopefully avoid name
@@ -1575,6 +1679,7 @@ Version 1.2a (again, 5/16/03)
   * Fixed error in code generation for float values.
   * Added very simple unit tests in tests directory.  Can be run
     with:
+
         cd tests
         python test.py
 
