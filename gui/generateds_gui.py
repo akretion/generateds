@@ -31,7 +31,7 @@ from libgenerateDS.gui import generateds_gui_session
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.17a'
+VERSION = '2.18a'
 ##VERSION##
 
 

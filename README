@@ -141,7 +141,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version2.17b (12/16/2015)
+Version2.18a (12/16/2015)
 
 - Fixed quoting of simpleContent so that, e.g., "&amp;" is exported
   as "&amp;" and not as "&".  Thanks to Ardan Patwardha for
