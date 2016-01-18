@@ -107,6 +107,7 @@ Options:
                              distribution.
     --fix-type-names="oldname1:newname1;oldname2:newname2;..."
                              Fix up (replace) complex type names.
+    --py3                    Generate code for Python 3.
     --version                Print version and exit.
 
 Usage example:
@@ -194,7 +195,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.18a'
+VERSION = '2.19a'
 ##VERSION##
 
 GenerateProperties = 0
@@ -261,6 +262,7 @@ SingleFileOutput = True
 OutputDirectory = None
 ModuleSuffix = ""
 PreserveCdataTags = False
+GeneratePy3 = False
 
 SchemaToPythonTypeMap = {}
 
@@ -4057,21 +4059,30 @@ def generateCtor(wrt, prefix, element):
             mbrname = name
         attrType = attrDef.getType()
         if attrType == DateTimeType:
-            wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
+            if GeneratePy3:
+                wrt("        if isinstance(%s, str):\n" % (mbrname, ))
+            else:
+                wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
                 "%s, '%%Y-%%m-%%dT%%H:%%M:%%S')\n" % (mbrname, ))
             wrt("        else:\n")
             wrt("            initvalue_ = %s\n" % (mbrname, ))
             wrt("        self.%s = initvalue_\n" % (name, ))
         elif attrType == DateType:
-            wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
+            if GeneratePy3:
+                wrt("        if isinstance(%s, str):\n" % (mbrname, ))
+            else:
+                wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
                 "%s, '%%Y-%%m-%%d').date()\n" % (mbrname, ))
             wrt("        else:\n")
             wrt("            initvalue_ = %s\n" % (mbrname, ))
             wrt("        self.%s = initvalue_\n" % (name, ))
         elif attrType == TimeType:
-            wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
+            if GeneratePy3:
+                wrt("        if isinstance(%s, str):\n" % (mbrname, ))
+            else:
+                wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
                 "%s, '%%H:%%M:%%S').time()\n" % (mbrname, ))
             wrt("        else:\n")
@@ -4100,7 +4111,10 @@ def generateCtor(wrt, prefix, element):
             else:
                 wrt('        self.anytypeobjs_ = anytypeobjs_\n')
         elif childType == DateTimeType and child.getMaxOccurs() <= 1:
-            wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
+            if GeneratePy3:
+                wrt("        if isinstance(%s, str):\n" % (mbrname, ))
+            else:
+                wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
                 "%s, '%%Y-%%m-%%dT%%H:%%M:%%S')\n" % (mbrname, ))
             wrt("        else:\n")
@@ -4110,7 +4124,10 @@ def generateCtor(wrt, prefix, element):
             else:
                 wrt("        self.%s = initvalue_\n" % (name, ))
         elif childType == DateType and child.getMaxOccurs() <= 1:
-            wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
+            if GeneratePy3:
+                wrt("        if isinstance(%s, str):\n" % (mbrname, ))
+            else:
+                wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
                 "%s, '%%Y-%%m-%%d').date()\n" % (mbrname, ))
             wrt("        else:\n")
@@ -4120,7 +4137,10 @@ def generateCtor(wrt, prefix, element):
             else:
                 wrt("        self.%s = initvalue_\n" % (name, ))
         elif childType == TimeType and child.getMaxOccurs() <= 1:
-            wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
+            if GeneratePy3:
+                wrt("        if isinstance(%s, str):\n" % (mbrname, ))
+            else:
+                wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
                 "%s, '%%H:%%M:%%S').time()\n" % (mbrname, ))
             wrt("        else:\n")
@@ -4834,19 +4854,19 @@ TEMPLATE_HEADER = """\
 # -*- coding: utf-8 -*-
 
 #
-# Generated %s by generateDS.py%s.
+# Generated {tstamp} by generateDS.py{version}.
 #
 # Command line options:
-%s
+{options1}
 #
 # Command line arguments:
-#   %s
+#   {args1}
 #
 # Command line:
-#   %s
+#   {command_line}
 #
 # Current working directory (os.getcwd()):
-#   %s
+#   {current_working_directory}
 #
 
 import sys
@@ -4903,11 +4923,11 @@ except ImportError as exp:
         def gds_validate_base64(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer(self, input_data, input_name=''):
-            return '%%d' %% input_data
+            return '%d' % input_data
         def gds_validate_integer(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer_list(self, input_data, input_name=''):
-            return '%%s' %% ' '.join(input_data)
+            return '%s' % ' '.join(input_data)
         def gds_validate_integer_list(
                 self, input_data, node=None, input_name=''):
             values = input_data.split()
@@ -4918,11 +4938,11 @@ except ImportError as exp:
                     raise_parse_error(node, 'Requires sequence of integers')
             return values
         def gds_format_float(self, input_data, input_name=''):
-            return ('%%.15f' %% input_data).rstrip('0')
+            return ('%.15f' % input_data).rstrip('0')
         def gds_validate_float(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_float_list(self, input_data, input_name=''):
-            return '%%s' %% ' '.join(input_data)
+            return '%s' % ' '.join(input_data)
         def gds_validate_float_list(
                 self, input_data, node=None, input_name=''):
             values = input_data.split()
@@ -4933,11 +4953,11 @@ except ImportError as exp:
                     raise_parse_error(node, 'Requires sequence of floats')
             return values
         def gds_format_double(self, input_data, input_name=''):
-            return '%%e' %% input_data
+            return '%e' % input_data
         def gds_validate_double(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_double_list(self, input_data, input_name=''):
-            return '%%s' %% ' '.join(input_data)
+            return '%s' % ' '.join(input_data)
         def gds_validate_double_list(
                 self, input_data, node=None, input_name=''):
             values = input_data.split()
@@ -4948,11 +4968,11 @@ except ImportError as exp:
                     raise_parse_error(node, 'Requires sequence of doubles')
             return values
         def gds_format_boolean(self, input_data, input_name=''):
-            return ('%%s' %% input_data).lower()
+            return ('%s' % input_data).lower()
         def gds_validate_boolean(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
-            return '%%s' %% ' '.join(input_data)
+            return '%s' % ' '.join(input_data)
         def gds_validate_boolean_list(
                 self, input_data, node=None, input_name=''):
             values = input_data.split()
@@ -4967,7 +4987,7 @@ except ImportError as exp:
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
             if input_data.microsecond == 0:
-                _svalue = '%%04d-%%02d-%%02dT%%02d:%%02d:%%02d' %% (
+                _svalue = '%04d-%02d-%02dT%02d:%02d:%02d' % (
                     input_data.year,
                     input_data.month,
                     input_data.day,
@@ -4976,14 +4996,14 @@ except ImportError as exp:
                     input_data.second,
                 )
             else:
-                _svalue = '%%04d-%%02d-%%02dT%%02d:%%02d:%%02d.%%s' %% (
+                _svalue = '%04d-%02d-%02dT%02d:%02d:%02d.%s' % (
                     input_data.year,
                     input_data.month,
                     input_data.day,
                     input_data.hour,
                     input_data.minute,
                     input_data.second,
-                    ('%%f' %% (float(input_data.microsecond) / 1000000))[2:],
+                    ('%f' % (float(input_data.microsecond) / 1000000))[2:],
                 )
             if input_data.tzinfo is not None:
                 tzoff = input_data.tzinfo.utcoffset(input_data)
@@ -4999,7 +5019,7 @@ except ImportError as exp:
                             _svalue += '+'
                         hours = total_seconds // 3600
                         minutes = (total_seconds - (hours * 3600)) // 60
-                        _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                        _svalue += '{{0:02d}}:{{1:02d}}'.format(hours, minutes)
             return _svalue
         @classmethod
         def gds_parse_datetime(cls, input_data):
@@ -5020,18 +5040,18 @@ except ImportError as exp:
             time_parts = input_data.split('.')
             if len(time_parts) > 1:
                 micro_seconds = int(float('0.' + time_parts[1]) * 1000000)
-                input_data = '%%s.%%s' %% (time_parts[0], micro_seconds, )
+                input_data = '%s.%s' % (time_parts[0], micro_seconds, )
                 dt = datetime_.datetime.strptime(
-                    input_data, '%%Y-%%m-%%dT%%H:%%M:%%S.%%f')
+                    input_data, '%Y-%m-%dT%H:%M:%S.%f')
             else:
                 dt = datetime_.datetime.strptime(
-                    input_data, '%%Y-%%m-%%dT%%H:%%M:%%S')
+                    input_data, '%Y-%m-%dT%H:%M:%S')
             dt = dt.replace(tzinfo=tz)
             return dt
         def gds_validate_date(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
-            _svalue = '%%04d-%%02d-%%02d' %% (
+            _svalue = '%04d-%02d-%02d' % (
                 input_data.year,
                 input_data.month,
                 input_data.day,
@@ -5051,7 +5071,7 @@ except ImportError as exp:
                                 _svalue += '+'
                             hours = total_seconds // 3600
                             minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            _svalue += '{{0:02d}}:{{1:02d}}'.format(hours, minutes)
             except AttributeError:
                 pass
             return _svalue
@@ -5071,24 +5091,24 @@ except ImportError as exp:
                     tz = GeneratedsSuper._FixedOffsetTZ(
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
-            dt = datetime_.datetime.strptime(input_data, '%%Y-%%m-%%d')
+            dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
             dt = dt.replace(tzinfo=tz)
             return dt.date()
         def gds_validate_time(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_time(self, input_data, input_name=''):
             if input_data.microsecond == 0:
-                _svalue = '%%02d:%%02d:%%02d' %% (
+                _svalue = '%02d:%02d:%02d' % (
                     input_data.hour,
                     input_data.minute,
                     input_data.second,
                 )
             else:
-                _svalue = '%%02d:%%02d:%%02d.%%s' %% (
+                _svalue = '%02d:%02d:%02d.%s' % (
                     input_data.hour,
                     input_data.minute,
                     input_data.second,
-                    ('%%f' %% (float(input_data.microsecond) / 1000000))[2:],
+                    ('%f' % (float(input_data.microsecond) / 1000000))[2:],
                 )
             if input_data.tzinfo is not None:
                 tzoff = input_data.tzinfo.utcoffset(input_data)
@@ -5104,7 +5124,7 @@ except ImportError as exp:
                             _svalue += '+'
                         hours = total_seconds // 3600
                         minutes = (total_seconds - (hours * 3600)) // 60
-                        _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                        _svalue += '{{0:02d}}:{{1:02d}}'.format(hours, minutes)
             return _svalue
         def gds_validate_simple_patterns(self, patterns, target):
             # pat is a list of lists of strings/patterns.  We should:
@@ -5138,9 +5158,9 @@ except ImportError as exp:
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
             if len(input_data.split('.')) > 1:
-                dt = datetime_.datetime.strptime(input_data, '%%H:%%M:%%S.%%f')
+                dt = datetime_.datetime.strptime(input_data, '%H:%M:%S.%f')
             else:
-                dt = datetime_.datetime.strptime(input_data, '%%H:%%M:%%S')
+                dt = datetime_.datetime.strptime(input_data, '%H:%M:%S')
             dt = dt.replace(tzinfo=tz)
             return dt.time()
         def gds_str_lower(self, instring):
@@ -5151,7 +5171,7 @@ except ImportError as exp:
             path_list.reverse()
             path = '/'.join(path_list)
             return path
-        Tag_strip_pattern_ = re_.compile(r'\{.*\}')
+        Tag_strip_pattern_ = re_.compile(r'\{{.*\}}')
         def get_path_list_(self, node, path_list):
             if node is None:
                 return
@@ -5162,7 +5182,7 @@ except ImportError as exp:
         def get_class_obj_(self, node, default_class=None):
             class_obj1 = default_class
             if 'xsi' in node.nsmap:
-                classname = node.get('{%%s}type' %% node.nsmap['xsi'])
+                classname = node.get('{{%s}}type' % node.nsmap['xsi'])
                 if classname is not None:
                     names = classname.split(':')
                     if len(names) == 2:
@@ -5175,7 +5195,7 @@ except ImportError as exp:
             return None
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
-            return dict(((v, k) for k, v in mapping.iteritems()))
+            {gds_reverse_node_mapping_text}
 
 
 #
@@ -5197,12 +5217,12 @@ except ImportError as exp:
 # Globals
 #
 
-ExternalEncoding = '%s'
-Tag_pattern_ = re_.compile(r'({.*})?(.*)')
+ExternalEncoding = '{ExternalEncoding}'
+Tag_pattern_ = re_.compile(r'({{.*}})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\\n\\r\\s]+")
-Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
+Namespace_extract_pat_ = re_.compile(r'{{(.*)}}(.*)')
 CDATA_pattern_ = re_.compile(r"<!\\[CDATA\\[.*?\\]\\]>", re_.DOTALL)
-%s
+{preserve_cdata_tags_pat}
 #
 # Support/utility functions.
 #
@@ -5218,8 +5238,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%%s' %% inStr)
+    {quote_xml_text}
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -5241,18 +5260,17 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%%s' %% inStr)
+    {quote_attrib_text}
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     if '"' in s1:
         if "'" in s1:
-            s1 = '"%%s"' %% s1.replace('"', "&quot;")
+            s1 = '"%s"' % s1.replace('"', "&quot;")
         else:
-            s1 = "'%%s'" %% s1
+            s1 = "'%s'" % s1
     else:
-        s1 = '"%%s"' %% s1
+        s1 = '"%s"' % s1
     return s1
 
 
@@ -5260,19 +5278,19 @@ def quote_python(inStr):
     s1 = inStr
     if s1.find("'") == -1:
         if s1.find('\\n') == -1:
-            return "'%%s'" %% s1
+            return "'%s'" % s1
         else:
-            return "'''%%s'''" %% s1
+            return "'''%s'''" % s1
     else:
         if s1.find('"') != -1:
             s1 = s1.replace('"', '\\\\"')
         if s1.find('\\n') == -1:
-            return '"%%s"' %% s1
+            return '"%s"' % s1
         else:
-            return '\"\"\"%%s\"\"\"' %% s1
+            return '\"\"\"%s\"\"\"' % s1
 
 
-%s
+{preserve_cdata_get_text}
 
 def find_attr_value_(attr_name, node):
     attrs = node.attrib
@@ -5284,7 +5302,7 @@ def find_attr_value_(attr_name, node):
         prefix, name = attr_parts
         namespace = node.nsmap.get(prefix)
         if namespace is not None:
-            value = attrs.get('{%%s}%%s' %% (namespace, name, ))
+            value = attrs.get('{{%s}}%s' % (namespace, name, ))
     return value
 
 
@@ -5293,7 +5311,7 @@ class GDSParseError(Exception):
 
 
 def raise_parse_error(node, msg):
-    msg = '%%s (element %%s/line %%d)' %% (msg, node.tag, node.sourceline, )
+    msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline, )
     raise GDSParseError(msg)
 
 
@@ -5337,21 +5355,21 @@ class MixedContainer:
             self.value.export(outfile, level, namespace, name, pretty_print)
     def exportSimple(self, outfile, level, name):
         if self.content_type == MixedContainer.TypeString:
-            outfile.write('<%%s>%%s</%%s>' %% (
+            outfile.write('<%s>%s</%s>' % (
                 self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeInteger or \\
                 self.content_type == MixedContainer.TypeBoolean:
-            outfile.write('<%%s>%%d</%%s>' %% (
+            outfile.write('<%s>%d</%s>' % (
                 self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeFloat or \\
                 self.content_type == MixedContainer.TypeDecimal:
-            outfile.write('<%%s>%%f</%%s>' %% (
+            outfile.write('<%s>%f</%s>' % (
                 self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeDouble:
-            outfile.write('<%%s>%%g</%%s>' %% (
+            outfile.write('<%s>%g</%s>' % (
                 self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeBase64:
-            outfile.write('<%%s>%%s</%%s>' %% (
+            outfile.write('<%s>%s</%s>' % (
                 self.name, base64.b64encode(self.value), self.name))
     def to_etree(self, element):
         if self.category == MixedContainer.CategoryText:
@@ -5368,7 +5386,7 @@ class MixedContainer:
                     else:
                         element.text += self.value
         elif self.category == MixedContainer.CategorySimple:
-            subelement = etree_.SubElement(element, '%%s' %% self.name)
+            subelement = etree_.SubElement(element, '%s' % self.name)
             subelement.text = self.to_etree_simple()
         else:    # category == MixedContainer.CategoryComplex
             self.value.to_etree(element)
@@ -5377,30 +5395,30 @@ class MixedContainer:
             text = self.value
         elif (self.content_type == MixedContainer.TypeInteger or
                 self.content_type == MixedContainer.TypeBoolean):
-            text = '%%d' %% self.value
+            text = '%d' % self.value
         elif (self.content_type == MixedContainer.TypeFloat or
                 self.content_type == MixedContainer.TypeDecimal):
-            text = '%%f' %% self.value
+            text = '%f' % self.value
         elif self.content_type == MixedContainer.TypeDouble:
-            text = '%%g' %% self.value
+            text = '%g' % self.value
         elif self.content_type == MixedContainer.TypeBase64:
-            text = '%%s' %% base64.b64encode(self.value)
+            text = '%s' % base64.b64encode(self.value)
         return text
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
             outfile.write(
-                'model_.MixedContainer(%%d, %%d, "%%s", "%%s"),\\n' %% (
+                'model_.MixedContainer(%d, %d, "%s", "%s"),\\n' % (
                     self.category, self.content_type, self.name, self.value))
         elif self.category == MixedContainer.CategorySimple:
             showIndent(outfile, level)
             outfile.write(
-                'model_.MixedContainer(%%d, %%d, "%%s", "%%s"),\\n' %% (
+                'model_.MixedContainer(%d, %d, "%s", "%s"),\\n' % (
                     self.category, self.content_type, self.name, self.value))
         else:    # category == MixedContainer.CategoryComplex
             showIndent(outfile, level)
             outfile.write(
-                'model_.MixedContainer(%%d, %%d, "%%s",\\n' %% (
+                'model_.MixedContainer(%d, %d, "%s",\\n' % (
                     self.category, self.content_type, self.name,))
             self.value.exportLiteral(outfile, level + 1)
             showIndent(outfile, level)
@@ -5511,13 +5529,33 @@ def generateHeader(wrt, prefix, options, args, externalImports):
     else:
         preserve_cdata_tags_pat = ""
         preserve_cdata_get_text = Preserve_cdata_get_all_text2
-    s1 = TEMPLATE_HEADER % (
-        tstamp, version,
-        options1, args1,
-        command_line, current_working_directory,
-        ExternalEncoding,
-        preserve_cdata_tags_pat,
-        preserve_cdata_get_text,
+    if GeneratePy3:
+        gds_reverse_node_mapping_text = \
+            "return dict(((v, k) for k, v in mapping.items()))"
+        quote_xml_text = \
+            "s1 = (isinstance(inStr, str) and inStr or '%s' % inStr)"
+        quote_attrib_text = \
+            "s1 = (isinstance(inStr, str) and inStr or '%s' % inStr)"
+    else:
+        gds_reverse_node_mapping_text = \
+            "return dict(((v, k) for k, v in mapping.iteritems()))"
+        quote_xml_text = \
+            "s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)"
+        quote_attrib_text = \
+            "s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)"
+    s1 = TEMPLATE_HEADER.format(
+        tstamp=tstamp,
+        version=version,
+        options1=options1,
+        args1=args1,
+        command_line=command_line,
+        current_working_directory=current_working_directory,
+        ExternalEncoding=ExternalEncoding,
+        preserve_cdata_tags_pat=preserve_cdata_tags_pat,
+        preserve_cdata_get_text=preserve_cdata_get_text,
+        gds_reverse_node_mapping_text=gds_reverse_node_mapping_text,
+        quote_xml_text=quote_xml_text,
+        quote_attrib_text=quote_attrib_text,
     )
     wrt(s1)
     for externalImport in externalImports:
@@ -6694,7 +6732,7 @@ def main():
         ExportWrite, ExportEtree, ExportLiteral, \
         FixTypeNames, SingleFileOutput, OutputDirectory, \
         ModuleSuffix, UseOldSimpleTypeValidators, \
-        PreserveCdataTags, CleanupNameList
+        PreserveCdataTags, CleanupNameList, GeneratePy3
     outputText = True
     args = sys.argv[1:]
     try:
@@ -6712,6 +6750,7 @@ def main():
                 'one-file-per-xsd', 'output-directory=',
                 'module-suffix=', 'use-old-simpletype-validators',
                 'preserve-cdata-tags', 'cleanup-name-list=',
+                'py3',
             ])
     except getopt.GetoptError:
         usage()
@@ -6899,6 +6938,8 @@ def main():
                         'Option --cleanup-name-list contains invalid '
                         'pattern "%s".'
                         % cleanup_pair[0])
+        elif option[0] == '--py3':
+            GeneratePy3 = True
 
     if showVersion:
         print('generateDS.py version %s' % VERSION)

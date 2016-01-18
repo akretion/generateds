@@ -12,7 +12,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.18a
+:revision: 2.19a
 
 .. version
 
@@ -325,6 +325,7 @@ Here is the usage message displayed by ``generateDS.py``::
                                  distribution.
         --fix-type-names="oldname1:newname1;oldname2:newname2;..."
                                  Fix up (replace) complex type names.
+        --py3                    Generate code for Python 3.
         --version                Print version and exit.
 
     Usage example:
@@ -632,9 +633,14 @@ fix-type-names="oldname1:newname1;oldname2:newname2;..." Fix up
         $ generateDS.py --fix-type-names="type1:type1Aux"
         $ generateDS.py --fix-type-names="type1;type2:type2Repl"
 
+py3
+    Generate code for Python 3.  Although ``generateDS.py`` itself
+    must still be run under Python 2, it can generate code that will
+    run under (and will have the same behavior) under Python 3.
+
 version
-    Print out the current version of generateDS.py and immediately
-    exit.
+    Print out the current version of ``generateDS.py`` and
+    immediately exit.
 
 
 Name conflicts etc.

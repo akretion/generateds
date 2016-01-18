@@ -141,7 +141,25 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version2.18a (12/16/2015)
+Version 2.19a (01/18/2016)
+
+- Added the ability to generate code that can run under Python 3.
+  Use the --py3 command line option.
+- Fixed the template (TEMPLATE_HEADER) so that it uses the format
+  function and keyword arguments.
+- Added info on --py3 command line option to doc (generateDS.txt).
+- Added new script that can be used to fix-up (change) which
+  subclass file (of two or more that were generated with the -s
+  command line option) is used by the superclass file when parsing
+  an XML instance document.  This will enable you to use the -s
+  option to generate multiple subclass files, add different code to
+  each of them, and then parse documents and create instances of
+  classes from one then another during the same run.
+- Added generation of code to lookup the subclass of a generated
+  class using a global variable containing the subclass module.
+
+
+Version 2.18a (12/16/2015)
 
 - Fixed quoting of simpleContent so that, e.g., "&amp;" is exported
   as "&amp;" and not as "&".  Thanks to Ardan Patwardha for
@@ -158,7 +176,7 @@ Version2.18a (12/16/2015)
   Thanks to Ardan Patwardhan for diagnosing this and for
   contributing the fix.
 
-Version2.17a (08/17/2015)
+Version 2.17a (08/17/2015)
 
 - Modified setup.py so that process_includes.py is installed where
   it can be imported.
