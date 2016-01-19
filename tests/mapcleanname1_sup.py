@@ -226,7 +226,8 @@ except ImportError as exp:
                                 _svalue += '+'
                             hours = total_seconds // 3600
                             minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            _svalue += '{0:02d}:{1:02d}'.format(
+                                hours, minutes)
             except AttributeError:
                 pass
             return _svalue
@@ -352,6 +353,14 @@ except ImportError as exp:
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
 
+    def getSubclassFromModule_(module, class_):
+        '''Get the subclass of a class from a specific module.'''
+        name = class_.__name__ + 'Sub'
+        if hasattr(module, name):
+            return getattr(module, name)
+        else:
+            return None
+
 
 #
 # If you have installed IPython you can uncomment and use the following.
@@ -377,6 +386,10 @@ Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
 CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
+
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
 
 #
 # Support/utility functions.
@@ -639,6 +652,11 @@ class complex_type01(GeneratedsSuper):
         self.float_value01 = float_value01
         self.field01 = field01
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, complex_type01)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if complex_type01.subclass:
             return complex_type01.subclass(*args_, **kwargs_)
         else:
@@ -757,6 +775,11 @@ class complex_type02(GeneratedsSuper):
         self.float_value02 = float_value02
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, complex_type02)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if complex_type02.subclass:
             return complex_type02.subclass(*args_, **kwargs_)
         else:
@@ -874,6 +897,11 @@ class complex_type03(complex_type02):
             self.integer_value03 = integer_value03
         self.float_value03 = float_value03
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, complex_type03)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if complex_type03.subclass:
             return complex_type03.subclass(*args_, **kwargs_)
         else:
@@ -985,6 +1013,11 @@ class type_(GeneratedsSuper):
         self.float_value02 = float_value02
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, type_)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if type_.subclass:
             return type_.subclass(*args_, **kwargs_)
         else:
@@ -1102,6 +1135,11 @@ class complex_type04(type_):
             self.integer_value03 = integer_value03
         self.float_value03 = float_value03
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, complex_type04)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if complex_type04.subclass:
             return complex_type04.subclass(*args_, **kwargs_)
         else:
@@ -1213,6 +1251,11 @@ class build_(GeneratedsSuper):
         self.float_value02 = float_value02
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, build_)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if build_.subclass:
             return build_.subclass(*args_, **kwargs_)
         else:
@@ -1330,6 +1373,11 @@ class complex_type05(build_):
             self.integer_value03 = integer_value03
         self.float_value03 = float_value03
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, complex_type05)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if complex_type05.subclass:
             return complex_type05.subclass(*args_, **kwargs_)
         else:

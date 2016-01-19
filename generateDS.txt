@@ -831,6 +831,63 @@ you will need to use the "-a" command line option when you run
     generateDS.py -a "xsd:" --super=mylib -o mylib.py -s myapp.py someschema.xsd
 
 
+Using multiple subclass modules with the same superclass module
+-----------------------------------------------------------------
+
+Suppose that from a single XML schema, you have generated a
+superclass module and a subclass module (using the "-o" and "-s"
+command line options).  Now you make a copy of the subclass module.
+Next you add special and different code to each of the subclass
+modules.  You can run these two subclass modules separately and
+(after a bit of debugging) each works fine.  And, you can import
+each subclass module in separate applications, and things are still
+good.  However, if you import both subclass modules into a single
+application, you find that one of them is "ignored" by the
+superclass module when it parses XML instance documents and builds
+classes.  Effectively, each subclass module, when it is imported,
+sets a class variable (``subclass``) in each superclass to the
+subclass to be used by the superclass, and the last subclass
+imported module wins.
+
+There are two solutions to this problem:
+
+1. Use the script/function provided by the distribution in file
+   ``fix_subclass_refs.py``.  The doc string in that module explains
+   how to use it and gives an example of its use.
+
+2. Each generated superclass module (starting with ``generateDS.py``
+   v. 2-19a) contains a global variable ``CurrentSubclassModule_``.
+   The value of this variable, if it is not None, overrides the
+   value of the class variable ``subclass`` in each generated
+   superclass.  You can change the value of this variable before
+   parsing an XML document and building instances of the generated
+   classes.  
+
+   Here is an example of the use of this feature::
+
+       #!/usr/bin/env python
+
+       import tmp01suba
+       import tmp01subb
+
+
+       def test():
+           tmp01suba.supermod.CurrentSubclassModule_ = tmp01suba
+           roota = tmp01suba.parse('test01.xml', silence=True)
+           tmp01subb.supermod.CurrentSubclassModule_ = tmp01subb
+           rootb = tmp01subb.parse('test01.xml', silence=True)
+           roota.show()
+           print '-' * 50
+           rootb.show()
+
+
+       test()
+
+The second alternative (above) is likely to be a more convenient
+solution in most cases.  But, there are possibly use cases where the
+first, which uses ``fix_subclass_refs.py`` will be helpful.
+
+
 Supported features of XML Schema
 ================================
 
