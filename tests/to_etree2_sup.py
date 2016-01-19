@@ -228,7 +228,8 @@ except ImportError as exp:
                                 _svalue += '+'
                             hours = total_seconds // 3600
                             minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            _svalue += '{0:02d}:{1:02d}'.format(
+                                hours, minutes)
             except AttributeError:
                 pass
             return _svalue
@@ -354,6 +355,14 @@ except ImportError as exp:
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
 
+    def getSubclassFromModule_(module, class_):
+        '''Get the subclass of a class from a specific module.'''
+        name = class_.__name__ + 'Sub'
+        if hasattr(module, name):
+            return getattr(module, name)
+        else:
+            return None
+
 
 #
 # If you have installed IPython you can uncomment and use the following.
@@ -379,6 +388,10 @@ Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
 CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
+
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
 
 #
 # Support/utility functions.
@@ -660,6 +673,11 @@ class peopleType(GeneratedsSuper):
         else:
             self.java_programmer = java_programmer
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, peopleType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if peopleType.subclass:
             return peopleType.subclass(*args_, **kwargs_)
         else:
@@ -801,6 +819,11 @@ class commentsType(GeneratedsSuper):
             self.content_ = content_
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, commentsType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if commentsType.subclass:
             return commentsType.subclass(*args_, **kwargs_)
         else:
@@ -914,6 +937,11 @@ class personType(GeneratedsSuper):
         self.validate_RangeType(self.range_)
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, personType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if personType.subclass:
             return personType.subclass(*args_, **kwargs_)
         else:
@@ -1112,6 +1140,11 @@ class specialperson(personType):
         self.original_tagname_ = None
         super(specialperson, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, )
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, specialperson)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if specialperson.subclass:
             return specialperson.subclass(*args_, **kwargs_)
         else:
@@ -1205,6 +1238,11 @@ class programmerType(personType):
         self.validate_ArrayTypes(self.elarraytypes)
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, programmerType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if programmerType.subclass:
             return programmerType.subclass(*args_, **kwargs_)
         else:
@@ -1512,6 +1550,11 @@ class paramType(GeneratedsSuper):
         self.id = _cast(None, id)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, paramType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if paramType.subclass:
             return paramType.subclass(*args_, **kwargs_)
         else:
@@ -1629,6 +1672,11 @@ class python_programmerType(programmerType):
         self.validate_FlowType(self.flowvalue)
         self.drcs = drcs
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, python_programmerType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if python_programmerType.subclass:
             return python_programmerType.subclass(*args_, **kwargs_)
         else:
@@ -1754,6 +1802,11 @@ class java_programmerType(programmerType):
         self.datetime4 = datetime4
         self.datetime5 = datetime5
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, java_programmerType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if java_programmerType.subclass:
             return java_programmerType.subclass(*args_, **kwargs_)
         else:
@@ -1883,6 +1936,11 @@ class agentType(GeneratedsSuper):
             self.vehicle = vehicle
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, agentType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if agentType.subclass:
             return agentType.subclass(*args_, **kwargs_)
         else:
@@ -2000,6 +2058,11 @@ class special_agentType(agentType):
         self.priority = priority
         self.info = info
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, special_agentType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if special_agentType.subclass:
             return special_agentType.subclass(*args_, **kwargs_)
         else:
@@ -2095,6 +2158,11 @@ class weird_agentType(agentType):
         self.priority = priority
         self.info = info
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, weird_agentType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if weird_agentType.subclass:
             return weird_agentType.subclass(*args_, **kwargs_)
         else:
@@ -2204,6 +2272,11 @@ class boosterType(GeneratedsSuper):
         else:
             self.client_handler = client_handler
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, boosterType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if boosterType.subclass:
             return boosterType.subclass(*args_, **kwargs_)
         else:
@@ -2350,6 +2423,11 @@ class infoType(GeneratedsSuper):
         self.type_ = _cast(int, type_)
         self.name = _cast(None, name)
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, infoType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if infoType.subclass:
             return infoType.subclass(*args_, **kwargs_)
         else:
@@ -2424,6 +2502,11 @@ class vehicleType(GeneratedsSuper):
         self.wheelcount = wheelcount
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, vehicleType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if vehicleType.subclass:
             return vehicleType.subclass(*args_, **kwargs_)
         else:
@@ -2488,6 +2571,11 @@ class automobile(vehicleType):
         super(automobile, self).__init__(wheelcount, )
         self.drivername = drivername
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, automobile)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if automobile.subclass:
             return automobile.subclass(*args_, **kwargs_)
         else:
@@ -2540,6 +2628,11 @@ class airplane(vehicleType):
         super(airplane, self).__init__(wheelcount, )
         self.pilotname = pilotname
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, airplane)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if airplane.subclass:
             return airplane.subclass(*args_, **kwargs_)
         else:
@@ -2602,6 +2695,11 @@ class hot_agent(GeneratedsSuper):
         self.startDate = initvalue_
         self.anyAttributes_ = {}
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, hot_agent)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if hot_agent.subclass:
             return hot_agent.subclass(*args_, **kwargs_)
         else:
@@ -2695,6 +2793,11 @@ class client_handlerType(GeneratedsSuper):
         self.fullname = fullname
         self.refid = refid
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, client_handlerType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if client_handlerType.subclass:
             return client_handlerType.subclass(*args_, **kwargs_)
         else:

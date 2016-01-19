@@ -225,7 +225,8 @@ except ImportError as exp:
                                 _svalue += '+'
                             hours = total_seconds // 3600
                             minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            _svalue += '{0:02d}:{1:02d}'.format(
+                                hours, minutes)
             except AttributeError:
                 pass
             return _svalue
@@ -351,6 +352,14 @@ except ImportError as exp:
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
 
+    def getSubclassFromModule_(module, class_):
+        '''Get the subclass of a class from a specific module.'''
+        name = class_.__name__ + 'Sub'
+        if hasattr(module, name):
+            return getattr(module, name)
+        else:
+            return None
+
 
 #
 # If you have installed IPython you can uncomment and use the following.
@@ -376,6 +385,10 @@ Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
 CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
+
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
 
 #
 # Support/utility functions.
@@ -631,6 +644,11 @@ class containerType(GeneratedsSuper):
         self.item1 = item1
         self.item2 = item2
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, containerType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if containerType.subclass:
             return containerType.subclass(*args_, **kwargs_)
         else:
@@ -710,6 +728,11 @@ class classAType(GeneratedsSuper):
         self.original_tagname_ = None
         self.inner = inner
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, classAType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if classAType.subclass:
             return classAType.subclass(*args_, **kwargs_)
         else:
@@ -779,6 +802,11 @@ class classBType(GeneratedsSuper):
         self.original_tagname_ = None
         self.inner = inner
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, classBType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if classBType.subclass:
             return classBType.subclass(*args_, **kwargs_)
         else:
@@ -850,6 +878,11 @@ class inner_001(GeneratedsSuper):
         self.attrA1 = _cast(None, attrA1)
         self.attrA2 = _cast(None, attrA2)
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, inner_001)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if inner_001.subclass:
             return inner_001.subclass(*args_, **kwargs_)
         else:
@@ -925,6 +958,11 @@ class inner_002(GeneratedsSuper):
         self.attrB1 = _cast(None, attrB1)
         self.attrB2 = _cast(None, attrB2)
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, inner_002)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if inner_002.subclass:
             return inner_002.subclass(*args_, **kwargs_)
         else:

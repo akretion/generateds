@@ -226,7 +226,8 @@ except ImportError as exp:
                                 _svalue += '+'
                             hours = total_seconds // 3600
                             minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            _svalue += '{0:02d}:{1:02d}'.format(
+                                hours, minutes)
             except AttributeError:
                 pass
             return _svalue
@@ -352,6 +353,14 @@ except ImportError as exp:
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
 
+    def getSubclassFromModule_(module, class_):
+        '''Get the subclass of a class from a specific module.'''
+        name = class_.__name__ + 'Sub'
+        if hasattr(module, name):
+            return getattr(module, name)
+        else:
+            return None
+
 
 #
 # If you have installed IPython you can uncomment and use the following.
@@ -377,6 +386,10 @@ Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
 CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
+
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
 
 #
 # Support/utility functions.
@@ -634,6 +647,11 @@ class PlantType_single(GeneratedsSuper):
         self.anytypeobjs_ = anytypeobjs_
         self.description = description
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, PlantType_single)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if PlantType_single.subclass:
             return PlantType_single.subclass(*args_, **kwargs_)
         else:
@@ -729,6 +747,11 @@ class PlantType_multiple(GeneratedsSuper):
             self.anytypeobjs_ = anytypeobjs_
         self.description = description
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, PlantType_multiple)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if PlantType_multiple.subclass:
             return PlantType_multiple.subclass(*args_, **kwargs_)
         else:
@@ -822,6 +845,11 @@ class DescriptionType(GeneratedsSuper):
         self.name = name
         self.size = size
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, DescriptionType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if DescriptionType.subclass:
             return DescriptionType.subclass(*args_, **kwargs_)
         else:
@@ -904,6 +932,11 @@ class CatalogType(GeneratedsSuper):
         self.name = name
         self.catagory = catagory
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, CatalogType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if CatalogType.subclass:
             return CatalogType.subclass(*args_, **kwargs_)
         else:
@@ -987,6 +1020,11 @@ class PlantType_single_nochild(GeneratedsSuper):
         self.original_tagname_ = None
         self.anytypeobjs_ = anytypeobjs_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, PlantType_single_nochild)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if PlantType_single_nochild.subclass:
             return PlantType_single_nochild.subclass(*args_, **kwargs_)
         else:
@@ -1057,6 +1095,11 @@ class PlantType_multiple_nochild(GeneratedsSuper):
         else:
             self.anytypeobjs_ = anytypeobjs_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, PlantType_multiple_nochild)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if PlantType_multiple_nochild.subclass:
             return PlantType_multiple_nochild.subclass(*args_, **kwargs_)
         else:

@@ -226,7 +226,8 @@ except ImportError as exp:
                                 _svalue += '+'
                             hours = total_seconds // 3600
                             minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            _svalue += '{0:02d}:{1:02d}'.format(
+                                hours, minutes)
             except AttributeError:
                 pass
             return _svalue
@@ -352,6 +353,14 @@ except ImportError as exp:
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
 
+    def getSubclassFromModule_(module, class_):
+        '''Get the subclass of a class from a specific module.'''
+        name = class_.__name__ + 'Sub'
+        if hasattr(module, name):
+            return getattr(module, name)
+        else:
+            return None
+
 
 #
 # If you have installed IPython you can uncomment and use the following.
@@ -377,6 +386,10 @@ Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
 CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
+
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
 
 #
 # Support/utility functions.
@@ -632,6 +645,11 @@ class SpecialDate(GeneratedsSuper):
         self.SpecialProperty = _cast(None, SpecialProperty)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, SpecialDate)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if SpecialDate.subclass:
             return SpecialDate.subclass(*args_, **kwargs_)
         else:
@@ -702,6 +720,11 @@ class ExtremeDate(GeneratedsSuper):
         self.ExtremeProperty = _cast(None, ExtremeProperty)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, ExtremeDate)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if ExtremeDate.subclass:
             return ExtremeDate.subclass(*args_, **kwargs_)
         else:
@@ -772,6 +795,11 @@ class singleExtremeDate(GeneratedsSuper):
         self.ExtremeProperty = _cast(None, ExtremeProperty)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, singleExtremeDate)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if singleExtremeDate.subclass:
             return singleExtremeDate.subclass(*args_, **kwargs_)
         else:
@@ -845,6 +873,11 @@ class containerType(GeneratedsSuper):
             self.simplefactoid = simplefactoid
         self.mixedfactoid = mixedfactoid
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, containerType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if containerType.subclass:
             return containerType.subclass(*args_, **kwargs_)
         else:
@@ -928,6 +961,11 @@ class simpleFactoidType(GeneratedsSuper):
         self.relation = relation
         self.validate_RelationType(self.relation)
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, simpleFactoidType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if simpleFactoidType.subclass:
             return simpleFactoidType.subclass(*args_, **kwargs_)
         else:
@@ -1041,6 +1079,11 @@ class mixedFactoidType(GeneratedsSuper):
             self.content_ = content_
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, mixedFactoidType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if mixedFactoidType.subclass:
             return mixedFactoidType.subclass(*args_, **kwargs_)
         else:
@@ -1154,6 +1197,11 @@ class BaseType(GeneratedsSuper):
         self.valueOf_ = valueOf_
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, BaseType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if BaseType.subclass:
             return BaseType.subclass(*args_, **kwargs_)
         else:
@@ -1246,6 +1294,11 @@ class DerivedType(BaseType):
         self.DerivedProperty2 = _cast(None, DerivedProperty2)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, DerivedType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if DerivedType.subclass:
             return DerivedType.subclass(*args_, **kwargs_)
         else:
@@ -1329,6 +1382,11 @@ class MyInteger(GeneratedsSuper):
         self.MyAttr = _cast(None, MyAttr)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, MyInteger)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if MyInteger.subclass:
             return MyInteger.subclass(*args_, **kwargs_)
         else:
@@ -1399,6 +1457,11 @@ class MyBoolean(GeneratedsSuper):
         self.MyAttr = _cast(None, MyAttr)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, MyBoolean)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if MyBoolean.subclass:
             return MyBoolean.subclass(*args_, **kwargs_)
         else:
@@ -1469,6 +1532,11 @@ class MyFloat(GeneratedsSuper):
         self.MyAttr = _cast(None, MyAttr)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, MyFloat)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if MyFloat.subclass:
             return MyFloat.subclass(*args_, **kwargs_)
         else:
@@ -1539,6 +1607,11 @@ class MyDouble(GeneratedsSuper):
         self.MyAttr = _cast(None, MyAttr)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, MyDouble)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if MyDouble.subclass:
             return MyDouble.subclass(*args_, **kwargs_)
         else:

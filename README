@@ -154,10 +154,24 @@ Version 2.19a (01/18/2016)
   an XML instance document.  This will enable you to use the -s
   option to generate multiple subclass files, add different code to
   each of them, and then parse documents and create instances of
-  classes from one then another during the same run.
+  classes from one then another during the same run.  But also, see
+  next item.
 - Added generation of code to lookup the subclass of a generated
   class using a global variable containing the subclass module.
-
+  This provides an alternative and easier way to do the above
+  (select from multiple subclass files generated with the -s command
+  line option).  Here is a sample script that uses this option:
+      import tmp01suba
+      import tmp01subb
+      def test():
+          tmp01suba.supermod.CurrentSubclassModule_ = tmp01suba
+          roota = tmp01suba.parse('test01.xml', silence=True)
+          tmp01subb.supermod.CurrentSubclassModule_ = tmp01subb
+          rootb = tmp01subb.parse('test01.xml', silence=True)
+          roota.show()
+          print '-' * 50
+          rootb.show()
+      test()
 
 Version 2.18a (12/16/2015)
 

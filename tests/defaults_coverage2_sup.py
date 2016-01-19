@@ -226,7 +226,8 @@ except ImportError as exp:
                                 _svalue += '+'
                             hours = total_seconds // 3600
                             minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            _svalue += '{0:02d}:{1:02d}'.format(
+                                hours, minutes)
             except AttributeError:
                 pass
             return _svalue
@@ -352,6 +353,14 @@ except ImportError as exp:
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
 
+    def getSubclassFromModule_(module, class_):
+        '''Get the subclass of a class from a specific module.'''
+        name = class_.__name__ + 'Sub'
+        if hasattr(module, name):
+            return getattr(module, name)
+        else:
+            return None
+
 
 #
 # If you have installed IPython you can uncomment and use the following.
@@ -377,6 +386,10 @@ Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
 CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
+
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
 
 #
 # Support/utility functions.
@@ -632,6 +645,11 @@ class DefaultTypes(GeneratedsSuper):
         self.default1 = default1
         self.default2 = default2
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, DefaultTypes)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if DefaultTypes.subclass:
             return DefaultTypes.subclass(*args_, **kwargs_)
         else:
@@ -767,6 +785,11 @@ class DefaultType1(GeneratedsSuper):
             initvalue_ = normal08
         self.normal08 = initvalue_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, DefaultType1)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if DefaultType1.subclass:
             return DefaultType1.subclass(*args_, **kwargs_)
         else:
@@ -1094,6 +1117,11 @@ class DefaultType2(GeneratedsSuper):
             initvalue_ = normal08
         self.normal08 = initvalue_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, DefaultType2)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if DefaultType2.subclass:
             return DefaultType2.subclass(*args_, **kwargs_)
         else:

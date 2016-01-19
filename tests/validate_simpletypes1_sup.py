@@ -225,7 +225,8 @@ except ImportError as exp:
                                 _svalue += '+'
                             hours = total_seconds // 3600
                             minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            _svalue += '{0:02d}:{1:02d}'.format(
+                                hours, minutes)
             except AttributeError:
                 pass
             return _svalue
@@ -351,6 +352,14 @@ except ImportError as exp:
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
 
+    def getSubclassFromModule_(module, class_):
+        '''Get the subclass of a class from a specific module.'''
+        name = class_.__name__ + 'Sub'
+        if hasattr(module, name):
+            return getattr(module, name)
+        else:
+            return None
+
 
 #
 # If you have installed IPython you can uncomment and use the following.
@@ -376,6 +385,10 @@ Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
 CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
+
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
 
 #
 # Support/utility functions.
@@ -652,6 +665,11 @@ class containerType(GeneratedsSuper):
         else:
             self.sample2 = sample2
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, containerType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if containerType.subclass:
             return containerType.subclass(*args_, **kwargs_)
         else:
@@ -808,6 +826,11 @@ class simpleOneType(GeneratedsSuper):
         self.primative_integer = primative_integer
         self.primative_float = primative_float
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, simpleOneType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if simpleOneType.subclass:
             return simpleOneType.subclass(*args_, **kwargs_)
         else:
@@ -1101,6 +1124,11 @@ class simpleTwoType(GeneratedsSuper):
         self.original_tagname_ = None
         self.simpleTwoElementOne = simpleTwoElementOne
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, simpleTwoType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if simpleTwoType.subclass:
             return simpleTwoType.subclass(*args_, **kwargs_)
         else:
@@ -1171,6 +1199,11 @@ class simpleTwoElementOneType(GeneratedsSuper):
         self.simpleTwoElementTwo = simpleTwoElementTwo
         self.validate_simpleTwoElementTwoType(self.simpleTwoElementTwo)
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, simpleTwoElementOneType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if simpleTwoElementOneType.subclass:
             return simpleTwoElementOneType.subclass(*args_, **kwargs_)
         else:

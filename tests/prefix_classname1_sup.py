@@ -226,7 +226,8 @@ except ImportError as exp:
                                 _svalue += '+'
                             hours = total_seconds // 3600
                             minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            _svalue += '{0:02d}:{1:02d}'.format(
+                                hours, minutes)
             except AttributeError:
                 pass
             return _svalue
@@ -352,6 +353,14 @@ except ImportError as exp:
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
 
+    def getSubclassFromModule_(module, class_):
+        '''Get the subclass of a class from a specific module.'''
+        name = class_.__name__ + 'Sub'
+        if hasattr(module, name):
+            return getattr(module, name)
+        else:
+            return None
+
 
 #
 # If you have installed IPython you can uncomment and use the following.
@@ -377,6 +386,10 @@ Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
 CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
+
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
 
 #
 # Support/utility functions.
@@ -653,6 +666,11 @@ class tomato_people(GeneratedsSuper):
         else:
             self.java_programmer = java_programmer
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, tomato_people)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if tomato_people.subclass:
             return tomato_people.subclass(*args_, **kwargs_)
         else:
@@ -793,6 +811,11 @@ class tomato_comments(GeneratedsSuper):
             self.content_ = content_
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, tomato_comments)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if tomato_comments.subclass:
             return tomato_comments.subclass(*args_, **kwargs_)
         else:
@@ -904,6 +927,11 @@ class tomato_person(GeneratedsSuper):
         self.description = description
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, tomato_person)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if tomato_person.subclass:
             return tomato_person.subclass(*args_, **kwargs_)
         else:
@@ -1140,6 +1168,11 @@ class tomato_programmer(tomato_person):
         self.validate_ArrayTypes(self.elarraytypes)
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, tomato_programmer)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if tomato_programmer.subclass:
             return tomato_programmer.subclass(*args_, **kwargs_)
         else:
@@ -1467,6 +1500,11 @@ class tomato_param(GeneratedsSuper):
         self.id = _cast(None, id)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, tomato_param)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if tomato_param.subclass:
             return tomato_param.subclass(*args_, **kwargs_)
         else:
@@ -1584,6 +1622,11 @@ class tomato_python_programmer(tomato_programmer):
         self.nick_name = _cast(None, nick_name)
         self.favorite_editor = favorite_editor
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, tomato_python_programmer)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if tomato_python_programmer.subclass:
             return tomato_python_programmer.subclass(*args_, **kwargs_)
         else:
@@ -1670,6 +1713,11 @@ class tomato_java_programmer(tomato_programmer):
         self.nick_name = _cast(None, nick_name)
         self.favorite_editor = favorite_editor
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, tomato_java_programmer)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if tomato_java_programmer.subclass:
             return tomato_java_programmer.subclass(*args_, **kwargs_)
         else:
@@ -1766,6 +1814,11 @@ class tomato_agent(GeneratedsSuper):
         self.priority = priority
         self.info = info
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, tomato_agent)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if tomato_agent.subclass:
             return tomato_agent.subclass(*args_, **kwargs_)
         else:
@@ -1875,6 +1928,11 @@ class tomato_special_agent(GeneratedsSuper):
         self.priority = priority
         self.info = info
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, tomato_special_agent)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if tomato_special_agent.subclass:
             return tomato_special_agent.subclass(*args_, **kwargs_)
         else:
@@ -1999,6 +2057,11 @@ class tomato_booster(GeneratedsSuper):
         else:
             self.client_handler = client_handler
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, tomato_booster)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if tomato_booster.subclass:
             return tomato_booster.subclass(*args_, **kwargs_)
         else:
@@ -2157,6 +2220,11 @@ class tomato_info(GeneratedsSuper):
         self.type_ = _cast(int, type_)
         self.name = _cast(None, name)
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, tomato_info)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if tomato_info.subclass:
             return tomato_info.subclass(*args_, **kwargs_)
         else:
@@ -2247,6 +2315,11 @@ class tomato_client_handlerType(GeneratedsSuper):
         self.fullname = fullname
         self.refid = refid
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, tomato_client_handlerType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if tomato_client_handlerType.subclass:
             return tomato_client_handlerType.subclass(*args_, **kwargs_)
         else:
