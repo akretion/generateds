@@ -849,43 +849,43 @@ sets a class variable (``subclass``) in each superclass to the
 subclass to be used by the superclass, and the last subclass
 imported module wins.
 
-There are two solutions to this problem:
+There are two alternative solutions to this problem:
 
 1. Use the script/function provided by the distribution in file
    ``fix_subclass_refs.py``.  The doc string in that module explains
    how to use it and gives an example of its use.
 
 2. Each generated superclass module (starting with ``generateDS.py``
-   v. 2-19a) contains a global variable ``CurrentSubclassModule_``.
-   The value of this variable, if it is not None, overrides the
-   value of the class variable ``subclass`` in each generated
-   superclass.  You can change the value of this variable before
-   parsing an XML document and building instances of the generated
-   classes.  
+   version 2-19a) contains a global variable
+   ``CurrentSubclassModule_``.  The value of this variable, if it is
+   not None, overrides the value of the class variable ``subclass``
+   in each generated superclass.  You can change the value of this
+   variable before parsing an XML document and building instances of
+   the generated classes to determine which subclass module is to be
+   used during the "build" phase.  
 
    Here is an example of the use of this feature::
 
        #!/usr/bin/env python
 
-       import tmp01suba
-       import tmp01subb
-
+       import lib01suba
+       import lib01subb
 
        def test():
-           tmp01suba.supermod.CurrentSubclassModule_ = tmp01suba
-           roota = tmp01suba.parse('test01.xml', silence=True)
-           tmp01subb.supermod.CurrentSubclassModule_ = tmp01subb
-           rootb = tmp01subb.parse('test01.xml', silence=True)
+           lib01suba.supermod.CurrentSubclassModule_ = lib01suba
+           roota = lib01suba.parse('test01.xml', silence=True)
+           lib01subb.supermod.CurrentSubclassModule_ = lib01subb
+           rootb = lib01subb.parse('test01.xml', silence=True)
            roota.show()
            print '-' * 50
            rootb.show()
-
 
        test()
 
 The second alternative (above) is likely to be a more convenient
 solution in most cases.  But, there are possibly use cases where the
-first, which uses ``fix_subclass_refs.py`` will be helpful.
+use of ``fix_subclass_refs.py`` or a modified version of it will be
+helpful.
 
 
 Supported features of XML Schema

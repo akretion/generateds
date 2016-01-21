@@ -149,16 +149,22 @@ also generates member specifications in each class (in a dictionary).
 ## SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+from __future__ import print_function
 import sys
 import os.path
 import time
 import getopt
-import urllib2
+if sys.version_info.major == 2:
+    import urllib2
+    import StringIO
+else:
+    import urllib.request, urllib.error, urllib.parse
+    import io
+    from functools import reduce
 import imp
 from xml.sax import handler, make_parser
 import logging
 import keyword
-import StringIO
 import textwrap
 import hashlib
 import operator
@@ -956,7 +962,10 @@ class XschemaElement(XschemaElementBase):
 
     def collectSimpleBases(self):
         if self.base:
-            self.addSimpleBase(self.base.encode('utf-8'))
+            if sys.version_info.major == 2:
+                self.addSimpleBase(self.base.encode('utf-8'))
+            else:
+                self.addSimpleBase(self.base)
         if self.simpleBase:
             base1 = SimpleTypeDict.get(self.simpleBase[0])
             if base1:
@@ -964,7 +973,10 @@ class XschemaElement(XschemaElementBase):
             else:
                 base2 = None
             while base2:
-                self.addSimpleBase(base2.encode('utf-8'))
+                if sys.version_info.major == 2:
+                    self.addSimpleBase(base2.encode('utf-8'))
+                else:
+                    self.addSimpleBase(base2)
                 base2 = SimpleTypeDict.get(base2)
                 if base2:
                     base2 = base2.getBase()
@@ -1012,7 +1024,10 @@ class XschemaElement(XschemaElementBase):
         if type_val == AnyType:
             return AnyType
         if type_val in SimpleTypeDict:
-            self.addSimpleBase(type_val.encode('utf-8'))
+            if sys.version_info.major == 2:
+                self.addSimpleBase(type_val.encode('utf-8'))
+            else:
+                self.addSimpleBase(type_val)
             simple_type = SimpleTypeDict[type_val]
             list_type = simple_type.resolve_list_type()
             self.setListType(list_type)
@@ -1655,8 +1670,11 @@ class XschemaHandler(handler.ContentHandler):
                         extensionBase in OtherSimpleTypes):
                     if (len(self.stack) > 0 and
                             isinstance(self.stack[-1], XschemaElement)):
-                        self.stack[-1].addSimpleBase(
-                            extensionBase.encode('utf-8'))
+                        if sys.version_info.major == 2:
+                            self.stack[-1].addSimpleBase(
+                                extensionBase.encode('utf-8'))
+                        else:
+                            self.stack[-1].addSimpleBase(extensionBase)
                 else:
                     self.stack[-1].setBase(extensionBase)
         elif name == AnyAttributeType:
@@ -5836,13 +5854,21 @@ def get_impl_body(classBehavior, baseImplUrl, implUrl):
     if implUrl:
         if baseImplUrl:
             implUrl = '%s%s' % (baseImplUrl, implUrl)
+        if sys.version_info.major == 2:
+            urllib_urlopen = urllib2.urlopen
+            urllib_httperror = urllib2.HTTPError
+            urllib_urlerror = urllib2.URLError
+        else:
+            urllib_urlopen = urllib.request.urlopen
+            urllib_httperror = urllib.error.HTTPError
+            urllib_urlerror = urllib.error.URLError
         try:
-            implFile = urllib2.urlopen(implUrl)
+            implFile = urllib_urlopen(implUrl)
             impl = implFile.read()
             implFile.close()
-        except urllib2.HTTPError:
+        except urllib_httperror:
             err_msg('*** Implementation at %s not found.\n' % implUrl)
-        except urllib2.URLError:
+        except urllib_urlerror:
             err_msg('*** Connection refused for URL: %s\n' % implUrl)
     return impl
 
@@ -6457,12 +6483,16 @@ def makeFile(outFileName):
                 outFileName)
             sys.exit(1)
         else:
-            reply = raw_input(
-                'File %s exists.  Overwrite? (y/n): ' % outFileName)
+            if sys.version_info.major == 2:
+                reply = raw_input(
+                    'File %s exists.  Overwrite? (y/n): ' % outFileName)
+            else:
+                reply = input(
+                    'File %s exists.  Overwrite? (y/n): ' % outFileName)
             if reply == 'y':
-                outFile = file(outFileName, 'w')
+                outFile = open(outFileName, 'w')
     else:
-        outFile = file(outFileName, 'w')
+        outFile = open(outFileName, 'w')
     return outFile
 
 
@@ -6556,7 +6586,10 @@ def parseAndGenerate(
         parser.setContentHandler(dh)
         if processIncludes:
             import process_includes
-            outfile = StringIO.StringIO()
+            if sys.version_info.major == 2:
+                outfile = StringIO.StringIO()
+            else:
+                outfile = io.StringIO()
             doc = process_includes.process_include_files(
                 infile, outfile,
                 inpath=xschemaFileName,
@@ -6597,7 +6630,10 @@ def parseAndGenerate(
                     urlfile = urllib2.urlopen(path)
                     content = urlfile.read()
                     urlfile.close()
-                    rootFile = StringIO.StringIO()
+                    if sys.version_info.major == 2:
+                        rootFile = StringIO.StringIO()
+                    else:
+                        rootFile = io.StringIO()
                     rootFile.write(content)
                     rootFile.seek(0)
                 except urllib2.HTTPError:
@@ -6696,21 +6732,6 @@ def _expandGR(grp, visited):
 def expandGroupReferences(grp):
     visited = set()
     _expandGR(grp, visited)
-
-
-def debug_show_elements(root):
-    #print 'ElementDict:', ElementDict
-    print('=' * 50)
-    for name, obj in ElementDict.iteritems():
-        print('element:', name, obj.getName(), obj.type)
-    print('=' * 50)
-    #ipshell('debug')
-##     root.show(sys.stdout, 0)
-##     print '=' * 50
-##     response = raw_input('Press Enter')
-##     root.show(sys.stdout, 0)
-##     print '=' * 50
-##     print ']]] root: ', root, '[[['
 
 
 def load_config():
@@ -6946,12 +6967,20 @@ def main():
                     'Option --cleanup-name-list must be a list or a tuple.')
             CleanupNameList = []
             for cleanup_pair in cleanup_list:
-                if (type(cleanup_pair) not in (list, tuple) or
-                        len(cleanup_pair) != 2 or
-                        not isinstance(cleanup_pair[0], basestring) or
-                        not isinstance(cleanup_pair[1], basestring)):
-                    raise RuntimeError(
-                        'Option --cleanup-name-list contains invalid element.')
+                if sys.version_info.major == 2:
+                    if (type(cleanup_pair) not in (list, tuple) or
+                            len(cleanup_pair) != 2 or
+                            not isinstance(cleanup_pair[0], basestring) or
+                            not isinstance(cleanup_pair[1], basestring)):
+                        raise RuntimeError(
+                            'Option --cleanup-name-list contains invalid element.')
+                else:
+                    if (type(cleanup_pair) not in (list, tuple) or
+                            len(cleanup_pair) != 2 or
+                            not isinstance(cleanup_pair[0], str) or
+                            not isinstance(cleanup_pair[1], str)):
+                        raise RuntimeError(
+                            'Option --cleanup-name-list contains invalid element.')
                 try:
                     CleanupNameList.append(
                         (re.compile(cleanup_pair[0]), cleanup_pair[1]))

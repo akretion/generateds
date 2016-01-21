@@ -15,7 +15,10 @@ Examples:
 
 import sys
 import os
-import urllib2
+if sys.version_info.major == 2:
+    import urllib2
+else:
+    import urllib.request, urllib.error, urllib.parse
 import copy
 from optparse import OptionParser, Values
 import itertools
@@ -184,13 +187,19 @@ def resolve_ref(node, params, options):
 ##             print '    locn        : %s' % (locn, )
 ##             print '    schema_name : %s\n' % (schema_name, )
             if locn.startswith('http:') or locn.startswith('ftp:'):
+                if sys.version_info.major == 2:
+                    urllib_urlopen = urllib2.urlopen
+                    urllib_httperror = urllib2.HTTPError
+                else:
+                    urllib_urlopen = urllib.request.urlopen
+                    urllib_httperror = urllib.error.HTTPError
                 try:
-                    urlfile = urllib2.urlopen(locn)
+                    urlfile = urllib_urlopen(locn)
                     content = urlfile.read()
                     urlfile.close()
                     params.parent_url = locn
                     params.base_url = os.path.split(locn)[0]
-                except urllib2.HTTPError:
+                except urllib_httperror:
                     msg = "Can't find file %s referenced in %s." % (
                         locn, params.parent_url, )
                     raise SchemaIOError(msg)
@@ -272,7 +281,10 @@ def get_root_file_paths_aux(child, params, rootPaths):
 def make_file(outFileName, options):
     outFile = None
     if (not options.force) and os.path.exists(outFileName):
-        reply = raw_input('File %s exists.  Overwrite? (y/n): ' % outFileName)
+        if sys.version_info.major == 2:
+            reply = raw_input('File %s exists.  Overwrite? (y/n): ' % outFileName)
+        else:
+            reply = input('File %s exists.  Overwrite? (y/n): ' % outFileName)
         if reply == 'y':
             outFile = open(outFileName, 'w')
     else:
@@ -296,7 +308,10 @@ def prep_schema_doc(infile, outfile, inpath, options):
     raise_anon_complextypes(root2)
     fix_type_names(root2, options)
     doc2 = etree.ElementTree(root2)
-    doc2.write(outfile)
+    if sys.version_info.major == 2:
+        doc2.write(outfile)
+    else:
+        outfile.write(etree.tostring(root2).decode('utf-8'))
     return doc2
 
 
