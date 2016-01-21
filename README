@@ -148,19 +148,24 @@ Version 2.19a (01/18/2016)
 - Fixed the template (TEMPLATE_HEADER) so that it uses the format
   function and keyword arguments.
 - Added info on --py3 command line option to doc (generateDS.txt).
-- Added new script that can be used to fix-up (change) which
-  subclass file (of two or more that were generated with the -s
-  command line option) is used by the superclass file when parsing
-  an XML instance document.  This will enable you to use the -s
-  option to generate multiple subclass files, add different code to
-  each of them, and then parse documents and create instances of
-  classes from one then another during the same run.  But also, see
-  next item.
+- Added new script (fix_subclass_refs.py) that can be used to fix-up
+  (change) which subclass file (of two or more that were generated
+  with the -s command line option) is used by the superclass file
+  when parsing an XML instance document.  This will enable you to
+  use the -s option to generate multiple subclass files, add
+  different code to each of them, and then parse documents and
+  create instances of classes from one then another during the same
+  run.  But also, see next item.
 - Added generation of code to lookup the subclass of a generated
   class using a global variable containing the subclass module.
-  This provides an alternative and easier way to do the above
-  (select from multiple subclass files generated with the -s command
-  line option).  Here is a sample script that uses this option:
+  This provides an alternative and more convenient way to do the
+  above (i.e., use fix_subclass_refs.py to select from multiple
+  subclass files generated with the -s command line option).
+  However, there may be tasks that can be performed with that script
+  or a modified version of it that cannot be done with this approach
+  using a global variable.  Here is a sample script that uses this
+  option:
+
       import tmp01suba
       import tmp01subb
       def test():
