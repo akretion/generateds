@@ -3,7 +3,7 @@
   <comments>1. This is a <emp>foolish</emp> comment.  <bold>It</bold> is <emp>really</emp> important.</comments>
   <comments>2. This is a <emp>silly</emp> comment.  It is <emp>very</emp> significant.</comments>
   <comments><emp>3.</emp> This is a empty  comment.  </comments>
-  <person ratio="3.2" id="1" value="abcd">
+  <person value="abcd" id="1" ratio="3.2">
     <name>Alberta</name>
     <interest>gardening</interest>
     <interest>reading</interest>
@@ -22,7 +22,7 @@
       <firstname>Darren</firstname>
       <lastname>Diddly</lastname>
       <priority>4.5</priority>
-      <info rating="5.33" type="321" name="Albert Abasinian"/>
+      <info name="Albert Abasinian" type="321" rating="5.33"/>
       <vehicle xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="airplane">
         <wheelcount>36</wheelcount>
         <pilotname>Felicity Flygirl</pilotname>
@@ -75,7 +75,7 @@
       <firstname>Harry</firstname>
       <lastname>Hapton</lastname>
       <priority>4.5</priority>
-      <info rating="5.33" type="321" name="Harry Hapton"/>
+      <info name="Harry Hapton" type="321" rating="5.33"/>
     </agent>
     <range>35</range>
   </specialperson>
@@ -87,7 +87,7 @@
       <firstname>Ernest</firstname>
       <lastname>Echo</lastname>
       <priority>3.8</priority>
-      <info rating="5.33" type="321" name="George Gregory"/>
+      <info name="George Gregory" type="321" rating="5.33"/>
     </agent>
     <description>A very happy programmer</description>
     <range>45</range>
@@ -102,9 +102,9 @@
     <eltoken>aa bb cc dd ee</eltoken>
     <elshort>123</elshort>
     <ellong>13241234123412341234</ellong>
-    <elparam semantic="a big semantic" name="Davy" id="id001"/>
+    <elparam id="id001" name="Davy" semantic="a big semantic"/>
   </programmer>
-  <python-programmer vegetable="tomato" fruit="peach" ratio="8.699999999999999" id="232" value="abcd" language="python" area="xml" drcs_attr="git" nick-name="davy" gui_developer="true">
+  <python-programmer value="abcd" id="232" ratio="8.699999999999999" fruit="peach" vegetable="tomato" language="python" area="xml" nick-name="davy" drcs_attr="git" gui_developer="true">
     <name>Darrel Dawson</name>
     <interest>hang gliding</interest>
     <category>3344</category>
@@ -112,7 +112,7 @@
       <firstname>Harvey</firstname>
       <lastname>Hippolite</lastname>
       <priority>5.2</priority>
-      <info rating="6.55" type="543" name="Harvey Hippolite"/>
+      <info name="Harvey Hippolite" type="543" rating="6.55"/>
     </agent>
     <description>An object-orientated programmer</description>
     <range>27</range>
@@ -120,7 +120,7 @@
     <favorite-editor>jed</favorite-editor>
     <drcs>mercurial</drcs>
   </python-programmer>
-  <java-programmer vegetable="tomato" fruit="peach" ratio="8.699999999999999" id="232" value="abcd" language="python" area="xml" nick-name="davy">
+  <java-programmer value="abcd" id="232" ratio="8.699999999999999" fruit="peach" vegetable="tomato" language="python" area="xml" nick-name="davy">
     <name>Darrel Dawson</name>
     <interest>hang gliding</interest>
     <category>3344</category>
@@ -128,7 +128,7 @@
       <firstname>Harvey</firstname>
       <lastname>Hippolite</lastname>
       <priority>5.2</priority>
-      <info rating="6.55" type="543" name="Harvey Hippolite"/>
+      <info name="Harvey Hippolite" type="543" rating="6.55"/>
     </agent>
     <description>An &lt;object-orientated&gt; programmer &amp; stuff.</description>
     <range>28</range>

@@ -919,9 +919,9 @@ class document3Type(GeneratedsSuper):
 
 
 GDSClassesMapping = {
+    'anotherdoc': document3Type,
     'document1': document1Type,
     'otherdoc': document2Type,
-    'anotherdoc': document3Type,
 }
 
 

@@ -62,8 +62,8 @@ supermod.DefaultType1.subclass = DefaultType1Sub
 
 
 class DefaultType2Sub(supermod.DefaultType2):
-    def __init__(self, attrdefault01='abcd', attrnormal01=None, attrnormal02=None, attrdefault02=14):
-        super(DefaultType2Sub, self).__init__(attrdefault01, attrnormal01, attrnormal02, attrdefault02, )
+    def __init__(self, attrdefault01='abcd', attrdefault02=14, attrnormal01=None, attrnormal02=None):
+        super(DefaultType2Sub, self).__init__(attrdefault01, attrdefault02, attrnormal01, attrnormal02, )
 supermod.DefaultType2.subclass = DefaultType2Sub
 # end class DefaultType2Sub
 

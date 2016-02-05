@@ -916,18 +916,18 @@ class DefaultType1(GeneratedsSuper):
 class DefaultType2(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('attrdefault01', 'xs:string', 0),
+        MemberSpec_('attrdefault02', 'xs:integer', 0),
         MemberSpec_('attrnormal01', 'xs:string', 0),
         MemberSpec_('attrnormal02', 'xs:integer', 0),
-        MemberSpec_('attrdefault02', 'xs:integer', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, attrdefault01='abcd', attrnormal01=None, attrnormal02=None, attrdefault02=14):
+    def __init__(self, attrdefault01='abcd', attrdefault02=14, attrnormal01=None, attrnormal02=None):
         self.original_tagname_ = None
         self.attrdefault01 = _cast(None, attrdefault01)
+        self.attrdefault02 = _cast(int, attrdefault02)
         self.attrnormal01 = _cast(None, attrnormal01)
         self.attrnormal02 = _cast(int, attrnormal02)
-        self.attrdefault02 = _cast(int, attrdefault02)
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:
             subclass = getSubclassFromModule_(
@@ -941,12 +941,12 @@ class DefaultType2(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_attrdefault01(self): return self.attrdefault01
     def set_attrdefault01(self, attrdefault01): self.attrdefault01 = attrdefault01
+    def get_attrdefault02(self): return self.attrdefault02
+    def set_attrdefault02(self, attrdefault02): self.attrdefault02 = attrdefault02
     def get_attrnormal01(self): return self.attrnormal01
     def set_attrnormal01(self, attrnormal01): self.attrnormal01 = attrnormal01
     def get_attrnormal02(self): return self.attrnormal02
     def set_attrnormal02(self, attrnormal02): self.attrnormal02 = attrnormal02
-    def get_attrdefault02(self): return self.attrdefault02
-    def set_attrdefault02(self, attrdefault02): self.attrdefault02 = attrdefault02
     def hasContent_(self):
         if (
 
@@ -975,15 +975,15 @@ class DefaultType2(GeneratedsSuper):
         if self.attrdefault01 != "abcd" and 'attrdefault01' not in already_processed:
             already_processed.add('attrdefault01')
             outfile.write(' attrdefault01=%s' % (self.gds_format_string(quote_attrib(self.attrdefault01).encode(ExternalEncoding), input_name='attrdefault01'), ))
+        if self.attrdefault02 != 14 and 'attrdefault02' not in already_processed:
+            already_processed.add('attrdefault02')
+            outfile.write(' attrdefault02="%s"' % self.gds_format_integer(self.attrdefault02, input_name='attrdefault02'))
         if self.attrnormal01 is not None and 'attrnormal01' not in already_processed:
             already_processed.add('attrnormal01')
             outfile.write(' attrnormal01=%s' % (self.gds_format_string(quote_attrib(self.attrnormal01).encode(ExternalEncoding), input_name='attrnormal01'), ))
         if self.attrnormal02 is not None and 'attrnormal02' not in already_processed:
             already_processed.add('attrnormal02')
             outfile.write(' attrnormal02="%s"' % self.gds_format_integer(self.attrnormal02, input_name='attrnormal02'))
-        if self.attrdefault02 != 14 and 'attrdefault02' not in already_processed:
-            already_processed.add('attrdefault02')
-            outfile.write(' attrdefault02="%s"' % self.gds_format_integer(self.attrdefault02, input_name='attrdefault02'))
     def exportChildren(self, outfile, level, namespace_='', name_='DefaultType2', fromsubclass_=False, pretty_print=True):
         pass
     def build(self, node):
@@ -998,6 +998,13 @@ class DefaultType2(GeneratedsSuper):
         if value is not None and 'attrdefault01' not in already_processed:
             already_processed.add('attrdefault01')
             self.attrdefault01 = value
+        value = find_attr_value_('attrdefault02', node)
+        if value is not None and 'attrdefault02' not in already_processed:
+            already_processed.add('attrdefault02')
+            try:
+                self.attrdefault02 = int(value)
+            except ValueError as exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
         value = find_attr_value_('attrnormal01', node)
         if value is not None and 'attrnormal01' not in already_processed:
             already_processed.add('attrnormal01')
@@ -1009,13 +1016,6 @@ class DefaultType2(GeneratedsSuper):
                 self.attrnormal02 = int(value)
             except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('attrdefault02', node)
-        if value is not None and 'attrdefault02' not in already_processed:
-            already_processed.add('attrdefault02')
-            try:
-                self.attrdefault02 = int(value)
-            except ValueError as exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
 # end class DefaultType2
@@ -1023,8 +1023,8 @@ class DefaultType2(GeneratedsSuper):
 
 GDSClassesMapping = {
     'default1': DefaultType1,
-    'defaults': DefaultTypes,
     'default2': DefaultType2,
+    'defaults': DefaultTypes,
 }
 
 

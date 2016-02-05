@@ -1671,8 +1671,8 @@ class MyDouble(GeneratedsSuper):
 
 
 GDSClassesMapping = {
-    'mixedfactoid': mixedFactoidType,
     'container': containerType,
+    'mixedfactoid': mixedFactoidType,
     'simplefactoid': simpleFactoidType,
 }
 

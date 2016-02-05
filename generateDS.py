@@ -158,7 +158,9 @@ if sys.version_info.major == 2:
     import urllib2
     import StringIO
 else:
-    import urllib.request, urllib.error, urllib.parse
+    import urllib.request
+    import urllib.error
+    import urllib.parse
     import io
     from functools import reduce
 import imp
@@ -668,6 +670,8 @@ class XschemaElement(XschemaElementBase):
         self.collapseWhiteSpace = 0
         # Attribute definitions for the currect element.
         self.attributeDefs = {}
+        # Use this to maintain predictable order of attributes.
+        self.attributeDefsList = []
         # Attribute definitions for the current attributeGroup, if
         #   there is one.
         self.attributeGroup = None
@@ -784,6 +788,9 @@ class XschemaElement(XschemaElementBase):
 
     def getAttributeDefs(self):
         return self.attributeDefs
+
+    def getAttributeDefsList(self):
+        return self.attributeDefsList
 
     def isMixed(self):
         return self.mixed
@@ -1230,6 +1237,7 @@ class XschemaElement(XschemaElementBase):
                 else:
                     attr = attrGroup.get(name)
                     self.attributeDefs[name] = attr
+                    self.attributeDefsList.append(name)
         else:
             err_msg('*** Error. attributeGroup %s not defined.\n' % (
                 groupName, ))
@@ -1245,6 +1253,7 @@ class XschemaElement(XschemaElementBase):
         #   an attribute.
         #
         attrDefs = self.getAttributeDefs()
+        attrDefsList = self.getAttributeDefsList()
         # Collect a list of child element names.
         #   Must do this for base (extension) elements also.
         elementNames = set()
@@ -1260,11 +1269,15 @@ class XschemaElement(XschemaElementBase):
                 newName = mappedName + '_attr'
                 newAttr = XschemaAttribute(newName)
                 newAttr.setOrig_name(name)
-                attrDefs[newName] = newAttr
-                replaced.append(name)
+                replaced.append((name, newName, newAttr))
         # Remove the old (replaced) attributes.
-        for name in replaced:
+        for name, newName, newAttr in replaced:
             del attrDefs[name]
+            attrDefs[newName] = newAttr
+            try:
+                attrDefsList[attrDefsList.index(name)] = newName
+            except ValueError:
+                pass
         for child in self.children:
             child.fix_dup_names()
 
@@ -1298,12 +1311,16 @@ class XschemaElement(XschemaElementBase):
 
 
 class XschemaAttributeGroup:
-    def __init__(self, name='', group=None):
+    def __init__(self, name='', group=None, keyList=None):
         self.name = name
         if group:
             self.group = group
         else:
             self.group = {}
+        if keyList is not None:
+            self.keyList = keyList
+        else:
+            self.keyList = []
 
     def setName(self, name):
         self.name = name
@@ -1324,14 +1341,16 @@ class XschemaAttributeGroup:
             return default
 
     def getKeys(self):
-        return self.group.keys()
+        return self.keyList
 
     def add(self, name, attr):
         self.group[name] = attr
+        self.keyList.append(name)
 
     def delete(self, name):
         if name in self.group:
             del self.group[name]
+            self.keyList.remove(name)
             return 1
         else:
             return 0
@@ -1619,6 +1638,7 @@ class XschemaHandler(handler.ContentHandler):
                 # Add this attribute to the element/complexType.
                 attribute = XschemaAttribute(name, data_type, use, default)
                 self.stack[-1].attributeDefs[name] = attribute
+                self.stack[-1].attributeDefsList.append(name)
             self.lastAttribute = attribute
         elif name == AttributeGroupType:
             if self.attributeGroupLevel >= 1:
@@ -1944,22 +1964,24 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         # fixlist
+        encoding = '' if GeneratePy3 else '.encode(ExternalEncoding)'
         if (child.getSimpleType() in SimpleTypeDict and
                 SimpleTypeDict[child.getSimpleType()].isListType()):
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
                 "(namespace_, self.gds_format_string(quote_xml" \
-                "(' '.join(self.%s)).encode(ExternalEncoding), " \
+                "(' '.join(self.%s))%s, " \
                 "input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+                (fill, name, name, mappedName, encoding, name, )
         else:
             namespace = 'namespace_'
             if child.prefix and 'ref' in child.attrs:
                 namespace = "'%s:'" % child.prefix
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(%s, self.gds_format_string(quote_xml(self.%s)." \
-                "encode(ExternalEncoding), input_name='%s'), " \
+                "(%s, self.gds_format_string(quote_xml(self.%s)%s, " \
+                "input_name='%s'), " \
                 "%s, eol_))\n" % \
-                (fill, name, name, namespace, mappedName, name, namespace, )
+                (fill, name, name, namespace, mappedName,
+                    encoding, name, namespace, )
         wrt(s1)
     elif (child_type in IntegerType or
             child_type == PositiveIntegerType or
@@ -2105,10 +2127,11 @@ def generateExportFn_2(wrt, child, name, namespace, fill):
             child_type == TokenType or
             child_type in DateTimeGroupType):
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
+        encoding = '' if GeneratePy3 else '.encode(ExternalEncoding)'
         wrt("%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% "
-            "(namespace_, self.gds_format_string(quote_xml(%s_).encode("
-            "ExternalEncoding), input_name='%s'), namespace_, eol_))\n" %
-            (fill, name, name, cleanName, name,))
+            "(namespace_, self.gds_format_string(quote_xml(%s_)"
+            "%s, input_name='%s'), namespace_, eol_))\n" %
+            (fill, name, name, cleanName, encoding, name,))
     elif (child_type in IntegerType or
             child_type == PositiveIntegerType or
             child_type == NonPositiveIntegerType or
@@ -2246,19 +2269,20 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         # fixlist
+        encoding = '' if GeneratePy3 else '.encode(ExternalEncoding)'
         if (child.getSimpleType() in SimpleTypeDict and
                 SimpleTypeDict[child.getSimpleType()].isListType()):
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
                 "(namespace_, self.gds_format_string(" \
-                "quote_xml(' '.join(self.%s)).encode(ExternalEncoding), " \
+                "quote_xml(' '.join(self.%s))%s, " \
                 "input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+                (fill, name, name, mappedName, encoding, name, )
         else:
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
                 "(namespace_, self.gds_format_string(" \
-                "quote_xml(self.%s).encode(ExternalEncoding), " \
+                "quote_xml(self.%s)%s, " \
                 "input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+                (fill, name, name, mappedName, encoding, name, )
         wrt(s1)
     elif (child_type in IntegerType or
             child_type == PositiveIntegerType or
@@ -2517,7 +2541,7 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
 
 def generateToEtreeAttributes(wrt, element):
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs.keys():
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         name = attrDef.getName()
         cleanName = mapName(cleanupName(name))
@@ -2567,7 +2591,7 @@ def generateExportAttributes(wrt, element, hasAttributes):
     if len(element.getAttributeDefs()) > 0:
         hasAttributes += 1
         attrDefs = element.getAttributeDefs()
-        for key in attrDefs.keys():
+        for key in element.getAttributeDefsList():
             attrDef = attrDefs[key]
             name = attrDef.getName()
             orig_name = attrDef.getOrig_name()
@@ -2624,11 +2648,12 @@ def generateExportAttributes(wrt, element, hasAttributes):
                     attrDefType in IDTypes or
                     attrDefType == TokenType or
                     attrDefType in DateTimeGroupType):
+                encoding = '' if GeneratePy3 else '.encode(ExternalEncoding)'
                 s1 = '''%s        outfile.write(' %s=%%s' %% ''' \
                     '''(self.gds_format_string(quote_attrib(''' \
-                    '''self.%s).encode(''' \
-                    '''ExternalEncoding), input_name='%s'), ))\n''' % \
-                    (indent, orig_name, cleanName, name, )
+                    '''self.%s)%s, ''' \
+                    '''input_name='%s'), ))\n''' % \
+                    (indent, orig_name, cleanName, encoding, name, )
             elif (attrDefType in IntegerType or
                     attrDefType == PositiveIntegerType or
                     attrDefType == NonPositiveIntegerType or
@@ -2795,10 +2820,11 @@ def generateExportFn(wrt, prefix, element, namespace, nameSpacesDef):
         if element.getSimpleContent():
             wrt("            outfile.write('>')\n")
             if not element.isMixed():
+                encoding = '' if GeneratePy3 else '.encode(ExternalEncoding)'
                 wrt("            outfile.write((quote_xml(self.valueOf_) "
                     "if type(self.valueOf_) is str else "
-                    "str(self.valueOf_)).encode("
-                    "ExternalEncoding))\n")
+                    "str(self.valueOf_))%s)\n" % (
+                        encoding, ))
         else:
             wrt("            outfile.write('>%s' % (eol_, ))\n")
         wrt("            self.exportChildren(outfile, level + 1, "
@@ -2919,20 +2945,21 @@ def generateExportLiteralFn_1(wrt, child, name, fill):
                 childType == TokenType or
                 childType in DateTimeGroupType):
             wrt('%s            showIndent(outfile, level)\n' % fill)
+            encoding = '' if GeneratePy3 else '.encode(ExternalEncoding)'
             if (child.getSimpleType() in SimpleTypeDict and
                     SimpleTypeDict[child.getSimpleType()].isListType()):
                 wrt("%s            if self.%s:\n" % (fill, mappedName, ))
                 wrt("%s                outfile.write('%s=%%s,\\n' %% "
-                    "quote_python(' '.join(self.%s)).encode("
-                    "ExternalEncoding)) \n" %
-                    (fill, mappedName, mappedName, ))
+                    "quote_python(' '.join(self.%s))"
+                    "%s) \n" %
+                    (fill, mappedName, mappedName, encoding, ))
                 wrt("%s            else:\n" % (fill, ))
                 wrt("%s                outfile.write('%s=None,\\n')\n" %
                     (fill, mappedName, ))
             else:
                 wrt("%s            outfile.write('%s=%%s,\\n' %% "
-                    "quote_python(self.%s).encode(ExternalEncoding))\n" %
-                    (fill, mappedName, mappedName, ))
+                    "quote_python(self.%s)%s)\n" %
+                    (fill, mappedName, mappedName, encoding, ))
         elif (childType in IntegerType or
                 childType == PositiveIntegerType or
                 childType == NonPositiveIntegerType or
@@ -2993,9 +3020,10 @@ def generateExportLiteralFn_2(wrt, child, name, fill):
     elif (childType in StringType or
             childType == TokenType or
             childType in DateTimeGroupType):
+        encoding = '' if GeneratePy3 else '.encode(ExternalEncoding)'
         wrt('%s        showIndent(outfile, level)\n' % fill)
-        wrt("%s        outfile.write('%%s,\\n' %% quote_python(%s_).encode("
-            "ExternalEncoding))\n" % (fill, name))
+        wrt("%s        outfile.write('%%s,\\n' %% quote_python(%s_)"
+            "%s)\n" % (fill, name, encoding, ))
     elif (childType in IntegerType or
             childType == PositiveIntegerType or
             childType == NonPositiveIntegerType or
@@ -3047,7 +3075,7 @@ def generateExportLiteralFn(wrt, prefix, element):
         "already_processed, name_):\n")
     count = 0
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs:
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         count += 1
         name = attrDef.getName()
@@ -3192,7 +3220,7 @@ def generateExportLiteralFn(wrt, prefix, element):
 
 def generateBuildAttributes(wrt, element, hasAttributes):
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs:
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         hasAttributes += 1
         name = attrDef.getName()
@@ -3913,7 +3941,7 @@ def buildCtorArgs_multilevel_aux(addedArgs, add, element):
 
 def buildCtorArgs_aux(addedArgs, add, element):
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs:
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         name = attrDef.getName()
         default = attrDef.getDefault()
@@ -4067,7 +4095,7 @@ def generateCtor(wrt, prefix, element):
                 wrt('        super(%s%s, self).__init__(%s)\n' % (
                     prefix, elName, s2, ))
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs:
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         mappedName = cleanupName(attrDef.getName())
         name = mapName(mappedName)
@@ -4542,7 +4570,7 @@ def generateGettersAndSetters(wrt, element):
                 wrt('    %sProp = property(get%s, set%s)\n' %
                     (unmappedName, capName, capName))
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs:
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         name = cleanupName(attrDef.getName().replace(':', '_'))
         mappedName = mapName(name)
@@ -4610,7 +4638,7 @@ def generateValidatorDefs(wrt, element):
                 wrt('    validate_%s_patterns_ = %s\n' % (
                     typeName, patterns, ))
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs:
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         typeName = attrDef.getType()
         if (typeName and
@@ -4654,7 +4682,9 @@ def generateMemberSpec(wrt, element):
     else:
         content = ['    member_data_items_ = [']
     add = content.append
-    for attrName, attrDef in element.getAttributeDefs().items():
+    attrDefs = element.getAttributeDefs()
+    for attrName in element.getAttributeDefsList():
+        attrDef = attrDefs[attrName]
         item1 = attrName
         item2 = attrDef.getType()
         item3 = 0
@@ -4832,8 +4862,9 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     # If this element has documentation, generate a doc-string.
     if element.documentation:
         s2 = ' '.join(element.documentation.strip().split())
-        s2 = s2.encode('utf-8')
         s2 = textwrap.fill(s2, width=68, subsequent_indent='    ')
+        if sys.version_info.major == 2:
+            s2 = s2.encode('utf-8')
         if len(s2) > 1:
             if s2[0] == '"' or s2[-1] == '"':
                 s2 = '    """ %s """\n' % (s2, )
@@ -5726,13 +5757,15 @@ if __name__ == '__main__':
 
 
 def generateMain(outfile, prefix, root):
-    exportDictLine = "GDSClassesMapping = {\n"
+    lines = []
     for classType in MappingTypes:
         mappedName = mapName(cleanupName(MappingTypes[classType]))
         if mappedName in AlreadyGenerated:
-            exportDictLine += "    '%s': %s%s,\n" % (
-                classType, prefix, mappedName, )
-    exportDictLine += "}\n\n\n"
+            lines.append("    '%s': %s%s,\n" % (
+                classType, prefix, mappedName, ))
+    lines.sort()
+    exportDictLine = "GDSClassesMapping = {{\n{}}}\n\n\n".format(
+        ''.join(lines))
     outfile.write(exportDictLine)
     children = root.getChildren()
     rootClass = None
@@ -5811,7 +5844,7 @@ def buildCtorParams_aux(addedArgs, add, element):
     if parentName:
         buildCtorParams_aux(addedArgs, add, parentObj)
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs:
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         name = attrDef.getName()
         name = cleanupName(mapName(name))
@@ -6973,14 +7006,16 @@ def main():
                             not isinstance(cleanup_pair[0], basestring) or
                             not isinstance(cleanup_pair[1], basestring)):
                         raise RuntimeError(
-                            'Option --cleanup-name-list contains invalid element.')
+                            'Option --cleanup-name-list contains '
+                            'invalid element.')
                 else:
                     if (type(cleanup_pair) not in (list, tuple) or
                             len(cleanup_pair) != 2 or
                             not isinstance(cleanup_pair[0], str) or
                             not isinstance(cleanup_pair[1], str)):
                         raise RuntimeError(
-                            'Option --cleanup-name-list contains invalid element.')
+                            'Option --cleanup-name-list contains '
+                            'invalid element.')
                 try:
                     CleanupNameList.append(
                         (re.compile(cleanup_pair[0]), cleanup_pair[1]))

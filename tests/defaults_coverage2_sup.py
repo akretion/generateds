@@ -1385,8 +1385,8 @@ class DefaultType2(GeneratedsSuper):
 
 GDSClassesMapping = {
     'default1': DefaultType1,
-    'defaults': DefaultTypes,
     'default2': DefaultType2,
+    'defaults': DefaultTypes,
 }
 
 

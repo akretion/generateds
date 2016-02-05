@@ -894,11 +894,11 @@ class commentsType(GeneratedsSuper):
 
 class personType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('vegetable', 'xs:string', 0),
-        MemberSpec_('fruit', 'xs:string', 0),
-        MemberSpec_('ratio', 'xs:float', 0),
-        MemberSpec_('id', 'xs:integer', 0),
         MemberSpec_('value', 'xs:string', 0),
+        MemberSpec_('id', 'xs:integer', 0),
+        MemberSpec_('ratio', 'xs:float', 0),
+        MemberSpec_('fruit', 'xs:string', 0),
+        MemberSpec_('vegetable', 'xs:string', 0),
         MemberSpec_('name', 'xs:string', 0),
         MemberSpec_('interest', 'xs:string', 1),
         MemberSpec_('category', 'xs:integer', 0),
@@ -910,13 +910,13 @@ class personType(GeneratedsSuper):
     ]
     subclass = None
     superclass = None
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, extensiontype_=None):
+    def __init__(self, value=None, id=None, ratio=None, fruit=None, vegetable=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, extensiontype_=None):
         self.original_tagname_ = None
-        self.vegetable = _cast(None, vegetable)
-        self.fruit = _cast(None, fruit)
-        self.ratio = _cast(float, ratio)
-        self.id = _cast(int, id)
         self.value = _cast(None, value)
+        self.id = _cast(int, id)
+        self.ratio = _cast(float, ratio)
+        self.fruit = _cast(None, fruit)
+        self.vegetable = _cast(None, vegetable)
         self.name = name
         if interest is None:
             self.interest = []
@@ -972,16 +972,16 @@ class personType(GeneratedsSuper):
     def set_description(self, description): self.description = description
     def get_range(self): return self.range_
     def set_range(self, range_): self.range_ = range_
-    def get_vegetable(self): return self.vegetable
-    def set_vegetable(self, vegetable): self.vegetable = vegetable
-    def get_fruit(self): return self.fruit
-    def set_fruit(self, fruit): self.fruit = fruit
-    def get_ratio(self): return self.ratio
-    def set_ratio(self, ratio): self.ratio = ratio
-    def get_id(self): return self.id
-    def set_id(self, id): self.id = id
     def get_value(self): return self.value
     def set_value(self, value): self.value = value
+    def get_id(self): return self.id
+    def set_id(self, id): self.id = id
+    def get_ratio(self): return self.ratio
+    def set_ratio(self, ratio): self.ratio = ratio
+    def get_fruit(self): return self.fruit
+    def set_fruit(self, fruit): self.fruit = fruit
+    def get_vegetable(self): return self.vegetable
+    def set_vegetable(self, vegetable): self.vegetable = vegetable
     def get_extensiontype_(self): return self.extensiontype_
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def validate_RangeType(self, value):
@@ -1009,16 +1009,16 @@ class personType(GeneratedsSuper):
             element = etree_.SubElement(parent_element, '{}' + name_)
         if self.extensiontype_ is not None:
             element.set('{http://www.w3.org/2001/XMLSchema-instance}type', self.extensiontype_)
-        if self.vegetable is not None:
-            element.set('vegetable', self.gds_format_string(self.vegetable))
-        if self.fruit is not None:
-            element.set('fruit', self.gds_format_string(self.fruit))
-        if self.ratio is not None:
-            element.set('ratio', self.gds_format_float(self.ratio))
-        if self.id is not None:
-            element.set('id', self.gds_format_integer(self.id))
         if self.value is not None:
             element.set('value', self.gds_format_string(self.value))
+        if self.id is not None:
+            element.set('id', self.gds_format_integer(self.id))
+        if self.ratio is not None:
+            element.set('ratio', self.gds_format_float(self.ratio))
+        if self.fruit is not None:
+            element.set('fruit', self.gds_format_string(self.fruit))
+        if self.vegetable is not None:
+            element.set('vegetable', self.gds_format_string(self.vegetable))
         if self.name is not None:
             name_ = self.name
             etree_.SubElement(element, '{}name').text = self.gds_format_string(name_)
@@ -1051,21 +1051,10 @@ class personType(GeneratedsSuper):
             self.buildChildren(child, node, nodeName_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('vegetable', node)
-        if value is not None and 'vegetable' not in already_processed:
-            already_processed.add('vegetable')
-            self.vegetable = value
-        value = find_attr_value_('fruit', node)
-        if value is not None and 'fruit' not in already_processed:
-            already_processed.add('fruit')
-            self.fruit = value
-        value = find_attr_value_('ratio', node)
-        if value is not None and 'ratio' not in already_processed:
-            already_processed.add('ratio')
-            try:
-                self.ratio = float(value)
-            except ValueError as exp:
-                raise ValueError('Bad float/double attribute (ratio): %s' % exp)
+        value = find_attr_value_('value', node)
+        if value is not None and 'value' not in already_processed:
+            already_processed.add('value')
+            self.value = value
         value = find_attr_value_('id', node)
         if value is not None and 'id' not in already_processed:
             already_processed.add('id')
@@ -1073,10 +1062,21 @@ class personType(GeneratedsSuper):
                 self.id = int(value)
             except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('value', node)
-        if value is not None and 'value' not in already_processed:
-            already_processed.add('value')
-            self.value = value
+        value = find_attr_value_('ratio', node)
+        if value is not None and 'ratio' not in already_processed:
+            already_processed.add('ratio')
+            try:
+                self.ratio = float(value)
+            except ValueError as exp:
+                raise ValueError('Bad float/double attribute (ratio): %s' % exp)
+        value = find_attr_value_('fruit', node)
+        if value is not None and 'fruit' not in already_processed:
+            already_processed.add('fruit')
+            self.fruit = value
+        value = find_attr_value_('vegetable', node)
+        if value is not None and 'vegetable' not in already_processed:
+            already_processed.add('vegetable')
+            self.vegetable = value
         value = find_attr_value_('xsi:type', node)
         if value is not None and 'xsi:type' not in already_processed:
             already_processed.add('xsi:type')
@@ -1136,9 +1136,9 @@ class specialperson(personType):
     ]
     subclass = None
     superclass = personType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None):
+    def __init__(self, value=None, id=None, ratio=None, fruit=None, vegetable=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None):
         self.original_tagname_ = None
-        super(specialperson, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, )
+        super(specialperson, self).__init__(value, id, ratio, fruit, vegetable, name, interest, category, hot_agent, agent, promoter, description, range_, )
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:
             subclass = getSubclassFromModule_(
@@ -1181,10 +1181,10 @@ class programmerType(personType):
     member_data_items_ = [
         MemberSpec_('language', 'xs:string', 0),
         MemberSpec_('area', 'xs:string', 0),
-        MemberSpec_('attrnegint', 'xs:negativeInteger', 0),
         MemberSpec_('attrposint', 'xs:positiveInteger', 0),
-        MemberSpec_('attrnonnegint', 'xs:nonNegativeInteger', 0),
         MemberSpec_('attrnonposint', 'xs:nonPositiveInteger', 0),
+        MemberSpec_('attrnegint', 'xs:negativeInteger', 0),
+        MemberSpec_('attrnonnegint', 'xs:nonNegativeInteger', 0),
         MemberSpec_('email', 'xs:string', 0),
         MemberSpec_('elposint', 'xs:positiveInteger', 0),
         MemberSpec_('elnonposint', 'xs:nonPositiveInteger', 0),
@@ -1201,15 +1201,15 @@ class programmerType(personType):
     ]
     subclass = None
     superclass = personType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, extensiontype_=None):
+    def __init__(self, value=None, id=None, ratio=None, fruit=None, vegetable=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrposint=None, attrnonposint=None, attrnegint=None, attrnonnegint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, extensiontype_=None):
         self.original_tagname_ = None
-        super(programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, extensiontype_, )
+        super(programmerType, self).__init__(value, id, ratio, fruit, vegetable, name, interest, category, hot_agent, agent, promoter, description, range_, extensiontype_, )
         self.language = _cast(None, language)
         self.area = _cast(None, area)
-        self.attrnegint = _cast(int, attrnegint)
         self.attrposint = _cast(int, attrposint)
-        self.attrnonnegint = _cast(int, attrnonnegint)
         self.attrnonposint = _cast(int, attrnonposint)
+        self.attrnegint = _cast(int, attrnegint)
+        self.attrnonnegint = _cast(int, attrnonnegint)
         self.email = email
         self.elposint = elposint
         self.elnonposint = elnonposint
@@ -1278,14 +1278,14 @@ class programmerType(personType):
     def set_language(self, language): self.language = language
     def get_area(self): return self.area
     def set_area(self, area): self.area = area
-    def get_attrnegint(self): return self.attrnegint
-    def set_attrnegint(self, attrnegint): self.attrnegint = attrnegint
     def get_attrposint(self): return self.attrposint
     def set_attrposint(self, attrposint): self.attrposint = attrposint
-    def get_attrnonnegint(self): return self.attrnonnegint
-    def set_attrnonnegint(self, attrnonnegint): self.attrnonnegint = attrnonnegint
     def get_attrnonposint(self): return self.attrnonposint
     def set_attrnonposint(self, attrnonposint): self.attrnonposint = attrnonposint
+    def get_attrnegint(self): return self.attrnegint
+    def set_attrnegint(self, attrnegint): self.attrnegint = attrnegint
+    def get_attrnonnegint(self): return self.attrnonnegint
+    def set_attrnonnegint(self, attrnonnegint): self.attrnonnegint = attrnonnegint
     def get_extensiontype_(self): return self.extensiontype_
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def validate_ArrayTypes(self, value):
@@ -1328,14 +1328,14 @@ class programmerType(personType):
             element.set('language', self.gds_format_string(self.language))
         if self.area is not None:
             element.set('area', self.gds_format_string(self.area))
-        if self.attrnegint is not None:
-            element.set('attrnegint', self.gds_format_integer(self.attrnegint))
         if self.attrposint is not None:
             element.set('attrposint', self.gds_format_integer(self.attrposint))
-        if self.attrnonnegint is not None:
-            element.set('attrnonnegint', self.gds_format_integer(self.attrnonnegint))
         if self.attrnonposint is not None:
             element.set('attrnonposint', self.gds_format_integer(self.attrnonposint))
+        if self.attrnegint is not None:
+            element.set('attrnegint', self.gds_format_integer(self.attrnegint))
+        if self.attrnonnegint is not None:
+            element.set('attrnonnegint', self.gds_format_integer(self.attrnonnegint))
         if self.email is not None:
             email_ = self.email
             etree_.SubElement(element, '{}email').text = self.gds_format_string(email_)
@@ -1394,15 +1394,6 @@ class programmerType(personType):
         if value is not None and 'area' not in already_processed:
             already_processed.add('area')
             self.area = value
-        value = find_attr_value_('attrnegint', node)
-        if value is not None and 'attrnegint' not in already_processed:
-            already_processed.add('attrnegint')
-            try:
-                self.attrnegint = int(value)
-            except ValueError as exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-            if self.attrnegint >= 0:
-                raise_parse_error(node, 'Invalid NegativeInteger')
         value = find_attr_value_('attrposint', node)
         if value is not None and 'attrposint' not in already_processed:
             already_processed.add('attrposint')
@@ -1412,15 +1403,6 @@ class programmerType(personType):
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.attrposint <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
-        value = find_attr_value_('attrnonnegint', node)
-        if value is not None and 'attrnonnegint' not in already_processed:
-            already_processed.add('attrnonnegint')
-            try:
-                self.attrnonnegint = int(value)
-            except ValueError as exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-            if self.attrnonnegint < 0:
-                raise_parse_error(node, 'Invalid NonNegativeInteger')
         value = find_attr_value_('attrnonposint', node)
         if value is not None and 'attrnonposint' not in already_processed:
             already_processed.add('attrnonposint')
@@ -1430,6 +1412,24 @@ class programmerType(personType):
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.attrnonposint > 0:
                 raise_parse_error(node, 'Invalid NonPositiveInteger')
+        value = find_attr_value_('attrnegint', node)
+        if value is not None and 'attrnegint' not in already_processed:
+            already_processed.add('attrnegint')
+            try:
+                self.attrnegint = int(value)
+            except ValueError as exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+            if self.attrnegint >= 0:
+                raise_parse_error(node, 'Invalid NegativeInteger')
+        value = find_attr_value_('attrnonnegint', node)
+        if value is not None and 'attrnonnegint' not in already_processed:
+            already_processed.add('attrnonnegint')
+            try:
+                self.attrnonnegint = int(value)
+            except ValueError as exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+            if self.attrnonnegint < 0:
+                raise_parse_error(node, 'Invalid NonNegativeInteger')
         value = find_attr_value_('xsi:type', node)
         if value is not None and 'xsi:type' not in already_processed:
             already_processed.add('xsi:type')
@@ -1530,24 +1530,24 @@ class programmerType(personType):
 
 class paramType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('semantic', 'xs:token', 0),
-        MemberSpec_('name', 'xs:NCName', 0),
-        MemberSpec_('flow', 'FlowType', 0),
-        MemberSpec_('sid', 'xs:NCName', 0),
-        MemberSpec_('type', 'xs:NMTOKEN', 0),
         MemberSpec_('id', 'xs:string', 0),
+        MemberSpec_('name', 'xs:NCName', 0),
+        MemberSpec_('sid', 'xs:NCName', 0),
+        MemberSpec_('flow', 'FlowType', 0),
+        MemberSpec_('semantic', 'xs:token', 0),
+        MemberSpec_('type', 'xs:NMTOKEN', 0),
         MemberSpec_('valueOf_', 'xs:string', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, semantic=None, name=None, flow=None, sid=None, type_=None, id=None, valueOf_=None):
+    def __init__(self, id=None, name=None, sid=None, flow=None, semantic=None, type_=None, valueOf_=None):
         self.original_tagname_ = None
-        self.semantic = _cast(None, semantic)
-        self.name = _cast(None, name)
-        self.flow = _cast(None, flow)
-        self.sid = _cast(None, sid)
-        self.type_ = _cast(None, type_)
         self.id = _cast(None, id)
+        self.name = _cast(None, name)
+        self.sid = _cast(None, sid)
+        self.flow = _cast(None, flow)
+        self.semantic = _cast(None, semantic)
+        self.type_ = _cast(None, type_)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:
@@ -1560,18 +1560,18 @@ class paramType(GeneratedsSuper):
         else:
             return paramType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_semantic(self): return self.semantic
-    def set_semantic(self, semantic): self.semantic = semantic
-    def get_name(self): return self.name
-    def set_name(self, name): self.name = name
-    def get_flow(self): return self.flow
-    def set_flow(self, flow): self.flow = flow
-    def get_sid(self): return self.sid
-    def set_sid(self, sid): self.sid = sid
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
     def get_id(self): return self.id
     def set_id(self, id): self.id = id
+    def get_name(self): return self.name
+    def set_name(self, name): self.name = name
+    def get_sid(self): return self.sid
+    def set_sid(self, sid): self.sid = sid
+    def get_flow(self): return self.flow
+    def set_flow(self, flow): self.flow = flow
+    def get_semantic(self): return self.semantic
+    def set_semantic(self, semantic): self.semantic = semantic
+    def get_type(self): return self.type_
+    def set_type(self, type_): self.type_ = type_
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def validate_FlowType(self, value):
@@ -1590,18 +1590,18 @@ class paramType(GeneratedsSuper):
             element = etree_.Element('{}' + name_)
         else:
             element = etree_.SubElement(parent_element, '{}' + name_)
-        if self.semantic is not None:
-            element.set('semantic', self.gds_format_string(self.semantic))
-        if self.name is not None:
-            element.set('name', self.name)
-        if self.flow is not None:
-            element.set('flow', self.flow)
-        if self.sid is not None:
-            element.set('sid', self.sid)
-        if self.type_ is not None:
-            element.set('type', self.gds_format_string(self.type_))
         if self.id is not None:
             element.set('id', self.gds_format_string(self.id))
+        if self.name is not None:
+            element.set('name', self.name)
+        if self.sid is not None:
+            element.set('sid', self.sid)
+        if self.flow is not None:
+            element.set('flow', self.flow)
+        if self.semantic is not None:
+            element.set('semantic', self.gds_format_string(self.semantic))
+        if self.type_ is not None:
+            element.set('type', self.gds_format_string(self.type_))
         if self.hasContent_():
             element.text = self.gds_format_string(self.get_valueOf_())
         if mapping_ is not None:
@@ -1616,15 +1616,18 @@ class paramType(GeneratedsSuper):
             self.buildChildren(child, node, nodeName_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('semantic', node)
-        if value is not None and 'semantic' not in already_processed:
-            already_processed.add('semantic')
-            self.semantic = value
-            self.semantic = ' '.join(self.semantic.split())
+        value = find_attr_value_('id', node)
+        if value is not None and 'id' not in already_processed:
+            already_processed.add('id')
+            self.id = value
         value = find_attr_value_('name', node)
         if value is not None and 'name' not in already_processed:
             already_processed.add('name')
             self.name = value
+        value = find_attr_value_('sid', node)
+        if value is not None and 'sid' not in already_processed:
+            already_processed.add('sid')
+            self.sid = value
         value = find_attr_value_('flow', node)
         if value is not None and 'flow' not in already_processed:
             already_processed.add('flow')
@@ -1633,18 +1636,15 @@ class paramType(GeneratedsSuper):
             except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             self.validate_FlowType(self.flow)    # validate type FlowType
-        value = find_attr_value_('sid', node)
-        if value is not None and 'sid' not in already_processed:
-            already_processed.add('sid')
-            self.sid = value
+        value = find_attr_value_('semantic', node)
+        if value is not None and 'semantic' not in already_processed:
+            already_processed.add('semantic')
+            self.semantic = value
+            self.semantic = ' '.join(self.semantic.split())
         value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.add('type')
             self.type_ = value
-        value = find_attr_value_('id', node)
-        if value is not None and 'id' not in already_processed:
-            already_processed.add('id')
-            self.id = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
 # end class paramType
@@ -1652,8 +1652,8 @@ class paramType(GeneratedsSuper):
 
 class python_programmerType(programmerType):
     member_data_items_ = [
-        MemberSpec_('drcs_attr', 'xs:string', 0),
         MemberSpec_('nick-name', 'xs:string', 0),
+        MemberSpec_('drcs_attr', 'xs:string', 0),
         MemberSpec_('gui_developer', 'xs:boolean', 0),
         MemberSpec_('favorite_editor', 'xs:string', 0),
         MemberSpec_('flowvalue', ['FlowType', 'xs:integer'], 0),
@@ -1661,11 +1661,11 @@ class python_programmerType(programmerType):
     ]
     subclass = None
     superclass = programmerType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, drcs_attr=None, nick_name=None, gui_developer=None, favorite_editor=None, flowvalue=None, drcs=None):
+    def __init__(self, value=None, id=None, ratio=None, fruit=None, vegetable=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrposint=None, attrnonposint=None, attrnegint=None, attrnonnegint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, nick_name=None, drcs_attr=None, gui_developer=None, favorite_editor=None, flowvalue=None, drcs=None):
         self.original_tagname_ = None
-        super(python_programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
-        self.drcs_attr = _cast(None, drcs_attr)
+        super(python_programmerType, self).__init__(value, id, ratio, fruit, vegetable, name, interest, category, hot_agent, agent, promoter, description, range_, language, area, attrposint, attrnonposint, attrnegint, attrnonnegint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
         self.nick_name = _cast(None, nick_name)
+        self.drcs_attr = _cast(None, drcs_attr)
         self.gui_developer = _cast(bool, gui_developer)
         self.favorite_editor = favorite_editor
         self.flowvalue = flowvalue
@@ -1688,10 +1688,10 @@ class python_programmerType(programmerType):
     def set_flowvalue(self, flowvalue): self.flowvalue = flowvalue
     def get_drcs(self): return self.drcs
     def set_drcs(self, drcs): self.drcs = drcs
-    def get_drcs_attr(self): return self.drcs_attr
-    def set_drcs_attr(self, drcs_attr): self.drcs_attr = drcs_attr
     def get_nick_name(self): return self.nick_name
     def set_nick_name(self, nick_name): self.nick_name = nick_name
+    def get_drcs_attr(self): return self.drcs_attr
+    def set_drcs_attr(self, drcs_attr): self.drcs_attr = drcs_attr
     def get_gui_developer(self): return self.gui_developer
     def set_gui_developer(self, gui_developer): self.gui_developer = gui_developer
     def validate_FlowType(self, value):
@@ -1710,10 +1710,10 @@ class python_programmerType(programmerType):
             return False
     def to_etree(self, parent_element=None, name_='python-programmerType', mapping_=None):
         element = super(python_programmerType, self).to_etree(parent_element, name_, mapping_)
-        if self.drcs_attr is not None:
-            element.set('drcs_attr', self.gds_format_string(self.drcs_attr))
         if self.nick_name is not None:
             element.set('nick-name', self.gds_format_string(self.nick_name))
+        if self.drcs_attr is not None:
+            element.set('drcs_attr', self.gds_format_string(self.drcs_attr))
         if self.gui_developer is not None:
             element.set('gui_developer', self.gds_format_boolean(self.gui_developer))
         if self.favorite_editor is not None:
@@ -1736,14 +1736,14 @@ class python_programmerType(programmerType):
             self.buildChildren(child, node, nodeName_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('drcs', node)
-        if value is not None and 'drcs_attr' not in already_processed:
-            already_processed.add('drcs_attr')
-            self.drcs_attr = value
         value = find_attr_value_('nick-name', node)
         if value is not None and 'nick-name' not in already_processed:
             already_processed.add('nick-name')
             self.nick_name = value
+        value = find_attr_value_('drcs', node)
+        if value is not None and 'drcs_attr' not in already_processed:
+            already_processed.add('drcs_attr')
+            self.drcs_attr = value
         value = find_attr_value_('gui_developer', node)
         if value is not None and 'gui_developer' not in already_processed:
             already_processed.add('gui_developer')
@@ -1779,8 +1779,8 @@ class python_programmerType(programmerType):
 
 class java_programmerType(programmerType):
     member_data_items_ = [
-        MemberSpec_('status', 'xs:string', 0),
         MemberSpec_('nick-name', 'xs:string', 0),
+        MemberSpec_('status', 'xs:string', 0),
         MemberSpec_('favorite_editor', 'xs:string', 0),
         MemberSpec_('datetime1', 'xs:gYear', 0),
         MemberSpec_('datetime2', 'xs:gYearMonth', 0),
@@ -1790,11 +1790,11 @@ class java_programmerType(programmerType):
     ]
     subclass = None
     superclass = programmerType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, status=None, nick_name=None, favorite_editor=None, datetime1=None, datetime2=None, datetime3=None, datetime4=None, datetime5=None):
+    def __init__(self, value=None, id=None, ratio=None, fruit=None, vegetable=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrposint=None, attrnonposint=None, attrnegint=None, attrnonnegint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, nick_name=None, status=None, favorite_editor=None, datetime1=None, datetime2=None, datetime3=None, datetime4=None, datetime5=None):
         self.original_tagname_ = None
-        super(java_programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
-        self.status = _cast(None, status)
+        super(java_programmerType, self).__init__(value, id, ratio, fruit, vegetable, name, interest, category, hot_agent, agent, promoter, description, range_, language, area, attrposint, attrnonposint, attrnegint, attrnonnegint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
         self.nick_name = _cast(None, nick_name)
+        self.status = _cast(None, status)
         self.favorite_editor = favorite_editor
         self.datetime1 = datetime1
         self.datetime2 = datetime2
@@ -1824,10 +1824,10 @@ class java_programmerType(programmerType):
     def set_datetime4(self, datetime4): self.datetime4 = datetime4
     def get_datetime5(self): return self.datetime5
     def set_datetime5(self, datetime5): self.datetime5 = datetime5
-    def get_status(self): return self.status
-    def set_status(self, status): self.status = status
     def get_nick_name(self): return self.nick_name
     def set_nick_name(self, nick_name): self.nick_name = nick_name
+    def get_status(self): return self.status
+    def set_status(self, status): self.status = status
     def hasContent_(self):
         if (
             self.favorite_editor is not None or
@@ -1843,10 +1843,10 @@ class java_programmerType(programmerType):
             return False
     def to_etree(self, parent_element=None, name_='java-programmerType', mapping_=None):
         element = super(java_programmerType, self).to_etree(parent_element, name_, mapping_)
-        if self.status is not None:
-            element.set('status', self.gds_format_string(self.status))
         if self.nick_name is not None:
             element.set('nick-name', self.gds_format_string(self.nick_name))
+        if self.status is not None:
+            element.set('status', self.gds_format_string(self.status))
         if self.favorite_editor is not None:
             favorite_editor_ = self.favorite_editor
             etree_.SubElement(element, '{}favorite-editor').text = self.gds_format_string(favorite_editor_)
@@ -1876,14 +1876,14 @@ class java_programmerType(programmerType):
             self.buildChildren(child, node, nodeName_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('status', node)
-        if value is not None and 'status' not in already_processed:
-            already_processed.add('status')
-            self.status = value
         value = find_attr_value_('nick-name', node)
         if value is not None and 'nick-name' not in already_processed:
             already_processed.add('nick-name')
             self.nick_name = value
+        value = find_attr_value_('status', node)
+        if value is not None and 'status' not in already_processed:
+            already_processed.add('status')
+            self.status = value
         super(java_programmerType, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'favorite-editor':
@@ -2411,17 +2411,17 @@ class boosterType(GeneratedsSuper):
 
 class infoType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('rating', 'xs:float', 0),
-        MemberSpec_('type', 'xs:integer', 0),
         MemberSpec_('name', 'xs:string', 0),
+        MemberSpec_('type', 'xs:integer', 0),
+        MemberSpec_('rating', 'xs:float', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, rating=None, type_=None, name=None):
+    def __init__(self, name=None, type_=None, rating=None):
         self.original_tagname_ = None
-        self.rating = _cast(float, rating)
-        self.type_ = _cast(int, type_)
         self.name = _cast(None, name)
+        self.type_ = _cast(int, type_)
+        self.rating = _cast(float, rating)
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:
             subclass = getSubclassFromModule_(
@@ -2433,12 +2433,12 @@ class infoType(GeneratedsSuper):
         else:
             return infoType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_rating(self): return self.rating
-    def set_rating(self, rating): self.rating = rating
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
+    def get_type(self): return self.type_
+    def set_type(self, type_): self.type_ = type_
+    def get_rating(self): return self.rating
+    def set_rating(self, rating): self.rating = rating
     def hasContent_(self):
         if (
 
@@ -2451,12 +2451,12 @@ class infoType(GeneratedsSuper):
             element = etree_.Element('{}' + name_)
         else:
             element = etree_.SubElement(parent_element, '{}' + name_)
-        if self.rating is not None:
-            element.set('rating', self.gds_format_float(self.rating))
-        if self.type_ is not None:
-            element.set('type', self.gds_format_integer(self.type_))
         if self.name is not None:
             element.set('name', self.gds_format_string(self.name))
+        if self.type_ is not None:
+            element.set('type', self.gds_format_integer(self.type_))
+        if self.rating is not None:
+            element.set('rating', self.gds_format_float(self.rating))
         if mapping_ is not None:
             mapping_[self] = element
         return element
@@ -2468,13 +2468,10 @@ class infoType(GeneratedsSuper):
             self.buildChildren(child, node, nodeName_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('rating', node)
-        if value is not None and 'rating' not in already_processed:
-            already_processed.add('rating')
-            try:
-                self.rating = float(value)
-            except ValueError as exp:
-                raise ValueError('Bad float/double attribute (rating): %s' % exp)
+        value = find_attr_value_('name', node)
+        if value is not None and 'name' not in already_processed:
+            already_processed.add('name')
+            self.name = value
         value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.add('type')
@@ -2482,10 +2479,13 @@ class infoType(GeneratedsSuper):
                 self.type_ = int(value)
             except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('name', node)
-        if value is not None and 'name' not in already_processed:
-            already_processed.add('name')
-            self.name = value
+        value = find_attr_value_('rating', node)
+        if value is not None and 'rating' not in already_processed:
+            already_processed.add('rating')
+            try:
+                self.rating = float(value)
+            except ValueError as exp:
+                raise ValueError('Bad float/double attribute (rating): %s' % exp)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
 # end class infoType
@@ -2855,22 +2855,22 @@ class client_handlerType(GeneratedsSuper):
 
 
 GDSClassesMapping = {
-    'info': infoType,
-    'promoter': boosterType,
-    'special-agent': special_agentType,
-    'elparam': paramType,
-    'python-programmer': python_programmerType,
-    'people': peopleType,
+    'agent': agentType,
+    'booster': boosterType,
     'client-handler': client_handlerType,
     'comments': commentsType,
-    'weird-agent': weird_agentType,
-    'person': personType,
-    'agent': agentType,
+    'elparam': paramType,
+    'info': infoType,
     'java-programmer': java_programmerType,
-    'vehicle': vehicleType,
-    'programmer': programmerType,
     'param': paramType,
-    'booster': boosterType,
+    'people': peopleType,
+    'person': personType,
+    'programmer': programmerType,
+    'promoter': boosterType,
+    'python-programmer': python_programmerType,
+    'special-agent': special_agentType,
+    'vehicle': vehicleType,
+    'weird-agent': weird_agentType,
 }
 
 
