@@ -924,8 +924,8 @@ class Plane(Vehicle):
 
 
 GDSClassesMapping = {
-    'fleet': Vehicle,
     'carrier': carrierType,
+    'fleet': Vehicle,
 }
 
 

@@ -795,8 +795,8 @@ class oneperType02_2(GeneratedsSuper):
 
 
 GDSClassesMapping = {
-    'root02': oneperType02_1,
     'inner01': oneperType02_2,
+    'root02': oneperType02_1,
 }
 
 

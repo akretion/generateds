@@ -635,25 +635,25 @@ def _cast(typ, value):
 
 class IdentifierType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('schemeDataURI', 'xsd:anyURI', 0),
         MemberSpec_('schemeID', 'xsd:normalizedString', 0),
-        MemberSpec_('schemeAgencyName', 'xsd:string', 0),
-        MemberSpec_('schemeAgencyID', 'xsd:normalizedString', 0),
         MemberSpec_('schemeName', 'xsd:string', 0),
+        MemberSpec_('schemeAgencyID', 'xsd:normalizedString', 0),
+        MemberSpec_('schemeAgencyName', 'xsd:string', 0),
         MemberSpec_('schemeVersionID', 'xsd:normalizedString', 0),
+        MemberSpec_('schemeDataURI', 'xsd:anyURI', 0),
         MemberSpec_('schemeURI', 'xsd:anyURI', 0),
         MemberSpec_('valueOf_', 'xsd:normalizedString', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, schemeDataURI=None, schemeID=None, schemeAgencyName=None, schemeAgencyID=None, schemeName=None, schemeVersionID=None, schemeURI=None, valueOf_=None, extensiontype_=None):
+    def __init__(self, schemeID=None, schemeName=None, schemeAgencyID=None, schemeAgencyName=None, schemeVersionID=None, schemeDataURI=None, schemeURI=None, valueOf_=None, extensiontype_=None):
         self.original_tagname_ = None
-        self.schemeDataURI = _cast(None, schemeDataURI)
         self.schemeID = _cast(None, schemeID)
-        self.schemeAgencyName = _cast(None, schemeAgencyName)
-        self.schemeAgencyID = _cast(None, schemeAgencyID)
         self.schemeName = _cast(None, schemeName)
+        self.schemeAgencyID = _cast(None, schemeAgencyID)
+        self.schemeAgencyName = _cast(None, schemeAgencyName)
         self.schemeVersionID = _cast(None, schemeVersionID)
+        self.schemeDataURI = _cast(None, schemeDataURI)
         self.schemeURI = _cast(None, schemeURI)
         self.valueOf_ = valueOf_
         self.extensiontype_ = extensiontype_
@@ -668,18 +668,18 @@ class IdentifierType(GeneratedsSuper):
         else:
             return IdentifierType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_schemeDataURI(self): return self.schemeDataURI
-    def set_schemeDataURI(self, schemeDataURI): self.schemeDataURI = schemeDataURI
     def get_schemeID(self): return self.schemeID
     def set_schemeID(self, schemeID): self.schemeID = schemeID
-    def get_schemeAgencyName(self): return self.schemeAgencyName
-    def set_schemeAgencyName(self, schemeAgencyName): self.schemeAgencyName = schemeAgencyName
-    def get_schemeAgencyID(self): return self.schemeAgencyID
-    def set_schemeAgencyID(self, schemeAgencyID): self.schemeAgencyID = schemeAgencyID
     def get_schemeName(self): return self.schemeName
     def set_schemeName(self, schemeName): self.schemeName = schemeName
+    def get_schemeAgencyID(self): return self.schemeAgencyID
+    def set_schemeAgencyID(self, schemeAgencyID): self.schemeAgencyID = schemeAgencyID
+    def get_schemeAgencyName(self): return self.schemeAgencyName
+    def set_schemeAgencyName(self, schemeAgencyName): self.schemeAgencyName = schemeAgencyName
     def get_schemeVersionID(self): return self.schemeVersionID
     def set_schemeVersionID(self, schemeVersionID): self.schemeVersionID = schemeVersionID
+    def get_schemeDataURI(self): return self.schemeDataURI
+    def set_schemeDataURI(self, schemeDataURI): self.schemeDataURI = schemeDataURI
     def get_schemeURI(self): return self.schemeURI
     def set_schemeURI(self, schemeURI): self.schemeURI = schemeURI
     def get_valueOf_(self): return self.valueOf_
@@ -712,24 +712,24 @@ class IdentifierType(GeneratedsSuper):
         else:
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='IdentifierType'):
-        if self.schemeDataURI is not None and 'schemeDataURI' not in already_processed:
-            already_processed.add('schemeDataURI')
-            outfile.write(' schemeDataURI=%s' % (self.gds_format_string(quote_attrib(self.schemeDataURI).encode(ExternalEncoding), input_name='schemeDataURI'), ))
         if self.schemeID is not None and 'schemeID' not in already_processed:
             already_processed.add('schemeID')
             outfile.write(' schemeID=%s' % (self.gds_format_string(quote_attrib(self.schemeID).encode(ExternalEncoding), input_name='schemeID'), ))
-        if self.schemeAgencyName is not None and 'schemeAgencyName' not in already_processed:
-            already_processed.add('schemeAgencyName')
-            outfile.write(' schemeAgencyName=%s' % (self.gds_format_string(quote_attrib(self.schemeAgencyName).encode(ExternalEncoding), input_name='schemeAgencyName'), ))
-        if self.schemeAgencyID is not None and 'schemeAgencyID' not in already_processed:
-            already_processed.add('schemeAgencyID')
-            outfile.write(' schemeAgencyID=%s' % (self.gds_format_string(quote_attrib(self.schemeAgencyID).encode(ExternalEncoding), input_name='schemeAgencyID'), ))
         if self.schemeName is not None and 'schemeName' not in already_processed:
             already_processed.add('schemeName')
             outfile.write(' schemeName=%s' % (self.gds_format_string(quote_attrib(self.schemeName).encode(ExternalEncoding), input_name='schemeName'), ))
+        if self.schemeAgencyID is not None and 'schemeAgencyID' not in already_processed:
+            already_processed.add('schemeAgencyID')
+            outfile.write(' schemeAgencyID=%s' % (self.gds_format_string(quote_attrib(self.schemeAgencyID).encode(ExternalEncoding), input_name='schemeAgencyID'), ))
+        if self.schemeAgencyName is not None and 'schemeAgencyName' not in already_processed:
+            already_processed.add('schemeAgencyName')
+            outfile.write(' schemeAgencyName=%s' % (self.gds_format_string(quote_attrib(self.schemeAgencyName).encode(ExternalEncoding), input_name='schemeAgencyName'), ))
         if self.schemeVersionID is not None and 'schemeVersionID' not in already_processed:
             already_processed.add('schemeVersionID')
             outfile.write(' schemeVersionID=%s' % (self.gds_format_string(quote_attrib(self.schemeVersionID).encode(ExternalEncoding), input_name='schemeVersionID'), ))
+        if self.schemeDataURI is not None and 'schemeDataURI' not in already_processed:
+            already_processed.add('schemeDataURI')
+            outfile.write(' schemeDataURI=%s' % (self.gds_format_string(quote_attrib(self.schemeDataURI).encode(ExternalEncoding), input_name='schemeDataURI'), ))
         if self.schemeURI is not None and 'schemeURI' not in already_processed:
             already_processed.add('schemeURI')
             outfile.write(' schemeURI=%s' % (self.gds_format_string(quote_attrib(self.schemeURI).encode(ExternalEncoding), input_name='schemeURI'), ))
@@ -748,30 +748,30 @@ class IdentifierType(GeneratedsSuper):
             self.buildChildren(child, node, nodeName_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('schemeDataURI', node)
-        if value is not None and 'schemeDataURI' not in already_processed:
-            already_processed.add('schemeDataURI')
-            self.schemeDataURI = value
         value = find_attr_value_('schemeID', node)
         if value is not None and 'schemeID' not in already_processed:
             already_processed.add('schemeID')
             self.schemeID = value
-        value = find_attr_value_('schemeAgencyName', node)
-        if value is not None and 'schemeAgencyName' not in already_processed:
-            already_processed.add('schemeAgencyName')
-            self.schemeAgencyName = value
-        value = find_attr_value_('schemeAgencyID', node)
-        if value is not None and 'schemeAgencyID' not in already_processed:
-            already_processed.add('schemeAgencyID')
-            self.schemeAgencyID = value
         value = find_attr_value_('schemeName', node)
         if value is not None and 'schemeName' not in already_processed:
             already_processed.add('schemeName')
             self.schemeName = value
+        value = find_attr_value_('schemeAgencyID', node)
+        if value is not None and 'schemeAgencyID' not in already_processed:
+            already_processed.add('schemeAgencyID')
+            self.schemeAgencyID = value
+        value = find_attr_value_('schemeAgencyName', node)
+        if value is not None and 'schemeAgencyName' not in already_processed:
+            already_processed.add('schemeAgencyName')
+            self.schemeAgencyName = value
         value = find_attr_value_('schemeVersionID', node)
         if value is not None and 'schemeVersionID' not in already_processed:
             already_processed.add('schemeVersionID')
             self.schemeVersionID = value
+        value = find_attr_value_('schemeDataURI', node)
+        if value is not None and 'schemeDataURI' not in already_processed:
+            already_processed.add('schemeDataURI')
+            self.schemeDataURI = value
         value = find_attr_value_('schemeURI', node)
         if value is not None and 'schemeURI' not in already_processed:
             already_processed.add('schemeURI')
@@ -791,9 +791,9 @@ class BillOfResourcesIDType(IdentifierType):
     ]
     subclass = None
     superclass = IdentifierType
-    def __init__(self, schemeDataURI=None, schemeID=None, schemeAgencyName=None, schemeAgencyID=None, schemeName=None, schemeVersionID=None, schemeURI=None, valueOf_=None):
+    def __init__(self, schemeID=None, schemeName=None, schemeAgencyID=None, schemeAgencyName=None, schemeVersionID=None, schemeDataURI=None, schemeURI=None, valueOf_=None):
         self.original_tagname_ = None
-        super(BillOfResourcesIDType, self).__init__(schemeDataURI, schemeID, schemeAgencyName, schemeAgencyID, schemeName, schemeVersionID, schemeURI, valueOf_, )
+        super(BillOfResourcesIDType, self).__init__(schemeID, schemeName, schemeAgencyID, schemeAgencyName, schemeVersionID, schemeDataURI, schemeURI, valueOf_, )
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:
@@ -860,9 +860,9 @@ class BillOfMaterialIDType(IdentifierType):
     ]
     subclass = None
     superclass = IdentifierType
-    def __init__(self, schemeDataURI=None, schemeID=None, schemeAgencyName=None, schemeAgencyID=None, schemeName=None, schemeVersionID=None, schemeURI=None, valueOf_=None):
+    def __init__(self, schemeID=None, schemeName=None, schemeAgencyID=None, schemeAgencyName=None, schemeVersionID=None, schemeDataURI=None, schemeURI=None, valueOf_=None):
         self.original_tagname_ = None
-        super(BillOfMaterialIDType, self).__init__(schemeDataURI, schemeID, schemeAgencyName, schemeAgencyID, schemeName, schemeVersionID, schemeURI, valueOf_, )
+        super(BillOfMaterialIDType, self).__init__(schemeID, schemeName, schemeAgencyID, schemeAgencyName, schemeVersionID, schemeDataURI, schemeURI, valueOf_, )
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:

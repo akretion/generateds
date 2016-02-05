@@ -1274,13 +1274,13 @@ class simpleTwoElementOneType(GeneratedsSuper):
 
 GDSClassesMapping = {
     'container': containerType,
+    'sample1': simpleOneType,
+    'sample2': simpleTwoType,
     'sample2_bad': simpleOneType,
+    'sample3_bad': simpleOneType,
+    'sample4_bad': simpleOneType,
     'simpleTwoElementOne': simpleTwoElementOneType,
     'simpleTypeData': simpleTwoType,
-    'sample1': simpleOneType,
-    'sample4_bad': simpleOneType,
-    'sample3_bad': simpleOneType,
-    'sample2': simpleTwoType,
 }
 
 

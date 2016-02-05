@@ -1027,12 +1027,12 @@ class inner_002(GeneratedsSuper):
 
 
 GDSClassesMapping = {
-    'container': containerType,
-    'item2': classBType,
-    'item1': classAType,
-    'classB': classBType,
     'classA': classAType,
+    'classB': classBType,
+    'container': containerType,
     'inner': inner_002,
+    'item1': classAType,
+    'item2': classBType,
 }
 
 

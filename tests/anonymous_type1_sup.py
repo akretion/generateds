@@ -984,9 +984,9 @@ class BazType3(GeneratedsSuper):
 
 
 GDSClassesMapping = {
+    'Bar': BarType2,
     'Baz': BazType3,
     'Foo': FooType1,
-    'Bar': BarType2,
 }
 
 

@@ -789,8 +789,8 @@ class cdataType(GeneratedsSuper):
 
 
 GDSClassesMapping = {
-    'cdatalist': cdataType,
     'cdata': cdataListType,
+    'cdatalist': cdataType,
 }
 
 

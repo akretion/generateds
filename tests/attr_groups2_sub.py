@@ -48,8 +48,8 @@ ExternalEncoding = 'ascii'
 
 
 class GetUserReqSub(supermod.GetUserReq):
-    def __init__(self, value04=None, value05=None, value06=None, value07=None, value01=None, value02=None, value03=None, sequence=None, returnedTags=None):
-        super(GetUserReqSub, self).__init__(value04, value05, value06, value07, value01, value02, value03, sequence, returnedTags, )
+    def __init__(self, sequence=None, value01=None, value02=None, value03=None, value04=None, value05=None, value06=None, value07=None, returnedTags=None):
+        super(GetUserReqSub, self).__init__(sequence, value01, value02, value03, value04, value05, value06, value07, returnedTags, )
 supermod.GetUserReq.subclass = GetUserReqSub
 # end class GetUserReqSub
 

@@ -1128,11 +1128,11 @@ class dataTypeNNNMNNN(GeneratedsSuper):
 
 GDSClassesMapping = {
     'data': dataKind,
-    'data5': dataTypeNNNMNNN,
-    'data4': MMMMMMdataKind,
     'data1': data1Kind,
-    'data3': RealTypeData3,
     'data2': MlassData2,
+    'data3': RealTypeData3,
+    'data4': MMMMMMdataKind,
+    'data5': dataTypeNNNMNNN,
 }
 
 

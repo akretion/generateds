@@ -635,28 +635,28 @@ def _cast(typ, value):
 
 class GetUserReq(GeneratedsSuper):
     member_data_items_ = [
+        MemberSpec_('sequence', 'xsd:unsignedLong', 0),
+        MemberSpec_('value01', 'xsd:string', 0),
+        MemberSpec_('value02', 'xsd:integer', 0),
+        MemberSpec_('value03', 'xsd:string', 0),
         MemberSpec_('value04', 'xsd:integer', 0),
         MemberSpec_('value05', 'xsd:string', 0),
         MemberSpec_('value06', 'xsd:integer', 0),
         MemberSpec_('value07', 'xsd:integer', 0),
-        MemberSpec_('value01', 'xsd:string', 0),
-        MemberSpec_('value02', 'xsd:integer', 0),
-        MemberSpec_('value03', 'xsd:string', 0),
-        MemberSpec_('sequence', 'xsd:unsignedLong', 0),
         MemberSpec_('returnedTags', 'xsd:string', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, value04=None, value05=None, value06=None, value07=None, value01=None, value02=None, value03=None, sequence=None, returnedTags=None):
+    def __init__(self, sequence=None, value01=None, value02=None, value03=None, value04=None, value05=None, value06=None, value07=None, returnedTags=None):
         self.original_tagname_ = None
+        self.sequence = _cast(int, sequence)
+        self.value01 = _cast(None, value01)
+        self.value02 = _cast(int, value02)
+        self.value03 = _cast(None, value03)
         self.value04 = _cast(int, value04)
         self.value05 = _cast(None, value05)
         self.value06 = _cast(int, value06)
         self.value07 = _cast(int, value07)
-        self.value01 = _cast(None, value01)
-        self.value02 = _cast(int, value02)
-        self.value03 = _cast(None, value03)
-        self.sequence = _cast(int, sequence)
         self.returnedTags = returnedTags
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:
@@ -671,6 +671,14 @@ class GetUserReq(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_returnedTags(self): return self.returnedTags
     def set_returnedTags(self, returnedTags): self.returnedTags = returnedTags
+    def get_sequence(self): return self.sequence
+    def set_sequence(self, sequence): self.sequence = sequence
+    def get_value01(self): return self.value01
+    def set_value01(self, value01): self.value01 = value01
+    def get_value02(self): return self.value02
+    def set_value02(self, value02): self.value02 = value02
+    def get_value03(self): return self.value03
+    def set_value03(self, value03): self.value03 = value03
     def get_value04(self): return self.value04
     def set_value04(self, value04): self.value04 = value04
     def get_value05(self): return self.value05
@@ -679,14 +687,6 @@ class GetUserReq(GeneratedsSuper):
     def set_value06(self, value06): self.value06 = value06
     def get_value07(self): return self.value07
     def set_value07(self, value07): self.value07 = value07
-    def get_value01(self): return self.value01
-    def set_value01(self, value01): self.value01 = value01
-    def get_value02(self): return self.value02
-    def set_value02(self, value02): self.value02 = value02
-    def get_value03(self): return self.value03
-    def set_value03(self, value03): self.value03 = value03
-    def get_sequence(self): return self.sequence
-    def set_sequence(self, sequence): self.sequence = sequence
     def hasContent_(self):
         if (
             self.returnedTags is not None
@@ -713,6 +713,18 @@ class GetUserReq(GeneratedsSuper):
         else:
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='GetUserReq'):
+        if self.sequence is not None and 'sequence' not in already_processed:
+            already_processed.add('sequence')
+            outfile.write(' sequence="%s"' % self.gds_format_integer(self.sequence, input_name='sequence'))
+        if self.value01 is not None and 'value01' not in already_processed:
+            already_processed.add('value01')
+            outfile.write(' value01=%s' % (self.gds_format_string(quote_attrib(self.value01).encode(ExternalEncoding), input_name='value01'), ))
+        if self.value02 is not None and 'value02' not in already_processed:
+            already_processed.add('value02')
+            outfile.write(' value02="%s"' % self.gds_format_integer(self.value02, input_name='value02'))
+        if self.value03 is not None and 'value03' not in already_processed:
+            already_processed.add('value03')
+            outfile.write(' value03=%s' % (self.gds_format_string(quote_attrib(self.value03).encode(ExternalEncoding), input_name='value03'), ))
         if self.value04 is not None and 'value04' not in already_processed:
             already_processed.add('value04')
             outfile.write(' value04="%s"' % self.gds_format_integer(self.value04, input_name='value04'))
@@ -725,18 +737,6 @@ class GetUserReq(GeneratedsSuper):
         if self.value07 is not None and 'value07' not in already_processed:
             already_processed.add('value07')
             outfile.write(' value07="%s"' % self.gds_format_integer(self.value07, input_name='value07'))
-        if self.value01 is not None and 'value01' not in already_processed:
-            already_processed.add('value01')
-            outfile.write(' value01=%s' % (self.gds_format_string(quote_attrib(self.value01).encode(ExternalEncoding), input_name='value01'), ))
-        if self.value02 is not None and 'value02' not in already_processed:
-            already_processed.add('value02')
-            outfile.write(' value02="%s"' % self.gds_format_integer(self.value02, input_name='value02'))
-        if self.value03 is not None and 'value03' not in already_processed:
-            already_processed.add('value03')
-            outfile.write(' value03=%s' % (self.gds_format_string(quote_attrib(self.value03).encode(ExternalEncoding), input_name='value03'), ))
-        if self.sequence is not None and 'sequence' not in already_processed:
-            already_processed.add('sequence')
-            outfile.write(' sequence="%s"' % self.gds_format_integer(self.sequence, input_name='sequence'))
     def exportChildren(self, outfile, level, namespace_='', name_='GetUserReq', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -753,6 +753,28 @@ class GetUserReq(GeneratedsSuper):
             self.buildChildren(child, node, nodeName_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('sequence', node)
+        if value is not None and 'sequence' not in already_processed:
+            already_processed.add('sequence')
+            try:
+                self.sequence = int(value)
+            except ValueError as exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+        value = find_attr_value_('value01', node)
+        if value is not None and 'value01' not in already_processed:
+            already_processed.add('value01')
+            self.value01 = value
+        value = find_attr_value_('value02', node)
+        if value is not None and 'value02' not in already_processed:
+            already_processed.add('value02')
+            try:
+                self.value02 = int(value)
+            except ValueError as exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+        value = find_attr_value_('value03', node)
+        if value is not None and 'value03' not in already_processed:
+            already_processed.add('value03')
+            self.value03 = value
         value = find_attr_value_('value04', node)
         if value is not None and 'value04' not in already_processed:
             already_processed.add('value04')
@@ -776,28 +798,6 @@ class GetUserReq(GeneratedsSuper):
             already_processed.add('value07')
             try:
                 self.value07 = int(value)
-            except ValueError as exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('value01', node)
-        if value is not None and 'value01' not in already_processed:
-            already_processed.add('value01')
-            self.value01 = value
-        value = find_attr_value_('value02', node)
-        if value is not None and 'value02' not in already_processed:
-            already_processed.add('value02')
-            try:
-                self.value02 = int(value)
-            except ValueError as exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('value03', node)
-        if value is not None and 'value03' not in already_processed:
-            already_processed.add('value03')
-            self.value03 = value
-        value = find_attr_value_('sequence', node)
-        if value is not None and 'sequence' not in already_processed:
-            already_processed.add('sequence')
-            try:
-                self.sequence = int(value)
             except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
