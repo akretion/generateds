@@ -634,9 +634,12 @@ fix-type-names="oldname1:newname1;oldname2:newname2;..." Fix up
         $ generateDS.py --fix-type-names="type1;type2:type2Repl"
 
 py3
-    Generate code for Python 3.  Although ``generateDS.py`` itself
-    must still be run under Python 2, it can generate code that will
-    run under (and will have the same behavior) under Python 3.
+    Generate code for Python 3.  Generate code that will run under
+    (and will have the same behavior under) Python 3 (instead of
+    Python 2).  You can, later, determine whether a file was
+    generated for Python 2 or Python 3 by looking at the comments
+    containing command line options near the top of the file.  The
+    default is to generate code for Python 2.  
 
 version
     Print out the current version of ``generateDS.py`` and
