@@ -141,15 +141,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version 2.19a (01/18/2016)
+Version 2.19a (02/08/2016)
 
 - Added the ability to generate code that can run under Python 3.
   Use the "--py3" command line option.  Note that if you generate
   code for Python 2 (the default), then you must run that generated
-  code under Python 2.  And, if you generate code for Python 2 (the
-  default), then you must run that generated code under Python 2.
-  There is currently no way to generate code that will run under
-  both Python 2 and Python 3.
+  code under Python 2.  And, if you generate code for Python 3,
+  then you must run that generated code under Python 3.  There is
+  currently no way to generate code that will run under both Python
+  2 and Python 3.
 - Modifications so that generateDS.py itself can be run with either
   Python 2 or Python 3.
 - Fixed the template (TEMPLATE_HEADER) so that it uses the format
