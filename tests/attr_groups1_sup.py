@@ -33,6 +33,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -352,6 +356,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -406,7 +416,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -428,7 +438,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -718,19 +728,19 @@ class GetUserReq(GeneratedsSuper):
             outfile.write(' sequence="%s"' % self.gds_format_integer(self.sequence, input_name='sequence'))
         if self.value01 is not None and 'value01' not in already_processed:
             already_processed.add('value01')
-            outfile.write(' value01=%s' % (self.gds_format_string(quote_attrib(self.value01).encode(ExternalEncoding), input_name='value01'), ))
+            outfile.write(' value01=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.value01), input_name='value01')), ))
         if self.value02 is not None and 'value02' not in already_processed:
             already_processed.add('value02')
             outfile.write(' value02="%s"' % self.gds_format_integer(self.value02, input_name='value02'))
         if self.value03 is not None and 'value03' not in already_processed:
             already_processed.add('value03')
-            outfile.write(' value03=%s' % (self.gds_format_string(quote_attrib(self.value03).encode(ExternalEncoding), input_name='value03'), ))
+            outfile.write(' value03=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.value03), input_name='value03')), ))
         if self.value04 is not None and 'value04' not in already_processed:
             already_processed.add('value04')
             outfile.write(' value04="%s"' % self.gds_format_integer(self.value04, input_name='value04'))
         if self.value05 is not None and 'value05' not in already_processed:
             already_processed.add('value05')
-            outfile.write(' value05=%s' % (self.gds_format_string(quote_attrib(self.value05).encode(ExternalEncoding), input_name='value05'), ))
+            outfile.write(' value05=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.value05), input_name='value05')), ))
         if self.value06 is not None and 'value06' not in already_processed:
             already_processed.add('value06')
             outfile.write(' value06="%s"' % self.gds_format_integer(self.value06, input_name='value06'))
@@ -744,7 +754,7 @@ class GetUserReq(GeneratedsSuper):
             eol_ = ''
         if self.returnedTags is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sreturnedTags>%s</%sreturnedTags>%s' % (namespace_, self.gds_format_string(quote_xml(self.returnedTags).encode(ExternalEncoding), input_name='returnedTags'), namespace_, eol_))
+            outfile.write('<%sreturnedTags>%s</%sreturnedTags>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.returnedTags), input_name='returnedTags')), namespace_, eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

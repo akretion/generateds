@@ -34,6 +34,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -353,6 +357,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -407,7 +417,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -429,7 +439,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -695,7 +705,7 @@ class oneperType02_1(GeneratedsSuper):
             eol_ = ''
         if self.clientname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sclientname>%s</%sclientname>%s' % (namespace_, self.gds_format_string(quote_xml(self.clientname).encode(ExternalEncoding), input_name='clientname'), namespace_, eol_))
+            outfile.write('<%sclientname>%s</%sclientname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.clientname), input_name='clientname')), namespace_, eol_))
         if self.inner01 is not None:
             self.inner01.export(outfile, level, namespace_, name_='inner01', pretty_print=pretty_print)
     def build(self, node):
@@ -776,7 +786,7 @@ class oneperType02_2(GeneratedsSuper):
             eol_ = ''
         if self.clientdescription is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sclientdescription>%s</%sclientdescription>%s' % (namespace_, self.gds_format_string(quote_xml(self.clientdescription).encode(ExternalEncoding), input_name='clientdescription'), namespace_, eol_))
+            outfile.write('<%sclientdescription>%s</%sclientdescription>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.clientdescription), input_name='clientdescription')), namespace_, eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

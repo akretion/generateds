@@ -107,7 +107,6 @@ Options:
                              distribution.
     --fix-type-names="oldname1:newname1;oldname2:newname2;..."
                              Fix up (replace) complex type names.
-    --py3                    Generate code for Python 3.
     --version                Print version and exit.
 
 Usage example:
@@ -206,6 +205,11 @@ logging.disable(logging.INFO)
 VERSION = '2.19a'
 ##VERSION##
 
+if sys.version_info.major == 2:
+    BaseStrType = basestring
+else:
+    BaseStrType = str
+
 GenerateProperties = 0
 UseGetterSetter = 'new'
 UseOldSimpleTypeValidators = False
@@ -270,7 +274,6 @@ SingleFileOutput = True
 OutputDirectory = None
 ModuleSuffix = ""
 PreserveCdataTags = False
-GeneratePy3 = False
 
 SchemaToPythonTypeMap = {}
 
@@ -1964,24 +1967,25 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         # fixlist
-        encoding = '' if GeneratePy3 else '.encode(ExternalEncoding)'
         if (child.getSimpleType() in SimpleTypeDict and
                 SimpleTypeDict[child.getSimpleType()].isListType()):
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_string(quote_xml" \
-                "(' '.join(self.%s))%s, " \
-                "input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, encoding, name, )
+                "(namespace_, self.gds_encode(self.gds_format_string(" \
+                "quote_xml" \
+                "(' '.join(self.%s)), " \
+                "input_name='%s')), namespace_, eol_))\n" % \
+                (fill, name, name, mappedName, name, )
         else:
             namespace = 'namespace_'
             if child.prefix and 'ref' in child.attrs:
                 namespace = "'%s:'" % child.prefix
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(%s, self.gds_format_string(quote_xml(self.%s)%s, " \
-                "input_name='%s'), " \
+                "(%s, self.gds_encode(self.gds_format_string(" \
+                "quote_xml(self.%s), " \
+                "input_name='%s')), " \
                 "%s, eol_))\n" % \
                 (fill, name, name, namespace, mappedName,
-                    encoding, name, namespace, )
+                    name, namespace, )
         wrt(s1)
     elif (child_type in IntegerType or
             child_type == PositiveIntegerType or
@@ -2127,11 +2131,11 @@ def generateExportFn_2(wrt, child, name, namespace, fill):
             child_type == TokenType or
             child_type in DateTimeGroupType):
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
-        encoding = '' if GeneratePy3 else '.encode(ExternalEncoding)'
         wrt("%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% "
-            "(namespace_, self.gds_format_string(quote_xml(%s_)"
-            "%s, input_name='%s'), namespace_, eol_))\n" %
-            (fill, name, name, cleanName, encoding, name,))
+            "(namespace_, self.gds_encode(self.gds_format_string("
+            "quote_xml(%s_), "
+            "input_name='%s')), namespace_, eol_))\n" %
+            (fill, name, name, cleanName, name,))
     elif (child_type in IntegerType or
             child_type == PositiveIntegerType or
             child_type == NonPositiveIntegerType or
@@ -2269,20 +2273,19 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         # fixlist
-        encoding = '' if GeneratePy3 else '.encode(ExternalEncoding)'
         if (child.getSimpleType() in SimpleTypeDict and
                 SimpleTypeDict[child.getSimpleType()].isListType()):
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_string(" \
-                "quote_xml(' '.join(self.%s))%s, " \
-                "input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, encoding, name, )
+                "(namespace_, self.gds_encode(self.gds_format_string(" \
+                "quote_xml(' '.join(self.%s)), " \
+                "input_name='%s')), namespace_, eol_))\n" % \
+                (fill, name, name, mappedName, name, )
         else:
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_string(" \
-                "quote_xml(self.%s)%s, " \
-                "input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, encoding, name, )
+                "(namespace_, self.gds_encode(self.gds_format_string(" \
+                "quote_xml(self.%s), " \
+                "input_name='%s')), namespace_, eol_))\n" % \
+                (fill, name, name, mappedName, name, )
         wrt(s1)
     elif (child_type in IntegerType or
             child_type == PositiveIntegerType or
@@ -2648,12 +2651,11 @@ def generateExportAttributes(wrt, element, hasAttributes):
                     attrDefType in IDTypes or
                     attrDefType == TokenType or
                     attrDefType in DateTimeGroupType):
-                encoding = '' if GeneratePy3 else '.encode(ExternalEncoding)'
                 s1 = '''%s        outfile.write(' %s=%%s' %% ''' \
-                    '''(self.gds_format_string(quote_attrib(''' \
-                    '''self.%s)%s, ''' \
-                    '''input_name='%s'), ))\n''' % \
-                    (indent, orig_name, cleanName, encoding, name, )
+                    '''(self.gds_encode(self.gds_format_string(quote_attrib(''' \
+                    '''self.%s), ''' \
+                    '''input_name='%s')), ))\n''' % \
+                    (indent, orig_name, cleanName, name, )
             elif (attrDefType in IntegerType or
                     attrDefType == PositiveIntegerType or
                     attrDefType == NonPositiveIntegerType or
@@ -2820,11 +2822,10 @@ def generateExportFn(wrt, prefix, element, namespace, nameSpacesDef):
         if element.getSimpleContent():
             wrt("            outfile.write('>')\n")
             if not element.isMixed():
-                encoding = '' if GeneratePy3 else '.encode(ExternalEncoding)'
                 wrt("            outfile.write((quote_xml(self.valueOf_) "
                     "if type(self.valueOf_) is str else "
-                    "str(self.valueOf_))%s)\n" % (
-                        encoding, ))
+                    "self.gds_encode(str(self.valueOf_))))\n"
+                    )
         else:
             wrt("            outfile.write('>%s' % (eol_, ))\n")
         wrt("            self.exportChildren(outfile, level + 1, "
@@ -2945,21 +2946,20 @@ def generateExportLiteralFn_1(wrt, child, name, fill):
                 childType == TokenType or
                 childType in DateTimeGroupType):
             wrt('%s            showIndent(outfile, level)\n' % fill)
-            encoding = '' if GeneratePy3 else '.encode(ExternalEncoding)'
             if (child.getSimpleType() in SimpleTypeDict and
                     SimpleTypeDict[child.getSimpleType()].isListType()):
                 wrt("%s            if self.%s:\n" % (fill, mappedName, ))
                 wrt("%s                outfile.write('%s=%%s,\\n' %% "
-                    "quote_python(' '.join(self.%s))"
-                    "%s) \n" %
+                    "self.gds_encode(quote_python(' '.join(self.%s)))"
+                    ") \n" %
                     (fill, mappedName, mappedName, encoding, ))
                 wrt("%s            else:\n" % (fill, ))
                 wrt("%s                outfile.write('%s=None,\\n')\n" %
                     (fill, mappedName, ))
             else:
                 wrt("%s            outfile.write('%s=%%s,\\n' %% "
-                    "quote_python(self.%s)%s)\n" %
-                    (fill, mappedName, mappedName, encoding, ))
+                    "self.gds_encode(quote_python(self.%s)))\n" %
+                    (fill, mappedName, mappedName, ))
         elif (childType in IntegerType or
                 childType == PositiveIntegerType or
                 childType == NonPositiveIntegerType or
@@ -3020,10 +3020,9 @@ def generateExportLiteralFn_2(wrt, child, name, fill):
     elif (childType in StringType or
             childType == TokenType or
             childType in DateTimeGroupType):
-        encoding = '' if GeneratePy3 else '.encode(ExternalEncoding)'
         wrt('%s        showIndent(outfile, level)\n' % fill)
-        wrt("%s        outfile.write('%%s,\\n' %% quote_python(%s_)"
-            "%s)\n" % (fill, name, encoding, ))
+        wrt("%s        outfile.write('%%s,\\n' %% self.gds_encode("
+            "quote_python(%s_)))\n" % (fill, name, ))
     elif (childType in IntegerType or
             childType == PositiveIntegerType or
             childType == NonPositiveIntegerType or
@@ -4105,30 +4104,21 @@ def generateCtor(wrt, prefix, element):
             mbrname = name
         attrType = attrDef.getType()
         if attrType == DateTimeType:
-            if GeneratePy3:
-                wrt("        if isinstance(%s, str):\n" % (mbrname, ))
-            else:
-                wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
+            wrt("        if isinstance(%s, BaseStrType_):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
                 "%s, '%%Y-%%m-%%dT%%H:%%M:%%S')\n" % (mbrname, ))
             wrt("        else:\n")
             wrt("            initvalue_ = %s\n" % (mbrname, ))
             wrt("        self.%s = initvalue_\n" % (name, ))
         elif attrType == DateType:
-            if GeneratePy3:
-                wrt("        if isinstance(%s, str):\n" % (mbrname, ))
-            else:
-                wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
+            wrt("        if isinstance(%s, BaseStrType_):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
                 "%s, '%%Y-%%m-%%d').date()\n" % (mbrname, ))
             wrt("        else:\n")
             wrt("            initvalue_ = %s\n" % (mbrname, ))
             wrt("        self.%s = initvalue_\n" % (name, ))
         elif attrType == TimeType:
-            if GeneratePy3:
-                wrt("        if isinstance(%s, str):\n" % (mbrname, ))
-            else:
-                wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
+            wrt("        if isinstance(%s, BaseStrType_):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
                 "%s, '%%H:%%M:%%S').time()\n" % (mbrname, ))
             wrt("        else:\n")
@@ -4157,10 +4147,7 @@ def generateCtor(wrt, prefix, element):
             else:
                 wrt('        self.anytypeobjs_ = anytypeobjs_\n')
         elif childType == DateTimeType and child.getMaxOccurs() <= 1:
-            if GeneratePy3:
-                wrt("        if isinstance(%s, str):\n" % (mbrname, ))
-            else:
-                wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
+            wrt("        if isinstance(%s, BaseStrType_):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
                 "%s, '%%Y-%%m-%%dT%%H:%%M:%%S')\n" % (mbrname, ))
             wrt("        else:\n")
@@ -4170,10 +4157,7 @@ def generateCtor(wrt, prefix, element):
             else:
                 wrt("        self.%s = initvalue_\n" % (name, ))
         elif childType == DateType and child.getMaxOccurs() <= 1:
-            if GeneratePy3:
-                wrt("        if isinstance(%s, str):\n" % (mbrname, ))
-            else:
-                wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
+            wrt("        if isinstance(%s, BaseStrType_):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
                 "%s, '%%Y-%%m-%%d').date()\n" % (mbrname, ))
             wrt("        else:\n")
@@ -4183,10 +4167,7 @@ def generateCtor(wrt, prefix, element):
             else:
                 wrt("        self.%s = initvalue_\n" % (name, ))
         elif childType == TimeType and child.getMaxOccurs() <= 1:
-            if GeneratePy3:
-                wrt("        if isinstance(%s, str):\n" % (mbrname, ))
-            else:
-                wrt("        if isinstance(%s, basestring):\n" % (mbrname, ))
+            wrt("        if isinstance(%s, BaseStrType_):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
                 "%s, '%%H:%%M:%%S').time()\n" % (mbrname, ))
             wrt("        else:\n")
@@ -4936,6 +4917,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -5255,6 +5240,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             {gds_reverse_node_mapping_text}
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -5600,20 +5591,12 @@ def generateHeader(wrt, prefix, options, args, externalImports):
     else:
         preserve_cdata_tags_pat = ""
         preserve_cdata_get_text = Preserve_cdata_get_all_text2
-    if GeneratePy3:
-        gds_reverse_node_mapping_text = \
-            "return dict(((v, k) for k, v in mapping.items()))"
-        quote_xml_text = \
-            "s1 = (isinstance(inStr, str) and inStr or '%s' % inStr)"
-        quote_attrib_text = \
-            "s1 = (isinstance(inStr, str) and inStr or '%s' % inStr)"
-    else:
-        gds_reverse_node_mapping_text = \
-            "return dict(((v, k) for k, v in mapping.iteritems()))"
-        quote_xml_text = \
-            "s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)"
-        quote_attrib_text = \
-            "s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)"
+    gds_reverse_node_mapping_text = \
+        "return dict(((v, k) for k, v in mapping.iteritems()))"
+    quote_xml_text = \
+        "s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)"
+    quote_attrib_text = \
+        "s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)"
     s1 = TEMPLATE_HEADER.format(
         tstamp=tstamp,
         version=version,
@@ -6808,7 +6791,7 @@ def main():
         ExportWrite, ExportEtree, ExportLiteral, \
         FixTypeNames, SingleFileOutput, OutputDirectory, \
         ModuleSuffix, UseOldSimpleTypeValidators, \
-        PreserveCdataTags, CleanupNameList, GeneratePy3
+        PreserveCdataTags, CleanupNameList
     outputText = True
     args = sys.argv[1:]
     try:
@@ -6826,7 +6809,6 @@ def main():
                 'one-file-per-xsd', 'output-directory=',
                 'module-suffix=', 'use-old-simpletype-validators',
                 'preserve-cdata-tags', 'cleanup-name-list=',
-                'py3',
             ])
     except getopt.GetoptError:
         usage()
@@ -7003,8 +6985,8 @@ def main():
                 if sys.version_info.major == 2:
                     if (type(cleanup_pair) not in (list, tuple) or
                             len(cleanup_pair) != 2 or
-                            not isinstance(cleanup_pair[0], basestring) or
-                            not isinstance(cleanup_pair[1], basestring)):
+                            not isinstance(cleanup_pair[0], BaseStrType) or
+                            not isinstance(cleanup_pair[1], BaseStrType)):
                         raise RuntimeError(
                             'Option --cleanup-name-list contains '
                             'invalid element.')
@@ -7024,8 +7006,6 @@ def main():
                         'Option --cleanup-name-list contains invalid '
                         'pattern "%s".'
                         % cleanup_pair[0])
-        elif option[0] == '--py3':
-            GeneratePy3 = True
 
     if showVersion:
         print('generateDS.py version %s' % VERSION)

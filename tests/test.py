@@ -657,7 +657,7 @@ class GenTest(unittest.TestCase):
     def test_029_defaults_cases(self):
         cmdTempl = (
             'python generateDS.py --no-dates --no-versions '
-            '--silence --member-specs=list -f '
+            '--member-specs=list -f '
             '-o tests/%s2_sup.py -s tests/%s2_sub.py '
             '--super=%s2_sup '
             'tests/%s.xsd'

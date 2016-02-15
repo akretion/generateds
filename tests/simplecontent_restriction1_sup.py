@@ -33,6 +33,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -352,6 +356,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -406,7 +416,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -428,7 +438,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -706,7 +716,7 @@ class IdentifierType(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='IdentifierType')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else self.gds_encode(str(self.valueOf_))))
             self.exportChildren(outfile, level + 1, namespace_='', name_='IdentifierType', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -714,25 +724,25 @@ class IdentifierType(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='IdentifierType'):
         if self.schemeID is not None and 'schemeID' not in already_processed:
             already_processed.add('schemeID')
-            outfile.write(' schemeID=%s' % (self.gds_format_string(quote_attrib(self.schemeID).encode(ExternalEncoding), input_name='schemeID'), ))
+            outfile.write(' schemeID=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.schemeID), input_name='schemeID')), ))
         if self.schemeName is not None and 'schemeName' not in already_processed:
             already_processed.add('schemeName')
-            outfile.write(' schemeName=%s' % (self.gds_format_string(quote_attrib(self.schemeName).encode(ExternalEncoding), input_name='schemeName'), ))
+            outfile.write(' schemeName=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.schemeName), input_name='schemeName')), ))
         if self.schemeAgencyID is not None and 'schemeAgencyID' not in already_processed:
             already_processed.add('schemeAgencyID')
-            outfile.write(' schemeAgencyID=%s' % (self.gds_format_string(quote_attrib(self.schemeAgencyID).encode(ExternalEncoding), input_name='schemeAgencyID'), ))
+            outfile.write(' schemeAgencyID=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.schemeAgencyID), input_name='schemeAgencyID')), ))
         if self.schemeAgencyName is not None and 'schemeAgencyName' not in already_processed:
             already_processed.add('schemeAgencyName')
-            outfile.write(' schemeAgencyName=%s' % (self.gds_format_string(quote_attrib(self.schemeAgencyName).encode(ExternalEncoding), input_name='schemeAgencyName'), ))
+            outfile.write(' schemeAgencyName=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.schemeAgencyName), input_name='schemeAgencyName')), ))
         if self.schemeVersionID is not None and 'schemeVersionID' not in already_processed:
             already_processed.add('schemeVersionID')
-            outfile.write(' schemeVersionID=%s' % (self.gds_format_string(quote_attrib(self.schemeVersionID).encode(ExternalEncoding), input_name='schemeVersionID'), ))
+            outfile.write(' schemeVersionID=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.schemeVersionID), input_name='schemeVersionID')), ))
         if self.schemeDataURI is not None and 'schemeDataURI' not in already_processed:
             already_processed.add('schemeDataURI')
-            outfile.write(' schemeDataURI=%s' % (self.gds_format_string(quote_attrib(self.schemeDataURI).encode(ExternalEncoding), input_name='schemeDataURI'), ))
+            outfile.write(' schemeDataURI=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.schemeDataURI), input_name='schemeDataURI')), ))
         if self.schemeURI is not None and 'schemeURI' not in already_processed:
             already_processed.add('schemeURI')
-            outfile.write(' schemeURI=%s' % (self.gds_format_string(quote_attrib(self.schemeURI).encode(ExternalEncoding), input_name='schemeURI'), ))
+            outfile.write(' schemeURI=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.schemeURI), input_name='schemeURI')), ))
         if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
             already_processed.add('xsi:type')
             outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
@@ -829,7 +839,7 @@ class BillOfResourcesIDType(IdentifierType):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='BillOfResourcesIDType')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else self.gds_encode(str(self.valueOf_))))
             self.exportChildren(outfile, level + 1, namespace_='', name_='BillOfResourcesIDType', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -898,7 +908,7 @@ class BillOfMaterialIDType(IdentifierType):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='BillOfMaterialIDType')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else self.gds_encode(str(self.valueOf_))))
             self.exportChildren(outfile, level + 1, namespace_='', name_='BillOfMaterialIDType', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:

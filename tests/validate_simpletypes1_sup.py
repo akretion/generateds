@@ -32,6 +32,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -351,6 +355,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -405,7 +415,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -427,7 +437,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -974,13 +984,13 @@ class simpleOneType(GeneratedsSuper):
             outfile.write('<%sinteger_range_1_value>%s</%sinteger_range_1_value>%s' % (namespace_, self.gds_format_integer(self.integer_range_1_value, input_name='integer_range_1_value'), namespace_, eol_))
         if self.pattern_value is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%spattern_value>%s</%spattern_value>%s' % (namespace_, self.gds_format_string(quote_xml(self.pattern_value).encode(ExternalEncoding), input_name='pattern_value'), namespace_, eol_))
+            outfile.write('<%spattern_value>%s</%spattern_value>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.pattern_value), input_name='pattern_value')), namespace_, eol_))
         if self.token_enum_value is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%stoken_enum_value>%s</%stoken_enum_value>%s' % (namespace_, self.gds_format_string(quote_xml(self.token_enum_value).encode(ExternalEncoding), input_name='token_enum_value'), namespace_, eol_))
+            outfile.write('<%stoken_enum_value>%s</%stoken_enum_value>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.token_enum_value), input_name='token_enum_value')), namespace_, eol_))
         if self.token_enum_value is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%stoken_enum_value>%s</%stoken_enum_value>%s' % (namespace_, self.gds_format_string(quote_xml(self.token_enum_value).encode(ExternalEncoding), input_name='token_enum_value'), namespace_, eol_))
+            outfile.write('<%stoken_enum_value>%s</%stoken_enum_value>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.token_enum_value), input_name='token_enum_value')), namespace_, eol_))
         if self.integer_range_incl_value is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sinteger_range_incl_value>%s</%sinteger_range_incl_value>%s' % (namespace_, self.gds_format_integer(self.integer_range_incl_value, input_name='integer_range_incl_value'), namespace_, eol_))
@@ -989,10 +999,10 @@ class simpleOneType(GeneratedsSuper):
             outfile.write('<%sinteger_range_excl_value>%s</%sinteger_range_excl_value>%s' % (namespace_, self.gds_format_integer(self.integer_range_excl_value, input_name='integer_range_excl_value'), namespace_, eol_))
         if self.min_max_length_value is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%smin_max_length_value>%s</%smin_max_length_value>%s' % (namespace_, self.gds_format_string(quote_xml(self.min_max_length_value).encode(ExternalEncoding), input_name='min_max_length_value'), namespace_, eol_))
+            outfile.write('<%smin_max_length_value>%s</%smin_max_length_value>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.min_max_length_value), input_name='min_max_length_value')), namespace_, eol_))
         if self.length_value is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%slength_value>%s</%slength_value>%s' % (namespace_, self.gds_format_string(quote_xml(self.length_value).encode(ExternalEncoding), input_name='length_value'), namespace_, eol_))
+            outfile.write('<%slength_value>%s</%slength_value>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.length_value), input_name='length_value')), namespace_, eol_))
         if self.totalDigits_value is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%stotalDigits_value>%s</%stotalDigits_value>%s' % (namespace_, self.gds_format_float(self.totalDigits_value, input_name='totalDigits_value'), namespace_, eol_))
@@ -1252,7 +1262,7 @@ class simpleTwoElementOneType(GeneratedsSuper):
             eol_ = ''
         if self.simpleTwoElementTwo is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%ssimpleTwoElementTwo>%s</%ssimpleTwoElementTwo>%s' % (namespace_, self.gds_format_string(quote_xml(self.simpleTwoElementTwo).encode(ExternalEncoding), input_name='simpleTwoElementTwo'), namespace_, eol_))
+            outfile.write('<%ssimpleTwoElementTwo>%s</%ssimpleTwoElementTwo>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.simpleTwoElementTwo), input_name='simpleTwoElementTwo')), namespace_, eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

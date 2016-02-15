@@ -33,6 +33,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -352,6 +356,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -406,7 +416,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -428,7 +438,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -1187,7 +1197,7 @@ class person(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='person'):
         if self.value is not None and 'value' not in already_processed:
             already_processed.add('value')
-            outfile.write(' value=%s' % (self.gds_format_string(quote_attrib(self.value).encode(ExternalEncoding), input_name='value'), ))
+            outfile.write(' value=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.value), input_name='value')), ))
         if self.id is not None and 'id' not in already_processed:
             already_processed.add('id')
             outfile.write(' id="%s"' % self.gds_format_integer(self.id, input_name='id'))
@@ -1196,10 +1206,10 @@ class person(GeneratedsSuper):
             outfile.write(' ratio="%s"' % self.gds_format_float(self.ratio, input_name='ratio'))
         if self.fruit is not None and 'fruit' not in already_processed:
             already_processed.add('fruit')
-            outfile.write(' fruit=%s' % (self.gds_format_string(quote_attrib(self.fruit).encode(ExternalEncoding), input_name='fruit'), ))
+            outfile.write(' fruit=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.fruit), input_name='fruit')), ))
         if self.vegetable is not None and 'vegetable' not in already_processed:
             already_processed.add('vegetable')
-            outfile.write(' vegetable=%s' % (self.gds_format_string(quote_attrib(self.vegetable).encode(ExternalEncoding), input_name='vegetable'), ))
+            outfile.write(' vegetable=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.vegetable), input_name='vegetable')), ))
         if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
             already_processed.add('xsi:type')
             outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
@@ -1211,10 +1221,10 @@ class person(GeneratedsSuper):
             eol_ = ''
         if self.name is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sname>%s</%sname>%s' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_, eol_))
+            outfile.write('<%sname>%s</%sname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.name), input_name='name')), namespace_, eol_))
         for interest_ in self.interest:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sinterest>%s</%sinterest>%s' % (namespace_, self.gds_format_string(quote_xml(interest_).encode(ExternalEncoding), input_name='interest'), namespace_, eol_))
+            outfile.write('<%sinterest>%s</%sinterest>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(interest_), input_name='interest')), namespace_, eol_))
         if self.category is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%scategory>%s</%scategory>%s' % (namespace_, self.gds_format_integer(self.category, input_name='category'), namespace_, eol_))
@@ -1224,7 +1234,7 @@ class person(GeneratedsSuper):
             promoter_.export(outfile, level, namespace_, name_='promoter', pretty_print=pretty_print)
         if self.description is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdescription>%s</%sdescription>%s' % (namespace_, self.gds_format_string(quote_xml(self.description).encode(ExternalEncoding), input_name='description'), namespace_, eol_))
+            outfile.write('<%sdescription>%s</%sdescription>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.description), input_name='description')), namespace_, eol_))
     def exportLiteral(self, outfile, level, name_='person'):
         level += 1
         already_processed = set()
@@ -1255,13 +1265,13 @@ class person(GeneratedsSuper):
     def exportLiteralChildren(self, outfile, level, name_):
         if self.name is not None:
             showIndent(outfile, level)
-            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
+            outfile.write('name=%s,\n' % self.gds_encode(quote_python(self.name)))
         showIndent(outfile, level)
         outfile.write('interest=[\n')
         level += 1
         for interest_ in self.interest:
             showIndent(outfile, level)
-            outfile.write('%s,\n' % quote_python(interest_).encode(ExternalEncoding))
+            outfile.write('%s,\n' % self.gds_encode(quote_python(interest_)))
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
@@ -1294,7 +1304,7 @@ class person(GeneratedsSuper):
         outfile.write('],\n')
         if self.description is not None:
             showIndent(outfile, level)
-            outfile.write('description=%s,\n' % quote_python(self.description).encode(ExternalEncoding))
+            outfile.write('description=%s,\n' % self.gds_encode(quote_python(self.description)))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1450,12 +1460,12 @@ class programmer(person):
         self.elnonposint = elnonposint
         self.elnegint = elnegint
         self.elnonnegint = elnonnegint
-        if isinstance(eldate, basestring):
+        if isinstance(eldate, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(eldate, '%Y-%m-%d').date()
         else:
             initvalue_ = eldate
         self.eldate = initvalue_
-        if isinstance(eldatetime, basestring):
+        if isinstance(eldatetime, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(eldatetime, '%Y-%m-%dT%H:%M:%S')
         else:
             initvalue_ = eldatetime
@@ -1569,10 +1579,10 @@ class programmer(person):
         super(programmer, self).exportAttributes(outfile, level, already_processed, namespace_, name_='programmer')
         if self.language is not None and 'language' not in already_processed:
             already_processed.add('language')
-            outfile.write(' language=%s' % (self.gds_format_string(quote_attrib(self.language).encode(ExternalEncoding), input_name='language'), ))
+            outfile.write(' language=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.language), input_name='language')), ))
         if self.area is not None and 'area' not in already_processed:
             already_processed.add('area')
-            outfile.write(' area=%s' % (self.gds_format_string(quote_attrib(self.area).encode(ExternalEncoding), input_name='area'), ))
+            outfile.write(' area=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.area), input_name='area')), ))
         if self.attrposint is not None and 'attrposint' not in already_processed:
             already_processed.add('attrposint')
             outfile.write(' attrposint="%s"' % self.gds_format_integer(self.attrposint, input_name='attrposint'))
@@ -1597,7 +1607,7 @@ class programmer(person):
             eol_ = ''
         if self.email is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%semail>%s</%semail>%s' % (namespace_, self.gds_format_string(quote_xml(self.email).encode(ExternalEncoding), input_name='email'), namespace_, eol_))
+            outfile.write('<%semail>%s</%semail>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.email), input_name='email')), namespace_, eol_))
         if self.elposint is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%selposint>%s</%selposint>%s' % (namespace_, self.gds_format_integer(self.elposint, input_name='elposint'), namespace_, eol_))
@@ -1618,7 +1628,7 @@ class programmer(person):
             outfile.write('<%seldatetime>%s</%seldatetime>%s' % (namespace_, self.gds_format_datetime(self.eldatetime, input_name='eldatetime'), namespace_, eol_))
         if self.eltoken is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%seltoken>%s</%seltoken>%s' % (namespace_, self.gds_format_string(quote_xml(self.eltoken).encode(ExternalEncoding), input_name='eltoken'), namespace_, eol_))
+            outfile.write('<%seltoken>%s</%seltoken>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.eltoken), input_name='eltoken')), namespace_, eol_))
         if self.elshort is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%selshort>%s</%selshort>%s' % (namespace_, self.gds_format_integer(self.elshort, input_name='elshort'), namespace_, eol_))
@@ -1629,7 +1639,7 @@ class programmer(person):
             self.elparam.export(outfile, level, namespace_, name_='elparam', pretty_print=pretty_print)
         if self.elarraytypes is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%selarraytypes>%s</%selarraytypes>%s' % (namespace_, self.gds_format_string(quote_xml(self.elarraytypes).encode(ExternalEncoding), input_name='elarraytypes'), namespace_, eol_))
+            outfile.write('<%selarraytypes>%s</%selarraytypes>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.elarraytypes), input_name='elarraytypes')), namespace_, eol_))
     def exportLiteral(self, outfile, level, name_='programmer'):
         level += 1
         already_processed = set()
@@ -1666,7 +1676,7 @@ class programmer(person):
         super(programmer, self).exportLiteralChildren(outfile, level, name_)
         if self.email is not None:
             showIndent(outfile, level)
-            outfile.write('email=%s,\n' % quote_python(self.email).encode(ExternalEncoding))
+            outfile.write('email=%s,\n' % self.gds_encode(quote_python(self.email)))
         if self.elposint is not None:
             showIndent(outfile, level)
             outfile.write('elposint=%d,\n' % self.elposint)
@@ -1687,7 +1697,7 @@ class programmer(person):
             outfile.write('eldatetime=model_.GeneratedsSuper.gds_parse_datetime("%s"),\n' % self.gds_format_datetime(self.eldatetime, input_name='eldatetime'))
         if self.eltoken is not None:
             showIndent(outfile, level)
-            outfile.write('eltoken=%s,\n' % quote_python(self.eltoken).encode(ExternalEncoding))
+            outfile.write('eltoken=%s,\n' % self.gds_encode(quote_python(self.eltoken)))
         if self.elshort is not None:
             showIndent(outfile, level)
             outfile.write('elshort=%d,\n' % self.elshort)
@@ -1702,7 +1712,7 @@ class programmer(person):
             outfile.write('),\n')
         if self.elarraytypes is not None:
             showIndent(outfile, level)
-            outfile.write('elarraytypes=%s,\n' % quote_python(self.elarraytypes).encode(ExternalEncoding))
+            outfile.write('elarraytypes=%s,\n' % self.gds_encode(quote_python(self.elarraytypes)))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1963,7 +1973,7 @@ class param(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='param')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else self.gds_encode(str(self.valueOf_))))
             self.exportChildren(outfile, level + 1, namespace_='', name_='param', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -1971,7 +1981,7 @@ class param(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='param'):
         if self.id is not None and 'id' not in already_processed:
             already_processed.add('id')
-            outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
+            outfile.write(' id=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.id), input_name='id')), ))
         if self.name is not None and 'name' not in already_processed:
             already_processed.add('name')
             outfile.write(' name=%s' % (quote_attrib(self.name), ))
@@ -1983,10 +1993,10 @@ class param(GeneratedsSuper):
             outfile.write(' flow=%s' % (quote_attrib(self.flow), ))
         if self.semantic is not None and 'semantic' not in already_processed:
             already_processed.add('semantic')
-            outfile.write(' semantic=%s' % (self.gds_format_string(quote_attrib(self.semantic).encode(ExternalEncoding), input_name='semantic'), ))
+            outfile.write(' semantic=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.semantic), input_name='semantic')), ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.add('type_')
-            outfile.write(' type=%s' % (self.gds_format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
+            outfile.write(' type=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.type_), input_name='type')), ))
     def exportChildren(self, outfile, level, namespace_='', name_='param', fromsubclass_=False, pretty_print=True):
         pass
     def exportLiteral(self, outfile, level, name_='param'):
@@ -2166,7 +2176,7 @@ class python_programmer(programmer):
         super(python_programmer, self).exportAttributes(outfile, level, already_processed, namespace_, name_='python-programmer')
         if self.nick_name is not None and 'nick_name' not in already_processed:
             already_processed.add('nick_name')
-            outfile.write(' nick-name=%s' % (self.gds_format_string(quote_attrib(self.nick_name).encode(ExternalEncoding), input_name='nick-name'), ))
+            outfile.write(' nick-name=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.nick_name), input_name='nick-name')), ))
     def exportChildren(self, outfile, level, namespace_='', name_='python-programmer', fromsubclass_=False, pretty_print=True):
         super(python_programmer, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
         if pretty_print:
@@ -2175,7 +2185,7 @@ class python_programmer(programmer):
             eol_ = ''
         if self.favorite_editor is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfavorite-editor>%s</%sfavorite-editor>%s' % (namespace_, self.gds_format_string(quote_xml(self.favorite_editor).encode(ExternalEncoding), input_name='favorite-editor'), namespace_, eol_))
+            outfile.write('<%sfavorite-editor>%s</%sfavorite-editor>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.favorite_editor), input_name='favorite-editor')), namespace_, eol_))
     def exportLiteral(self, outfile, level, name_='python-programmer'):
         level += 1
         already_processed = set()
@@ -2192,7 +2202,7 @@ class python_programmer(programmer):
         super(python_programmer, self).exportLiteralChildren(outfile, level, name_)
         if self.favorite_editor is not None:
             showIndent(outfile, level)
-            outfile.write('favorite_editor=%s,\n' % quote_python(self.favorite_editor).encode(ExternalEncoding))
+            outfile.write('favorite_editor=%s,\n' % self.gds_encode(quote_python(self.favorite_editor)))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -2322,10 +2332,10 @@ class java_programmer(programmer):
         super(java_programmer, self).exportAttributes(outfile, level, already_processed, namespace_, name_='java-programmer')
         if self.nick_name is not None and 'nick_name' not in already_processed:
             already_processed.add('nick_name')
-            outfile.write(' nick-name=%s' % (self.gds_format_string(quote_attrib(self.nick_name).encode(ExternalEncoding), input_name='nick-name'), ))
+            outfile.write(' nick-name=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.nick_name), input_name='nick-name')), ))
         if self.status is not None and 'status' not in already_processed:
             already_processed.add('status')
-            outfile.write(' status=%s' % (self.gds_format_string(quote_attrib(self.status).encode(ExternalEncoding), input_name='status'), ))
+            outfile.write(' status=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.status), input_name='status')), ))
     def exportChildren(self, outfile, level, namespace_='', name_='java-programmer', fromsubclass_=False, pretty_print=True):
         super(java_programmer, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
         if pretty_print:
@@ -2334,7 +2344,7 @@ class java_programmer(programmer):
             eol_ = ''
         if self.favorite_editor is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfavorite-editor>%s</%sfavorite-editor>%s' % (namespace_, self.gds_format_string(quote_xml(self.favorite_editor).encode(ExternalEncoding), input_name='favorite-editor'), namespace_, eol_))
+            outfile.write('<%sfavorite-editor>%s</%sfavorite-editor>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.favorite_editor), input_name='favorite-editor')), namespace_, eol_))
     def exportLiteral(self, outfile, level, name_='java-programmer'):
         level += 1
         already_processed = set()
@@ -2355,7 +2365,7 @@ class java_programmer(programmer):
         super(java_programmer, self).exportLiteralChildren(outfile, level, name_)
         if self.favorite_editor is not None:
             showIndent(outfile, level)
-            outfile.write('favorite_editor=%s,\n' % quote_python(self.favorite_editor).encode(ExternalEncoding))
+            outfile.write('favorite_editor=%s,\n' % self.gds_encode(quote_python(self.favorite_editor)))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -2499,10 +2509,10 @@ class agent(GeneratedsSuper):
             eol_ = ''
         if self.firstname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_format_string(quote_xml(self.firstname).encode(ExternalEncoding), input_name='firstname'), namespace_, eol_))
+            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.firstname), input_name='firstname')), namespace_, eol_))
         if self.lastname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_format_string(quote_xml(self.lastname).encode(ExternalEncoding), input_name='lastname'), namespace_, eol_))
+            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.lastname), input_name='lastname')), namespace_, eol_))
         if self.priority is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%spriority>%s</%spriority>%s' % (namespace_, self.gds_format_float(self.priority, input_name='priority'), namespace_, eol_))
@@ -2519,10 +2529,10 @@ class agent(GeneratedsSuper):
     def exportLiteralChildren(self, outfile, level, name_):
         if self.firstname is not None:
             showIndent(outfile, level)
-            outfile.write('firstname=%s,\n' % quote_python(self.firstname).encode(ExternalEncoding))
+            outfile.write('firstname=%s,\n' % self.gds_encode(quote_python(self.firstname)))
         if self.lastname is not None:
             showIndent(outfile, level)
-            outfile.write('lastname=%s,\n' % quote_python(self.lastname).encode(ExternalEncoding))
+            outfile.write('lastname=%s,\n' % self.gds_encode(quote_python(self.lastname)))
         if self.priority is not None:
             showIndent(outfile, level)
             outfile.write('priority=%f,\n' % self.priority)
@@ -2683,10 +2693,10 @@ class special_agent(GeneratedsSuper):
             eol_ = ''
         if self.firstname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_format_string(quote_xml(self.firstname).encode(ExternalEncoding), input_name='firstname'), namespace_, eol_))
+            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.firstname), input_name='firstname')), namespace_, eol_))
         if self.lastname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_format_string(quote_xml(self.lastname).encode(ExternalEncoding), input_name='lastname'), namespace_, eol_))
+            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.lastname), input_name='lastname')), namespace_, eol_))
         if self.priority is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%spriority>%s</%spriority>%s' % (namespace_, self.gds_format_float(self.priority, input_name='priority'), namespace_, eol_))
@@ -2703,10 +2713,10 @@ class special_agent(GeneratedsSuper):
     def exportLiteralChildren(self, outfile, level, name_):
         if self.firstname is not None:
             showIndent(outfile, level)
-            outfile.write('firstname=%s,\n' % quote_python(self.firstname).encode(ExternalEncoding))
+            outfile.write('firstname=%s,\n' % self.gds_encode(quote_python(self.firstname)))
         if self.lastname is not None:
             showIndent(outfile, level)
-            outfile.write('lastname=%s,\n' % quote_python(self.lastname).encode(ExternalEncoding))
+            outfile.write('lastname=%s,\n' % self.gds_encode(quote_python(self.lastname)))
         if self.priority is not None:
             showIndent(outfile, level)
             outfile.write('priority=%f,\n' % self.priority)
@@ -2900,10 +2910,10 @@ class booster(GeneratedsSuper):
             eol_ = ''
         if self.firstname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_format_string(quote_xml(self.firstname).encode(ExternalEncoding), input_name='firstname'), namespace_, eol_))
+            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.firstname), input_name='firstname')), namespace_, eol_))
         if self.lastname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_format_string(quote_xml(self.lastname).encode(ExternalEncoding), input_name='lastname'), namespace_, eol_))
+            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.lastname), input_name='lastname')), namespace_, eol_))
         if self.other_name is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sother-name>%s</%sother-name>%s' % (namespace_, self.gds_format_float(self.other_name, input_name='other-name'), namespace_, eol_))
@@ -2929,10 +2939,10 @@ class booster(GeneratedsSuper):
     def exportLiteralChildren(self, outfile, level, name_):
         if self.firstname is not None:
             showIndent(outfile, level)
-            outfile.write('firstname=%s,\n' % quote_python(self.firstname).encode(ExternalEncoding))
+            outfile.write('firstname=%s,\n' % self.gds_encode(quote_python(self.firstname)))
         if self.lastname is not None:
             showIndent(outfile, level)
-            outfile.write('lastname=%s,\n' % quote_python(self.lastname).encode(ExternalEncoding))
+            outfile.write('lastname=%s,\n' % self.gds_encode(quote_python(self.lastname)))
         if self.other_name is not None:
             showIndent(outfile, level)
             outfile.write('other_name=%f,\n' % self.other_name)
@@ -3130,7 +3140,7 @@ class info(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='info'):
         if self.name is not None and 'name' not in already_processed:
             already_processed.add('name')
-            outfile.write(' name=%s' % (self.gds_format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
+            outfile.write(' name=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.name), input_name='name')), ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.add('type_')
             outfile.write(' type="%s"' % self.gds_format_integer(self.type_, input_name='type'))
@@ -3298,7 +3308,7 @@ class client_handlerType(GeneratedsSuper):
             eol_ = ''
         if self.fullname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfullname>%s</%sfullname>%s' % (namespace_, self.gds_format_string(quote_xml(self.fullname).encode(ExternalEncoding), input_name='fullname'), namespace_, eol_))
+            outfile.write('<%sfullname>%s</%sfullname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.fullname), input_name='fullname')), namespace_, eol_))
         if self.refid is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%srefid>%s</%srefid>%s' % (namespace_, self.gds_format_integer(self.refid, input_name='refid'), namespace_, eol_))
@@ -3313,7 +3323,7 @@ class client_handlerType(GeneratedsSuper):
     def exportLiteralChildren(self, outfile, level, name_):
         if self.fullname is not None:
             showIndent(outfile, level)
-            outfile.write('fullname=%s,\n' % quote_python(self.fullname).encode(ExternalEncoding))
+            outfile.write('fullname=%s,\n' % self.gds_encode(quote_python(self.fullname)))
         if self.refid is not None:
             showIndent(outfile, level)
             outfile.write('refid=%d,\n' % self.refid)

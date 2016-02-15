@@ -32,6 +32,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -351,6 +355,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -405,7 +415,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -427,7 +437,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -919,10 +929,10 @@ class inner_001(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='inner_001'):
         if self.attrA1 is not None and 'attrA1' not in already_processed:
             already_processed.add('attrA1')
-            outfile.write(' attrA1=%s' % (self.gds_format_string(quote_attrib(self.attrA1).encode(ExternalEncoding), input_name='attrA1'), ))
+            outfile.write(' attrA1=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.attrA1), input_name='attrA1')), ))
         if self.attrA2 is not None and 'attrA2' not in already_processed:
             already_processed.add('attrA2')
-            outfile.write(' attrA2=%s' % (self.gds_format_string(quote_attrib(self.attrA2).encode(ExternalEncoding), input_name='attrA2'), ))
+            outfile.write(' attrA2=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.attrA2), input_name='attrA2')), ))
     def exportChildren(self, outfile, level, namespace_='', name_='inner_001', fromsubclass_=False, pretty_print=True):
         pass
     def build(self, node):
@@ -999,10 +1009,10 @@ class inner_002(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='inner_002'):
         if self.attrB1 is not None and 'attrB1' not in already_processed:
             already_processed.add('attrB1')
-            outfile.write(' attrB1=%s' % (self.gds_format_string(quote_attrib(self.attrB1).encode(ExternalEncoding), input_name='attrB1'), ))
+            outfile.write(' attrB1=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.attrB1), input_name='attrB1')), ))
         if self.attrB2 is not None and 'attrB2' not in already_processed:
             already_processed.add('attrB2')
-            outfile.write(' attrB2=%s' % (self.gds_format_string(quote_attrib(self.attrB2).encode(ExternalEncoding), input_name='attrB2'), ))
+            outfile.write(' attrB2=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.attrB2), input_name='attrB2')), ))
     def exportChildren(self, outfile, level, namespace_='', name_='inner_002', fromsubclass_=False, pretty_print=True):
         pass
     def build(self, node):

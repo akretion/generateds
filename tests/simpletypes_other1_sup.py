@@ -33,6 +33,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -352,6 +356,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -406,7 +416,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -428,7 +438,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -695,7 +705,7 @@ class simpleTypeTestsType(GeneratedsSuper):
             eol_ = ''
         for simpleTypeTest_ in self.simpleTypeTest:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%ssimpleTypeTest>%s</%ssimpleTypeTest>%s' % (namespace_, self.gds_format_string(quote_xml(simpleTypeTest_).encode(ExternalEncoding), input_name='simpleTypeTest'), namespace_, eol_))
+            outfile.write('<%ssimpleTypeTest>%s</%ssimpleTypeTest>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(simpleTypeTest_), input_name='simpleTypeTest')), namespace_, eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -776,7 +786,7 @@ class simpleTypeTest(GeneratedsSuper):
             self.floatVal2 = []
         else:
             self.floatVal2 = floatVal2
-        if isinstance(dateVal1, basestring):
+        if isinstance(dateVal1, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(dateVal1, '%Y-%m-%d').date()
         else:
             initvalue_ = dateVal1
@@ -785,7 +795,7 @@ class simpleTypeTest(GeneratedsSuper):
             self.dateVal2 = []
         else:
             self.dateVal2 = dateVal2
-        if isinstance(dateTimeVal1, basestring):
+        if isinstance(dateTimeVal1, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(dateTimeVal1, '%Y-%m-%dT%H:%M:%S')
         else:
             initvalue_ = dateTimeVal1
@@ -925,19 +935,19 @@ class simpleTypeTest(GeneratedsSuper):
             eol_ = ''
         if self.datetime1 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime1>%s</%sdatetime1>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime1).encode(ExternalEncoding), input_name='datetime1'), namespace_, eol_))
+            outfile.write('<%sdatetime1>%s</%sdatetime1>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.datetime1), input_name='datetime1')), namespace_, eol_))
         if self.datetime2 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime2>%s</%sdatetime2>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime2).encode(ExternalEncoding), input_name='datetime2'), namespace_, eol_))
+            outfile.write('<%sdatetime2>%s</%sdatetime2>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.datetime2), input_name='datetime2')), namespace_, eol_))
         if self.datetime3 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime3>%s</%sdatetime3>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime3).encode(ExternalEncoding), input_name='datetime3'), namespace_, eol_))
+            outfile.write('<%sdatetime3>%s</%sdatetime3>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.datetime3), input_name='datetime3')), namespace_, eol_))
         if self.datetime4 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime4>%s</%sdatetime4>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime4).encode(ExternalEncoding), input_name='datetime4'), namespace_, eol_))
+            outfile.write('<%sdatetime4>%s</%sdatetime4>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.datetime4), input_name='datetime4')), namespace_, eol_))
         if self.datetime5 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime5>%s</%sdatetime5>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime5).encode(ExternalEncoding), input_name='datetime5'), namespace_, eol_))
+            outfile.write('<%sdatetime5>%s</%sdatetime5>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.datetime5), input_name='datetime5')), namespace_, eol_))
         if self.integerVal1 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sintegerVal1>%s</%sintegerVal1>%s' % (namespace_, self.gds_format_integer(self.integerVal1, input_name='integerVal1'), namespace_, eol_))
@@ -946,10 +956,10 @@ class simpleTypeTest(GeneratedsSuper):
             outfile.write('<%sintegerVal2>%s</%sintegerVal2>%s' % (namespace_, self.gds_format_integer(integerVal2_, input_name='integerVal2'), namespace_, eol_))
         if self.stringVal1 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstringVal1>%s</%sstringVal1>%s' % (namespace_, self.gds_format_string(quote_xml(self.stringVal1).encode(ExternalEncoding), input_name='stringVal1'), namespace_, eol_))
+            outfile.write('<%sstringVal1>%s</%sstringVal1>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.stringVal1), input_name='stringVal1')), namespace_, eol_))
         for stringVal2_ in self.stringVal2:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstringVal2>%s</%sstringVal2>%s' % (namespace_, self.gds_format_string(quote_xml(stringVal2_).encode(ExternalEncoding), input_name='stringVal2'), namespace_, eol_))
+            outfile.write('<%sstringVal2>%s</%sstringVal2>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(stringVal2_), input_name='stringVal2')), namespace_, eol_))
         if self.booleanVal1 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sbooleanVal1>%s</%sbooleanVal1>%s' % (namespace_, self.gds_format_boolean(self.booleanVal1, input_name='booleanVal1'), namespace_, eol_))

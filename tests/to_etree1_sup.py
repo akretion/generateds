@@ -35,6 +35,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -354,6 +358,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -408,7 +418,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -430,7 +440,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -1215,17 +1225,17 @@ class programmerType(personType):
         self.elnonposint = elnonposint
         self.elnegint = elnegint
         self.elnonnegint = elnonnegint
-        if isinstance(eldate, basestring):
+        if isinstance(eldate, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(eldate, '%Y-%m-%d').date()
         else:
             initvalue_ = eldate
         self.eldate = initvalue_
-        if isinstance(eldatetime, basestring):
+        if isinstance(eldatetime, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(eldatetime, '%Y-%m-%dT%H:%M:%S')
         else:
             initvalue_ = eldatetime
         self.eldatetime = initvalue_
-        if isinstance(eldatetime1, basestring):
+        if isinstance(eldatetime1, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(eldatetime1, '%Y-%m-%dT%H:%M:%S')
         else:
             initvalue_ = eldatetime1
@@ -2688,7 +2698,7 @@ class hot_agent(GeneratedsSuper):
         self.firstname = firstname
         self.lastname = lastname
         self.priority = priority
-        if isinstance(startDate, basestring):
+        if isinstance(startDate, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(startDate, '%Y-%m-%d').date()
         else:
             initvalue_ = startDate
