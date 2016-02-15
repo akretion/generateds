@@ -6,7 +6,6 @@
 # Command line options:
 #   ('--no-dates', '')
 #   ('--no-versions', '')
-#   ('--silence', '')
 #   ('--member-specs', 'list')
 #   ('-f', '')
 #   ('-o', 'tests/defaults_cases2_sup.py')
@@ -17,7 +16,7 @@
 #   tests/defaults_cases.xsd
 #
 # Command line:
-#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/defaults_cases2_sup.py" -s "tests/defaults_cases2_sub.py" --super="defaults_cases2_sup" tests/defaults_cases.xsd
+#   generateDS.py --no-dates --no-versions --member-specs="list" -f -o "tests/defaults_cases2_sup.py" -s "tests/defaults_cases2_sub.py" --super="defaults_cases2_sup" tests/defaults_cases.xsd
 #
 # Current working directory (os.getcwd()):
 #   generateds
@@ -89,12 +88,12 @@ def parse(inFilename, silence=False):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('<?xml version="1.0" ?>\n')
-##         rootObj.export(
-##             sys.stdout, 0, name_=rootTag,
-##             namespacedef_='',
-##             pretty_print=True)
+    if not silence:
+        sys.stdout.write('<?xml version="1.0" ?>\n')
+        rootObj.export(
+            sys.stdout, 0, name_=rootTag,
+            namespacedef_='',
+            pretty_print=True)
     return rootObj
 
 
@@ -113,12 +112,12 @@ def parseEtree(inFilename, silence=False):
     mapping = {}
     rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
     reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
-##     if not silence:
-##         content = etree_.tostring(
-##             rootElement, pretty_print=True,
-##             xml_declaration=True, encoding="utf-8")
-##         sys.stdout.write(content)
-##         sys.stdout.write('\n')
+    if not silence:
+        content = etree_.tostring(
+            rootElement, pretty_print=True,
+            xml_declaration=True, encoding="utf-8")
+        sys.stdout.write(content)
+        sys.stdout.write('\n')
     return rootObj, rootElement, mapping, reverse_mapping
 
 
@@ -135,11 +134,11 @@ def parseString(inString, silence=False):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('<?xml version="1.0" ?>\n')
-##         rootObj.export(
-##             sys.stdout, 0, name_=rootTag,
-##             namespacedef_='')
+    if not silence:
+        sys.stdout.write('<?xml version="1.0" ?>\n')
+        rootObj.export(
+            sys.stdout, 0, name_=rootTag,
+            namespacedef_='')
     return rootObj
 
 
@@ -155,12 +154,12 @@ def parseLiteral(inFilename, silence=False):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('#from defaults_cases2_sup import *\n\n')
-##         sys.stdout.write('import defaults_cases2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootClass(\n')
-##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
-##         sys.stdout.write(')\n')
+    if not silence:
+        sys.stdout.write('#from defaults_cases2_sup import *\n\n')
+        sys.stdout.write('import defaults_cases2_sup as model_\n\n')
+        sys.stdout.write('rootObj = model_.rootClass(\n')
+        rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
+        sys.stdout.write(')\n')
     return rootObj
 
 

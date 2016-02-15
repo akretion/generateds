@@ -7,7 +7,6 @@
 # Command line options:
 #   ('--no-dates', '')
 #   ('--no-versions', '')
-#   ('--silence', '')
 #   ('--member-specs', 'list')
 #   ('-f', '')
 #   ('-o', 'tests/defaults_cases2_sup.py')
@@ -18,7 +17,7 @@
 #   tests/defaults_cases.xsd
 #
 # Command line:
-#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/defaults_cases2_sup.py" -s "tests/defaults_cases2_sub.py" --super="defaults_cases2_sup" tests/defaults_cases.xsd
+#   generateDS.py --no-dates --no-versions --member-specs="list" -f -o "tests/defaults_cases2_sup.py" -s "tests/defaults_cases2_sub.py" --super="defaults_cases2_sup" tests/defaults_cases.xsd
 #
 # Current working directory (os.getcwd()):
 #   generateds
@@ -33,6 +32,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -352,6 +355,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -406,7 +415,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -428,7 +437,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -825,13 +834,13 @@ class DefaultType1(GeneratedsSuper):
             outfile.write('<%snormal01>%s</%snormal01>%s' % (namespace_, self.gds_format_integer(self.normal01, input_name='normal01'), namespace_, eol_))
         if self.normal02 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%snormal02>%s</%snormal02>%s' % (namespace_, self.gds_format_string(quote_xml(self.normal02).encode(ExternalEncoding), input_name='normal02'), namespace_, eol_))
+            outfile.write('<%snormal02>%s</%snormal02>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.normal02), input_name='normal02')), namespace_, eol_))
         if self.default01 != 23:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sdefault01>%s</%sdefault01>%s' % (namespace_, self.gds_format_integer(self.default01, input_name='default01'), namespace_, eol_))
         if self.default02 != "Peach":
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdefault02>%s</%sdefault02>%s' % (namespace_, self.gds_format_string(quote_xml(self.default02).encode(ExternalEncoding), input_name='default02'), namespace_, eol_))
+            outfile.write('<%sdefault02>%s</%sdefault02>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.default02), input_name='default02')), namespace_, eol_))
         if self.normal03 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%snormal03>%s</%snormal03>%s' % (namespace_, self.gds_format_float(self.normal03, input_name='normal03'), namespace_, eol_))
@@ -974,13 +983,13 @@ class DefaultType2(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='DefaultType2'):
         if self.attrdefault01 != "abcd" and 'attrdefault01' not in already_processed:
             already_processed.add('attrdefault01')
-            outfile.write(' attrdefault01=%s' % (self.gds_format_string(quote_attrib(self.attrdefault01).encode(ExternalEncoding), input_name='attrdefault01'), ))
+            outfile.write(' attrdefault01=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.attrdefault01), input_name='attrdefault01')), ))
         if self.attrdefault02 != 14 and 'attrdefault02' not in already_processed:
             already_processed.add('attrdefault02')
             outfile.write(' attrdefault02="%s"' % self.gds_format_integer(self.attrdefault02, input_name='attrdefault02'))
         if self.attrnormal01 is not None and 'attrnormal01' not in already_processed:
             already_processed.add('attrnormal01')
-            outfile.write(' attrnormal01=%s' % (self.gds_format_string(quote_attrib(self.attrnormal01).encode(ExternalEncoding), input_name='attrnormal01'), ))
+            outfile.write(' attrnormal01=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.attrnormal01), input_name='attrnormal01')), ))
         if self.attrnormal02 is not None and 'attrnormal02' not in already_processed:
             already_processed.add('attrnormal02')
             outfile.write(' attrnormal02="%s"' % self.gds_format_integer(self.attrnormal02, input_name='attrnormal02'))
@@ -1058,12 +1067,12 @@ def parse(inFileName, silence=False):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('<?xml version="1.0" ?>\n')
-##         rootObj.export(
-##             sys.stdout, 0, name_=rootTag,
-##             namespacedef_='',
-##             pretty_print=True)
+    if not silence:
+        sys.stdout.write('<?xml version="1.0" ?>\n')
+        rootObj.export(
+            sys.stdout, 0, name_=rootTag,
+            namespacedef_='',
+            pretty_print=True)
     return rootObj
 
 
@@ -1082,12 +1091,12 @@ def parseEtree(inFileName, silence=False):
     mapping = {}
     rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
     reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
-##     if not silence:
-##         content = etree_.tostring(
-##             rootElement, pretty_print=True,
-##             xml_declaration=True, encoding="utf-8")
-##         sys.stdout.write(content)
-##         sys.stdout.write('\n')
+    if not silence:
+        content = etree_.tostring(
+            rootElement, pretty_print=True,
+            xml_declaration=True, encoding="utf-8")
+        sys.stdout.write(content)
+        sys.stdout.write('\n')
     return rootObj, rootElement, mapping, reverse_mapping
 
 
@@ -1104,11 +1113,11 @@ def parseString(inString, silence=False):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('<?xml version="1.0" ?>\n')
-##         rootObj.export(
-##             sys.stdout, 0, name_=rootTag,
-##             namespacedef_='')
+    if not silence:
+        sys.stdout.write('<?xml version="1.0" ?>\n')
+        rootObj.export(
+            sys.stdout, 0, name_=rootTag,
+            namespacedef_='')
     return rootObj
 
 
@@ -1124,12 +1133,12 @@ def parseLiteral(inFileName, silence=False):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('#from defaults_cases2_sup import *\n\n')
-##         sys.stdout.write('import defaults_cases2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootClass(\n')
-##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
-##         sys.stdout.write(')\n')
+    if not silence:
+        sys.stdout.write('#from defaults_cases2_sup import *\n\n')
+        sys.stdout.write('import defaults_cases2_sup as model_\n\n')
+        sys.stdout.write('rootObj = model_.rootClass(\n')
+        rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
+        sys.stdout.write(')\n')
     return rootObj
 
 

@@ -33,6 +33,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -352,6 +356,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -406,7 +416,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -428,7 +438,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -710,7 +720,7 @@ class complex_type01(GeneratedsSuper):
             eol_ = ''
         if self.string_value01 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstring_value01>%s</%sstring_value01>%s' % (namespace_, self.gds_format_string(quote_xml(self.string_value01).encode(ExternalEncoding), input_name='string_value01'), namespace_, eol_))
+            outfile.write('<%sstring_value01>%s</%sstring_value01>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.string_value01), input_name='string_value01')), namespace_, eol_))
         for integer_value01_ in self.integer_value01:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sinteger_value01>%s</%sinteger_value01>%s' % (namespace_, self.gds_format_integer(integer_value01_, input_name='integer_value01'), namespace_, eol_))
@@ -836,7 +846,7 @@ class complex_type02(GeneratedsSuper):
             eol_ = ''
         if self.string_value02 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstring_value02>%s</%sstring_value02>%s' % (namespace_, self.gds_format_string(quote_xml(self.string_value02).encode(ExternalEncoding), input_name='string_value02'), namespace_, eol_))
+            outfile.write('<%sstring_value02>%s</%sstring_value02>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.string_value02), input_name='string_value02')), namespace_, eol_))
         for integer_value02_ in self.integer_value02:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sinteger_value02>%s</%sinteger_value02>%s' % (namespace_, self.gds_format_integer(integer_value02_, input_name='integer_value02'), namespace_, eol_))
@@ -954,7 +964,7 @@ class complex_type03(complex_type02):
             eol_ = ''
         if self.string_value03 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstring_value03>%s</%sstring_value03>%s' % (namespace_, self.gds_format_string(quote_xml(self.string_value03).encode(ExternalEncoding), input_name='string_value03'), namespace_, eol_))
+            outfile.write('<%sstring_value03>%s</%sstring_value03>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.string_value03), input_name='string_value03')), namespace_, eol_))
         for integer_value03_ in self.integer_value03:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sinteger_value03>%s</%sinteger_value03>%s' % (namespace_, self.gds_format_integer(integer_value03_, input_name='integer_value03'), namespace_, eol_))
@@ -1074,7 +1084,7 @@ class type_(GeneratedsSuper):
             eol_ = ''
         if self.string_value02 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstring_value02>%s</%sstring_value02>%s' % (namespace_, self.gds_format_string(quote_xml(self.string_value02).encode(ExternalEncoding), input_name='string_value02'), namespace_, eol_))
+            outfile.write('<%sstring_value02>%s</%sstring_value02>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.string_value02), input_name='string_value02')), namespace_, eol_))
         for integer_value02_ in self.integer_value02:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sinteger_value02>%s</%sinteger_value02>%s' % (namespace_, self.gds_format_integer(integer_value02_, input_name='integer_value02'), namespace_, eol_))
@@ -1192,7 +1202,7 @@ class complex_type04(type_):
             eol_ = ''
         if self.string_value03 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstring_value03>%s</%sstring_value03>%s' % (namespace_, self.gds_format_string(quote_xml(self.string_value03).encode(ExternalEncoding), input_name='string_value03'), namespace_, eol_))
+            outfile.write('<%sstring_value03>%s</%sstring_value03>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.string_value03), input_name='string_value03')), namespace_, eol_))
         for integer_value03_ in self.integer_value03:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sinteger_value03>%s</%sinteger_value03>%s' % (namespace_, self.gds_format_integer(integer_value03_, input_name='integer_value03'), namespace_, eol_))
@@ -1312,7 +1322,7 @@ class build_(GeneratedsSuper):
             eol_ = ''
         if self.string_value02 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstring_value02>%s</%sstring_value02>%s' % (namespace_, self.gds_format_string(quote_xml(self.string_value02).encode(ExternalEncoding), input_name='string_value02'), namespace_, eol_))
+            outfile.write('<%sstring_value02>%s</%sstring_value02>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.string_value02), input_name='string_value02')), namespace_, eol_))
         for integer_value02_ in self.integer_value02:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sinteger_value02>%s</%sinteger_value02>%s' % (namespace_, self.gds_format_integer(integer_value02_, input_name='integer_value02'), namespace_, eol_))
@@ -1430,7 +1440,7 @@ class complex_type05(build_):
             eol_ = ''
         if self.string_value03 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstring_value03>%s</%sstring_value03>%s' % (namespace_, self.gds_format_string(quote_xml(self.string_value03).encode(ExternalEncoding), input_name='string_value03'), namespace_, eol_))
+            outfile.write('<%sstring_value03>%s</%sstring_value03>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.string_value03), input_name='string_value03')), namespace_, eol_))
         for integer_value03_ in self.integer_value03:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sinteger_value03>%s</%sinteger_value03>%s' % (namespace_, self.gds_format_integer(integer_value03_, input_name='integer_value03'), namespace_, eol_))

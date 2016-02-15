@@ -33,6 +33,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -352,6 +356,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -406,7 +416,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -428,7 +438,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -754,32 +764,32 @@ class DefaultType1(GeneratedsSuper):
         self.default05a = default05a
         self.default05b = default05b
         self.normal05 = normal05
-        if isinstance(default06, basestring):
+        if isinstance(default06, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(default06, '%Y-%m-%d').date()
         else:
             initvalue_ = default06
         self.default06 = initvalue_
-        if isinstance(normal06, basestring):
+        if isinstance(normal06, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(normal06, '%Y-%m-%d').date()
         else:
             initvalue_ = normal06
         self.normal06 = initvalue_
-        if isinstance(default07, basestring):
+        if isinstance(default07, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(default07, '%H:%M:%S').time()
         else:
             initvalue_ = default07
         self.default07 = initvalue_
-        if isinstance(normal07, basestring):
+        if isinstance(normal07, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(normal07, '%Y-%m-%d').date()
         else:
             initvalue_ = normal07
         self.normal07 = initvalue_
-        if isinstance(default08, basestring):
+        if isinstance(default08, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(default08, '%Y-%m-%dT%H:%M:%S')
         else:
             initvalue_ = default08
         self.default08 = initvalue_
-        if isinstance(normal08, basestring):
+        if isinstance(normal08, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(normal08, '%Y-%m-%dT%H:%M:%S')
         else:
             initvalue_ = normal08
@@ -885,10 +895,10 @@ class DefaultType1(GeneratedsSuper):
             outfile.write('<%snormal01>%s</%snormal01>%s' % (namespace_, self.gds_format_integer(self.normal01, input_name='normal01'), namespace_, eol_))
         if self.default02 != "Peach":
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdefault02>%s</%sdefault02>%s' % (namespace_, self.gds_format_string(quote_xml(self.default02).encode(ExternalEncoding), input_name='default02'), namespace_, eol_))
+            outfile.write('<%sdefault02>%s</%sdefault02>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.default02), input_name='default02')), namespace_, eol_))
         if self.normal02 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%snormal02>%s</%snormal02>%s' % (namespace_, self.gds_format_string(quote_xml(self.normal02).encode(ExternalEncoding), input_name='normal02'), namespace_, eol_))
+            outfile.write('<%snormal02>%s</%snormal02>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.normal02), input_name='normal02')), namespace_, eol_))
         if self.default03 != 23.45:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sdefault03>%s</%sdefault03>%s' % (namespace_, self.gds_format_float(self.default03, input_name='default03'), namespace_, eol_))
@@ -1086,32 +1096,32 @@ class DefaultType2(GeneratedsSuper):
         self.default05a = default05a
         self.default05b = default05b
         self.normal05 = normal05
-        if isinstance(default06, basestring):
+        if isinstance(default06, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(default06, '%Y-%m-%d').date()
         else:
             initvalue_ = default06
         self.default06 = initvalue_
-        if isinstance(normal06, basestring):
+        if isinstance(normal06, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(normal06, '%Y-%m-%d').date()
         else:
             initvalue_ = normal06
         self.normal06 = initvalue_
-        if isinstance(default07, basestring):
+        if isinstance(default07, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(default07, '%H:%M:%S').time()
         else:
             initvalue_ = default07
         self.default07 = initvalue_
-        if isinstance(normal07, basestring):
+        if isinstance(normal07, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(normal07, '%Y-%m-%d').date()
         else:
             initvalue_ = normal07
         self.normal07 = initvalue_
-        if isinstance(default08, basestring):
+        if isinstance(default08, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(default08, '%Y-%m-%dT%H:%M:%S')
         else:
             initvalue_ = default08
         self.default08 = initvalue_
-        if isinstance(normal08, basestring):
+        if isinstance(normal08, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(normal08, '%Y-%m-%dT%H:%M:%S')
         else:
             initvalue_ = normal08
@@ -1217,10 +1227,10 @@ class DefaultType2(GeneratedsSuper):
             outfile.write('<%snormal01>%s</%snormal01>%s' % (namespace_, self.gds_format_integer(self.normal01, input_name='normal01'), namespace_, eol_))
         if self.default02 != "Peach":
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdefault02>%s</%sdefault02>%s' % (namespace_, self.gds_format_string(quote_xml(self.default02).encode(ExternalEncoding), input_name='default02'), namespace_, eol_))
+            outfile.write('<%sdefault02>%s</%sdefault02>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.default02), input_name='default02')), namespace_, eol_))
         if self.normal02 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%snormal02>%s</%snormal02>%s' % (namespace_, self.gds_format_string(quote_xml(self.normal02).encode(ExternalEncoding), input_name='normal02'), namespace_, eol_))
+            outfile.write('<%snormal02>%s</%snormal02>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.normal02), input_name='normal02')), namespace_, eol_))
         if self.default03 != 23.45:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sdefault03>%s</%sdefault03>%s' % (namespace_, self.gds_format_float(self.default03, input_name='default03'), namespace_, eol_))

@@ -33,6 +33,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -352,6 +356,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -406,7 +416,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -428,7 +438,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -697,7 +707,7 @@ class document1Type(GeneratedsSuper):
             eol_ = ''
         if self.comments is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scomments>%s</%scomments>%s' % (namespace_, self.gds_format_string(quote_xml(self.comments).encode(ExternalEncoding), input_name='comments'), namespace_, eol_))
+            outfile.write('<%scomments>%s</%scomments>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.comments), input_name='comments')), namespace_, eol_))
         if self.otherdoc is not None:
             self.otherdoc.export(outfile, level, namespace_, name_='otherdoc', pretty_print=pretty_print)
     def build(self, node):
@@ -791,7 +801,7 @@ class document2Type(GeneratedsSuper):
             eol_ = ''
         if self.comments is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scomments>%s</%scomments>%s' % (namespace_, self.gds_format_string(quote_xml(self.comments).encode(ExternalEncoding), input_name='comments'), namespace_, eol_))
+            outfile.write('<%scomments>%s</%scomments>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.comments), input_name='comments')), namespace_, eol_))
         if self.rating is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%srating>%s</%srating>%s' % (namespace_, self.gds_format_integer(self.rating, input_name='rating'), namespace_, eol_))
@@ -889,7 +899,7 @@ class document3Type(GeneratedsSuper):
             eol_ = ''
         if self.comments is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scomments>%s</%scomments>%s' % (namespace_, self.gds_format_string(quote_xml(self.comments).encode(ExternalEncoding), input_name='comments'), namespace_, eol_))
+            outfile.write('<%scomments>%s</%scomments>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.comments), input_name='comments')), namespace_, eol_))
         if self.rating is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%srating>%s</%srating>%s' % (namespace_, self.gds_format_integer(self.rating, input_name='rating'), namespace_, eol_))

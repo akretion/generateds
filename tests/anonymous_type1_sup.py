@@ -33,6 +33,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -352,6 +356,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -406,7 +416,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -428,7 +438,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -795,7 +805,7 @@ class FooType1(GeneratedsSuper):
             eol_ = ''
         if self.FooType is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sFooType>%s</%sFooType>%s' % (namespace_, self.gds_format_string(quote_xml(self.FooType).encode(ExternalEncoding), input_name='FooType'), namespace_, eol_))
+            outfile.write('<%sFooType>%s</%sFooType>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.FooType), input_name='FooType')), namespace_, eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -879,7 +889,7 @@ class BarType2(GeneratedsSuper):
             eol_ = ''
         if self.BarType is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sBarType>%s</%sBarType>%s' % (namespace_, self.gds_format_string(quote_xml(self.BarType).encode(ExternalEncoding), input_name='BarType'), namespace_, eol_))
+            outfile.write('<%sBarType>%s</%sBarType>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.BarType), input_name='BarType')), namespace_, eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -963,7 +973,7 @@ class BazType3(GeneratedsSuper):
             eol_ = ''
         if self.BazType is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sBazType>%s</%sBazType>%s' % (namespace_, self.gds_format_string(quote_xml(self.BazType).encode(ExternalEncoding), input_name='BazType'), namespace_, eol_))
+            outfile.write('<%sBazType>%s</%sBazType>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.BazType), input_name='BazType')), namespace_, eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

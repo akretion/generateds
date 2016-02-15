@@ -100,6 +100,10 @@ and extend multiple subclass files which use a single, common
 superclass file, thus implementing a number of different processes
 on the same XML document type.
 
+``generateDS.py`` can be run under either Python 2 or Python 3.  The
+generated Python code (both superclass and subclass modules) can be
+run under either Python 2 or Python 3.
+
 This document explains (1) how to use ``generateDS.py``; (2) how
 to use the Python code and data structures that it generates; and
 (3) how to modify the generated code for special purposes.
@@ -325,7 +329,6 @@ Here is the usage message displayed by ``generateDS.py``::
                                  distribution.
         --fix-type-names="oldname1:newname1;oldname2:newname2;..."
                                  Fix up (replace) complex type names.
-        --py3                    Generate code for Python 3.
         --version                Print version and exit.
 
     Usage example:
@@ -632,14 +635,6 @@ fix-type-names="oldname1:newname1;oldname2:newname2;..." Fix up
 
         $ generateDS.py --fix-type-names="type1:type1Aux"
         $ generateDS.py --fix-type-names="type1;type2:type2Repl"
-
-py3
-    Generate code for Python 3.  Generate code that will run under
-    (and will have the same behavior under) Python 3 (instead of
-    Python 2).  You can, later, determine whether a file was
-    generated for Python 2 or Python 3 by looking at the comments
-    containing command line options near the top of the file.  The
-    default is to generate code for Python 2.  
 
 version
     Print out the current version of ``generateDS.py`` and

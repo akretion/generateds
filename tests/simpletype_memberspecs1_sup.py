@@ -33,6 +33,10 @@ from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
 
 
 def parsexml_(infile, parser=None, **kwargs):
@@ -352,6 +356,12 @@ except ImportError as exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -406,7 +416,7 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s2 = ''
     pos = 0
     matchobjects = CDATA_pattern_.finditer(s1)
@@ -428,7 +438,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -679,7 +689,7 @@ class SpecialDate(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='SpecialDate')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else self.gds_encode(str(self.valueOf_))))
             self.exportChildren(outfile, level + 1, namespace_='pl:', name_='SpecialDate', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -687,7 +697,7 @@ class SpecialDate(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='pl:', name_='SpecialDate'):
         if self.SpecialProperty is not None and 'SpecialProperty' not in already_processed:
             already_processed.add('SpecialProperty')
-            outfile.write(' SpecialProperty=%s' % (self.gds_format_string(quote_attrib(self.SpecialProperty).encode(ExternalEncoding), input_name='SpecialProperty'), ))
+            outfile.write(' SpecialProperty=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.SpecialProperty), input_name='SpecialProperty')), ))
     def exportChildren(self, outfile, level, namespace_='pl:', name_='SpecialDate', fromsubclass_=False, pretty_print=True):
         pass
     def build(self, node):
@@ -754,7 +764,7 @@ class ExtremeDate(GeneratedsSuper):
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='ExtremeDate')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else str(self.valueOf_)).encode(ExternalEncoding))
+            outfile.write((quote_xml(self.valueOf_) if type(self.valueOf_) is str else self.gds_encode(str(self.valueOf_))))
             self.exportChildren(outfile, level + 1, namespace_='pl:', name_='ExtremeDate', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -762,7 +772,7 @@ class ExtremeDate(GeneratedsSuper):
     def exportAttributes(self, outfile, level, already_processed, namespace_='pl:', name_='ExtremeDate'):
         if self.ExtremeProperty is not None and 'ExtremeProperty' not in already_processed:
             already_processed.add('ExtremeProperty')
-            outfile.write(' ExtremeProperty=%s' % (self.gds_format_string(quote_attrib(self.ExtremeProperty).encode(ExternalEncoding), input_name='ExtremeProperty'), ))
+            outfile.write(' ExtremeProperty=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.ExtremeProperty), input_name='ExtremeProperty')), ))
     def exportChildren(self, outfile, level, namespace_='pl:', name_='ExtremeDate', fromsubclass_=False, pretty_print=True):
         pass
     def build(self, node):
