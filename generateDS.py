@@ -6411,7 +6411,10 @@ def isNewState():
     state = reduce(
         operator.concat,
         (str(id(item)) for item in PostponedExtensions))
-    sum = hashlib.sha1(str(state)).hexdigest()
+    if sys.version_info.major == 2:
+        sum = hashlib.sha1(str(state)).hexdigest()
+    else:
+        sum = hashlib.sha1(str(state).encode()).hexdigest()
     if sum in LoopcheckOneperChecksums:
         return False
     LoopcheckOneperChecksums.add(sum)

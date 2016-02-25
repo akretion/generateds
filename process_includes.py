@@ -18,7 +18,9 @@ import os
 if sys.version_info.major == 2:
     import urllib2
 else:
-    import urllib.request, urllib.error, urllib.parse
+    import urllib.request
+    import urllib.error
+    import urllib.parse
 import copy
 from optparse import OptionParser, Values
 import itertools
@@ -238,7 +240,11 @@ def collect_inserts_aux(child, params, inserts, options):
     save_base_url = params.base_url
     string_content = resolve_ref(child, params, options)
     if string_content is not None:
-        root = etree.fromstring(string_content, base_url=params.base_url)
+        if sys.version_info.major == 2:
+            root = etree.fromstring(string_content, base_url=params.base_url)
+        else:
+            root = etree.fromstring(
+                string_content.encode(), base_url=params.base_url)
         roots.append(root)
         for child1 in root:
             if not isinstance(child1, etree._Comment):
@@ -281,10 +287,10 @@ def get_root_file_paths_aux(child, params, rootPaths):
 def make_file(outFileName, options):
     outFile = None
     if (not options.force) and os.path.exists(outFileName):
-        if sys.version_info.major == 2:
-            reply = raw_input('File %s exists.  Overwrite? (y/n): ' % outFileName)
-        else:
-            reply = input('File %s exists.  Overwrite? (y/n): ' % outFileName)
+        if sys.version_info.major == 3:
+            raw_input = input
+        reply = raw_input(
+            'File %s exists.  Overwrite? (y/n): ' % outFileName)
         if reply == 'y':
             outFile = open(outFileName, 'w')
     else:

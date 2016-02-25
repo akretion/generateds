@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import sys
 import os
 import subprocess
@@ -19,7 +20,7 @@ class GenTest(unittest.TestCase):
         return stdout, stderr
 
 ##     def setUp(self):
-##         print 'running setUp'
+##         print('running setUp')
 ##         cmd = (
 ##             'python generateDS.py --no-dates --no-versions -f '
 ##             '-o tests/out2_sup.py -s tests/out2_sub.py '
@@ -784,7 +785,7 @@ Example:
 
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(-1)
 
 
