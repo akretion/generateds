@@ -141,7 +141,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version 2.19c (02/25/2016)
+Version 2.20a (02/25/2016)
 
 - Another patch for Python 2 and 3.  We needed to protect against
   performing an encoding that caused an exception in generateDS.py
