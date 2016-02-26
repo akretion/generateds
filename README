@@ -141,6 +141,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.19c (02/25/2016)
+
+- Another patch for Python 2 and 3.  We needed to protect against
+  performing an encoding that caused an exception in generateDS.py
+  and process_includes.py.  Thanks to Marcus Schäfer for catching
+  this and for providing a fix.
+
 Version 2.19b (02/16/2016)
 
 - Modified generated code so that it will run under both Python 2
