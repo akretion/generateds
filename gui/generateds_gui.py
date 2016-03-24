@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import wingdbstub
 import sys
 import os
 from optparse import OptionParser
