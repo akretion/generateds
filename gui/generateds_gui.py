@@ -920,9 +920,7 @@ def main():
 # Do not change the next 3 lines.
 ## UI_SPECIFICATION ##
 
-Ui_spec = """
-
-<?xml version="1.0"?>
+Ui_spec = """<?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy project-wide -->
@@ -2140,7 +2138,6 @@ name.</property>
     <property name="default_width">800</property>
     <property name="default_height">600</property>
     <property name="type_hint">normal</property>
-    <property name="has_separator">False</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox3">
         <property name="visible">True</property>
