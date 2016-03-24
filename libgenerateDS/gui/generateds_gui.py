@@ -3,12 +3,19 @@
 import sys
 import os
 from optparse import OptionParser
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 from xml.dom import minidom
 from xml.parsers import expat
 import subprocess
 import re
-import gtk
+
+# https://sourceforge.net/projects/pygobjectwin32/files/
+# https://blogs.gnome.org/kittykat/2014/01/29/developing-gtk-3-apps-with-python-on-windows/
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk as gtk
+
+# import gtk
 # import pango
 from libgenerateDS.gui import generateds_gui_session
 #import generateds_gui_session
@@ -305,7 +312,7 @@ class GeneratedsGui(object):
                     method(value)
 
     def dump_params(self, msg, params):
-        print msg
+        print(msg)
         params.export(sys.stdout, 0, name_='session')
 
     def trans_params_2_dict(self):
@@ -555,10 +562,10 @@ class GeneratedsGui(object):
             self.trans_obj_2_gui()
             self.trans_gui_2_obj()
             self.saved_params = self.params.copy()
-        except IOError, exp:
+        except IOError as exp:
             msg = str(exp)
             self.error_message(msg, gtk.MESSAGE_ERROR)
-        except expat.ExpatError, exp:
+        except expat.ExpatError as exp:
             msg = '%s file: %s' % (str(exp), filename, )
             self.error_message(msg, gtk.MESSAGE_ERROR)
 

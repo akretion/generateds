@@ -3,12 +3,20 @@
 import sys
 import os
 from optparse import OptionParser
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 from xml.dom import minidom
 from xml.parsers import expat
 import subprocess
 import re
-import gtk
+
+
+# https://sourceforge.net/projects/pygobjectwin32/files/
+# https://blogs.gnome.org/kittykat/2014/01/29/developing-gtk-3-apps-with-python-on-windows/
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk as gtk
+
+# import gtk
 # import pango
 from libgenerateDS.gui import generateds_gui_session
 #import generateds_gui_session
@@ -136,7 +144,7 @@ class GeneratedsGui(object):
         ui_spec_filename = options.impl_gui
         try:
             if ui_spec_filename is None:
-                Builder.add_from_string(Ui_spec, len(Ui_spec))
+                Builder.add_from_string(Ui_spec)
             else:
                 Builder.add_from_file(ui_spec_filename)
         except:
@@ -153,7 +161,7 @@ class GeneratedsGui(object):
                 setattr(self, s1, bgo(s1))
                 self.ui_obj_dict[s1] = bgo(s1)
         # Create the member-specs combobox.
-        member_specs_combobox = gtk.combo_box_new_text()
+        member_specs_combobox = gtk.ComboBoxText()
         member_specs_combobox.set_name('member_specs_combobox')
         member_specs_combobox.set_tooltip_text(Memberspecs_tooltip_text)
         self.ui_obj_dict['member_specs_combobox'] = member_specs_combobox
@@ -169,7 +177,7 @@ class GeneratedsGui(object):
         Builder.connect_signals(self)
         Builder.connect_signals(self.content_dialog)
         # set the default icon to the GTK "edit" icon
-        gtk.window_set_default_icon_name(gtk.STOCK_EDIT)
+        gtk.Window.set_default_icon_name(gtk.STOCK_EDIT)
         # setup and initialize our statusbar
         self.statusbar_cid = self.statusbar.get_context_id("Tutorial GTK+ Text Editor")
         self.reset_default_status()
@@ -197,22 +205,22 @@ class GeneratedsGui(object):
         if self.params != self.saved_params:
             message = 'Session data has changed.\n\nSave?'
             dialog = gtk.MessageDialog(None,
-                gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-                gtk.MESSAGE_ERROR,
-                gtk.BUTTONS_NONE,
+                gtk.DialogFlags.MODAL | gtk.DialogFlags.DESTROY_WITH_PARENT,
+                gtk.MessageType.ERROR,
+                gtk.ButtonsType.NONE,
                 message)
             dialog.add_buttons(
-                gtk.STOCK_YES, gtk.RESPONSE_YES,
+                gtk.STOCK_YES, gtk.ResponseType.YES,
                 '_Discard', 1,
-                gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                gtk.STOCK_CANCEL, gtk.ResponseType.CANCEL,
                 )
             response = dialog.run()
             dialog.destroy()
-            if response == gtk.RESPONSE_YES:
+            if response == gtk.ResponseType.YES:
                 self.save_session_action()
             elif response == 1:
                 pass
-            elif response == gtk.RESPONSE_CANCEL:
+            elif response == gtk.ResponseType.CANCEL:
                 return
         gtk.main_quit()
 
@@ -305,7 +313,7 @@ class GeneratedsGui(object):
                     method(value)
 
     def dump_params(self, msg, params):
-        print msg
+        print(msg)
         params.export(sys.stdout, 0, name_='session')
 
     def trans_params_2_dict(self):
@@ -388,14 +396,14 @@ class GeneratedsGui(object):
         message = 'Clear all entries?\nAre you sure?'
         dialog = gtk.MessageDialog(
             None,
-            gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-            gtk.MESSAGE_WARNING,
-            gtk.BUTTONS_OK_CANCEL,
+            gtk.DialogFlags.MODAL | gtk.DialogFlags.DESTROY_WITH_PARENT,
+            gtk.MessageType.WARNING,
+            gtk.ButtonsType.OK_CANCEL,
             message
             )
         response = dialog.run()
         dialog.destroy()
-        if response == gtk.RESPONSE_OK:
+        if response == gtk.ResponseType.OK:
             self.session_filename = None
             self.params = generateds_gui_session.sessionType(
                 input_schema='',
@@ -441,7 +449,7 @@ class GeneratedsGui(object):
             error = True
         if not error:
             msg = 'Successfully generated.'
-            self.error_message(msg, gtk.MESSAGE_INFO)
+            self.error_message(msg, gtk.MessageType.INFO)
 
     def display_content(self, title, content):
         #content_dialog = ContentDialog()
@@ -454,25 +462,25 @@ class GeneratedsGui(object):
         if self.params != self.saved_params:
             message = 'Session data has changed.\n\nSave?'
             dialog = gtk.MessageDialog(None,
-                gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-                gtk.MESSAGE_ERROR,
-                gtk.BUTTONS_NONE,
+                gtk.DialogFlags.MODAL | gtk.DialogFlags.DESTROY_WITH_PARENT,
+                gtk.MessageType.ERROR,
+                gtk.ButtonsType.NONE,
                 message)
             dialog.add_buttons(
-                gtk.STOCK_YES, gtk.RESPONSE_YES,
+                gtk.STOCK_YES, gtk.ResponseType.YES,
                 '_Discard', 1,
-                gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                gtk.STOCK_CANCEL, gtk.ResponseType.CANCEL,
                 )
             response = dialog.run()
             dialog.destroy()
-            if response == gtk.RESPONSE_YES:
+            if response == gtk.ResponseType.YES:
                 self.save_session_action()
             elif response == 1:
                 pass
-            elif response == gtk.RESPONSE_CANCEL:
+            elif response == gtk.ResponseType.CANCEL:
                 return
         session_filename = self.choose_filename(
-            gtk.FILE_CHOOSER_ACTION_OPEN,
+            gtk.FileChooserAction.OPEN,
             (('Session *.session', '*.session'),)
             )
         if session_filename:
@@ -488,13 +496,13 @@ class GeneratedsGui(object):
     def save_session_action(self):
         if not self.session_filename:
             filename = self.choose_filename(
-                gtk.FILE_CHOOSER_ACTION_SAVE,
+                gtk.FileChooserAction.SAVE,
                 (('Session *.session', '*.session'),),
                 confirm_overwrite=True,
                 initfilename=self.session_filename,
                 buttons=(
-                    gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                    gtk.STOCK_SAVE, gtk.RESPONSE_OK,
+                    gtk.STOCK_CANCEL, gtk.ResponseType.CANCEL,
+                    gtk.STOCK_SAVE, gtk.ResponseType.OK,
                     )
                 )
             if filename:
@@ -510,13 +518,13 @@ class GeneratedsGui(object):
 
     def on_save_session_as_menuitem_activate(self, menuitem, data=None):
         filename = self.choose_filename(
-            gtk.FILE_CHOOSER_ACTION_SAVE,
+            gtk.FileChooserAction.SAVE,
             (('Session *.session', '*.session'),),
             confirm_overwrite=True,
             initfilename=self.session_filename,
             buttons=(
-                gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                gtk.STOCK_SAVE, gtk.RESPONSE_OK,
+                gtk.STOCK_CANCEL, gtk.ResponseType.CANCEL,
+                gtk.STOCK_SAVE, gtk.ResponseType.OK,
                 )
             )
         if filename:
@@ -538,7 +546,7 @@ class GeneratedsGui(object):
             namespacedef_='')
         outfile.close()
         msg = 'Session saved to file:\n%s' % (filename, )
-        self.error_message(msg, gtk.MESSAGE_INFO)
+        self.error_message(msg, gtk.MessageType.INFO)
         self.saved_params = self.params.copy()
 
     def load_session(self, filename):
@@ -555,12 +563,12 @@ class GeneratedsGui(object):
             self.trans_obj_2_gui()
             self.trans_gui_2_obj()
             self.saved_params = self.params.copy()
-        except IOError, exp:
+        except IOError as exp:
             msg = str(exp)
-            self.error_message(msg, gtk.MESSAGE_ERROR)
-        except expat.ExpatError, exp:
+            self.error_message(msg, gtk.MessageType.ERROR)
+        except expat.ExpatError as exp:
             msg = '%s file: %s' % (str(exp), filename, )
-            self.error_message(msg, gtk.MESSAGE_ERROR)
+            self.error_message(msg, gtk.MessageType.ERROR)
 
     def on_about_menu_item_activate(self, menuitem, data=None):
         if self.about_dialog:
@@ -591,13 +599,13 @@ class GeneratedsGui(object):
         self.about_dialog = about_dialog
         about_dialog.show()
 
-    def error_message(self, message, message_type=gtk.MESSAGE_ERROR):
+    def error_message(self, message, message_type=gtk.MessageType.ERROR):
         # log to terminal window
         #print message
         # create an error message dialog and display modally to the user
         dialog = gtk.MessageDialog(None,
-            gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-            message_type, gtk.BUTTONS_OK, message)
+            gtk.DialogFlags.MODAL | gtk.DialogFlags.DESTROY_WITH_PARENT,
+            message_type, gtk.ButtonsType.OK, message)
         dialog.run()
         dialog.destroy()
 
@@ -607,7 +615,7 @@ class GeneratedsGui(object):
         self.statusbar.push(self.statusbar_cid, msg)
 
     def on_input_schema_chooser_button_clicked(self, button, data=None):
-        filename = self.choose_filename(gtk.FILE_CHOOSER_ACTION_OPEN,
+        filename = self.choose_filename(gtk.FileChooserAction.OPEN,
             (('Schemas *.xsd', '*.xsd'),))
         if filename:
             self.input_schema_entry.set_text(filename)
@@ -625,31 +633,31 @@ class GeneratedsGui(object):
             self.output_subclass_entry.set_text(filename)
 
     def on_behavior_filename_chooser_button_clicked(self, button, data=None):
-        filename = self.choose_filename(gtk.FILE_CHOOSER_ACTION_OPEN,
+        filename = self.choose_filename(gtk.FileChooserAction.OPEN,
             (('Python *.py', '*.py'),))
         if filename:
             self.behavior_filename_entry.set_text(filename)
 
     def on_validator_bodies_chooser_button_clicked(self, button, data=None):
-        filename = self.choose_filename(gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
+        filename = self.choose_filename(gtk.FileChooserAction.SELECT_FOLDER,
             )
         if filename:
             self.validator_bodies_entry.set_text(filename)
 
     def on_user_methods_chooser_button_clicked(self, button, data=None):
-        filename = self.choose_filename(gtk.FILE_CHOOSER_ACTION_OPEN,
+        filename = self.choose_filename(gtk.FileChooserAction.OPEN,
             (('Python *.py', '*.py'),))
         if filename:
             self.user_methods_entry.set_text(filename)
 
-    def choose_filename(self, action=gtk.FILE_CHOOSER_ACTION_SAVE,
+    def choose_filename(self, action=gtk.FileChooserAction.SAVE,
         patterns=(), confirm_overwrite=False, initfilename=None,
         buttons=None):
         filename = None
         if buttons is None:
             buttons=(
-                gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                gtk.STOCK_OPEN, gtk.RESPONSE_OK,
+                gtk.STOCK_CANCEL, gtk.ResponseType.CANCEL,
+                gtk.STOCK_OPEN, gtk.ResponseType.OK,
                 )
         dialog = gtk.FileChooserDialog(
             title=None,
@@ -672,10 +680,10 @@ class GeneratedsGui(object):
             dialog.add_filter(filter)
         dialog.set_do_overwrite_confirmation(confirm_overwrite)
         response = dialog.run()
-        if response == gtk.RESPONSE_OK:
+        if response == gtk.ResponseType.OK:
             filename = dialog.get_filename()
             self.current_folder = dialog.get_current_folder()
-        elif response == gtk.RESPONSE_CANCEL:
+        elif response == gtk.ResponseType.CANCEL:
             pass
         dialog.destroy()
         return filename
@@ -718,7 +726,7 @@ class GeneratedsGui(object):
         return True
 
     def on_ok_button_activate(self, widget, data=None):
-        #print '(GeneratedsGui) widget:', widget
+        #print( '(GeneratedsGui) widget:', widget)
         response = self.content_dialog.on_ok_button_activate(
             self.content_dialog, data)
         return response
@@ -729,12 +737,13 @@ class GeneratedsGui(object):
     #   name of the button and the name of the related entry,
     #   for example, xxx_yyy_entry : xxx_yyy_clear_button.
     def on_clear_button_clicked(self, widget, data=None):
-        name = widget.get_name()
+        name = gtk.Buildable.get_name(widget) #widget.get_name() # http://python.6.x6.nabble.com/Confused-about-a-widget-s-name-td5015372.html
         mo = GeneratedsGui.name_pat1.search(name)
-        stem = mo.group(1)
-        name1 = '%s_entry' % (stem, )
-        ui_obj = self.ui_obj_dict[name1]
-        ui_obj.set_text('')
+        if not mo is None:
+            stem = mo.group(1)
+            name1 = '%s_entry' % (stem, )
+            ui_obj = self.ui_obj_dict[name1]
+            ui_obj.set_text('')
 
     # Run main application window
     def main(self):
@@ -756,7 +765,7 @@ class ContentDialog(gtk.Dialog):
         self.content_dialog.hide()
 
     def on_ok_button_activate(self, widget, data=None):
-        #print '(content_dialog) widget:', widget
+        #print( '(content_dialog) widget:', widget)
         return False
 
 
