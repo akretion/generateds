@@ -7,7 +7,6 @@ from xml.dom import minidom
 from xml.parsers import expat
 import subprocess
 import re
-from functools import partial as prt
 
 
 
