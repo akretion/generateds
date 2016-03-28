@@ -141,6 +141,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.20b (03/28/2016)
+
+- Fixes to handling of simpleType with and without restrictions on
+  another defined simpleType.  These were not being handled
+  correctly when the name of the simpleType contained a dash.
+  Thanks to Ryku for identifying this problem and for a very helpful
+  description of what was wrong and for providing schemas to
+  reproduce the problem.
+
 Version 2.20a (02/25/2016)
 
 - Another patch for Python 2 and 3.  We needed to protect against

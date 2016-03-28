@@ -202,7 +202,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.20a'
+VERSION = '2.20b'
 ##VERSION##
 
 if sys.version_info.major == 2:
@@ -1711,9 +1711,9 @@ class XschemaHandler(handler.ContentHandler):
                 # Save the name of the simpleType, but ignore everything
                 #   else about it (for now).
                 if 'name' in attrs:
-                    stName = cleanupName(attrs['name'])
+                    stName = attrs['name']
                 elif len(self.stack) > 0:
-                    stName = cleanupName(self.stack[-1].getName())
+                    stName = self.stack[-1].getName()
                 else:
                     stName = None
                 # If the parent is an element, mark it as a simpleType.
@@ -3356,7 +3356,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
         if typeName and typeName in SimpleTypeDict:
             wrt("            self.validate_%s(self.%s)    "
                 "# validate type %s\n" %
-                (typeName, mappedName, typeName, ))
+                (cleanupName(typeName), mappedName, typeName, ))
     if element.getAnyAttribute():
         hasAttributes += 1
         wrt('        self.anyAttributes_ = {}\n')
@@ -3779,11 +3779,11 @@ def generateBuildStandard_1(
         if child.getMaxOccurs() > 1:
             wrt("            # validate type %s\n" % (typeName, ))
             wrt("            self.validate_%s(self.%s[-1])\n" % (
-                typeName, mappedName))
+                cleanupName(typeName), mappedName, ))
         else:
             wrt("            # validate type %s\n" % (typeName, ))
             wrt("            self.validate_%s(self.%s)\n" % (
-                typeName, mappedName, ))
+                cleanupName(typeName), mappedName, ))
 # end generateBuildStandard_1
 
 
@@ -4594,8 +4594,10 @@ def generateValidatorDefs(wrt, element):
         if (typeName and
                 typeName in SimpleTypeDict and
                 typeName not in generatedSimpleTypes):
+            cleanTypeName = cleanupName(typeName)
             generatedSimpleTypes.append(typeName)
-            wrt('    def validate_%s(self, value):\n' % (typeName, ))
+            wrt('    def validate_%s(self, value):\n' % (
+                cleanupName(typeName), ))
             if typeName in SimpleTypeDict:
                 stObj = SimpleTypeDict[typeName]
                 wrt('        # Validate type %s, a restriction '
@@ -4609,15 +4611,15 @@ def generateValidatorDefs(wrt, element):
             if patterns:
                 wrt('            if not self.gds_validate_simple_patterns(\n')
                 wrt('                    self.validate_%s_patterns_, '
-                    'value):\n' % (typeName, ))
+                    'value):\n' % (cleanTypeName, ))
                 s1 = ("                warnings_.warn('Value \"%%s\" "
                       "does not match xsd pattern restrictions: %%s' "
                       "%% (value.encode('utf-8'), "
-                      "self.validate_%s_patterns_, ))\n" % (typeName, )
+                      "self.validate_%s_patterns_, ))\n" % (cleanTypeName, )
                       )
                 wrt(s1)
                 wrt('    validate_%s_patterns_ = %s\n' % (
-                    typeName, patterns, ))
+                    cleanTypeName, patterns, ))
     attrDefs = element.getAttributeDefs()
     for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
@@ -4625,8 +4627,10 @@ def generateValidatorDefs(wrt, element):
         if (typeName and
                 typeName in SimpleTypeDict and
                 typeName not in generatedSimpleTypes):
+            cleanTypeName = cleanupName(typeName)
             generatedSimpleTypes.append(typeName)
-            wrt('    def validate_%s(self, value):\n' % (typeName, ))
+            wrt('    def validate_%s(self, value):\n' % (
+                cleanupName(typeName), ))
             if typeName in SimpleTypeDict:
                 stObj = SimpleTypeDict[typeName]
                 wrt('        # Validate type %s, a restriction on %s.\n' % (
@@ -4639,15 +4643,15 @@ def generateValidatorDefs(wrt, element):
             if patterns:
                 wrt('            if not self.gds_validate_simple_patterns(\n')
                 wrt('                    self.validate_%s_patterns_, '
-                    'value):\n' % (typeName, ))
+                    'value):\n' % (cleanTypeName, ))
                 s1 = ("                warnings_.warn('Value \"%%s\" "
                       "does not match xsd pattern restrictions: %%s' "
                       "%% (value.encode('utf-8'), "
-                      "self.validate_%s_patterns_, ))\n" % (typeName, )
+                      "self.validate_%s_patterns_, ))\n" % (cleanTypeName, )
                       )
                 wrt(s1)
                 wrt('    validate_%s_patterns_ = %s\n' % (
-                    typeName, patterns, ))
+                    cleanTypeName, patterns, ))
 # end generateValidatorDefs
 
 
@@ -6491,6 +6495,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
         generateSubclasses(
             root, subclassFilename, behaviorFilename,
             prefix, options, args, superModule)
+# end generate
 
 
 def makeFile(outFileName):
@@ -6714,6 +6719,7 @@ def parseAndGenerate(
                 outfile = open(modulePath, "a")
                 outfile.write(exportLine)
                 outfile.close()
+# end parseAndGenerate
 
 
 # Function that gets called recursively in order to expand nested references
