@@ -1309,6 +1309,8 @@ name</property>
             <property name="can_focus">True</property>
             <property name="hscrollbar_policy">automatic</property>
             <property name="vscrollbar_policy">automatic</property>
+            <property name="min_content_width">250</property>
+            <property name="min_content_height">500</property>
             <child>
               <object class="GtkTextView" id="content_textview">
                 <property name="visible">True</property>
