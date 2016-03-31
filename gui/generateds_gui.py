@@ -41,7 +41,7 @@ from libgenerateDS.gui import generateds_gui_session
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.20a'
+VERSION = '2.20b'
 ##VERSION##
 
 
@@ -810,6 +810,8 @@ class ContentDialog(gtk.Dialog):
 
     def show(self, content):
         #Builder.connect_signals(self)
+        if isinstance(content, bytes):
+            content = content.decode('utf-8')
         self.content_textview.get_buffer().set_text(content)
         response = self.content_dialog.run()
         self.content_dialog.hide()
@@ -2149,6 +2151,8 @@ name.</property>
             <property name="can_focus">True</property>
             <property name="hscrollbar_policy">automatic</property>
             <property name="vscrollbar_policy">automatic</property>
+            <property name="min_content_width">250</property>
+            <property name="min_content_height">500</property>
             <child>
               <object class="GtkTextView" id="content_textview">
                 <property name="visible">True</property>
