@@ -141,6 +141,28 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.21a (04/01/2016)
+
+- The GUI (graphical) front end to generateDS.py has been
+  resuscitated and is now working again thanks to Aleksandr
+  Dragunkin.  
+  The GUI front end must be run under Python 3, and you must install
+  Python support for Gtk.
+  Aleksandr has also provided a Russian translation of the labels
+  etc in the user interface.  You can run that with:
+
+      $ cd /path/to/generateds/gui
+      $ python3 generateds_gui.py --impl-gui=generateds_gui_ru.glade
+
+  Note that the GUI interface still lacks support for a few of the
+  command line options that were added most recently to
+  generateDS.py.  If you need one or more of those missing options
+  but would still like to use the GUI front end, you can consider
+  using the "Capture CL" under the Tools menu, and then copy and
+  paste the result into a shell script, add any needed options to
+  that script, and run the script from the command line.
+
+
 Version 2.20b (03/28/2016)
 
 - Fixes to handling of simpleType with and without restrictions on
