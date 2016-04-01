@@ -12,7 +12,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.20b
+:revision: 2.21a
 
 .. version
 
