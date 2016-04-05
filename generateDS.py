@@ -91,6 +91,8 @@ Options:
                                      to XML)
                              Example: "write etree"
                              Default: "write"
+    --disable-xml            Disables generation of all XML build/export
+                             methods and command line interface
     --preserve-cdata-tags    Preserve CDATA tags.  Default: False
     --cleanup-name-list=<replacement-map>
                              Specifies list of 2-tuples used for cleaning
@@ -269,6 +271,7 @@ AnyTypeIdentifier = '__ANY__'
 ExportWrite = True
 ExportEtree = False
 ExportLiteral = False
+XmlDisabled = False
 FixTypeNames = None
 SingleFileOutput = True
 OutputDirectory = None
@@ -4877,13 +4880,14 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     else:
         namespace = ''
     generateHascontentMethod(wrt, prefix, element)
-    if ExportWrite:
-        generateExportFn(wrt, prefix, element, namespace, nameSpacesDef)
-    if ExportEtree:
-        generateToEtree(wrt, element, Targetnamespace)
-    if ExportLiteral:
-        generateExportLiteralFn(wrt, prefix, element)
-    generateBuildFn(wrt, prefix, element, delayed)
+    if not XmlDisabled:
+        if ExportWrite:
+            generateExportFn(wrt, prefix, element, namespace, nameSpacesDef)
+        if ExportEtree:
+            generateToEtree(wrt, element, Targetnamespace)
+        if ExportLiteral:
+            generateExportLiteralFn(wrt, prefix, element)
+        generateBuildFn(wrt, prefix, element, delayed)
     generateUserMethods(wrt, element)
     wrt('# end class %s%s\n' % (prefix, name, ))
     wrt('\n\n')
@@ -4891,7 +4895,7 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
 
 
 TEMPLATE_HEADER = """\
-#!/usr/bin/env python
+#xmldisable##!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #
@@ -4915,7 +4919,7 @@ import re as re_
 import base64
 import datetime as datetime_
 import warnings as warnings_
-from lxml import etree as etree_
+#xmldisable#from lxml import etree as etree_
 
 
 Validate_simpletypes_ = True
@@ -4925,13 +4929,13 @@ else:
     BaseStrType_ = str
 
 
-def parsexml_(infile, parser=None, **kwargs):
-    if parser is None:
-        # Use the lxml ElementTree compatible parser so that, e.g.,
-        #   we ignore comments.
-        parser = etree_.ETCompatXMLParser()
-    doc = etree_.parse(infile, parser=parser, **kwargs)
-    return doc
+#xmldisable#def parsexml_(infile, parser=None, **kwargs):
+#xmldisable#    if parser is None:
+#xmldisable#        # Use the lxml ElementTree compatible parser so that, e.g.,
+#xmldisable#        #   we ignore comments.
+#xmldisable#        parser = etree_.ETCompatXMLParser()
+#xmldisable#    doc = etree_.parse(infile, parser=parser, **kwargs)
+#xmldisable#    return doc
 
 #
 # User methods
@@ -5417,85 +5421,85 @@ class MixedContainer:
         return self.value
     def getName(self):
         return self.name
-    def export(self, outfile, level, name, namespace, pretty_print=True):
-        if self.category == MixedContainer.CategoryText:
-            # Prevent exporting empty content as empty lines.
-            if self.value.strip():
-                outfile.write(self.value)
-        elif self.category == MixedContainer.CategorySimple:
-            self.exportSimple(outfile, level, name)
-        else:    # category == MixedContainer.CategoryComplex
-            self.value.export(outfile, level, namespace, name, pretty_print)
-    def exportSimple(self, outfile, level, name):
-        if self.content_type == MixedContainer.TypeString:
-            outfile.write('<%s>%s</%s>' % (
-                self.name, self.value, self.name))
-        elif self.content_type == MixedContainer.TypeInteger or \\
-                self.content_type == MixedContainer.TypeBoolean:
-            outfile.write('<%s>%d</%s>' % (
-                self.name, self.value, self.name))
-        elif self.content_type == MixedContainer.TypeFloat or \\
-                self.content_type == MixedContainer.TypeDecimal:
-            outfile.write('<%s>%f</%s>' % (
-                self.name, self.value, self.name))
-        elif self.content_type == MixedContainer.TypeDouble:
-            outfile.write('<%s>%g</%s>' % (
-                self.name, self.value, self.name))
-        elif self.content_type == MixedContainer.TypeBase64:
-            outfile.write('<%s>%s</%s>' % (
-                self.name, base64.b64encode(self.value), self.name))
-    def to_etree(self, element):
-        if self.category == MixedContainer.CategoryText:
-            # Prevent exporting empty content as empty lines.
-            if self.value.strip():
-                if len(element) > 0:
-                    if element[-1].tail is None:
-                        element[-1].tail = self.value
-                    else:
-                        element[-1].tail += self.value
-                else:
-                    if element.text is None:
-                        element.text = self.value
-                    else:
-                        element.text += self.value
-        elif self.category == MixedContainer.CategorySimple:
-            subelement = etree_.SubElement(element, '%s' % self.name)
-            subelement.text = self.to_etree_simple()
-        else:    # category == MixedContainer.CategoryComplex
-            self.value.to_etree(element)
-    def to_etree_simple(self):
-        if self.content_type == MixedContainer.TypeString:
-            text = self.value
-        elif (self.content_type == MixedContainer.TypeInteger or
-                self.content_type == MixedContainer.TypeBoolean):
-            text = '%d' % self.value
-        elif (self.content_type == MixedContainer.TypeFloat or
-                self.content_type == MixedContainer.TypeDecimal):
-            text = '%f' % self.value
-        elif self.content_type == MixedContainer.TypeDouble:
-            text = '%g' % self.value
-        elif self.content_type == MixedContainer.TypeBase64:
-            text = '%s' % base64.b64encode(self.value)
-        return text
-    def exportLiteral(self, outfile, level, name):
-        if self.category == MixedContainer.CategoryText:
-            showIndent(outfile, level)
-            outfile.write(
-                'model_.MixedContainer(%d, %d, "%s", "%s"),\\n' % (
-                    self.category, self.content_type, self.name, self.value))
-        elif self.category == MixedContainer.CategorySimple:
-            showIndent(outfile, level)
-            outfile.write(
-                'model_.MixedContainer(%d, %d, "%s", "%s"),\\n' % (
-                    self.category, self.content_type, self.name, self.value))
-        else:    # category == MixedContainer.CategoryComplex
-            showIndent(outfile, level)
-            outfile.write(
-                'model_.MixedContainer(%d, %d, "%s",\\n' % (
-                    self.category, self.content_type, self.name,))
-            self.value.exportLiteral(outfile, level + 1)
-            showIndent(outfile, level)
-            outfile.write(')\\n')
+#xmldisable#    def export(self, outfile, level, name, namespace, pretty_print=True):
+#xmldisable#        if self.category == MixedContainer.CategoryText:
+#xmldisable#            # Prevent exporting empty content as empty lines.
+#xmldisable#            if self.value.strip():
+#xmldisable#                outfile.write(self.value)
+#xmldisable#        elif self.category == MixedContainer.CategorySimple:
+#xmldisable#            self.exportSimple(outfile, level, name)
+#xmldisable#        else:    # category == MixedContainer.CategoryComplex
+#xmldisable#            self.value.export(outfile, level, namespace, name, pretty_print)
+#xmldisable#    def exportSimple(self, outfile, level, name):
+#xmldisable#        if self.content_type == MixedContainer.TypeString:
+#xmldisable#            outfile.write('<%s>%s</%s>' % (
+#xmldisable#                self.name, self.value, self.name))
+#xmldisable#        elif self.content_type == MixedContainer.TypeInteger or \\
+#xmldisable#                self.content_type == MixedContainer.TypeBoolean:
+#xmldisable#            outfile.write('<%s>%d</%s>' % (
+#xmldisable#                self.name, self.value, self.name))
+#xmldisable#        elif self.content_type == MixedContainer.TypeFloat or \\
+#xmldisable#                self.content_type == MixedContainer.TypeDecimal:
+#xmldisable#            outfile.write('<%s>%f</%s>' % (
+#xmldisable#                self.name, self.value, self.name))
+#xmldisable#        elif self.content_type == MixedContainer.TypeDouble:
+#xmldisable#            outfile.write('<%s>%g</%s>' % (
+#xmldisable#                self.name, self.value, self.name))
+#xmldisable#        elif self.content_type == MixedContainer.TypeBase64:
+#xmldisable#            outfile.write('<%s>%s</%s>' % (
+#xmldisable#                self.name, base64.b64encode(self.value), self.name))
+#xmldisable#    def to_etree(self, element):
+#xmldisable#        if self.category == MixedContainer.CategoryText:
+#xmldisable#            # Prevent exporting empty content as empty lines.
+#xmldisable#            if self.value.strip():
+#xmldisable#                if len(element) > 0:
+#xmldisable#                    if element[-1].tail is None:
+#xmldisable#                        element[-1].tail = self.value
+#xmldisable#                    else:
+#xmldisable#                        element[-1].tail += self.value
+#xmldisable#                else:
+#xmldisable#                    if element.text is None:
+#xmldisable#                        element.text = self.value
+#xmldisable#                    else:
+#xmldisable#                        element.text += self.value
+#xmldisable#        elif self.category == MixedContainer.CategorySimple:
+#xmldisable#            subelement = etree_.SubElement(element, '%s' % self.name)
+#xmldisable#            subelement.text = self.to_etree_simple()
+#xmldisable#        else:    # category == MixedContainer.CategoryComplex
+#xmldisable#            self.value.to_etree(element)
+#xmldisable#    def to_etree_simple(self):
+#xmldisable#        if self.content_type == MixedContainer.TypeString:
+#xmldisable#            text = self.value
+#xmldisable#        elif (self.content_type == MixedContainer.TypeInteger or
+#xmldisable#                self.content_type == MixedContainer.TypeBoolean):
+#xmldisable#            text = '%d' % self.value
+#xmldisable#        elif (self.content_type == MixedContainer.TypeFloat or
+#xmldisable#                self.content_type == MixedContainer.TypeDecimal):
+#xmldisable#            text = '%f' % self.value
+#xmldisable#        elif self.content_type == MixedContainer.TypeDouble:
+#xmldisable#            text = '%g' % self.value
+#xmldisable#        elif self.content_type == MixedContainer.TypeBase64:
+#xmldisable#            text = '%s' % base64.b64encode(self.value)
+#xmldisable#        return text
+#xmldisable#    def exportLiteral(self, outfile, level, name):
+#xmldisable#        if self.category == MixedContainer.CategoryText:
+#xmldisable#            showIndent(outfile, level)
+#xmldisable#            outfile.write(
+#xmldisable#                'model_.MixedContainer(%d, %d, "%s", "%s"),\\n' % (
+#xmldisable#                    self.category, self.content_type, self.name, self.value))
+#xmldisable#        elif self.category == MixedContainer.CategorySimple:
+#xmldisable#            showIndent(outfile, level)
+#xmldisable#            outfile.write(
+#xmldisable#                'model_.MixedContainer(%d, %d, "%s", "%s"),\\n' % (
+#xmldisable#                    self.category, self.content_type, self.name, self.value))
+#xmldisable#        else:    # category == MixedContainer.CategoryComplex
+#xmldisable#            showIndent(outfile, level)
+#xmldisable#            outfile.write(
+#xmldisable#                'model_.MixedContainer(%d, %d, "%s",\\n' % (
+#xmldisable#                    self.category, self.content_type, self.name,))
+#xmldisable#            self.value.exportLiteral(outfile, level + 1)
+#xmldisable#            showIndent(outfile, level)
+#xmldisable#            outfile.write(')\\n')
 
 
 class MemberSpec_(object):
@@ -5594,6 +5598,7 @@ def get_all_text_(node):
 
 
 def generateHeader(wrt, prefix, options, args, externalImports):
+    global TEMPLATE_HEADER
     tstamp = (not NoDates and time.ctime()) or ''
     if NoVersion:
         version = ''
@@ -5601,7 +5606,7 @@ def generateHeader(wrt, prefix, options, args, externalImports):
         version = ' version %s' % VERSION
     options1, args1, command_line = format_options_args(options, args)
     current_working_directory = os.path.split(os.getcwd())[1]
-    if PreserveCdataTags:
+    if PreserveCdataTags and not XmlDisabled:
         preserve_cdata_tags_pat = \
             "PRESERVE_CDATA_TAGS_PAT = re_.compile(r'^<.+?>(.*)<.+>$')\n\n"
         preserve_cdata_get_text = Preserve_cdata_get_all_text1
@@ -5767,6 +5772,8 @@ def generateMain(outfile, prefix, root):
     exportDictLine = "GDSClassesMapping = {{\n{}}}\n\n\n".format(
         ''.join(lines))
     outfile.write(exportDictLine)
+    if XmlDisabled:
+        return
     children = root.getChildren()
     rootClass = None
     if children:
@@ -6058,17 +6065,17 @@ TEMPLATE_SUBCLASS_HEADER = """\
 #
 
 import sys
-from lxml import etree as etree_
+#xmldisable#from lxml import etree as etree_
 
 import %s as supermod
 
-def parsexml_(infile, parser=None, **kwargs):
-    if parser is None:
-        # Use the lxml ElementTree compatible parser so that, e.g.,
-        #   we ignore comments.
-        parser = etree_.ETCompatXMLParser()
-    doc = etree_.parse(infile, parser=parser, **kwargs)
-    return doc
+#xmldisable#def parsexml_(infile, parser=None, **kwargs):
+#xmldisable#    if parser is None:
+#xmldisable#        # Use the lxml ElementTree compatible parser so that, e.g.,
+#xmldisable#        #   we ignore comments.
+#xmldisable#        parser = etree_.ETCompatXMLParser()
+#xmldisable#    doc = etree_.parse(infile, parser=parser, **kwargs)
+#xmldisable#    return doc
 
 #
 # Globals
@@ -6304,6 +6311,8 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
         for element in ElementsForSubclasses:
             generateSubclass(
                 wrt, element, prefix, xmlbehavior, behaviors, baseUrl)
+        if XmlDisabled:
+            return
         children = root.getChildren()
         rootClass = None
         if children:
@@ -6789,6 +6798,14 @@ def fixSilence(txt, silent):
     return txt
 
 
+def fixXmlDisable(txt, disabled):
+    if disabled:
+        txt = txt.replace('#xmldisable#', '## ')
+    else:
+        txt = txt.replace('#xmldisable#', '')
+    return txt
+
+
 def err_msg(msg):
     sys.stderr.write(msg)
 
@@ -6805,10 +6822,10 @@ def main():
     global Force, GenerateProperties, SubclassSuffix, RootElement, \
         ValidatorBodiesBasePath, UseGetterSetter, \
         UserMethodsPath, XsdNameSpace, \
-        Namespacedef, NoDates, NoVersion, \
-        TEMPLATE_MAIN, TEMPLATE_SUBCLASS_FOOTER, Dirpath, \
-        ExternalEncoding, MemberSpecs, NoQuestions, \
-        ExportWrite, ExportEtree, ExportLiteral, \
+        Namespacedef, NoDates, NoVersion, TEMPLATE_HEADER, \
+        TEMPLATE_MAIN, TEMPLATE_SUBCLASS_FOOTER, TEMPLATE_SUBCLASS_HEADER,\
+        Dirpath, ExternalEncoding, MemberSpecs, NoQuestions, \
+        ExportWrite, ExportEtree, ExportLiteral, XmlDisabled, \
         FixTypeNames, SingleFileOutput, OutputDirectory, \
         ModuleSuffix, UseOldSimpleTypeValidators, \
         PreserveCdataTags, CleanupNameList
@@ -6825,7 +6842,7 @@ def main():
                 'namespacedef=', 'external-encoding=',
                 'member-specs=', 'no-dates', 'no-versions',
                 'no-questions', 'session=', 'fix-type-names=',
-                'version', 'export=',
+                'version', 'export=', 'disable-xml',
                 'one-file-per-xsd', 'output-directory=',
                 'module-suffix=', 'use-old-simpletype-validators',
                 'preserve-cdata-tags', 'cleanup-name-list=',
@@ -6981,6 +6998,8 @@ def main():
                 ExportEtree = True
             if 'literal' in tmpoptions:
                 ExportLiteral = True
+        elif option[0] == '--disable-xml':
+            XmlDisabled = True
         elif option[0] == '--one-file-per-xsd':
             SingleFileOutput = False
         elif option[0] == "--output-directory":
@@ -7026,7 +7045,6 @@ def main():
                         'Option --cleanup-name-list contains invalid '
                         'pattern "%s".'
                         % cleanup_pair[0])
-
     if showVersion:
         print('generateDS.py version %s' % VERSION)
         sys.exit(0)
@@ -7043,8 +7061,12 @@ def main():
             xschemaFileName = args[0]
             XsdFileName.append(xschemaFileName)
     silent = not outputText
+    TEMPLATE_HEADER = fixXmlDisable(TEMPLATE_HEADER, XmlDisabled)
     TEMPLATE_MAIN = fixSilence(TEMPLATE_MAIN, silent)
+    TEMPLATE_SUBCLASS_HEADER = fixXmlDisable(
+        TEMPLATE_SUBCLASS_HEADER, XmlDisabled)
     TEMPLATE_SUBCLASS_FOOTER = fixSilence(TEMPLATE_SUBCLASS_FOOTER, silent)
+
     load_config()
     parseAndGenerate(
         outFilename, subclassFilename, prefix,
