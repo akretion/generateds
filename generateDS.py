@@ -4670,11 +4670,11 @@ def generateMemberSpec(wrt, element):
         item2 = attrDef.getType()
         item3 = 0
         if generateDict:
-            item = "        '%s': MemberSpec_('%s', '%s', %d)," % (
-                item1, item1, item2, item3, )
+            item = "        '%s': MemberSpec_('%s', '%s', %d, %s)," % (
+                item1, item1, item2, item3, str({'use':attrDef.getUse()}))
         else:
-            item = "        MemberSpec_('%s', '%s', %d)," % (
-                item1, item2, item3, )
+            item = "        MemberSpec_('%s', '%s', %d, %s)," % (
+                item1, item2, item3, str({'use':attrDef.getUse()}))
         add(item)
     for child in element.getChildren():
         name = cleanupName(child.getCleanName())
@@ -4696,12 +4696,14 @@ def generateMemberSpec(wrt, element):
         else:
             item3 = 0
         if generateDict:
-            item = "        '%s': MemberSpec_('%s', %s, %d)," % (
-                item1, item1, item2, item3, )
+            item = "        '%s': MemberSpec_('%s', %s, %d, %s, %s)," % (
+                item1, item1, item2, item3, str(child.getAttrs()),
+                id(child.choice) if child.choice else None)
         else:
             #item = "        ('%s', '%s', %d)," % (item1, item2, item3, )
-            item = "        MemberSpec_('%s', %s, %d)," % (
-                item1, item2, item3, )
+            item = "        MemberSpec_('%s', %s, %d, %s, %s)," % (
+                item1, item2, item3, str(child.getAttrs()),
+                id(child.choice) if child.choice else None)
         add(item)
     simplebase = element.getSimpleBase()
     if element.getSimpleContent() or element.isMixed():
@@ -5246,6 +5248,15 @@ except ImportError as exp:
                 return instring.encode(ExternalEncoding)
             else:
                 return instring
+        def __eq__(self, other):
+            if type(self) != type(other):
+                return False
+            for key, val in self.__dict__.items():
+                if other.__dict__[key] != val:
+                    return False
+            return True
+        def __ne__(self, other):
+            return not self.__eq__(other)
 
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
@@ -5488,10 +5499,12 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0):
+    def __init__(self, name='', data_type='', container=0, child_attrs=None, choice=None):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.child_attrs = child_attrs
+        self.choice = choice
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -5506,6 +5519,10 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_child_attrs(self, child_attrs): self.child_attrs = child_attrs
+    def get_child_attrs(self): return self.child_attrs
+    def set_choice(self, choice): self.choice = choice
+    def get_choice(self): return self.choice
 
 
 def _cast(typ, value):
