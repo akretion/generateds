@@ -4666,7 +4666,7 @@ def generateMemberSpec(wrt, element):
     attrDefs = element.getAttributeDefs()
     for attrName in element.getAttributeDefsList():
         attrDef = attrDefs[attrName]
-        item1 = attrName
+        item1 = mapName(attrName)
         item2 = attrDef.getType()
         item3 = 0
         if generateDict:
