@@ -1724,6 +1724,7 @@ class XschemaHandler(handler.ContentHandler):
                     self.stack[-1].setSimpleType(1)
                 element = SimpleTypeElement(stName)
                 SimpleTypeDict[stName] = element
+                SimpleTypeDict[Targetnamespace+":"+stName] = element
                 self.stack.append(element)
             self.inSimpleType += 1
         elif name == RestrictionType:
@@ -4449,6 +4450,8 @@ def processValidatorBodyRestrictions(
         # Recurse into base simpleType, if it exists.
         base1 = restriction.get('base')
         if base1 is not None:
+            if ":" in base1:
+                base1 = base1.split(":")[1]
             st1 = find_simple_type_def(tree, base1, None, None, ns, base)
             if st1 is not None:
                 restrictions1 = st1.xpath(
@@ -6659,6 +6662,20 @@ def parseAndGenerate(
             outfile.close()
     else:    # not SingleFileOutput
         import process_includes
+        if 1:
+            if sys.version_info.major == 2:
+                outfile = StringIO.StringIO()
+            else:
+                outfile = io.StringIO()
+            doc = process_includes.process_include_files(
+                infile, outfile,
+                inpath=xschemaFileName,
+                catalogpath=catalogFilename,
+                fixtypenames=FixTypeNames)
+            outfile.close()
+            outfile = None
+            SchemaLxmlTree = doc.getroot()
+        infile.seek(0)
         rootPaths = process_includes.get_all_root_file_paths(
             infile, inpath=xschemaFileName,
             catalogpath=catalogFilename)
