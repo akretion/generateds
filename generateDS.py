@@ -6460,7 +6460,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     #   because it produces data structures needed during generation of
     #   subclasses.
     MappingTypes.clear()
-    AlreadyGenerated = set()
+    #AlreadyGenerated = set()
     outfile = None
     if outfileName:
         outfile = makeFile(outfileName)
@@ -6490,7 +6490,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
         if not isNewState():
             sys.stderr.write('\n*** maxLoops exceeded.  Something is '
                              'wrong with --one-file-per-xsd.\n\n')
-            break
+            sys.exit(1)
         element = PostponedExtensions.pop()
         parentName, parent = getParentName(element)
         if parentName:
@@ -6499,17 +6499,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
                 generateClasses(wrt, prefix, element, 1)
             else:
                 PostponedExtensions.insert(0, element)
-##     while 1:
-##         if len(PostponedExtensions) <= 0:
-##             break
-##         element = PostponedExtensions.pop()
-##         parentName, parent = getParentName(element)
-##         if parentName:
-##             if (parentName in AlreadyGenerated or
-##                     parentName in SimpleTypeDict):
-##                 generateClasses(wrt, prefix, element, 1)
-##             else:
-##                 PostponedExtensions.insert(0, element)
+
     #
     # Disable the generation of SAX handler/parser.
     # It failed when we stopped putting simple types into ElementDict.
@@ -6613,7 +6603,7 @@ def parseAndGenerate(
     global DelayedElements, DelayedElements_subclass, \
         AlreadyGenerated, SaxDelayedElements, \
         AlreadyGenerated_subclass, UserMethodsPath, UserMethodsModule, \
-        SchemaLxmlTree
+        SchemaLxmlTree, ModuleSuffix
     DelayedElements = set()
     DelayedElements_subclass = set()
     AlreadyGenerated = set()
@@ -6698,33 +6688,21 @@ def parseAndGenerate(
             root = dh.getRoot()
             roots.append(root)
             rootFile.close()
-        for root in roots:
+        for root, rootPath in zip(roots, rootPaths):
             root.annotate()
-            moduleName = None
+            moduleName = os.path.splitext(os.path.basename(rootPath))[0]
             modulePath = None
             # use the first root element to set
             # up the module name and path
             for child in root.getChildren():
-                if child.isRootElement():
-                    typeName = child.getType()
-                    if typeName.startswith("xs:"):
-                        # no need to create a module for
-                        # xs: types
-                        continue
-                    # convert to lower camel case if needed.
-                    if "-" in typeName:
-                        tokens = typeName.split("-")
-                        typeName = ''.join([t.title() for t in tokens])
-                    moduleName = typeName[0].lower() + typeName[1:]
-                    modulePath = (
-                        OutputDirectory +
-                        os.sep + moduleName +
-                        ModuleSuffix + ".py")
-                    fqnToModuleNameMap[child.getFullyQualifiedType()] = \
-                        moduleName
-                    fqnToModuleNameMap[child.getFullyQualifiedName()] = \
-                        moduleName
-                    break
+                fqnToModuleNameMap[child.getFullyQualifiedType()] = \
+                    moduleName
+                fqnToModuleNameMap[child.getFullyQualifiedName()] = \
+                    moduleName
+            # use the root file name as module name
+            modulePath = os.path.join(
+                OutputDirectory,
+                moduleName + ModuleSuffix + ".py")
             rootInfos.append((root, modulePath))
         for root, modulePath in rootInfos:
             if modulePath:
