@@ -1,64 +1,45 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 
 #
-# Generated Wed Dec  8 14:24:46 2010 by generateDS.py version 2.3a.
+# Generated Fri Apr  8 12:08:30 2016 by generateDS.py version 2.21a.
+#
+# Command line options:
+#   ('-f', '')
+#   ('-o', 'generateds_gui_session.py')
+#   ('--member-specs', 'list')
+#
+# Command line arguments:
+#   generateds_gui_session.xsd
+#
+# Command line:
+#   ../generateDS.py -f -o "generateds_gui_session.py" --member-specs="list" generateds_gui_session.xsd
+#
+# Current working directory (os.getcwd()):
+#   gui
 #
 
 import sys
-import getopt
 import re as re_
+import base64
+import datetime as datetime_
+import warnings as warnings_
+from lxml import etree as etree_
 
-etree_ = None
-Verbose_import_ = False
-(   XMLParser_import_none, XMLParser_import_lxml,
-    XMLParser_import_elementtree
-    ) = list(range(3))
-XMLParser_import_library = None
-try:
-    # lxml
-    from lxml import etree as etree_
-    XMLParser_import_library = XMLParser_import_lxml
-    if Verbose_import_:
-        print("running with lxml.etree")
-except ImportError:
-    try:
-        # cElementTree from Python 2.5+
-        import xml.etree.cElementTree as etree_
-        XMLParser_import_library = XMLParser_import_elementtree
-        if Verbose_import_:
-            print("running with cElementTree on Python 2.5+")
-    except ImportError:
-        try:
-            # ElementTree from Python 2.5+
-            import xml.etree.ElementTree as etree_
-            XMLParser_import_library = XMLParser_import_elementtree
-            if Verbose_import_:
-                print("running with ElementTree on Python 2.5+")
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree_
-                XMLParser_import_library = XMLParser_import_elementtree
-                if Verbose_import_:
-                    print("running with cElementTree")
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree_
-                    XMLParser_import_library = XMLParser_import_elementtree
-                    if Verbose_import_:
-                        print("running with ElementTree")
-                except ImportError:
-                    raise ImportError("Failed to import ElementTree from any known place")
 
-def parsexml_(*args, **kwargs):
-    if (XMLParser_import_library == XMLParser_import_lxml and
-        'parser' not in kwargs):
+Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
+
+
+def parsexml_(infile, parser=None, **kwargs):
+    if parser is None:
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
-        kwargs['parser'] = etree_.ETCompatXMLParser()
-    doc = etree_.parse(*args, **kwargs)
+        parser = etree_.ETCompatXMLParser()
+    doc = etree_.parse(infile, parser=parser, **kwargs)
     return doc
 
 #
@@ -73,20 +54,318 @@ try:
 except ImportError as exp:
 
     class GeneratedsSuper(object):
+        tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
+        class _FixedOffsetTZ(datetime_.tzinfo):
+            def __init__(self, offset, name):
+                self.__offset = datetime_.timedelta(minutes=offset)
+                self.__name = name
+            def utcoffset(self, dt):
+                return self.__offset
+            def tzname(self, dt):
+                return self.__name
+            def dst(self, dt):
+                return None
         def gds_format_string(self, input_data, input_name=''):
-            return input_data.decode('utf-8') if isinstance(input_data, bytes) else input_data
+            return input_data
+        def gds_validate_string(self, input_data, node=None, input_name=''):
+            if not input_data:
+                return ''
+            else:
+                return input_data
+        def gds_format_base64(self, input_data, input_name=''):
+            return base64.b64encode(input_data)
+        def gds_validate_base64(self, input_data, node=None, input_name=''):
+            return input_data
         def gds_format_integer(self, input_data, input_name=''):
             return '%d' % input_data
+        def gds_validate_integer(self, input_data, node=None, input_name=''):
+            return input_data
+        def gds_format_integer_list(self, input_data, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_integer_list(
+                self, input_data, node=None, input_name=''):
+            values = input_data.split()
+            for value in values:
+                try:
+                    int(value)
+                except (TypeError, ValueError):
+                    raise_parse_error(node, 'Requires sequence of integers')
+            return values
         def gds_format_float(self, input_data, input_name=''):
-            return '%f' % input_data
+            return ('%.15f' % input_data).rstrip('0')
+        def gds_validate_float(self, input_data, node=None, input_name=''):
+            return input_data
+        def gds_format_float_list(self, input_data, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_float_list(
+                self, input_data, node=None, input_name=''):
+            values = input_data.split()
+            for value in values:
+                try:
+                    float(value)
+                except (TypeError, ValueError):
+                    raise_parse_error(node, 'Requires sequence of floats')
+            return values
         def gds_format_double(self, input_data, input_name=''):
             return '%e' % input_data
+        def gds_validate_double(self, input_data, node=None, input_name=''):
+            return input_data
+        def gds_format_double_list(self, input_data, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_double_list(
+                self, input_data, node=None, input_name=''):
+            values = input_data.split()
+            for value in values:
+                try:
+                    float(value)
+                except (TypeError, ValueError):
+                    raise_parse_error(node, 'Requires sequence of doubles')
+            return values
         def gds_format_boolean(self, input_data, input_name=''):
-            return '%s' % input_data
+            return ('%s' % input_data).lower()
+        def gds_validate_boolean(self, input_data, node=None, input_name=''):
+            return input_data
+        def gds_format_boolean_list(self, input_data, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_boolean_list(
+                self, input_data, node=None, input_name=''):
+            values = input_data.split()
+            for value in values:
+                if value not in ('true', '1', 'false', '0', ):
+                    raise_parse_error(
+                        node,
+                        'Requires sequence of booleans '
+                        '("true", "1", "false", "0")')
+            return values
+        def gds_validate_datetime(self, input_data, node=None, input_name=''):
+            return input_data
+        def gds_format_datetime(self, input_data, input_name=''):
+            if input_data.microsecond == 0:
+                _svalue = '%04d-%02d-%02dT%02d:%02d:%02d' % (
+                    input_data.year,
+                    input_data.month,
+                    input_data.day,
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                )
+            else:
+                _svalue = '%04d-%02d-%02dT%02d:%02d:%02d.%s' % (
+                    input_data.year,
+                    input_data.month,
+                    input_data.day,
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                    ('%f' % (float(input_data.microsecond) / 1000000))[2:],
+                )
+            if input_data.tzinfo is not None:
+                tzoff = input_data.tzinfo.utcoffset(input_data)
+                if tzoff is not None:
+                    total_seconds = tzoff.seconds + (86400 * tzoff.days)
+                    if total_seconds == 0:
+                        _svalue += 'Z'
+                    else:
+                        if total_seconds < 0:
+                            _svalue += '-'
+                            total_seconds *= -1
+                        else:
+                            _svalue += '+'
+                        hours = total_seconds // 3600
+                        minutes = (total_seconds - (hours * 3600)) // 60
+                        _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+            return _svalue
+        @classmethod
+        def gds_parse_datetime(cls, input_data):
+            tz = None
+            if input_data[-1] == 'Z':
+                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
+                input_data = input_data[:-1]
+            else:
+                results = GeneratedsSuper.tzoff_pattern.search(input_data)
+                if results is not None:
+                    tzoff_parts = results.group(2).split(':')
+                    tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
+                    if results.group(1) == '-':
+                        tzoff *= -1
+                    tz = GeneratedsSuper._FixedOffsetTZ(
+                        tzoff, results.group(0))
+                    input_data = input_data[:-6]
+            time_parts = input_data.split('.')
+            if len(time_parts) > 1:
+                micro_seconds = int(float('0.' + time_parts[1]) * 1000000)
+                input_data = '%s.%s' % (time_parts[0], micro_seconds, )
+                dt = datetime_.datetime.strptime(
+                    input_data, '%Y-%m-%dT%H:%M:%S.%f')
+            else:
+                dt = datetime_.datetime.strptime(
+                    input_data, '%Y-%m-%dT%H:%M:%S')
+            dt = dt.replace(tzinfo=tz)
+            return dt
+        def gds_validate_date(self, input_data, node=None, input_name=''):
+            return input_data
+        def gds_format_date(self, input_data, input_name=''):
+            _svalue = '%04d-%02d-%02d' % (
+                input_data.year,
+                input_data.month,
+                input_data.day,
+            )
+            try:
+                if input_data.tzinfo is not None:
+                    tzoff = input_data.tzinfo.utcoffset(input_data)
+                    if tzoff is not None:
+                        total_seconds = tzoff.seconds + (86400 * tzoff.days)
+                        if total_seconds == 0:
+                            _svalue += 'Z'
+                        else:
+                            if total_seconds < 0:
+                                _svalue += '-'
+                                total_seconds *= -1
+                            else:
+                                _svalue += '+'
+                            hours = total_seconds // 3600
+                            minutes = (total_seconds - (hours * 3600)) // 60
+                            _svalue += '{0:02d}:{1:02d}'.format(
+                                hours, minutes)
+            except AttributeError:
+                pass
+            return _svalue
+        @classmethod
+        def gds_parse_date(cls, input_data):
+            tz = None
+            if input_data[-1] == 'Z':
+                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
+                input_data = input_data[:-1]
+            else:
+                results = GeneratedsSuper.tzoff_pattern.search(input_data)
+                if results is not None:
+                    tzoff_parts = results.group(2).split(':')
+                    tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
+                    if results.group(1) == '-':
+                        tzoff *= -1
+                    tz = GeneratedsSuper._FixedOffsetTZ(
+                        tzoff, results.group(0))
+                    input_data = input_data[:-6]
+            dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
+            dt = dt.replace(tzinfo=tz)
+            return dt.date()
+        def gds_validate_time(self, input_data, node=None, input_name=''):
+            return input_data
+        def gds_format_time(self, input_data, input_name=''):
+            if input_data.microsecond == 0:
+                _svalue = '%02d:%02d:%02d' % (
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                )
+            else:
+                _svalue = '%02d:%02d:%02d.%s' % (
+                    input_data.hour,
+                    input_data.minute,
+                    input_data.second,
+                    ('%f' % (float(input_data.microsecond) / 1000000))[2:],
+                )
+            if input_data.tzinfo is not None:
+                tzoff = input_data.tzinfo.utcoffset(input_data)
+                if tzoff is not None:
+                    total_seconds = tzoff.seconds + (86400 * tzoff.days)
+                    if total_seconds == 0:
+                        _svalue += 'Z'
+                    else:
+                        if total_seconds < 0:
+                            _svalue += '-'
+                            total_seconds *= -1
+                        else:
+                            _svalue += '+'
+                        hours = total_seconds // 3600
+                        minutes = (total_seconds - (hours * 3600)) // 60
+                        _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+            return _svalue
+        def gds_validate_simple_patterns(self, patterns, target):
+            # pat is a list of lists of strings/patterns.  We should:
+            # - AND the outer elements
+            # - OR the inner elements
+            found1 = True
+            for patterns1 in patterns:
+                found2 = False
+                for patterns2 in patterns1:
+                    if re_.search(patterns2, target) is not None:
+                        found2 = True
+                        break
+                if not found2:
+                    found1 = False
+                    break
+            return found1
+        @classmethod
+        def gds_parse_time(cls, input_data):
+            tz = None
+            if input_data[-1] == 'Z':
+                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
+                input_data = input_data[:-1]
+            else:
+                results = GeneratedsSuper.tzoff_pattern.search(input_data)
+                if results is not None:
+                    tzoff_parts = results.group(2).split(':')
+                    tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
+                    if results.group(1) == '-':
+                        tzoff *= -1
+                    tz = GeneratedsSuper._FixedOffsetTZ(
+                        tzoff, results.group(0))
+                    input_data = input_data[:-6]
+            if len(input_data.split('.')) > 1:
+                dt = datetime_.datetime.strptime(input_data, '%H:%M:%S.%f')
+            else:
+                dt = datetime_.datetime.strptime(input_data, '%H:%M:%S')
+            dt = dt.replace(tzinfo=tz)
+            return dt.time()
         def gds_str_lower(self, instring):
             return instring.lower()
-                    
-                    
+        def get_path_(self, node):
+            path_list = []
+            self.get_path_list_(node, path_list)
+            path_list.reverse()
+            path = '/'.join(path_list)
+            return path
+        Tag_strip_pattern_ = re_.compile(r'\{.*\}')
+        def get_path_list_(self, node, path_list):
+            if node is None:
+                return
+            tag = GeneratedsSuper.Tag_strip_pattern_.sub('', node.tag)
+            if tag:
+                path_list.append(tag)
+            self.get_path_list_(node.getparent(), path_list)
+        def get_class_obj_(self, node, default_class=None):
+            class_obj1 = default_class
+            if 'xsi' in node.nsmap:
+                classname = node.get('{%s}type' % node.nsmap['xsi'])
+                if classname is not None:
+                    names = classname.split(':')
+                    if len(names) == 2:
+                        classname = names[1]
+                    class_obj2 = globals().get(classname)
+                    if class_obj2 is not None:
+                        class_obj1 = class_obj2
+            return class_obj1
+        def gds_build_any(self, node, type_name=None):
+            return None
+        @classmethod
+        def gds_reverse_node_mapping(cls, mapping):
+            return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
+
+    def getSubclassFromModule_(module, class_):
+        '''Get the subclass of a class from a specific module.'''
+        name = class_.__name__ + 'Sub'
+        if hasattr(module, name):
+            return getattr(module, name)
+        else:
+            return None
+
 
 #
 # If you have installed IPython you can uncomment and use the following.
@@ -109,29 +388,52 @@ except ImportError as exp:
 
 ExternalEncoding = 'ascii'
 Tag_pattern_ = re_.compile(r'({.*})?(.*)')
-STRING_CLEANUP_PAT = re_.compile(r"[\n\r\s]+")
+String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
+Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
+CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
+
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
 
 #
 # Support/utility functions.
 #
 
-def showIndent(outfile, level):
-    for idx in range(level):
-        outfile.write('    ')
+
+def showIndent(outfile, level, pretty_print=True):
+    if pretty_print:
+        for idx in range(level):
+            outfile.write('    ')
+
 
 def quote_xml(inStr):
+    "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, str) and inStr or
-          '%s' % inStr)
-    s1 = s1.replace('&', '&amp;')
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
+    s2 = ''
+    pos = 0
+    matchobjects = CDATA_pattern_.finditer(s1)
+    for mo in matchobjects:
+        s3 = s1[pos:mo.start()]
+        s2 += quote_xml_aux(s3)
+        s2 += s1[mo.start():mo.end()]
+        pos = mo.end()
+    s3 = s1[pos:]
+    s2 += quote_xml_aux(s3)
+    return s2
+
+
+def quote_xml_aux(inStr):
+    s1 = inStr.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     return s1
 
+
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, str) and inStr or
-          '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -143,6 +445,7 @@ def quote_attrib(inStr):
     else:
         s1 = '"%s"' % s1
     return s1
+
 
 def quote_python(inStr):
     s1 = inStr
@@ -171,14 +474,26 @@ def get_all_text_(node):
     return text
 
 
+def find_attr_value_(attr_name, node):
+    attrs = node.attrib
+    attr_parts = attr_name.split(':')
+    value = None
+    if len(attr_parts) == 1:
+        value = attrs.get(attr_name)
+    elif len(attr_parts) == 2:
+        prefix, name = attr_parts
+        namespace = node.nsmap.get(prefix)
+        if namespace is not None:
+            value = attrs.get('{%s}%s' % (namespace, name, ))
+    return value
+
+
 class GDSParseError(Exception):
     pass
 
+
 def raise_parse_error(node, msg):
-    if XMLParser_import_library == XMLParser_import_lxml:
-        msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline, )
-    else:
-        msg = '%s (element %s)' % (msg, node.tag, )
+    msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline, )
     raise GDSParseError(msg)
 
 
@@ -197,6 +512,7 @@ class MixedContainer:
     TypeDecimal = 5
     TypeDouble = 6
     TypeBoolean = 7
+    TypeBase64 = 8
     def __init__(self, category, content_type, name, value):
         self.category = category
         self.content_type = content_type
@@ -210,39 +526,82 @@ class MixedContainer:
         return self.value
     def getName(self):
         return self.name
-    def export(self, outfile, level, name, namespace):
+    def export(self, outfile, level, name, namespace, pretty_print=True):
         if self.category == MixedContainer.CategoryText:
             # Prevent exporting empty content as empty lines.
-            if self.value.strip(): 
+            if self.value.strip():
                 outfile.write(self.value)
         elif self.category == MixedContainer.CategorySimple:
             self.exportSimple(outfile, level, name)
         else:    # category == MixedContainer.CategoryComplex
-            self.value.export(outfile, level, namespace,name)
+            self.value.export(outfile, level, namespace, name, pretty_print)
     def exportSimple(self, outfile, level, name):
         if self.content_type == MixedContainer.TypeString:
-            outfile.write('<%s>%s</%s>' % (self.name, self.value, self.name))
+            outfile.write('<%s>%s</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeInteger or \
                 self.content_type == MixedContainer.TypeBoolean:
-            outfile.write('<%s>%d</%s>' % (self.name, self.value, self.name))
+            outfile.write('<%s>%d</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeFloat or \
                 self.content_type == MixedContainer.TypeDecimal:
-            outfile.write('<%s>%f</%s>' % (self.name, self.value, self.name))
+            outfile.write('<%s>%f</%s>' % (
+                self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeDouble:
-            outfile.write('<%s>%g</%s>' % (self.name, self.value, self.name))
+            outfile.write('<%s>%g</%s>' % (
+                self.name, self.value, self.name))
+        elif self.content_type == MixedContainer.TypeBase64:
+            outfile.write('<%s>%s</%s>' % (
+                self.name, base64.b64encode(self.value), self.name))
+    def to_etree(self, element):
+        if self.category == MixedContainer.CategoryText:
+            # Prevent exporting empty content as empty lines.
+            if self.value.strip():
+                if len(element) > 0:
+                    if element[-1].tail is None:
+                        element[-1].tail = self.value
+                    else:
+                        element[-1].tail += self.value
+                else:
+                    if element.text is None:
+                        element.text = self.value
+                    else:
+                        element.text += self.value
+        elif self.category == MixedContainer.CategorySimple:
+            subelement = etree_.SubElement(element, '%s' % self.name)
+            subelement.text = self.to_etree_simple()
+        else:    # category == MixedContainer.CategoryComplex
+            self.value.to_etree(element)
+    def to_etree_simple(self):
+        if self.content_type == MixedContainer.TypeString:
+            text = self.value
+        elif (self.content_type == MixedContainer.TypeInteger or
+                self.content_type == MixedContainer.TypeBoolean):
+            text = '%d' % self.value
+        elif (self.content_type == MixedContainer.TypeFloat or
+                self.content_type == MixedContainer.TypeDecimal):
+            text = '%f' % self.value
+        elif self.content_type == MixedContainer.TypeDouble:
+            text = '%g' % self.value
+        elif self.content_type == MixedContainer.TypeBase64:
+            text = '%s' % base64.b64encode(self.value)
+        return text
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n' % \
-                (self.category, self.content_type, self.name, self.value))
+            outfile.write(
+                'model_.MixedContainer(%d, %d, "%s", "%s"),\n' % (
+                    self.category, self.content_type, self.name, self.value))
         elif self.category == MixedContainer.CategorySimple:
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n' % \
-                (self.category, self.content_type, self.name, self.value))
+            outfile.write(
+                'model_.MixedContainer(%d, %d, "%s", "%s"),\n' % (
+                    self.category, self.content_type, self.name, self.value))
         else:    # category == MixedContainer.CategoryComplex
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s",\n' % \
-                (self.category, self.content_type, self.name,))
+            outfile.write(
+                'model_.MixedContainer(%d, %d, "%s",\n' % (
+                    self.category, self.content_type, self.name,))
             self.value.exportLiteral(outfile, level + 1)
             showIndent(outfile, level)
             outfile.write(')\n')
@@ -268,6 +627,7 @@ class MemberSpec_(object):
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
 
+
 def _cast(typ, value):
     if typ is None or value is None:
         return value
@@ -282,59 +642,71 @@ class SessionTypeMixin(object):
         """Produce a copy of myself.
         """
         new_session = sessionType(
-            input_schema = self.input_schema,
-            output_superclass = self.output_superclass,
-            output_subclass = self.output_subclass,
-            force = self.force,
-            prefix = self.prefix,
-            namespace_prefix = self.namespace_prefix,
-            empty_namespace_prefix = self.empty_namespace_prefix,
-            behavior_filename = self.behavior_filename,
-            properties = self.properties,
-            subclass_suffix = self.subclass_suffix,
-            root_element = self.root_element,
-            superclass_module = self.superclass_module,
-            auto_super = self.auto_super,
-            old_getters_setters = self.old_getters_setters,
-            validator_bodies = self.validator_bodies,
-            user_methods = self.user_methods,
-            no_dates = self.no_dates,
-            no_versions = self.no_versions,
-            no_process_includes = self.no_process_includes,
-            silence = self.silence,
-            namespace_defs = self.namespace_defs,
-            external_encoding = self.external_encoding,
-            member_specs = self.member_specs,
-            )
+            input_schema=self.input_schema,
+            output_superclass=self.output_superclass,
+            output_subclass=self.output_subclass,
+            force=self.force,
+            prefix=self.prefix,
+            namespace_prefix=self.namespace_prefix,
+            empty_namespace_prefix=self.empty_namespace_prefix,
+            behavior_filename=self.behavior_filename,
+            properties=self.properties,
+            subclass_suffix=self.subclass_suffix,
+            root_element=self.root_element,
+            superclass_module=self.superclass_module,
+            auto_super=self.auto_super,
+            old_getters_setters=self.old_getters_setters,
+            validator_bodies=self.validator_bodies,
+            user_methods=self.user_methods,
+            no_dates=self.no_dates,
+            no_versions=self.no_versions,
+            no_process_includes=self.no_process_includes,
+            silence=self.silence,
+            namespace_defs=self.namespace_defs,
+            external_encoding=self.external_encoding,
+            member_specs=self.member_specs,
+            export_spec=self.export_spec,
+            one_file_per_xsd=self.one_file_per_xsd,
+            output_directory=self.output_directory,
+            module_suffix=self.module_suffix,
+            preserve_cdata_tags=self.preserve_cdata_tags,
+            cleanup_name_list=self.cleanup_name_list,
+        )
         return new_session
 
     def __eq__(self, obj):
         """Implement the == operator.
         """
         if (
-            obj.input_schema == self.input_schema and
-            obj.output_superclass == self.output_superclass and
-            obj.output_subclass == self.output_subclass and
-            obj.force == self.force and
-            obj.prefix == self.prefix and
-            obj.namespace_prefix == self.namespace_prefix and
-            obj.empty_namespace_prefix == self.empty_namespace_prefix and
-            obj.behavior_filename == self.behavior_filename and
-            obj.properties == self.properties and
-            obj.subclass_suffix == self.subclass_suffix and
-            obj.root_element == self.root_element and
-            obj.superclass_module == self.superclass_module and
-            obj.auto_super == self.auto_super and
-            obj.old_getters_setters == self.old_getters_setters and
-            obj.validator_bodies == self.validator_bodies and
-            obj.user_methods == self.user_methods and
-            obj.no_dates == self.no_dates and
-            obj.no_versions == self.no_versions and
-            obj.no_process_includes == self.no_process_includes and
-            obj.silence == self.silence and
-            obj.namespace_defs == self.namespace_defs and
-            obj.external_encoding == self.external_encoding and
-            obj.member_specs == self.member_specs):
+                obj.input_schema == self.input_schema and
+                obj.output_superclass == self.output_superclass and
+                obj.output_subclass == self.output_subclass and
+                obj.force == self.force and
+                obj.prefix == self.prefix and
+                obj.namespace_prefix == self.namespace_prefix and
+                obj.empty_namespace_prefix == self.empty_namespace_prefix and
+                obj.behavior_filename == self.behavior_filename and
+                obj.properties == self.properties and
+                obj.subclass_suffix == self.subclass_suffix and
+                obj.root_element == self.root_element and
+                obj.superclass_module == self.superclass_module and
+                obj.auto_super == self.auto_super and
+                obj.old_getters_setters == self.old_getters_setters and
+                obj.validator_bodies == self.validator_bodies and
+                obj.user_methods == self.user_methods and
+                obj.no_dates == self.no_dates and
+                obj.no_versions == self.no_versions and
+                obj.no_process_includes == self.no_process_includes and
+                obj.silence == self.silence and
+                obj.namespace_defs == self.namespace_defs and
+                obj.external_encoding == self.external_encoding and
+                obj.member_specs == self.member_specs and
+                obj.export_spec == self.export_spec and
+                obj.one_file_per_xsd == self.one_file_per_xsd and
+                obj.output_directory == self.output_directory and
+                obj.module_suffix == self.module_suffix and
+                obj.preserve_cdata_tags == self.preserve_cdata_tags and
+                obj.cleanup_name_list == self.cleanup_name_list):
             return True
         else:
             return False
@@ -344,9 +716,11 @@ class SessionTypeMixin(object):
         """
         return not self.__eq__(obj)
 
+
 #
 # Data representation classes.
 #
+
 
 class sessionType(GeneratedsSuper, SessionTypeMixin):
     member_data_items_ = [
@@ -372,11 +746,19 @@ class sessionType(GeneratedsSuper, SessionTypeMixin):
         MemberSpec_('silence', 'xs:boolean', 0),
         MemberSpec_('namespace_defs', 'xs:string', 0),
         MemberSpec_('external_encoding', 'xs:string', 0),
+        MemberSpec_('get_encoded', 'xs:boolean', 0),
         MemberSpec_('member_specs', 'xs:string', 0),
-        ]
+        MemberSpec_('export_spec', 'xs:string', 0),
+        MemberSpec_('one_file_per_xsd', 'xs:boolean', 0),
+        MemberSpec_('output_directory', 'xs:string', 0),
+        MemberSpec_('module_suffix', 'xs:string', 0),
+        MemberSpec_('preserve_cdata_tags', 'xs:boolean', 0),
+        MemberSpec_('cleanup_name_list', 'xs:string', 0),
+    ]
     subclass = None
     superclass = None
-    def __init__(self, input_schema=None, output_superclass=None, output_subclass=None, force=None, prefix=None, namespace_prefix=None, empty_namespace_prefix=None, behavior_filename=None, properties=None, subclass_suffix=None, root_element=None, superclass_module=None, auto_super=None, old_getters_setters=None, validator_bodies=None, user_methods=None, no_dates=None, no_versions=None, no_process_includes=None, silence=None, namespace_defs=None, external_encoding=None, member_specs=None):
+    def __init__(self, input_schema=None, output_superclass=None, output_subclass=None, force=None, prefix=None, namespace_prefix=None, empty_namespace_prefix=None, behavior_filename=None, properties=None, subclass_suffix=None, root_element=None, superclass_module=None, auto_super=None, old_getters_setters=None, validator_bodies=None, user_methods=None, no_dates=None, no_versions=None, no_process_includes=None, silence=None, namespace_defs=None, external_encoding=None, get_encoded=None, member_specs=None, export_spec=None, one_file_per_xsd=None, output_directory=None, module_suffix=None, preserve_cdata_tags=None, cleanup_name_list=None):
+        self.original_tagname_ = None
         self.input_schema = input_schema
         self.output_superclass = output_superclass
         self.output_subclass = output_subclass
@@ -399,8 +781,20 @@ class sessionType(GeneratedsSuper, SessionTypeMixin):
         self.silence = silence
         self.namespace_defs = namespace_defs
         self.external_encoding = external_encoding
+        self.get_encoded = get_encoded
         self.member_specs = member_specs
+        self.export_spec = export_spec
+        self.one_file_per_xsd = one_file_per_xsd
+        self.output_directory = output_directory
+        self.module_suffix = module_suffix
+        self.preserve_cdata_tags = preserve_cdata_tags
+        self.cleanup_name_list = cleanup_name_list
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, sessionType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if sessionType.subclass:
             return sessionType.subclass(*args_, **kwargs_)
         else:
@@ -450,91 +844,22 @@ class sessionType(GeneratedsSuper, SessionTypeMixin):
     def set_namespace_defs(self, namespace_defs): self.namespace_defs = namespace_defs
     def get_external_encoding(self): return self.external_encoding
     def set_external_encoding(self, external_encoding): self.external_encoding = external_encoding
+    def get_get_encoded(self): return self.get_encoded
+    def set_get_encoded(self, get_encoded): self.get_encoded = get_encoded
     def get_member_specs(self): return self.member_specs
     def set_member_specs(self, member_specs): self.member_specs = member_specs
-    def export(self, outfile, level, namespace_='', name_='sessionType', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='sessionType')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='sessionType'):
-        pass
-    def exportChildren(self, outfile, level, namespace_='', name_='sessionType'):
-        if self.input_schema is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sinput_schema>%s</%sinput_schema>\n' % (namespace_, self.gds_format_string(quote_xml(self.input_schema).encode(ExternalEncoding), input_name='input_schema'), namespace_))
-        if self.output_superclass is not None:
-            showIndent(outfile, level)
-            outfile.write('<%soutput_superclass>%s</%soutput_superclass>\n' % (namespace_, self.gds_format_string(quote_xml(self.output_superclass).encode(ExternalEncoding), input_name='output_superclass'), namespace_))
-        if self.output_subclass is not None:
-            showIndent(outfile, level)
-            outfile.write('<%soutput_subclass>%s</%soutput_subclass>\n' % (namespace_, self.gds_format_string(quote_xml(self.output_subclass).encode(ExternalEncoding), input_name='output_subclass'), namespace_))
-        if self.force is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sforce>%s</%sforce>\n' % (namespace_, self.gds_format_boolean(self.gds_str_lower(str(self.force)), input_name='force'), namespace_))
-        if self.prefix is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sprefix>%s</%sprefix>\n' % (namespace_, self.gds_format_string(quote_xml(self.prefix).encode(ExternalEncoding), input_name='prefix'), namespace_))
-        if self.namespace_prefix is not None:
-            showIndent(outfile, level)
-            outfile.write('<%snamespace_prefix>%s</%snamespace_prefix>\n' % (namespace_, self.gds_format_string(quote_xml(self.namespace_prefix).encode(ExternalEncoding), input_name='namespace_prefix'), namespace_))
-        if self.empty_namespace_prefix is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sempty_namespace_prefix>%s</%sempty_namespace_prefix>\n' % (namespace_, self.gds_format_boolean(self.gds_str_lower(str(self.empty_namespace_prefix)), input_name='empty_namespace_prefix'), namespace_))
-        if self.behavior_filename is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sbehavior_filename>%s</%sbehavior_filename>\n' % (namespace_, self.gds_format_string(quote_xml(self.behavior_filename).encode(ExternalEncoding), input_name='behavior_filename'), namespace_))
-        if self.properties is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sproperties>%s</%sproperties>\n' % (namespace_, self.gds_format_boolean(self.gds_str_lower(str(self.properties)), input_name='properties'), namespace_))
-        if self.subclass_suffix is not None:
-            showIndent(outfile, level)
-            outfile.write('<%ssubclass_suffix>%s</%ssubclass_suffix>\n' % (namespace_, self.gds_format_string(quote_xml(self.subclass_suffix).encode(ExternalEncoding), input_name='subclass_suffix'), namespace_))
-        if self.root_element is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sroot_element>%s</%sroot_element>\n' % (namespace_, self.gds_format_string(quote_xml(self.root_element).encode(ExternalEncoding), input_name='root_element'), namespace_))
-        if self.superclass_module is not None:
-            showIndent(outfile, level)
-            outfile.write('<%ssuperclass_module>%s</%ssuperclass_module>\n' % (namespace_, self.gds_format_string(quote_xml(self.superclass_module).encode(ExternalEncoding), input_name='superclass_module'), namespace_))
-        if self.auto_super is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sauto_super>%s</%sauto_super>\n' % (namespace_, self.gds_format_boolean(self.gds_str_lower(str(self.auto_super)), input_name='auto_super'), namespace_))
-        if self.old_getters_setters is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sold_getters_setters>%s</%sold_getters_setters>\n' % (namespace_, self.gds_format_boolean(self.gds_str_lower(str(self.old_getters_setters)), input_name='old_getters_setters'), namespace_))
-        if self.validator_bodies is not None:
-            showIndent(outfile, level)
-            outfile.write('<%svalidator_bodies>%s</%svalidator_bodies>\n' % (namespace_, self.gds_format_string(quote_xml(self.validator_bodies).encode(ExternalEncoding), input_name='validator_bodies'), namespace_))
-        if self.user_methods is not None:
-            showIndent(outfile, level)
-            outfile.write('<%suser_methods>%s</%suser_methods>\n' % (namespace_, self.gds_format_string(quote_xml(self.user_methods).encode(ExternalEncoding), input_name='user_methods'), namespace_))
-        if self.no_dates is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sno_dates>%s</%sno_dates>\n' % (namespace_, self.gds_format_boolean(self.gds_str_lower(str(self.no_dates)), input_name='no_dates'), namespace_))
-        if self.no_versions is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sno_versions>%s</%sno_versions>\n' % (namespace_, self.gds_format_boolean(self.gds_str_lower(str(self.no_versions)), input_name='no_versions'), namespace_))
-        if self.no_process_includes is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sno_process_includes>%s</%sno_process_includes>\n' % (namespace_, self.gds_format_boolean(self.gds_str_lower(str(self.no_process_includes)), input_name='no_process_includes'), namespace_))
-        if self.silence is not None:
-            showIndent(outfile, level)
-            outfile.write('<%ssilence>%s</%ssilence>\n' % (namespace_, self.gds_format_boolean(self.gds_str_lower(str(self.silence)), input_name='silence'), namespace_))
-        if self.namespace_defs is not None:
-            showIndent(outfile, level)
-            outfile.write('<%snamespace_defs>%s</%snamespace_defs>\n' % (namespace_, self.gds_format_string(quote_xml(self.namespace_defs).encode(ExternalEncoding), input_name='namespace_defs'), namespace_))
-        if self.external_encoding is not None:
-            showIndent(outfile, level)
-            outfile.write('<%sexternal_encoding>%s</%sexternal_encoding>\n' % (namespace_, self.gds_format_string(quote_xml(self.external_encoding).encode(ExternalEncoding), input_name='external_encoding'), namespace_))
-        if self.member_specs is not None:
-            showIndent(outfile, level)
-            outfile.write('<%smember_specs>%s</%smember_specs>\n' % (namespace_, self.gds_format_string(quote_xml(self.member_specs).encode(ExternalEncoding), input_name='member_specs'), namespace_))
+    def get_export_spec(self): return self.export_spec
+    def set_export_spec(self, export_spec): self.export_spec = export_spec
+    def get_one_file_per_xsd(self): return self.one_file_per_xsd
+    def set_one_file_per_xsd(self, one_file_per_xsd): self.one_file_per_xsd = one_file_per_xsd
+    def get_output_directory(self): return self.output_directory
+    def set_output_directory(self, output_directory): self.output_directory = output_directory
+    def get_module_suffix(self): return self.module_suffix
+    def set_module_suffix(self, module_suffix): self.module_suffix = module_suffix
+    def get_preserve_cdata_tags(self): return self.preserve_cdata_tags
+    def set_preserve_cdata_tags(self, preserve_cdata_tags): self.preserve_cdata_tags = preserve_cdata_tags
+    def get_cleanup_name_list(self): return self.cleanup_name_list
+    def set_cleanup_name_list(self, cleanup_name_list): self.cleanup_name_list = cleanup_name_list
     def hasContent_(self):
         if (
             self.input_schema is not None or
@@ -559,104 +884,154 @@ class sessionType(GeneratedsSuper, SessionTypeMixin):
             self.silence is not None or
             self.namespace_defs is not None or
             self.external_encoding is not None or
-            self.member_specs is not None
-            ):
+            self.get_encoded is not None or
+            self.member_specs is not None or
+            self.export_spec is not None or
+            self.one_file_per_xsd is not None or
+            self.output_directory is not None or
+            self.module_suffix is not None or
+            self.preserve_cdata_tags is not None or
+            self.cleanup_name_list is not None
+        ):
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='sessionType'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, name_)
+    def export(self, outfile, level, namespace_='', name_='sessionType', namespacedef_='', pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='sessionType')
         if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, name_):
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='sessionType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='sessionType'):
         pass
-    def exportLiteralChildren(self, outfile, level, name_):
+    def exportChildren(self, outfile, level, namespace_='', name_='sessionType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
         if self.input_schema is not None:
-            showIndent(outfile, level)
-            outfile.write('input_schema=%s,\n' % quote_python(self.input_schema).encode(ExternalEncoding))
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sinput_schema>%s</%sinput_schema>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.input_schema), input_name='input_schema')), namespace_, eol_))
         if self.output_superclass is not None:
-            showIndent(outfile, level)
-            outfile.write('output_superclass=%s,\n' % quote_python(self.output_superclass).encode(ExternalEncoding))
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%soutput_superclass>%s</%soutput_superclass>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.output_superclass), input_name='output_superclass')), namespace_, eol_))
         if self.output_subclass is not None:
-            showIndent(outfile, level)
-            outfile.write('output_subclass=%s,\n' % quote_python(self.output_subclass).encode(ExternalEncoding))
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%soutput_subclass>%s</%soutput_subclass>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.output_subclass), input_name='output_subclass')), namespace_, eol_))
         if self.force is not None:
-            showIndent(outfile, level)
-            outfile.write('force=%s,\n' % self.force)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sforce>%s</%sforce>%s' % (namespace_, self.gds_format_boolean(self.force, input_name='force'), namespace_, eol_))
         if self.prefix is not None:
-            showIndent(outfile, level)
-            outfile.write('prefix=%s,\n' % quote_python(self.prefix).encode(ExternalEncoding))
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sprefix>%s</%sprefix>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.prefix), input_name='prefix')), namespace_, eol_))
         if self.namespace_prefix is not None:
-            showIndent(outfile, level)
-            outfile.write('namespace_prefix=%s,\n' % quote_python(self.namespace_prefix).encode(ExternalEncoding))
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%snamespace_prefix>%s</%snamespace_prefix>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.namespace_prefix), input_name='namespace_prefix')), namespace_, eol_))
         if self.empty_namespace_prefix is not None:
-            showIndent(outfile, level)
-            outfile.write('empty_namespace_prefix=%s,\n' % self.empty_namespace_prefix)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sempty_namespace_prefix>%s</%sempty_namespace_prefix>%s' % (namespace_, self.gds_format_boolean(self.empty_namespace_prefix, input_name='empty_namespace_prefix'), namespace_, eol_))
         if self.behavior_filename is not None:
-            showIndent(outfile, level)
-            outfile.write('behavior_filename=%s,\n' % quote_python(self.behavior_filename).encode(ExternalEncoding))
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sbehavior_filename>%s</%sbehavior_filename>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.behavior_filename), input_name='behavior_filename')), namespace_, eol_))
         if self.properties is not None:
-            showIndent(outfile, level)
-            outfile.write('properties=%s,\n' % self.properties)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sproperties>%s</%sproperties>%s' % (namespace_, self.gds_format_boolean(self.properties, input_name='properties'), namespace_, eol_))
         if self.subclass_suffix is not None:
-            showIndent(outfile, level)
-            outfile.write('subclass_suffix=%s,\n' % quote_python(self.subclass_suffix).encode(ExternalEncoding))
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%ssubclass_suffix>%s</%ssubclass_suffix>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.subclass_suffix), input_name='subclass_suffix')), namespace_, eol_))
         if self.root_element is not None:
-            showIndent(outfile, level)
-            outfile.write('root_element=%s,\n' % quote_python(self.root_element).encode(ExternalEncoding))
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sroot_element>%s</%sroot_element>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.root_element), input_name='root_element')), namespace_, eol_))
         if self.superclass_module is not None:
-            showIndent(outfile, level)
-            outfile.write('superclass_module=%s,\n' % quote_python(self.superclass_module).encode(ExternalEncoding))
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%ssuperclass_module>%s</%ssuperclass_module>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.superclass_module), input_name='superclass_module')), namespace_, eol_))
         if self.auto_super is not None:
-            showIndent(outfile, level)
-            outfile.write('auto_super=%s,\n' % self.auto_super)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sauto_super>%s</%sauto_super>%s' % (namespace_, self.gds_format_boolean(self.auto_super, input_name='auto_super'), namespace_, eol_))
         if self.old_getters_setters is not None:
-            showIndent(outfile, level)
-            outfile.write('old_getters_setters=%s,\n' % self.old_getters_setters)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sold_getters_setters>%s</%sold_getters_setters>%s' % (namespace_, self.gds_format_boolean(self.old_getters_setters, input_name='old_getters_setters'), namespace_, eol_))
         if self.validator_bodies is not None:
-            showIndent(outfile, level)
-            outfile.write('validator_bodies=%s,\n' % quote_python(self.validator_bodies).encode(ExternalEncoding))
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%svalidator_bodies>%s</%svalidator_bodies>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.validator_bodies), input_name='validator_bodies')), namespace_, eol_))
         if self.user_methods is not None:
-            showIndent(outfile, level)
-            outfile.write('user_methods=%s,\n' % quote_python(self.user_methods).encode(ExternalEncoding))
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%suser_methods>%s</%suser_methods>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.user_methods), input_name='user_methods')), namespace_, eol_))
         if self.no_dates is not None:
-            showIndent(outfile, level)
-            outfile.write('no_dates=%s,\n' % self.no_dates)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sno_dates>%s</%sno_dates>%s' % (namespace_, self.gds_format_boolean(self.no_dates, input_name='no_dates'), namespace_, eol_))
         if self.no_versions is not None:
-            showIndent(outfile, level)
-            outfile.write('no_versions=%s,\n' % self.no_versions)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sno_versions>%s</%sno_versions>%s' % (namespace_, self.gds_format_boolean(self.no_versions, input_name='no_versions'), namespace_, eol_))
         if self.no_process_includes is not None:
-            showIndent(outfile, level)
-            outfile.write('no_process_includes=%s,\n' % self.no_process_includes)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sno_process_includes>%s</%sno_process_includes>%s' % (namespace_, self.gds_format_boolean(self.no_process_includes, input_name='no_process_includes'), namespace_, eol_))
         if self.silence is not None:
-            showIndent(outfile, level)
-            outfile.write('silence=%s,\n' % self.silence)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%ssilence>%s</%ssilence>%s' % (namespace_, self.gds_format_boolean(self.silence, input_name='silence'), namespace_, eol_))
         if self.namespace_defs is not None:
-            showIndent(outfile, level)
-            outfile.write('namespace_defs=%s,\n' % quote_python(self.namespace_defs).encode(ExternalEncoding))
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%snamespace_defs>%s</%snamespace_defs>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.namespace_defs), input_name='namespace_defs')), namespace_, eol_))
         if self.external_encoding is not None:
-            showIndent(outfile, level)
-            outfile.write('external_encoding=%s,\n' % quote_python(self.external_encoding).encode(ExternalEncoding))
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sexternal_encoding>%s</%sexternal_encoding>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.external_encoding), input_name='external_encoding')), namespace_, eol_))
+        if self.get_encoded is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sget_encoded>%s</%sget_encoded>%s' % (namespace_, self.gds_format_boolean(self.get_encoded, input_name='get_encoded'), namespace_, eol_))
         if self.member_specs is not None:
-            showIndent(outfile, level)
-            outfile.write('member_specs=%s,\n' % quote_python(self.member_specs).encode(ExternalEncoding))
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%smember_specs>%s</%smember_specs>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.member_specs), input_name='member_specs')), namespace_, eol_))
+        if self.export_spec is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sexport_spec>%s</%sexport_spec>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.export_spec), input_name='export_spec')), namespace_, eol_))
+        if self.one_file_per_xsd is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sone_file_per_xsd>%s</%sone_file_per_xsd>%s' % (namespace_, self.gds_format_boolean(self.one_file_per_xsd, input_name='one_file_per_xsd'), namespace_, eol_))
+        if self.output_directory is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%soutput_directory>%s</%soutput_directory>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.output_directory), input_name='output_directory')), namespace_, eol_))
+        if self.module_suffix is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%smodule_suffix>%s</%smodule_suffix>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.module_suffix), input_name='module_suffix')), namespace_, eol_))
+        if self.preserve_cdata_tags is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%spreserve_cdata_tags>%s</%spreserve_cdata_tags>%s' % (namespace_, self.gds_format_boolean(self.preserve_cdata_tags, input_name='preserve_cdata_tags'), namespace_, eol_))
+        if self.cleanup_name_list is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%scleanup_name_list>%s</%scleanup_name_list>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.cleanup_name_list), input_name='cleanup_name_list')), namespace_, eol_))
     def build(self, node):
-        self.buildAttributes(node, node.attrib, [])
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self.buildChildren(child, nodeName_)
+            self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
-    def buildChildren(self, child_, nodeName_, from_subclass=False):
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'input_schema':
             input_schema_ = child_.text
+            input_schema_ = self.gds_validate_string(input_schema_, node, 'input_schema')
             self.input_schema = input_schema_
         elif nodeName_ == 'output_superclass':
             output_superclass_ = child_.text
+            output_superclass_ = self.gds_validate_string(output_superclass_, node, 'output_superclass')
             self.output_superclass = output_superclass_
         elif nodeName_ == 'output_subclass':
             output_subclass_ = child_.text
+            output_subclass_ = self.gds_validate_string(output_subclass_, node, 'output_subclass')
             self.output_subclass = output_subclass_
         elif nodeName_ == 'force':
             sval_ = child_.text
@@ -666,12 +1041,15 @@ class sessionType(GeneratedsSuper, SessionTypeMixin):
                 ival_ = False
             else:
                 raise_parse_error(child_, 'requires boolean')
+            ival_ = self.gds_validate_boolean(ival_, node, 'force')
             self.force = ival_
         elif nodeName_ == 'prefix':
             prefix_ = child_.text
+            prefix_ = self.gds_validate_string(prefix_, node, 'prefix')
             self.prefix = prefix_
         elif nodeName_ == 'namespace_prefix':
             namespace_prefix_ = child_.text
+            namespace_prefix_ = self.gds_validate_string(namespace_prefix_, node, 'namespace_prefix')
             self.namespace_prefix = namespace_prefix_
         elif nodeName_ == 'empty_namespace_prefix':
             sval_ = child_.text
@@ -681,9 +1059,11 @@ class sessionType(GeneratedsSuper, SessionTypeMixin):
                 ival_ = False
             else:
                 raise_parse_error(child_, 'requires boolean')
+            ival_ = self.gds_validate_boolean(ival_, node, 'empty_namespace_prefix')
             self.empty_namespace_prefix = ival_
         elif nodeName_ == 'behavior_filename':
             behavior_filename_ = child_.text
+            behavior_filename_ = self.gds_validate_string(behavior_filename_, node, 'behavior_filename')
             self.behavior_filename = behavior_filename_
         elif nodeName_ == 'properties':
             sval_ = child_.text
@@ -693,15 +1073,19 @@ class sessionType(GeneratedsSuper, SessionTypeMixin):
                 ival_ = False
             else:
                 raise_parse_error(child_, 'requires boolean')
+            ival_ = self.gds_validate_boolean(ival_, node, 'properties')
             self.properties = ival_
         elif nodeName_ == 'subclass_suffix':
             subclass_suffix_ = child_.text
+            subclass_suffix_ = self.gds_validate_string(subclass_suffix_, node, 'subclass_suffix')
             self.subclass_suffix = subclass_suffix_
         elif nodeName_ == 'root_element':
             root_element_ = child_.text
+            root_element_ = self.gds_validate_string(root_element_, node, 'root_element')
             self.root_element = root_element_
         elif nodeName_ == 'superclass_module':
             superclass_module_ = child_.text
+            superclass_module_ = self.gds_validate_string(superclass_module_, node, 'superclass_module')
             self.superclass_module = superclass_module_
         elif nodeName_ == 'auto_super':
             sval_ = child_.text
@@ -711,6 +1095,7 @@ class sessionType(GeneratedsSuper, SessionTypeMixin):
                 ival_ = False
             else:
                 raise_parse_error(child_, 'requires boolean')
+            ival_ = self.gds_validate_boolean(ival_, node, 'auto_super')
             self.auto_super = ival_
         elif nodeName_ == 'old_getters_setters':
             sval_ = child_.text
@@ -720,12 +1105,15 @@ class sessionType(GeneratedsSuper, SessionTypeMixin):
                 ival_ = False
             else:
                 raise_parse_error(child_, 'requires boolean')
+            ival_ = self.gds_validate_boolean(ival_, node, 'old_getters_setters')
             self.old_getters_setters = ival_
         elif nodeName_ == 'validator_bodies':
             validator_bodies_ = child_.text
+            validator_bodies_ = self.gds_validate_string(validator_bodies_, node, 'validator_bodies')
             self.validator_bodies = validator_bodies_
         elif nodeName_ == 'user_methods':
             user_methods_ = child_.text
+            user_methods_ = self.gds_validate_string(user_methods_, node, 'user_methods')
             self.user_methods = user_methods_
         elif nodeName_ == 'no_dates':
             sval_ = child_.text
@@ -735,6 +1123,7 @@ class sessionType(GeneratedsSuper, SessionTypeMixin):
                 ival_ = False
             else:
                 raise_parse_error(child_, 'requires boolean')
+            ival_ = self.gds_validate_boolean(ival_, node, 'no_dates')
             self.no_dates = ival_
         elif nodeName_ == 'no_versions':
             sval_ = child_.text
@@ -744,6 +1133,7 @@ class sessionType(GeneratedsSuper, SessionTypeMixin):
                 ival_ = False
             else:
                 raise_parse_error(child_, 'requires boolean')
+            ival_ = self.gds_validate_boolean(ival_, node, 'no_versions')
             self.no_versions = ival_
         elif nodeName_ == 'no_process_includes':
             sval_ = child_.text
@@ -753,6 +1143,7 @@ class sessionType(GeneratedsSuper, SessionTypeMixin):
                 ival_ = False
             else:
                 raise_parse_error(child_, 'requires boolean')
+            ival_ = self.gds_validate_boolean(ival_, node, 'no_process_includes')
             self.no_process_includes = ival_
         elif nodeName_ == 'silence':
             sval_ = child_.text
@@ -762,22 +1153,78 @@ class sessionType(GeneratedsSuper, SessionTypeMixin):
                 ival_ = False
             else:
                 raise_parse_error(child_, 'requires boolean')
+            ival_ = self.gds_validate_boolean(ival_, node, 'silence')
             self.silence = ival_
         elif nodeName_ == 'namespace_defs':
             namespace_defs_ = child_.text
+            namespace_defs_ = self.gds_validate_string(namespace_defs_, node, 'namespace_defs')
             self.namespace_defs = namespace_defs_
         elif nodeName_ == 'external_encoding':
             external_encoding_ = child_.text
+            external_encoding_ = self.gds_validate_string(external_encoding_, node, 'external_encoding')
             self.external_encoding = external_encoding_
+        elif nodeName_ == 'get_encoded':
+            sval_ = child_.text
+            if sval_ in ('true', '1'):
+                ival_ = True
+            elif sval_ in ('false', '0'):
+                ival_ = False
+            else:
+                raise_parse_error(child_, 'requires boolean')
+            ival_ = self.gds_validate_boolean(ival_, node, 'get_encoded')
+            self.get_encoded = ival_
         elif nodeName_ == 'member_specs':
             member_specs_ = child_.text
+            member_specs_ = self.gds_validate_string(member_specs_, node, 'member_specs')
             self.member_specs = member_specs_
+        elif nodeName_ == 'export_spec':
+            export_spec_ = child_.text
+            export_spec_ = self.gds_validate_string(export_spec_, node, 'export_spec')
+            self.export_spec = export_spec_
+        elif nodeName_ == 'one_file_per_xsd':
+            sval_ = child_.text
+            if sval_ in ('true', '1'):
+                ival_ = True
+            elif sval_ in ('false', '0'):
+                ival_ = False
+            else:
+                raise_parse_error(child_, 'requires boolean')
+            ival_ = self.gds_validate_boolean(ival_, node, 'one_file_per_xsd')
+            self.one_file_per_xsd = ival_
+        elif nodeName_ == 'output_directory':
+            output_directory_ = child_.text
+            output_directory_ = self.gds_validate_string(output_directory_, node, 'output_directory')
+            self.output_directory = output_directory_
+        elif nodeName_ == 'module_suffix':
+            module_suffix_ = child_.text
+            module_suffix_ = self.gds_validate_string(module_suffix_, node, 'module_suffix')
+            self.module_suffix = module_suffix_
+        elif nodeName_ == 'preserve_cdata_tags':
+            sval_ = child_.text
+            if sval_ in ('true', '1'):
+                ival_ = True
+            elif sval_ in ('false', '0'):
+                ival_ = False
+            else:
+                raise_parse_error(child_, 'requires boolean')
+            ival_ = self.gds_validate_boolean(ival_, node, 'preserve_cdata_tags')
+            self.preserve_cdata_tags = ival_
+        elif nodeName_ == 'cleanup_name_list':
+            cleanup_name_list_ = child_.text
+            cleanup_name_list_ = self.gds_validate_string(cleanup_name_list_, node, 'cleanup_name_list')
+            self.cleanup_name_list = cleanup_name_list_
 # end class sessionType
+
+
+GDSClassesMapping = {
+    'session': sessionType,
+}
 
 
 USAGE_TEXT = """
 Usage: python <Parser>.py [ -s ] <in_xml_file>
 """
+
 
 def usage():
     print(USAGE_TEXT)
@@ -786,61 +1233,96 @@ def usage():
 
 def get_root_tag(node):
     tag = Tag_pattern_.match(node.tag).groups()[-1]
-    rootClass = globals().get(tag)
+    rootClass = GDSClassesMapping.get(tag)
+    if rootClass is None:
+        rootClass = globals().get(tag)
     return tag, rootClass
 
 
-def parse(inFileName):
-    doc = parsexml_(inFileName)
+def parse(inFileName, silence=False):
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'session'
+        rootTag = 'sessionType'
         rootClass = sessionType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('<?xml version="1.0" ?>\n')
-    rootObj.export(sys.stdout, 0, name_=rootTag, 
-        namespacedef_='')
+    if not silence:
+        sys.stdout.write('<?xml version="1.0" ?>\n')
+        rootObj.export(
+            sys.stdout, 0, name_=rootTag,
+            namespacedef_='',
+            pretty_print=True)
     return rootObj
 
 
-def parseString(inString):
-    from io import StringIO
-    doc = parsexml_(StringIO(inString))
+def parseEtree(inFileName, silence=False):
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'session'
+        rootTag = 'sessionType'
         rootClass = sessionType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('<?xml version="1.0" ?>\n')
-    rootObj.export(sys.stdout, 0, name_="session",
-        namespacedef_='')
+    mapping = {}
+    rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
+    reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
+    if not silence:
+        content = etree_.tostring(
+            rootElement, pretty_print=True,
+            xml_declaration=True, encoding="utf-8")
+        sys.stdout.write(content)
+        sys.stdout.write('\n')
+    return rootObj, rootElement, mapping, reverse_mapping
+
+
+def parseString(inString, silence=False):
+    from StringIO import StringIO
+    parser = None
+    doc = parsexml_(StringIO(inString), parser)
+    rootNode = doc.getroot()
+    rootTag, rootClass = get_root_tag(rootNode)
+    if rootClass is None:
+        rootTag = 'sessionType'
+        rootClass = sessionType
+    rootObj = rootClass.factory()
+    rootObj.build(rootNode)
+    # Enable Python to collect the space used by the DOM.
+    doc = None
+    if not silence:
+        sys.stdout.write('<?xml version="1.0" ?>\n')
+        rootObj.export(
+            sys.stdout, 0, name_=rootTag,
+            namespacedef_='')
     return rootObj
 
 
-def parseLiteral(inFileName):
-    doc = parsexml_(inFileName)
+def parseLiteral(inFileName, silence=False):
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'session'
+        rootTag = 'sessionType'
         rootClass = sessionType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-    sys.stdout.write('#from generateds_gui_session import *\n\n')
-    sys.stdout.write('import generateds_gui_session as model_\n\n')
-    sys.stdout.write('rootObj = model_.rootTag(\n')
-    rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
-    sys.stdout.write(')\n')
+    if not silence:
+        sys.stdout.write('#from generateds_gui_session import *\n\n')
+        sys.stdout.write('import generateds_gui_session as model_\n\n')
+        sys.stdout.write('rootObj = model_.rootClass(\n')
+        rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
+        sys.stdout.write(')\n')
     return rootObj
 
 
@@ -859,4 +1341,4 @@ if __name__ == '__main__':
 
 __all__ = [
     "sessionType"
-    ]
+]
