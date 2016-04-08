@@ -29,6 +29,12 @@
       <xs:element name="external_encoding" type="xs:string" />
       <xs:element name="get_encoded" type="xs:boolean" />
       <xs:element name="member_specs" type="xs:string" />
+      <xs:element name="export_spec" type="xs:string" />
+      <xs:element name="one_file_per_xsd" type="xs:boolean" />
+      <xs:element name="output_directory" type="xs:string" />
+      <xs:element name="module_suffix" type="xs:string" />
+      <xs:element name="preserve_cdata_tags" type="xs:boolean" />
+      <xs:element name="cleanup_name_list" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
 

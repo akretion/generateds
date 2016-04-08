@@ -290,6 +290,7 @@ NonNegativeIntegerType = None
 BooleanType = None
 FloatType = None
 DoubleType = None
+NumericTypes = None
 ElementType = None
 ComplexTypeType = None
 GroupType = None
@@ -2652,8 +2653,8 @@ def generateExportAttributes(wrt, element, hasAttributes):
                     attrDefType == TokenType or
                     attrDefType in DateTimeGroupType):
                 s1 = '''%s        outfile.write(' %s=%%s' %% ''' \
-                    '''(self.gds_encode(self.gds_format_string(quote_attrib(''' \
-                    '''self.%s), ''' \
+                    '''(self.gds_encode(self.gds_format_string(''' \
+                    '''quote_attrib(self.%s), ''' \
                     '''input_name='%s')), ))\n''' % \
                     (indent, orig_name, cleanName, name, )
             elif (attrDefType in IntegerType or
@@ -2952,7 +2953,7 @@ def generateExportLiteralFn_1(wrt, child, name, fill):
                 wrt("%s                outfile.write('%s=%%s,\\n' %% "
                     "self.gds_encode(quote_python(' '.join(self.%s)))"
                     ") \n" %
-                    (fill, mappedName, mappedName, encoding, ))
+                    (fill, mappedName, mappedName, ))
                 wrt("%s            else:\n" % (fill, ))
                 wrt("%s                outfile.write('%s=None,\\n')\n" %
                     (fill, mappedName, ))
@@ -6778,6 +6779,48 @@ def fixSilence(txt, silent):
     return txt
 
 
+def capture_cleanup_name_list(option):
+    cleanupNameList = []
+    if not option:
+        return cleanupNameList
+    cleanup_str = option
+    from ast import literal_eval
+    try:
+        cleanup_list = literal_eval(cleanup_str)
+    except ValueError:
+        raise RuntimeError(
+            'Unable to parse option --cleanup-name-list.')
+    if type(cleanup_list) not in (list, tuple):
+        raise RuntimeError(
+            'Option --cleanup-name-list must be a list or a tuple.')
+    for cleanup_pair in cleanup_list:
+        if sys.version_info.major == 2:
+            if (type(cleanup_pair) not in (list, tuple) or
+                    len(cleanup_pair) != 2 or
+                    not isinstance(cleanup_pair[0], BaseStrType) or
+                    not isinstance(cleanup_pair[1], BaseStrType)):
+                raise RuntimeError(
+                    'Option --cleanup-name-list contains '
+                    'invalid element.')
+        else:
+            if (type(cleanup_pair) not in (list, tuple) or
+                    len(cleanup_pair) != 2 or
+                    not isinstance(cleanup_pair[0], str) or
+                    not isinstance(cleanup_pair[1], str)):
+                raise RuntimeError(
+                    'Option --cleanup-name-list contains '
+                    'invalid element.')
+        try:
+            cleanupNameList.append(
+                (re.compile(cleanup_pair[0]), cleanup_pair[1]))
+        except Exception:
+            raise RuntimeError(
+                'Option --cleanup-name-list contains invalid '
+                'pattern "%s".'
+                % cleanup_pair[0])
+    return cleanupNameList
+
+
 def err_msg(msg):
     sys.stderr.write(msg)
 
@@ -6893,6 +6936,28 @@ def main():
                 ExternalEncoding = sessionObj.get_external_encoding()
             if sessionObj.get_member_specs() in ('list', 'dict'):
                 MemberSpecs = sessionObj.get_member_specs()
+            exports = sessionObj.get_export_spec()
+            if exports:
+                ExportWrite = False
+                ExportEtree = False
+                ExportLiteral = False
+                exports = exports.split()
+                if 'write' in exports:
+                    ExportWrite = True
+                if 'etree' in exports:
+                    ExportEtree = True
+                if 'literal' in exports:
+                    ExportLiteral = True
+            if sessionObj.get_one_file_per_xsd():
+                SingleFileOutput = False
+            if sessionObj.get_output_directory():
+                OutputDirectory = sessionObj.get_output_directory()
+            if sessionObj.get_module_suffix():
+                ModuleSuffix = sessionObj.get_module_suffix()
+            if sessionObj.get_preserve_cdata_tags():
+                PreserveCdataTags = True
+            CleanupNameList = capture_cleanup_name_list(
+                sessionObj.get_cleanup_name_list())
             break
     for option in options:
         if option[0] == '-h' or option[0] == '--help':
@@ -6979,43 +7044,7 @@ def main():
         elif option[0] == "--preserve-cdata-tags":
             PreserveCdataTags = True
         elif option[0] == '--cleanup-name-list':
-            cleanup_str = option[1]
-            from ast import literal_eval
-            try:
-                cleanup_list = literal_eval(cleanup_str)
-            except ValueError:
-                raise RuntimeError(
-                    'Unable to parse option --cleanup-name-list.')
-            if type(cleanup_list) not in (list, tuple):
-                raise RuntimeError(
-                    'Option --cleanup-name-list must be a list or a tuple.')
-            CleanupNameList = []
-            for cleanup_pair in cleanup_list:
-                if sys.version_info.major == 2:
-                    if (type(cleanup_pair) not in (list, tuple) or
-                            len(cleanup_pair) != 2 or
-                            not isinstance(cleanup_pair[0], BaseStrType) or
-                            not isinstance(cleanup_pair[1], BaseStrType)):
-                        raise RuntimeError(
-                            'Option --cleanup-name-list contains '
-                            'invalid element.')
-                else:
-                    if (type(cleanup_pair) not in (list, tuple) or
-                            len(cleanup_pair) != 2 or
-                            not isinstance(cleanup_pair[0], str) or
-                            not isinstance(cleanup_pair[1], str)):
-                        raise RuntimeError(
-                            'Option --cleanup-name-list contains '
-                            'invalid element.')
-                try:
-                    CleanupNameList.append(
-                        (re.compile(cleanup_pair[0]), cleanup_pair[1]))
-                except Exception:
-                    raise RuntimeError(
-                        'Option --cleanup-name-list contains invalid '
-                        'pattern "%s".'
-                        % cleanup_pair[0])
-
+            CleanupNameList = capture_cleanup_name_list(option[1])
     if showVersion:
         print('generateDS.py version %s' % VERSION)
         sys.exit(0)
