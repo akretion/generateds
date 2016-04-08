@@ -6419,7 +6419,7 @@ def getImportsForExternalXsds(root):
     If we are creating a file per xsd, then
     we need to import any external classes we use
     '''
-    externalImports = []
+    externalImports = set()
     if not SingleFileOutput:
         childStack = list(root.getChildren())
         while len(childStack) > 0:
@@ -6432,7 +6432,7 @@ def getImportsForExternalXsds(root):
                     type = schemaElement.getType()
                     if type == "xs:string":
                         type = schemaElement.getName()
-                    externalImports.append("from %s%s import %s" %
+                    externalImports.add("from %s%s import %s" %
                                            (moduleName, ModuleSuffix,
                                             type))
             for subChild in child.getChildren():
