@@ -11,6 +11,8 @@ include process_includes.py
 include generate_coverage.py
 include generateDS.html
 include gends_user_methods.py
+include generateds_gui_notes.txt
+include generateds_gui_notes.html
 include Demos/People/people.xsd
 include Demos/People/people.xml
 include Demos/People/run_test
