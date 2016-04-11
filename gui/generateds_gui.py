@@ -39,7 +39,7 @@ from libgenerateDS.gui import generateds_gui_session
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.21a'
+VERSION = '2.22a'
 ##VERSION##
 
 
@@ -1020,9 +1020,9 @@ def capture_ui_names():
 
 
 USAGE_TEXT = """
-    python %prog [options] <somefile.xxx>
+    python %prog [options] --session=<some_session_file.session>
 example:
-    python %prog somefile.xxx"""
+    python %prog --session=generator01.session"""
 
 
 def usage(parser):

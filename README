@@ -141,6 +141,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.22a (04/11/2016)
+
+- Added support for additional command line options to
+  generateds_gui.py.  Added analogous support to generateDS.py for
+  use of session files produced by generateds_gui.py.
+- There is now a bit of documentation with a few usage notes on
+  generateds_gui.py.  See generateds_gui_notes.txt and
+  generateds_gui_notes.html.
+
 Version 2.21a (04/01/2016)
 
 - The GUI (graphical) front end to generateDS.py has been

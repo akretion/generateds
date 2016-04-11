@@ -45,10 +45,8 @@ REPL_SPEC = [
         'pattern': r"(.. version\s*:revision: )([\w\.\-]*)(\s*.. version)",
     },
     {
-        'filename': 'generateDS.txt',
-        'pattern': r"(\.\. version\s*- My Web site -- \s*"
-                   r"http://www\.rexx\.com/~dkuhlman/generateDS-)"
-                   r"([\w\.\-]*)(\.tar\.gz\s*\.\. version)",
+        'filename': 'generateds_gui_notes.txt',
+        'pattern': r"(.. version\s*:revision: )([\w\.\-]*)(\s*.. version)",
     },
     {
         'filename': 'librarytemplate_howto.txt',
@@ -84,22 +82,20 @@ def updateversion(version):
         update1file(targetfilename, content1)
 
 
-
-#
 # Classes
-
 
 
 #
 # Functions for internal use and testing
 
 def update1file(targetfilename, content):
-    backupfilename = targetfilename + '.bak' 
+    backupfilename = targetfilename + '.bak'
     shutil.copy2(targetfilename, backupfilename)
     targetfile = open(targetfilename, 'w')
     targetfile.write(content)
     targetfile.close()
     #shutil.copymode(backupfilename, targetfilename)
+
 
 def replfuncmaker(version):
     def replfunc(matchobj):
@@ -110,6 +106,7 @@ def replfuncmaker(version):
 
 
 USAGE_TEXT = __doc__
+
 
 def usage():
     print USAGE_TEXT
@@ -140,4 +137,3 @@ def main():
 if __name__ == '__main__':
     #import pdb; pdb.set_trace()
     main()
-
