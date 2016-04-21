@@ -147,7 +147,7 @@ Version 2.22b (04/20/2016)
   attribute group names.  Thanks to Bing Wang for reporting this and
   for identifying and providing the XML schema that reproduced it.
 - Fixed failure to clean up names containing special characters in
-  function generateBuildStandard_1.  This was error was uncovered
+  function generateBuildStandard_1.  This error was uncovered
   when generating code from Bing Wang's schema.  Thanks again Bing.
 
 Version 2.22a (04/11/2016)

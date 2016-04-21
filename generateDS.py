@@ -1235,13 +1235,13 @@ class XschemaElement(XschemaElementBase):
         if key is not None:
             attrGroup = AttributeGroups[key]
             for name in attrGroup.getKeys():
-                if name == groupName:
-                    err_msg('*** Error.  Element {} attributeGroup {} '
-                            'has endless recursion\n'.format(
-                                self.getName(), groupName))
-                    return
-                if (name in AttributeGroups or
-                        strip_namespace(name) in AttributeGroups):
+                group = attrGroup.get(name)
+                # If group is none, then it's an attributeGroup,
+                # not an attribute.
+                # Therefore, we might need to follow it recursively.
+                if (group is None and
+                        (name in AttributeGroups or
+                            strip_namespace(name) in AttributeGroups)):
                     self.replace_attributeGroup_names_1(name)
                 else:
                     attr = attrGroup.get(name)
