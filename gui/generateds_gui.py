@@ -6,6 +6,8 @@ from configparser import ConfigParser
 from xml.parsers import expat
 import subprocess
 import re
+import locale
+import gettext
 
 
 if sys.version_info.major == 2:
@@ -39,7 +41,7 @@ from libgenerateDS.gui import generateds_gui_session
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.22a'
+VERSION = '2.22b'
 ##VERSION##
 
 
@@ -156,6 +158,7 @@ class GeneratedsGui(object):
         global Builder
         # Default values
         Builder = gtk.Builder()
+        Builder.set_translation_domain('generateds_gui')
         self.options = options
         # self.ui_spec_filename = ui_spec_filename
         self.filename = None
@@ -1060,6 +1063,13 @@ def main():
     capture_ui_names()
     if len(args) > 0:
         usage(parser)
+    # Set up for internationalization.
+    app_name = 'generateds_gui'
+    dir_name = 'locale'
+    locale.setlocale(locale.LC_ALL, '')
+    gettext.bindtextdomain(app_name, dir_name)
+    gettext.textdomain(app_name)
+    # Start the app.
     editor = GeneratedsGui(options)
     editor.main()
 
