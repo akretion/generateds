@@ -202,7 +202,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.22a'
+VERSION = '2.22b'
 ##VERSION##
 
 if sys.version_info.major == 2:
@@ -1235,6 +1235,11 @@ class XschemaElement(XschemaElementBase):
         if key is not None:
             attrGroup = AttributeGroups[key]
             for name in attrGroup.getKeys():
+                if name == groupName:
+                    err_msg('*** Error.  Element {} attributeGroup {} '
+                            'has endless recursion\n'.format(
+                                self.getName(), groupName))
+                    return
                 if (name in AttributeGroups or
                         strip_namespace(name) in AttributeGroups):
                     self.replace_attributeGroup_names_1(name)
@@ -1243,8 +1248,9 @@ class XschemaElement(XschemaElementBase):
                     self.attributeDefs[name] = attr
                     self.attributeDefsList.append(name)
         else:
-            err_msg('*** Error. attributeGroup %s not defined.\n' % (
-                groupName, ))
+            err_msg('*** Error. Element %s attributeGroup %s '
+                    'not defined.\n' % (
+                        self.getName(), groupName, ))
 
     def __str__(self):
         s1 = '<XschemaElement name: "%s" type: "%s">' % \
@@ -3748,6 +3754,7 @@ def generateBuildStandard_1(
                 name = mapName(name)
             else:
                 name = mappedName
+            name = cleanupName(name)
             s1 = "            self.%s.append(obj_)\n" % (name, )
         else:
             substitutionGroup = child.getAttrs().get('substitutionGroup')
@@ -3756,6 +3763,7 @@ def generateBuildStandard_1(
                 name = mapName(name)
             else:
                 name = mapName(headName)
+            name = cleanupName(name)
             s1 = "            self.%s = obj_\n" % (name, )
         wrt(s1)
         wrt("            obj_.original_tagname_ = '%s'\n" % (origName, ))
