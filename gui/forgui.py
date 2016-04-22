@@ -68,7 +68,7 @@ def create_dictfiles(args):
     s.sort()
     start_dictfile = open(str(args[2]), 'w', encoding='utf-8')
     for e in s:
-        print('''%s<->%s''' % (e.replace('\n', ' '),e), file=start_dictfile)
+        print('''%s<-|->%s''' % (e.replace('\n', ' '),e), file=start_dictfile)
     start_dictfile.close()
         
 def read_dictfiles(args):
