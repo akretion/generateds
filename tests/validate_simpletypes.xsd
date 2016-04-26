@@ -24,6 +24,20 @@
             <xs:element name="min_max_length_value" type="min_max_length_st"/>
             <xs:element name="length_value" type="length_st"/>
             <xs:element name="totalDigits_value" type="totalDigits_st"/>
+
+            <xs:element name="date_minincl_value" type="date_minincl_st"/>
+            <xs:element name="date_maxincl_value" type="date_maxincl_st"/>
+            <xs:element name="date_minexcl_value" type="date_minexcl_st"/>
+            <xs:element name="date_maxexcl_value" type="date_maxexcl_st"/>
+            <xs:element name="time_minincl_value" type="time_minincl_st"/>
+            <xs:element name="time_maxincl_value" type="time_maxincl_st"/>
+            <xs:element name="time_minexcl_value" type="time_minexcl_st"/>
+            <xs:element name="time_maxexcl_value" type="time_maxexcl_st"/>
+            <xs:element name="datetime_minincl_value" type="datetime_minincl_st"/>
+            <xs:element name="datetime_maxincl_value" type="datetime_maxincl_st"/>
+            <xs:element name="datetime_minexcl_value" type="datetime_minexcl_st"/>
+            <xs:element name="datetime_maxexcl_value" type="datetime_maxexcl_st"/>
+
             <!-- Test for use of anonymous simple type. -->
             <xs:element name="anonymous_float_value">
                 <xs:simpleType>
@@ -121,4 +135,77 @@
             <xs:fractionDigits value="5"/>
         </xs:restriction>
     </xs:simpleType>
+
+    <xs:simpleType name="date_minincl_st">
+        <xs:restriction base="xs:date">
+            <xs:minInclusive value="2015-06-01"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="date_maxincl_st">
+        <xs:restriction base="xs:date">
+            <xs:maxInclusive value="2015-10-31"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="date_minexcl_st">
+        <xs:restriction base="xs:date">
+            <xs:minExclusive value="2015-06-01"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="date_maxexcl_st">
+        <xs:restriction base="xs:date">
+            <xs:maxExclusive value="2015-10-31"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="time_minincl_st">
+        <xs:restriction base="xs:time">
+            <xs:minInclusive value="14:20:10"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="time_maxincl_st">
+        <xs:restriction base="xs:time">
+            <xs:maxInclusive value="16:20:10"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="time_minexcl_st">
+        <xs:restriction base="xs:time">
+            <xs:minExclusive value="14:20:10"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="time_maxexcl_st">
+        <xs:restriction base="xs:time">
+            <xs:maxExclusive value="16:20:10"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="datetime_minincl_st">
+        <xs:restriction base="xs:dateTime">
+            <xs:minInclusive value="2015-06-01T14:20:10"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="datetime_maxincl_st">
+        <xs:restriction base="xs:dateTime">
+            <xs:maxInclusive value="2015-10-31T16:20:10"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="datetime_minexcl_st">
+        <xs:restriction base="xs:dateTime">
+            <xs:minExclusive value="2015-06-01T14:20:10"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="datetime_maxexcl_st">
+        <xs:restriction base="xs:dateTime">
+            <xs:maxExclusive value="2015-10-31T16:20:10"/>
+        </xs:restriction>
+    </xs:simpleType>
+
 </xs:schema>

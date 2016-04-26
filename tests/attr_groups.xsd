@@ -27,6 +27,13 @@
         <xsd:attribute name="value05" type="xsd:string"/>
         <xsd:attribute name="value06" type="xsd:integer"/>
         <xsd:attribute name="value07" type="xsd:integer"/>
+        <xsd:attributeGroup ref="value08"/>
+    </xsd:attributeGroup>
+
+    <!-- Check for avoidance of infinite recursion.
+    -->
+    <xsd:attributeGroup name="value08">
+        <xsd:attribute name="value08" type="xsd:string"/>
     </xsd:attributeGroup>
 
 </xsd:schema>

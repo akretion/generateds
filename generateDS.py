@@ -4254,6 +4254,19 @@ def find_simple_type_def(tree, stName, element, child, ns, base):
     return st
 
 
+def get_target_value(default, stName):
+    stObj = SimpleTypeDict.get(stName)
+    targetValue = default
+    if stObj is not None:
+        if stObj.getBase() == DateType:
+            targetValue = "self.gds_parse_date('{}')".format(default)
+        elif stObj.getBase() == TimeType:
+            targetValue = "self.gds_parse_time('{}')".format(default)
+        elif stObj.getBase() == DateTimeType:
+            targetValue = "self.gds_parse_datetime('{}')".format(default)
+    return targetValue
+
+
 # Generate validation code for each restriction.
 # Recursivly call to process possible chain of base types.
 def processValidatorBodyRestrictions(
@@ -4362,8 +4375,9 @@ def processValidatorBodyRestrictions(
             if 'string' in base:
                 valuestring = 'len(str(value))'
                 toencode = '% {"value" : value.encode("utf-8")}'
+            targetValue = get_target_value(minIncl, stName)
             s1 += "            if %(valuestring)s < %(minIncl)s:\n" % {
-                'minIncl': minIncl, "valuestring": valuestring}
+                'minIncl': targetValue, "valuestring": valuestring}
             s1 += ("                warnings_.warn('Value \"%(val)s\" "
                    "does not match xsd minInclusive restriction on "
                    "%(typename)s' %(express)s )\n" % {
@@ -4382,8 +4396,9 @@ def processValidatorBodyRestrictions(
             if 'string' in base:
                 valuestring = 'len(str(value))'
                 toencode = '% {"value" : value.encode("utf-8")}'
+            targetValue = get_target_value(maxIncl, stName)
             s1 += "            if %(valuestring)s > %(maxIncl)s:\n" % {
-                'maxIncl': maxIncl, "valuestring": valuestring}
+                'maxIncl': targetValue, "valuestring": valuestring}
             s1 += ("                warnings_.warn('Value \"%(val)s\" "
                    "does not match xsd maxInclusive restriction on "
                    "%(typename)s' %(express)s )\n" % {
@@ -4402,8 +4417,9 @@ def processValidatorBodyRestrictions(
             if 'string' in base:
                 valstr = 'len(str(value))'
                 toencode = '% {"value" : value.encode("utf-8")}'
+            targetValue = get_target_value(minExclusive, stName)
             s1 += "            if %(valstr)s <= %(minExclusive)s:\n" % {
-                'minExclusive': minExclusive, "valstr": valstr}
+                'minExclusive': targetValue, "valstr": valstr}
             s1 += ("                warnings_.warn('Value \"%(val)s\" "
                    "does not match xsd minExclusive restriction on "
                    "%(typename)s' %(express)s )\n" % {
@@ -4422,8 +4438,9 @@ def processValidatorBodyRestrictions(
             if 'string' in base:
                 valstr = 'len(str(value))'
                 toencode = '% {"value" : value.encode("utf-8")}'
+            targetValue = get_target_value(maxExclusive, stName)
             s1 += "            if %(valstr)s >= %(maxExclusive)s:\n" % {
-                'maxExclusive': maxExclusive, "valstr": valstr}
+                'maxExclusive': targetValue, "valstr": valstr}
             s1 += ("                warnings_.warn('Value \"%(val)s\" "
                    "does not match xsd maxExclusive restriction on "
                    "%(typename)s' %(express)s )\n" % {
