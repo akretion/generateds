@@ -805,13 +805,25 @@ class simpleOneType(GeneratedsSuper):
         MemberSpec_('min_max_length_value', ['min_max_length_st', 'xs:string'], 0),
         MemberSpec_('length_value', ['length_st', 'xs:string'], 0),
         MemberSpec_('totalDigits_value', ['totalDigits_st', 'xs:decimal'], 0),
+        MemberSpec_('date_minincl_value', ['date_minincl_st', 'xs:date'], 0),
+        MemberSpec_('date_maxincl_value', ['date_maxincl_st', 'xs:date'], 0),
+        MemberSpec_('date_minexcl_value', ['date_minexcl_st', 'xs:date'], 0),
+        MemberSpec_('date_maxexcl_value', ['date_maxexcl_st', 'xs:date'], 0),
+        MemberSpec_('time_minincl_value', ['time_minincl_st', 'xs:time'], 0),
+        MemberSpec_('time_maxincl_value', ['time_maxincl_st', 'xs:time'], 0),
+        MemberSpec_('time_minexcl_value', ['time_minexcl_st', 'xs:time'], 0),
+        MemberSpec_('time_maxexcl_value', ['time_maxexcl_st', 'xs:time'], 0),
+        MemberSpec_('datetime_minincl_value', ['datetime_minincl_st', 'xs:dateTime'], 0),
+        MemberSpec_('datetime_maxincl_value', ['datetime_maxincl_st', 'xs:dateTime'], 0),
+        MemberSpec_('datetime_minexcl_value', ['datetime_minexcl_st', 'xs:dateTime'], 0),
+        MemberSpec_('datetime_maxexcl_value', ['datetime_maxexcl_st', 'xs:dateTime'], 0),
         MemberSpec_('anonymous_float_value', ['anonymous_float_valueType', 'xs:float'], 0),
         MemberSpec_('primative_integer', 'xs:integer', 0),
         MemberSpec_('primative_float', 'xs:float', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, integer_range_1_value=None, pattern_value=None, token_enum_value=None, integer_range_incl_value=None, integer_range_excl_value=None, min_max_length_value=None, length_value=None, totalDigits_value=None, anonymous_float_value=None, primative_integer=None, primative_float=None):
+    def __init__(self, integer_range_1_value=None, pattern_value=None, token_enum_value=None, integer_range_incl_value=None, integer_range_excl_value=None, min_max_length_value=None, length_value=None, totalDigits_value=None, date_minincl_value=None, date_maxincl_value=None, date_minexcl_value=None, date_maxexcl_value=None, time_minincl_value=None, time_maxincl_value=None, time_minexcl_value=None, time_maxexcl_value=None, datetime_minincl_value=None, datetime_maxincl_value=None, datetime_minexcl_value=None, datetime_maxexcl_value=None, anonymous_float_value=None, primative_integer=None, primative_float=None):
         self.original_tagname_ = None
         self.integer_range_1_value = integer_range_1_value
         self.validate_integer_range_1_st(self.integer_range_1_value)
@@ -831,6 +843,66 @@ class simpleOneType(GeneratedsSuper):
         self.validate_length_st(self.length_value)
         self.totalDigits_value = totalDigits_value
         self.validate_totalDigits_st(self.totalDigits_value)
+        if isinstance(date_minincl_value, BaseStrType_):
+            initvalue_ = datetime_.datetime.strptime(date_minincl_value, '%Y-%m-%d').date()
+        else:
+            initvalue_ = date_minincl_value
+        self.date_minincl_value = initvalue_
+        if isinstance(date_maxincl_value, BaseStrType_):
+            initvalue_ = datetime_.datetime.strptime(date_maxincl_value, '%Y-%m-%d').date()
+        else:
+            initvalue_ = date_maxincl_value
+        self.date_maxincl_value = initvalue_
+        if isinstance(date_minexcl_value, BaseStrType_):
+            initvalue_ = datetime_.datetime.strptime(date_minexcl_value, '%Y-%m-%d').date()
+        else:
+            initvalue_ = date_minexcl_value
+        self.date_minexcl_value = initvalue_
+        if isinstance(date_maxexcl_value, BaseStrType_):
+            initvalue_ = datetime_.datetime.strptime(date_maxexcl_value, '%Y-%m-%d').date()
+        else:
+            initvalue_ = date_maxexcl_value
+        self.date_maxexcl_value = initvalue_
+        if isinstance(time_minincl_value, BaseStrType_):
+            initvalue_ = datetime_.datetime.strptime(time_minincl_value, '%H:%M:%S').time()
+        else:
+            initvalue_ = time_minincl_value
+        self.time_minincl_value = initvalue_
+        if isinstance(time_maxincl_value, BaseStrType_):
+            initvalue_ = datetime_.datetime.strptime(time_maxincl_value, '%H:%M:%S').time()
+        else:
+            initvalue_ = time_maxincl_value
+        self.time_maxincl_value = initvalue_
+        if isinstance(time_minexcl_value, BaseStrType_):
+            initvalue_ = datetime_.datetime.strptime(time_minexcl_value, '%H:%M:%S').time()
+        else:
+            initvalue_ = time_minexcl_value
+        self.time_minexcl_value = initvalue_
+        if isinstance(time_maxexcl_value, BaseStrType_):
+            initvalue_ = datetime_.datetime.strptime(time_maxexcl_value, '%H:%M:%S').time()
+        else:
+            initvalue_ = time_maxexcl_value
+        self.time_maxexcl_value = initvalue_
+        if isinstance(datetime_minincl_value, BaseStrType_):
+            initvalue_ = datetime_.datetime.strptime(datetime_minincl_value, '%Y-%m-%dT%H:%M:%S')
+        else:
+            initvalue_ = datetime_minincl_value
+        self.datetime_minincl_value = initvalue_
+        if isinstance(datetime_maxincl_value, BaseStrType_):
+            initvalue_ = datetime_.datetime.strptime(datetime_maxincl_value, '%Y-%m-%dT%H:%M:%S')
+        else:
+            initvalue_ = datetime_maxincl_value
+        self.datetime_maxincl_value = initvalue_
+        if isinstance(datetime_minexcl_value, BaseStrType_):
+            initvalue_ = datetime_.datetime.strptime(datetime_minexcl_value, '%Y-%m-%dT%H:%M:%S')
+        else:
+            initvalue_ = datetime_minexcl_value
+        self.datetime_minexcl_value = initvalue_
+        if isinstance(datetime_maxexcl_value, BaseStrType_):
+            initvalue_ = datetime_.datetime.strptime(datetime_maxexcl_value, '%Y-%m-%dT%H:%M:%S')
+        else:
+            initvalue_ = datetime_maxexcl_value
+        self.datetime_maxexcl_value = initvalue_
         self.anonymous_float_value = anonymous_float_value
         self.validate_anonymous_float_valueType(self.anonymous_float_value)
         self.primative_integer = primative_integer
@@ -864,6 +936,30 @@ class simpleOneType(GeneratedsSuper):
     def set_length_value(self, length_value): self.length_value = length_value
     def get_totalDigits_value(self): return self.totalDigits_value
     def set_totalDigits_value(self, totalDigits_value): self.totalDigits_value = totalDigits_value
+    def get_date_minincl_value(self): return self.date_minincl_value
+    def set_date_minincl_value(self, date_minincl_value): self.date_minincl_value = date_minincl_value
+    def get_date_maxincl_value(self): return self.date_maxincl_value
+    def set_date_maxincl_value(self, date_maxincl_value): self.date_maxincl_value = date_maxincl_value
+    def get_date_minexcl_value(self): return self.date_minexcl_value
+    def set_date_minexcl_value(self, date_minexcl_value): self.date_minexcl_value = date_minexcl_value
+    def get_date_maxexcl_value(self): return self.date_maxexcl_value
+    def set_date_maxexcl_value(self, date_maxexcl_value): self.date_maxexcl_value = date_maxexcl_value
+    def get_time_minincl_value(self): return self.time_minincl_value
+    def set_time_minincl_value(self, time_minincl_value): self.time_minincl_value = time_minincl_value
+    def get_time_maxincl_value(self): return self.time_maxincl_value
+    def set_time_maxincl_value(self, time_maxincl_value): self.time_maxincl_value = time_maxincl_value
+    def get_time_minexcl_value(self): return self.time_minexcl_value
+    def set_time_minexcl_value(self, time_minexcl_value): self.time_minexcl_value = time_minexcl_value
+    def get_time_maxexcl_value(self): return self.time_maxexcl_value
+    def set_time_maxexcl_value(self, time_maxexcl_value): self.time_maxexcl_value = time_maxexcl_value
+    def get_datetime_minincl_value(self): return self.datetime_minincl_value
+    def set_datetime_minincl_value(self, datetime_minincl_value): self.datetime_minincl_value = datetime_minincl_value
+    def get_datetime_maxincl_value(self): return self.datetime_maxincl_value
+    def set_datetime_maxincl_value(self, datetime_maxincl_value): self.datetime_maxincl_value = datetime_maxincl_value
+    def get_datetime_minexcl_value(self): return self.datetime_minexcl_value
+    def set_datetime_minexcl_value(self, datetime_minexcl_value): self.datetime_minexcl_value = datetime_minexcl_value
+    def get_datetime_maxexcl_value(self): return self.datetime_maxexcl_value
+    def set_datetime_maxexcl_value(self, datetime_maxexcl_value): self.datetime_maxexcl_value = datetime_maxexcl_value
     def get_anonymous_float_value(self): return self.anonymous_float_value
     def set_anonymous_float_value(self, anonymous_float_value): self.anonymous_float_value = anonymous_float_value
     def get_primative_integer(self): return self.primative_integer
@@ -929,6 +1025,66 @@ class simpleOneType(GeneratedsSuper):
         if value is not None and Validate_simpletypes_:
             if len(str(value)) >= 15:
                 warnings_.warn('Value "%(value)s" does not match xsd maxInclusive restriction on totalDigits_st' % {"value" : value} )
+    def validate_date_minincl_st(self, value):
+        # Validate type date_minincl_st, a restriction on xs:date.
+        if value is not None and Validate_simpletypes_:
+            if value < self.gds_parse_date('2015-06-01'):
+                warnings_.warn('Value "%(value)s" does not match xsd minInclusive restriction on date_minincl_st' % {"value" : value} )
+    def validate_date_maxincl_st(self, value):
+        # Validate type date_maxincl_st, a restriction on xs:date.
+        if value is not None and Validate_simpletypes_:
+            if value > self.gds_parse_date('2015-10-31'):
+                warnings_.warn('Value "%(value)s" does not match xsd maxInclusive restriction on date_maxincl_st' % {"value" : value} )
+    def validate_date_minexcl_st(self, value):
+        # Validate type date_minexcl_st, a restriction on xs:date.
+        if value is not None and Validate_simpletypes_:
+            if value <= self.gds_parse_date('2015-06-01'):
+                warnings_.warn('Value "%(value)s" does not match xsd minExclusive restriction on date_minexcl_st' % {"value" : value} )
+    def validate_date_maxexcl_st(self, value):
+        # Validate type date_maxexcl_st, a restriction on xs:date.
+        if value is not None and Validate_simpletypes_:
+            if value >= self.gds_parse_date('2015-10-31'):
+                warnings_.warn('Value "%(value)s" does not match xsd maxExclusive restriction on date_maxexcl_st' % {"value" : value} )
+    def validate_time_minincl_st(self, value):
+        # Validate type time_minincl_st, a restriction on xs:time.
+        if value is not None and Validate_simpletypes_:
+            if value < self.gds_parse_time('14:20:10'):
+                warnings_.warn('Value "%(value)s" does not match xsd minInclusive restriction on time_minincl_st' % {"value" : value} )
+    def validate_time_maxincl_st(self, value):
+        # Validate type time_maxincl_st, a restriction on xs:time.
+        if value is not None and Validate_simpletypes_:
+            if value > self.gds_parse_time('16:20:10'):
+                warnings_.warn('Value "%(value)s" does not match xsd maxInclusive restriction on time_maxincl_st' % {"value" : value} )
+    def validate_time_minexcl_st(self, value):
+        # Validate type time_minexcl_st, a restriction on xs:time.
+        if value is not None and Validate_simpletypes_:
+            if value <= self.gds_parse_time('14:20:10'):
+                warnings_.warn('Value "%(value)s" does not match xsd minExclusive restriction on time_minexcl_st' % {"value" : value} )
+    def validate_time_maxexcl_st(self, value):
+        # Validate type time_maxexcl_st, a restriction on xs:time.
+        if value is not None and Validate_simpletypes_:
+            if value >= self.gds_parse_time('16:20:10'):
+                warnings_.warn('Value "%(value)s" does not match xsd maxExclusive restriction on time_maxexcl_st' % {"value" : value} )
+    def validate_datetime_minincl_st(self, value):
+        # Validate type datetime_minincl_st, a restriction on xs:dateTime.
+        if value is not None and Validate_simpletypes_:
+            if value < self.gds_parse_datetime('2015-06-01T14:20:10'):
+                warnings_.warn('Value "%(value)s" does not match xsd minInclusive restriction on datetime_minincl_st' % {"value" : value} )
+    def validate_datetime_maxincl_st(self, value):
+        # Validate type datetime_maxincl_st, a restriction on xs:dateTime.
+        if value is not None and Validate_simpletypes_:
+            if value > self.gds_parse_datetime('2015-10-31T16:20:10'):
+                warnings_.warn('Value "%(value)s" does not match xsd maxInclusive restriction on datetime_maxincl_st' % {"value" : value} )
+    def validate_datetime_minexcl_st(self, value):
+        # Validate type datetime_minexcl_st, a restriction on xs:dateTime.
+        if value is not None and Validate_simpletypes_:
+            if value <= self.gds_parse_datetime('2015-06-01T14:20:10'):
+                warnings_.warn('Value "%(value)s" does not match xsd minExclusive restriction on datetime_minexcl_st' % {"value" : value} )
+    def validate_datetime_maxexcl_st(self, value):
+        # Validate type datetime_maxexcl_st, a restriction on xs:dateTime.
+        if value is not None and Validate_simpletypes_:
+            if value >= self.gds_parse_datetime('2015-10-31T16:20:10'):
+                warnings_.warn('Value "%(value)s" does not match xsd maxExclusive restriction on datetime_maxexcl_st' % {"value" : value} )
     def validate_anonymous_float_valueType(self, value):
         # Validate type anonymous_float_valueType, a restriction on xs:float.
         if value is not None and Validate_simpletypes_:
@@ -947,6 +1103,18 @@ class simpleOneType(GeneratedsSuper):
             self.min_max_length_value is not None or
             self.length_value is not None or
             self.totalDigits_value is not None or
+            self.date_minincl_value is not None or
+            self.date_maxincl_value is not None or
+            self.date_minexcl_value is not None or
+            self.date_maxexcl_value is not None or
+            self.time_minincl_value is not None or
+            self.time_maxincl_value is not None or
+            self.time_minexcl_value is not None or
+            self.time_maxexcl_value is not None or
+            self.datetime_minincl_value is not None or
+            self.datetime_maxincl_value is not None or
+            self.datetime_minexcl_value is not None or
+            self.datetime_maxexcl_value is not None or
             self.anonymous_float_value is not None or
             self.primative_integer is not None or
             self.primative_float is not None
@@ -1006,6 +1174,42 @@ class simpleOneType(GeneratedsSuper):
         if self.totalDigits_value is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%stotalDigits_value>%s</%stotalDigits_value>%s' % (namespace_, self.gds_format_float(self.totalDigits_value, input_name='totalDigits_value'), namespace_, eol_))
+        if self.date_minincl_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sdate_minincl_value>%s</%sdate_minincl_value>%s' % (namespace_, self.gds_format_date(self.date_minincl_value, input_name='date_minincl_value'), namespace_, eol_))
+        if self.date_maxincl_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sdate_maxincl_value>%s</%sdate_maxincl_value>%s' % (namespace_, self.gds_format_date(self.date_maxincl_value, input_name='date_maxincl_value'), namespace_, eol_))
+        if self.date_minexcl_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sdate_minexcl_value>%s</%sdate_minexcl_value>%s' % (namespace_, self.gds_format_date(self.date_minexcl_value, input_name='date_minexcl_value'), namespace_, eol_))
+        if self.date_maxexcl_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sdate_maxexcl_value>%s</%sdate_maxexcl_value>%s' % (namespace_, self.gds_format_date(self.date_maxexcl_value, input_name='date_maxexcl_value'), namespace_, eol_))
+        if self.time_minincl_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%stime_minincl_value>%s</%stime_minincl_value>%s' % (namespace_, self.gds_format_time(self.time_minincl_value, input_name='time_minincl_value'), namespace_, eol_))
+        if self.time_maxincl_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%stime_maxincl_value>%s</%stime_maxincl_value>%s' % (namespace_, self.gds_format_time(self.time_maxincl_value, input_name='time_maxincl_value'), namespace_, eol_))
+        if self.time_minexcl_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%stime_minexcl_value>%s</%stime_minexcl_value>%s' % (namespace_, self.gds_format_time(self.time_minexcl_value, input_name='time_minexcl_value'), namespace_, eol_))
+        if self.time_maxexcl_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%stime_maxexcl_value>%s</%stime_maxexcl_value>%s' % (namespace_, self.gds_format_time(self.time_maxexcl_value, input_name='time_maxexcl_value'), namespace_, eol_))
+        if self.datetime_minincl_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sdatetime_minincl_value>%s</%sdatetime_minincl_value>%s' % (namespace_, self.gds_format_datetime(self.datetime_minincl_value, input_name='datetime_minincl_value'), namespace_, eol_))
+        if self.datetime_maxincl_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sdatetime_maxincl_value>%s</%sdatetime_maxincl_value>%s' % (namespace_, self.gds_format_datetime(self.datetime_maxincl_value, input_name='datetime_maxincl_value'), namespace_, eol_))
+        if self.datetime_minexcl_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sdatetime_minexcl_value>%s</%sdatetime_minexcl_value>%s' % (namespace_, self.gds_format_datetime(self.datetime_minexcl_value, input_name='datetime_minexcl_value'), namespace_, eol_))
+        if self.datetime_maxexcl_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sdatetime_maxexcl_value>%s</%sdatetime_maxexcl_value>%s' % (namespace_, self.gds_format_datetime(self.datetime_maxexcl_value, input_name='datetime_maxexcl_value'), namespace_, eol_))
         if self.anonymous_float_value is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sanonymous_float_value>%s</%sanonymous_float_value>%s' % (namespace_, self.gds_format_float(self.anonymous_float_value, input_name='anonymous_float_value'), namespace_, eol_))
@@ -1095,6 +1299,78 @@ class simpleOneType(GeneratedsSuper):
             self.totalDigits_value = fval_
             # validate type totalDigits_st
             self.validate_totalDigits_st(self.totalDigits_value)
+        elif nodeName_ == 'date_minincl_value':
+            sval_ = child_.text
+            dval_ = self.gds_parse_date(sval_)
+            self.date_minincl_value = dval_
+            # validate type date_minincl_st
+            self.validate_date_minincl_st(self.date_minincl_value)
+        elif nodeName_ == 'date_maxincl_value':
+            sval_ = child_.text
+            dval_ = self.gds_parse_date(sval_)
+            self.date_maxincl_value = dval_
+            # validate type date_maxincl_st
+            self.validate_date_maxincl_st(self.date_maxincl_value)
+        elif nodeName_ == 'date_minexcl_value':
+            sval_ = child_.text
+            dval_ = self.gds_parse_date(sval_)
+            self.date_minexcl_value = dval_
+            # validate type date_minexcl_st
+            self.validate_date_minexcl_st(self.date_minexcl_value)
+        elif nodeName_ == 'date_maxexcl_value':
+            sval_ = child_.text
+            dval_ = self.gds_parse_date(sval_)
+            self.date_maxexcl_value = dval_
+            # validate type date_maxexcl_st
+            self.validate_date_maxexcl_st(self.date_maxexcl_value)
+        elif nodeName_ == 'time_minincl_value':
+            sval_ = child_.text
+            dval_ = self.gds_parse_time(sval_)
+            self.time_minincl_value = dval_
+            # validate type time_minincl_st
+            self.validate_time_minincl_st(self.time_minincl_value)
+        elif nodeName_ == 'time_maxincl_value':
+            sval_ = child_.text
+            dval_ = self.gds_parse_time(sval_)
+            self.time_maxincl_value = dval_
+            # validate type time_maxincl_st
+            self.validate_time_maxincl_st(self.time_maxincl_value)
+        elif nodeName_ == 'time_minexcl_value':
+            sval_ = child_.text
+            dval_ = self.gds_parse_time(sval_)
+            self.time_minexcl_value = dval_
+            # validate type time_minexcl_st
+            self.validate_time_minexcl_st(self.time_minexcl_value)
+        elif nodeName_ == 'time_maxexcl_value':
+            sval_ = child_.text
+            dval_ = self.gds_parse_time(sval_)
+            self.time_maxexcl_value = dval_
+            # validate type time_maxexcl_st
+            self.validate_time_maxexcl_st(self.time_maxexcl_value)
+        elif nodeName_ == 'datetime_minincl_value':
+            sval_ = child_.text
+            dval_ = self.gds_parse_datetime(sval_)
+            self.datetime_minincl_value = dval_
+            # validate type datetime_minincl_st
+            self.validate_datetime_minincl_st(self.datetime_minincl_value)
+        elif nodeName_ == 'datetime_maxincl_value':
+            sval_ = child_.text
+            dval_ = self.gds_parse_datetime(sval_)
+            self.datetime_maxincl_value = dval_
+            # validate type datetime_maxincl_st
+            self.validate_datetime_maxincl_st(self.datetime_maxincl_value)
+        elif nodeName_ == 'datetime_minexcl_value':
+            sval_ = child_.text
+            dval_ = self.gds_parse_datetime(sval_)
+            self.datetime_minexcl_value = dval_
+            # validate type datetime_minexcl_st
+            self.validate_datetime_minexcl_st(self.datetime_minexcl_value)
+        elif nodeName_ == 'datetime_maxexcl_value':
+            sval_ = child_.text
+            dval_ = self.gds_parse_datetime(sval_)
+            self.datetime_maxexcl_value = dval_
+            # validate type datetime_maxexcl_st
+            self.validate_datetime_maxexcl_st(self.datetime_maxexcl_value)
         elif nodeName_ == 'anonymous_float_value':
             sval_ = child_.text
             try:
