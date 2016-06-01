@@ -63,7 +63,7 @@ def generate(options, schema_file_name):
         flag4 = exists(admin_file_name)
         if (flag1 or flag2 or flag3 or flag4):
             return
-    args = ('generateDS.py', '-f',
+    args = ('./generateDS.py', '-f',
         '-o', '%s' % (bindings_file_name, ),
         '--member-specs=list',
         schema_file_name,
