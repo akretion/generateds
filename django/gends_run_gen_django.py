@@ -13,9 +13,12 @@ Options:
                         generateds_definedsimpletypes.py
                         models.py
                         forms.py
+    -p, --path-to-generateDS-script=/path/to/generateDS.py
+                    Path to the generateDS.py script.
     -v, --verbose   Display additional information while running.
-Example:
+Examples:
     python gends_run_gen_django.py my_schema.xsd
+    python gends_run_gen_django.py -f -p ../generateDS.py my_other_schema.xsd
 
 """
 
@@ -63,21 +66,25 @@ def generate(options, schema_file_name):
         flag4 = exists(admin_file_name)
         if (flag1 or flag2 or flag3 or flag4):
             return
-    args = ('./generateDS.py', '-f',
+    args = (
+        options['path'],
+        '-f',
         '-o', '%s' % (bindings_file_name, ),
         '--member-specs=list',
         schema_file_name,
-        )
+    )
     if not run_cmd(options, args):
         return
-    args = ('./gends_extract_simple_types.py', '-f',
+    args = (
+        './gends_extract_simple_types.py', '-f',
         schema_file_name,
-        )
+    )
     if not run_cmd(options, args):
         return
-    args = ('./gends_generate_django.py', '-f',
+    args = (
+        './gends_generate_django.py', '-f',
         bindings_file_stem,
-        )
+    )
     if not run_cmd(options, args):
         return
 
@@ -113,23 +120,23 @@ def dbg_msg(options, msg):
         sys.stdout.write(msg)
 
 
-USAGE_TEXT = __doc__
-
 def usage():
-    sys.stderr.write(USAGE_TEXT)
-    sys.exit(1)
+    sys.exit(__doc__)
 
 
 def main():
     args = sys.argv[1:]
     try:
-        opts, args = getopt.getopt(args, 'hvf', ['help', 'verbose',
-            'force', ])
+        opts, args = getopt.getopt(args, 'hvfp:', [
+            'help', 'verbose',
+            'force', 'path-to-generateDS-script=',
+        ])
     except:
         usage()
     options = {}
     options['force'] = False
     options['verbose'] = False
+    options['path'] = './generateDS.py'
     for opt, val in opts:
         if opt in ('-h', '--help'):
             usage()
@@ -137,6 +144,12 @@ def main():
             options['force'] = True
         elif opt in ('-v', '--verbose'):
             options['verbose'] = True
+        elif opt in ('-p', '--path-to-generateDS-script'):
+            options['path'] = val
+    if not os.path.exists(options['path']):
+        sys.exit(
+            '\n*** error: Cannot find generateDS.py.  '
+            'Use "-p path" command line option.\n')
     if len(args) != 1:
         usage()
     schema_name = args[0]
@@ -146,5 +159,3 @@ def main():
 if __name__ == '__main__':
     #import pdb; pdb.set_trace()
     main()
-
-

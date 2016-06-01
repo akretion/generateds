@@ -2869,6 +2869,12 @@ Here is an overview of the process:
 
 The script ``gends_run_gen_django.py`` performs these three steps.
 
+In order to use the script ``gends_run_gen_django.py``, you may need
+to tell it where the ``generateDS.py`` script is located.  If so,
+use the "-p" command line option.  For more information, do::
+
+    python gends_run_gen_django.py --help
+
 
 How to generate Django models and forms
 .........................................
@@ -2911,6 +2917,10 @@ Now, follow these steps:
 4. Run the following::
 
        $ ./gends_run_gen_django.py myschema.xsd
+
+   There are additional command line options for
+   ``gends_run_gen_django.py``.  For help, run
+   ``$ python gends_run_gen_django.py --help``.
 
 5. Copy the generated files  ``models.py`` and ``forms.py`` to your
    Django application.
