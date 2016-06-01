@@ -21,7 +21,7 @@ Options:
     --one-file-per-xsd       Create a python module for each XSD processed.
     --output-directory="XXX" Used in conjunction with --one-file-per-xsd.
                              The directory where the modules will be created.
-    --module-suffix="xxx"    To be used in conjunction with --one-file-per-xsd.
+    --module-suffix="XXX"    To be used in conjunction with --one-file-per-xsd.
                              Append XXX to the end of each file created.
     --subclass-suffix="XXX"  Append XXX to the generated subclass names.
                              Default="Sub".
@@ -31,7 +31,7 @@ Options:
                              top level class; if YY omitted XX is the default.
                              class. Also see section "Recognizing the top level
                              element" in the documentation.
-    --super="XXX"            Super module name in generated in subclass
+    --super="XXX"            Super module name in generated subclass
                              module. Default="???"
     --validator-bodies=path  Path to a directory containing files that provide
                              bodies (implementations) of validator methods.
