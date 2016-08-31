@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+
+import difflib
+import filecmp
 import sys
 import os
 import subprocess
@@ -45,19 +48,8 @@ class GenTest(unittest.TestCase):
             '--super=out2_sup -u gends_user_methods tests/people.xsd'
         )
         stdout, stderr = self.execute(cmd, cwd='..')
-        self.failUnlessEqual(len(stdout), 0)
-        self.failUnlessEqual(len(stderr), 0)
-        cmd = 'diff out1_sup.py out2_sup.py'
-        result, err = self.execute(cmd)
-        #print 'len(result):', len(result)
-        # Ignore the differing lines containing the date/time.
-        #self.failUnless(len(result) < 130 and result.find('Generated') > -1)
-        self.check_result(result, err, ())
-        cmd = 'diff out1_sub.py out2_sub.py'
-        result, err = self.execute(cmd)
-        # Ignore the differing lines containing the date/time.
-        #self.failUnless(len(result) < 130 and result.find('Generated') > -1)
-        self.check_result(result, err, ())
+        self.compareFiles('out1_sup.py', 'out2_sup.py', ignore=())
+        self.compareFiles('out1_sub.py', 'out2_sub.py')
 
     def test_003_element_groups(self):
         cmdTempl = (
@@ -194,12 +186,8 @@ class GenTest(unittest.TestCase):
         t_ = 'anysimpletype'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, err = self.execute(cmd, cwd='..')
-        cmd = 'diff anysimpletype1_sup.py anysimpletype2_sup.py'
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff anysimpletype1_sub.py anysimpletype2_sub.py'
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('anysimpletype1_sup.py', 'anysimpletype2_sup.py', ('sys.stdout.write',))
+        self.compareFiles('anysimpletype1_sub.py', 'anysimpletype2_sub.py')
 
     def test_007_simpletype_memberspecs(self):
         cmdTempl = (
@@ -211,12 +199,8 @@ class GenTest(unittest.TestCase):
         t_ = 'simpletype_memberspecs'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_008_extensions(self):
         cmdTempl = (
@@ -228,12 +212,8 @@ class GenTest(unittest.TestCase):
         t_ = 'extensions'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_009_literal(self):
         import out2_sup
@@ -260,12 +240,8 @@ class GenTest(unittest.TestCase):
         t_ = 'simplecontent_restriction'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_011_annotations(self):
         cmdTempl = (
@@ -277,12 +253,8 @@ class GenTest(unittest.TestCase):
         t_ = 'annotations'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_012_abstract_type(self):
         cmdTempl = (
@@ -294,12 +266,8 @@ class GenTest(unittest.TestCase):
         t_ = 'abstract_type'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_013_people_procincl(self):
         cmdTempl = (
@@ -312,12 +280,8 @@ class GenTest(unittest.TestCase):
         t_ = 'people_procincl'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_014_ipo(self):
         cmdTempl = (
@@ -329,18 +293,12 @@ class GenTest(unittest.TestCase):
         t_ = 'ipo'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
         cmdTempl = 'python tests/%s2_sup.py tests/%s.xml > tests/%s2_out.xml'
         cmd = cmdTempl % (t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_out.xml %s2_out.xml' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_out.xml'.format(t_), '{}2_out.xml'.format(t_))
 
     def test_015_recursive_simpletype(self):
         cmdTempl = (
@@ -353,12 +311,8 @@ class GenTest(unittest.TestCase):
         t_ = 'recursive_simpletype'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_016_anywildcard(self):
         cmdTempl = (
@@ -371,12 +325,8 @@ class GenTest(unittest.TestCase):
         t_ = 'anywildcard'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_017_attr_groups(self):
         cmdTempl = (
@@ -389,12 +339,8 @@ class GenTest(unittest.TestCase):
         t_ = 'attr_groups'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_018_simpletypes_other(self):
         cmdTempl = (
@@ -407,12 +353,8 @@ class GenTest(unittest.TestCase):
         t_ = 'simpletypes_other'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_019_to_etree(self):
         cmdTempl = (
@@ -426,12 +368,8 @@ class GenTest(unittest.TestCase):
         t_ = 'to_etree'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
         import to_etree2_sup
         rootObj, rootElement, mapping, reverse_mapping = \
             to_etree2_sup.parseEtree('to_etree.xml')
@@ -441,9 +379,7 @@ class GenTest(unittest.TestCase):
         outfile = open('to_etree2.xml', 'w')
         outfile.write(content)
         outfile.close()
-        cmd = 'diff %s1.xml %s2.xml' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1.xml'.format(t_), '{}2.xml'.format(t_))
 
     def test_020_catalogtest(self):
         cmdTempl = (
@@ -457,12 +393,8 @@ class GenTest(unittest.TestCase):
         t_ = 'catalogtest'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_021_anonymous_type(self):
         cmdTempl = (
@@ -475,12 +407,8 @@ class GenTest(unittest.TestCase):
         t_ = 'anonymous_type'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_022_one_per(self):
         cmdTempl = (
@@ -494,22 +422,10 @@ class GenTest(unittest.TestCase):
         t_ = 'oneper'
         cmd = cmdTempl % (t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff OnePer/%sType00_1One.py OnePer/%sType00_2One.py' % (
-            t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff OnePer/%sType01_1One.py OnePer/%sType01_2One.py' % (
-            t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff OnePer/%sType02_1One.py OnePer/%sType02_2One.py' % (
-            t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff OnePer/%sType03_1One.py OnePer/%sType03_2One.py' % (
-            t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
+        self.compareFiles('OnePer{}{}Type00_1One.py'.format(os.sep, t_), 'OnePer{}{}Type00_2One.py'.format(os.sep, t_), ('sys.stdout.write',))
+        self.compareFiles('OnePer{}{}Type01_1One.py'.format(os.sep, t_), 'OnePer{}{}Type01_2One.py'.format(os.sep, t_), ('sys.stdout.write',))
+        self.compareFiles('OnePer{}{}Type02_1One.py'.format(os.sep, t_), 'OnePer{}{}Type02_2One.py'.format(os.sep, t_), ('sys.stdout.write',))
+        self.compareFiles('OnePer{}{}Type03_1One.py'.format(os.sep, t_), 'OnePer{}{}Type03_2One.py'.format(os.sep, t_), ('sys.stdout.write',))
 
     def test_023_mapcleanname(self):
         cmdTempl = (
@@ -522,12 +438,8 @@ class GenTest(unittest.TestCase):
         t_ = 'mapcleanname'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_024_prefix_classname(self):
         cmdTempl = (
@@ -541,18 +453,12 @@ class GenTest(unittest.TestCase):
         t_ = 'prefix_classname'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
         cmdTempl = 'python tests/%s2_sup.py tests/%s.xml > tests/%s2_out.xml'
         cmd = cmdTempl % (t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_out.xml %s2_out.xml' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_out.xml'.format(t_), '{}2_out.xml'.format(t_))
 
     def test_025_validate_simpletypes(self):
         cmdTempl = (
@@ -565,24 +471,16 @@ class GenTest(unittest.TestCase):
         t_ = 'validate_simpletypes'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
         cmdTempl = (
             'python tests/%s2_sup.py tests/%s.xml > tests/%s2_out.xml '
             '2> tests/%s2_warnings.txt'
         )
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_out.xml %s2_out.xml' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
-        cmd = 'diff %s1_warnings.txt %s2_warnings.txt' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_out.xml'.format(t_), '{}2_out.xml'.format(t_))
+        self.compareFiles('{}1_warnings.txt'.format(t_), '{}2_warnings.txt'.format(t_))
 
     def test_026_reference_simpletype(self):
         cmdTempl = (
@@ -595,12 +493,8 @@ class GenTest(unittest.TestCase):
         t_ = 'reference_simpletype'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_027_cdata(self):
         cmdTempl = (
@@ -614,12 +508,8 @@ class GenTest(unittest.TestCase):
         t_ = 'cdata'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
         import cdata2_sup as cdatalib
         cdatalist = cdatalib.cdataListType()
         cdata1 = cdatalib.cdataType()
@@ -633,9 +523,7 @@ class GenTest(unittest.TestCase):
         cdatalist.add_cdatalist(cdata2)
         with open('%s2.xml' % t_, 'w') as outfile:
             cdatalist.export(outfile, 0)
-        cmd = 'diff %s1.xml %s2.xml' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1.xml'.format(t_), '{}2.xml'.format(t_))
 
     def test_028_defaults_coverage(self):
         cmdTempl = (
@@ -648,12 +536,8 @@ class GenTest(unittest.TestCase):
         t_ = 'defaults_coverage'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
     def test_029_defaults_cases(self):
         cmdTempl = (
@@ -666,18 +550,12 @@ class GenTest(unittest.TestCase):
         t_ = 'defaults_cases'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
         cmdTempl = 'python tests/%s2_sup.py tests/%s.xml > tests/%s2_out.xml'
         cmd = cmdTempl % (t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_out.xml %s2_out.xml' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_out.xml'.format(t_), '{}2_out.xml'.format(t_))
 
     def test_030_nested_def(self):
         cmdTempl = (
@@ -697,18 +575,12 @@ class GenTest(unittest.TestCase):
             sys.stderr.write(stderr)
             sys.stderr.write('\n')
             raise RuntimeError('error while generating nested_def modules')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
         cmdTempl = 'python tests/%s2_sup.py tests/%s.xml > tests/%s2_out.xml'
         cmd = cmdTempl % (t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_out.xml %s2_out.xml' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_out.xml'.format(t_), '{}2_out.xml'.format(t_))
 
     #
     # Test enhancements to cleanupName function.
@@ -729,33 +601,16 @@ class GenTest(unittest.TestCase):
         t_ = 'cleanupname'
         cmd = cmdTempl % (t_, t_, t_, t_, )
         result, _ = self.execute(cmd, cwd='..')
-        cmd = 'diff %s1_sup.py %s2_sup.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ('sys.stdout.write',))
-        cmd = 'diff %s1_sub.py %s2_sub.py' % (t_, t_, )
-        result, err = self.execute(cmd)
-        self.check_result(result, err, ())
+        self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
 
-    def check_result(self, result, err, ignore_strings):
-        self.failUnlessEqual(len(result), 0)
-        self.failUnlessEqual(len(err), 0)
-        return True
-##         if len(err) > 0:
-##             return False
-##         lines = result.split('\n')
-##         len1 = len(lines)
-##         if len1 > 5:
-##             return False
-##         elif len1 > 1 and len1 <= 5:
-##             s1 = '\n'.join(lines[:4])
-##             found = False
-##             for s2 in ignore_strings:
-##                 if s1.find(s2) > -1:
-##                     found = True
-##                     break
-##             if not found:
-##                 return False
-##         return True
+    def compareFiles(self, left, right, ignore=None):
+        with open(left) as left_file:
+            with open(right) as right_file:
+                diffs = ''.join(difflib.unified_diff(left_file.readlines(), right_file.readlines()))
+
+        if diffs:
+            self.fail("Files differed:\n{}".format(diffs))
 
 
 # Make the test suite.
