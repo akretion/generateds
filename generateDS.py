@@ -153,6 +153,8 @@ import sys
 import os.path
 import time
 import getopt
+from pprint import pprint
+
 if sys.version_info.major == 2:
     import urllib2
     import StringIO
