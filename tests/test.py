@@ -8,6 +8,7 @@ import os
 import subprocess
 import getopt
 import unittest
+
 from lxml import etree
 
 import generateDS
@@ -99,6 +100,9 @@ class GenTest(unittest.TestCase):
 ['value 1 1', 'group1 1', 'group2 1', 'value 1 2']
 ['value 2 1', 'group1 2', 'group2 2', 'value 2 2']
 """)
+        # cleanup generated files
+        os.remove('{}_sup.py'.format(t_))
+        os.remove('{}_sub.py'.format(t_))
 
     def test_004_valueof(self):
         cmdTempl = (
@@ -148,6 +152,9 @@ class GenTest(unittest.TestCase):
         self.failUnlessEqual(result, """\
 ('child1', 'value1')
 """)
+        # cleanup generated files
+        os.remove('{}_sup.py'.format(t_))
+        os.remove('{}_sub.py'.format(t_))
 
     ns_for_import_xml1 = """\
 <root xmlns="http://a" xmlns:bl="http://blah">
@@ -249,6 +256,8 @@ class GenTest(unittest.TestCase):
         content2 = infile.read()
         infile.close()
         self.failUnlessEqual(content1, content2)
+        # cleanup generated files
+        os.remove('literal2.py')
 
     def test_010_simplecontent_restriction(self):
         cmdTempl = (
@@ -427,6 +436,10 @@ class GenTest(unittest.TestCase):
         outfile.write(content)
         outfile.close()
         self.compareFiles('{}1.xml'.format(t_), '{}2.xml'.format(t_))
+        # cleanup generated files
+        os.remove('{}2_sup.py'.format(t_))
+        os.remove('{}2_sub.py'.format(t_))
+        os.remove('{}2.xml'.format(t_))
 
     def test_020_catalogtest(self):
         cmdTempl = (
@@ -480,10 +493,10 @@ class GenTest(unittest.TestCase):
         self.compareFiles('OnePer{}{}Type02_1One.py'.format(os.sep, t_), 'OnePer{}{}Type02_2One.py'.format(os.sep, t_), ('sys.stdout.write',))
         self.compareFiles('OnePer{}{}Type03_1One.py'.format(os.sep, t_), 'OnePer{}{}Type03_2One.py'.format(os.sep, t_), ('sys.stdout.write',))
         # cleanup generated files
-        os.remove('OnePer{}{}Type00_2One.py'.format(os.sep, t_))
-        os.remove('OnePer{}{}Type01_2One.py'.format(os.sep, t_))
-        os.remove('OnePer{}{}Type02_2One.py'.format(os.sep, t_))
-        os.remove('OnePer{}{}Type03_2One.py'.format(os.sep, t_))
+        os.remove('OnePer{}{}Type00_1One.py'.format(os.sep, t_))
+        os.remove('OnePer{}{}Type01_1One.py'.format(os.sep, t_))
+        os.remove('OnePer{}{}Type02_1One.py'.format(os.sep, t_))
+        os.remove('OnePer{}{}Type03_1One.py'.format(os.sep, t_))
 
     def test_023_mapcleanname(self):
         cmdTempl = (
@@ -521,6 +534,8 @@ class GenTest(unittest.TestCase):
         self.executeClean(cmd, cwd='..')
         self.compareFiles('{}1_out.xml'.format(t_), '{}2_out.xml'.format(t_))
         # cleanup generated files
+        os.remove('{}2_sup.py'.format(t_))
+        os.remove('{}2_sub.py'.format(t_))
         os.remove('{}2_out.xml'.format(t_))
 
     def test_025_validate_simpletypes(self):
@@ -635,6 +650,10 @@ class GenTest(unittest.TestCase):
         cmd = cmdTempl % (t_, t_, t_, )
         self.executeClean(cmd, cwd='..')
         self.compareFiles('{}1_out.xml'.format(t_), '{}2_out.xml'.format(t_))
+        # cleanup generated files
+        os.remove('{}2_sup.py'.format(t_))
+        os.remove('{}2_sub.py'.format(t_))
+        os.remove('{}2_out.xml'.format(t_))
 
     def test_030_nested_def(self):
         cmdTempl = (
@@ -646,25 +665,17 @@ class GenTest(unittest.TestCase):
         )
         t_ = 'nested_def'
         cmd = cmdTempl % (t_, t_, t_, t_, )
-        env = os.environ
-        directory = os.getcwd()
-        env['PYTHONPATH'] = directory
-        result, stderr = self.executeClean(cmd, cwd='..', env=env)
-        if stderr:
-            sys.stderr.write(stderr)
-            sys.stderr.write('\n')
-            raise RuntimeError('error while generating nested_def modules')
+        self.executeClean(cmd, cwd='..')
         self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
         self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
-        # cleanup generated files
-        os.remove('{}2_sup.py'.format(t_))
-        os.remove('{}2_sub.py'.format(t_))
-
+        # Need to preserve generated files for next command, cleanup at end
         cmdTempl = 'python tests/%s2_sup.py tests/%s.xml > tests/%s2_out.xml'
         cmd = cmdTempl % (t_, t_, t_, )
         self.executeClean(cmd, cwd='..')
         self.compareFiles('{}1_out.xml'.format(t_), '{}2_out.xml'.format(t_))
         # cleanup generated files
+        os.remove('{}2_sup.py'.format(t_))
+        os.remove('{}2_sub.py'.format(t_))
         os.remove('{}2_out.xml'.format(t_))
 
 
@@ -686,9 +697,7 @@ class GenTest(unittest.TestCase):
         )
         t_ = 'cleanupname'
         cmd = cmdTempl % (t_, t_, t_, t_, )
-        testargs = []
-        with patch.object(sys, 'argv', testargs):
-            generateDS.main()
+        self.executeClean(cmd, cwd='..')
         self.compareFiles('{}1_sup.py'.format(t_), '{}2_sup.py'.format(t_), ('sys.stdout.write',))
         self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
         # cleanup generated files
