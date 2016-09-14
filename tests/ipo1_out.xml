@@ -1,11 +1,10 @@
 <?xml version="1.0" ?>
 <ipo:purchaseOrder xmlns:ipo="http://www.example.com/IPO" orderDate="1999-12-01">
-    <ipo:shipTo xmlns:ipo="http://www.example.com/IPO" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ipo:UKAddress" category="1-a" exportCode="1">
+    <ipo:shipTo xmlns:ipo="http://www.example.com/IPO" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ipo:UKAddress" exportCode="1">
         <ipo:name>Helen Zoe</ipo:name>
         <ipo:street>47 Eden Street</ipo:street>
         <ipo:city>Cambridge</ipo:city>
         <ipo:postcode>CB1 1JR</ipo:postcode>
-        <ipo:category>oneA</ipo:category>
     </ipo:shipTo>
     <ipo:billTo xmlns:ipo="http://www.example.com/IPO" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ipo:USAddress">
         <ipo:name>Robert Smith</ipo:name>

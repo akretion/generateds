@@ -141,6 +141,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.23a (09/14/2016)
+
+- Integrated Clayton Daley's fixes to the unit tests.  Thanks much,
+  Clayton.
+- Clayton's fixes to the unit tests uncovered several errors that
+  had been masked and hidden.  Fixed those errors, for example: (1)
+  eliminated generation of erroneous call to validation method; (2)
+  added catalog file.
+
 Version 2.22c (04/26/2016)
 
 - Fixes to generation of validation methods for xs:date, xs:time,
