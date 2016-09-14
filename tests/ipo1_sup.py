@@ -24,64 +24,33 @@
 #
 
 import sys
-import getopt
 import re as re_
 import base64
 import datetime as datetime_
-
-etree_ = None
-Verbose_import_ = False
-(
-    XMLParser_import_none, XMLParser_import_lxml,
-    XMLParser_import_elementtree
-) = range(3)
-XMLParser_import_library = None
+import warnings as warnings_
 try:
-    # lxml
     from lxml import etree as etree_
-    XMLParser_import_library = XMLParser_import_lxml
-    if Verbose_import_:
-        print("running with lxml.etree")
 except ImportError:
-    try:
-        # cElementTree from Python 2.5+
-        import xml.etree.cElementTree as etree_
-        XMLParser_import_library = XMLParser_import_elementtree
-        if Verbose_import_:
-            print("running with cElementTree on Python 2.5+")
-    except ImportError:
-        try:
-            # ElementTree from Python 2.5+
-            import xml.etree.ElementTree as etree_
-            XMLParser_import_library = XMLParser_import_elementtree
-            if Verbose_import_:
-                print("running with ElementTree on Python 2.5+")
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree_
-                XMLParser_import_library = XMLParser_import_elementtree
-                if Verbose_import_:
-                    print("running with cElementTree")
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree_
-                    XMLParser_import_library = XMLParser_import_elementtree
-                    if Verbose_import_:
-                        print("running with ElementTree")
-                except ImportError:
-                    raise ImportError(
-                        "Failed to import ElementTree from any known place")
+    from xml.etree import ElementTree as etree_
 
 
-def parsexml_(*args, **kwargs):
-    if (XMLParser_import_library == XMLParser_import_lxml and
-            'parser' not in kwargs):
+Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
+
+
+def parsexml_(infile, parser=None, **kwargs):
+    if parser is None:
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
-        kwargs['parser'] = etree_.ETCompatXMLParser()
-    doc = etree_.parse(*args, **kwargs)
+        try:
+            parser = etree_.ETCompatXMLParser()
+        except AttributeError:
+            # fallback to xml.etree
+            parser = etree_.XMLParser()
+    doc = etree_.parse(infile, parser=parser, **kwargs)
     return doc
 
 #
@@ -93,7 +62,7 @@ def parsexml_(*args, **kwargs):
 
 try:
     from generatedssuper import GeneratedsSuper
-except ImportError, exp:
+except ImportError as exp:
 
     class GeneratedsSuper(object):
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
@@ -109,64 +78,68 @@ except ImportError, exp:
                 return None
         def gds_format_string(self, input_data, input_name=''):
             return input_data
-        def gds_validate_string(self, input_data, node, input_name=''):
+        def gds_validate_string(self, input_data, node=None, input_name=''):
             if not input_data:
                 return ''
             else:
                 return input_data
         def gds_format_base64(self, input_data, input_name=''):
             return base64.b64encode(input_data)
-        def gds_validate_base64(self, input_data, node, input_name=''):
+        def gds_validate_base64(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer(self, input_data, input_name=''):
             return '%d' % input_data
-        def gds_validate_integer(self, input_data, node, input_name=''):
+        def gds_validate_integer(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_integer_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_integer_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
-                    float(value)
+                    int(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of integers')
-            return input_data
+            return values
         def gds_format_float(self, input_data, input_name=''):
             return ('%.15f' % input_data).rstrip('0')
-        def gds_validate_float(self, input_data, node, input_name=''):
+        def gds_validate_float(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_float_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_float_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_float_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of floats')
-            return input_data
+            return values
         def gds_format_double(self, input_data, input_name=''):
             return '%e' % input_data
-        def gds_validate_double(self, input_data, node, input_name=''):
+        def gds_validate_double(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_double_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_double_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_double_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of doubles')
-            return input_data
+            return values
         def gds_format_boolean(self, input_data, input_name=''):
             return ('%s' % input_data).lower()
-        def gds_validate_boolean(self, input_data, node, input_name=''):
+        def gds_validate_boolean(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_boolean_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_boolean_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 if value not in ('true', '1', 'false', '0', ):
@@ -174,8 +147,8 @@ except ImportError, exp:
                         node,
                         'Requires sequence of booleans '
                         '("true", "1", "false", "0")')
-            return input_data
-        def gds_validate_datetime(self, input_data, node, input_name=''):
+            return values
+        def gds_validate_datetime(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -240,7 +213,7 @@ except ImportError, exp:
                     input_data, '%Y-%m-%dT%H:%M:%S')
             dt = dt.replace(tzinfo=tz)
             return dt
-        def gds_validate_date(self, input_data, node, input_name=''):
+        def gds_validate_date(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
             _svalue = '%04d-%02d-%02d' % (
@@ -263,7 +236,8 @@ except ImportError, exp:
                                 _svalue += '+'
                             hours = total_seconds // 3600
                             minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            _svalue += '{0:02d}:{1:02d}'.format(
+                                hours, minutes)
             except AttributeError:
                 pass
             return _svalue
@@ -286,7 +260,7 @@ except ImportError, exp:
             dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
             dt = dt.replace(tzinfo=tz)
             return dt.date()
-        def gds_validate_time(self, input_data, node, input_name=''):
+        def gds_validate_time(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_time(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -318,6 +292,21 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
+        def gds_validate_simple_patterns(self, patterns, target):
+            # pat is a list of lists of strings/patterns.  We should:
+            # - AND the outer elements
+            # - OR the inner elements
+            found1 = True
+            for patterns1 in patterns:
+                found2 = False
+                for patterns2 in patterns1:
+                    if re_.search(patterns2, target) is not None:
+                        found2 = True
+                        break
+                if not found2:
+                    found1 = False
+                    break
+            return found1
         @classmethod
         def gds_parse_time(cls, input_data):
             tz = None
@@ -373,6 +362,20 @@ except ImportError, exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
+
+    def getSubclassFromModule_(module, class_):
+        '''Get the subclass of a class from a specific module.'''
+        name = class_.__name__ + 'Sub'
+        if hasattr(module, name):
+            return getattr(module, name)
+        else:
+            return None
 
 
 #
@@ -398,6 +401,11 @@ ExternalEncoding = 'ascii'
 Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
+CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
+
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
 
 #
 # Support/utility functions.
@@ -411,19 +419,32 @@ def showIndent(outfile, level, pretty_print=True):
 
 
 def quote_xml(inStr):
+    "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%s' % inStr)
-    s1 = s1.replace('&', '&amp;')
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
+    s2 = ''
+    pos = 0
+    matchobjects = CDATA_pattern_.finditer(s1)
+    for mo in matchobjects:
+        s3 = s1[pos:mo.start()]
+        s2 += quote_xml_aux(s3)
+        s2 += s1[mo.start():mo.end()]
+        pos = mo.end()
+    s3 = s1[pos:]
+    s2 += quote_xml_aux(s3)
+    return s2
+
+
+def quote_xml_aux(inStr):
+    s1 = inStr.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     return s1
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -483,11 +504,7 @@ class GDSParseError(Exception):
 
 
 def raise_parse_error(node, msg):
-    if XMLParser_import_library == XMLParser_import_lxml:
-        msg = '%s (element %s/line %d)' % (
-            msg, node.tag, node.sourceline, )
-    else:
-        msg = '%s (element %s)' % (msg, node.tag, )
+    msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline, )
     raise GDSParseError(msg)
 
 
@@ -644,7 +661,7 @@ class PurchaseOrderType(GeneratedsSuper):
     superclass = None
     def __init__(self, orderDate=None, shipTo=None, billTo=None, comment=None, items=None):
         self.original_tagname_ = None
-        if isinstance(orderDate, basestring):
+        if isinstance(orderDate, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(orderDate, '%Y-%m-%d').date()
         else:
             initvalue_ = orderDate
@@ -654,6 +671,11 @@ class PurchaseOrderType(GeneratedsSuper):
         self.comment = comment
         self.items = items
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, PurchaseOrderType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if PurchaseOrderType.subclass:
             return PurchaseOrderType.subclass(*args_, **kwargs_)
         else:
@@ -712,42 +734,9 @@ class PurchaseOrderType(GeneratedsSuper):
             self.billTo.export(outfile, level, namespace_, name_='billTo', pretty_print=pretty_print)
         if self.comment is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scomment>%s</%scomment>%s' % (namespace_, self.gds_format_string(quote_xml(self.comment).encode(ExternalEncoding), input_name='comment'), namespace_, eol_))
+            outfile.write('<%scomment>%s</%scomment>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.comment), input_name='comment')), namespace_, eol_))
         if self.items is not None:
             self.items.export(outfile, level, namespace_, name_='items', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='PurchaseOrderType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.orderDate is not None and 'orderDate' not in already_processed:
-            already_processed.add('orderDate')
-            showIndent(outfile, level)
-            outfile.write('orderDate=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.orderDate, input_name='orderDate'))
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.shipTo is not None:
-            showIndent(outfile, level)
-            outfile.write('shipTo=model_.Address(\n')
-            self.shipTo.exportLiteral(outfile, level, name_='shipTo')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.billTo is not None:
-            showIndent(outfile, level)
-            outfile.write('billTo=model_.Address(\n')
-            self.billTo.exportLiteral(outfile, level, name_='billTo')
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.comment is not None:
-            showIndent(outfile, level)
-            outfile.write('comment=%s,\n' % quote_python(self.comment).encode(ExternalEncoding))
-        if self.items is not None:
-            showIndent(outfile, level)
-            outfile.write('items=model_.Items(\n')
-            self.items.exportLiteral(outfile, level, name_='items')
-            showIndent(outfile, level)
-            outfile.write('),\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -761,7 +750,7 @@ class PurchaseOrderType(GeneratedsSuper):
             already_processed.add('orderDate')
             try:
                 self.orderDate = self.gds_parse_date(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad date attribute (orderDate): %s' % exp)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'shipTo':
@@ -801,6 +790,11 @@ class Items(GeneratedsSuper):
         else:
             self.item = item
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, Items)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if Items.subclass:
             return Items.subclass(*args_, **kwargs_)
         else:
@@ -845,27 +839,6 @@ class Items(GeneratedsSuper):
             eol_ = ''
         for item_ in self.item:
             item_.export(outfile, level, namespace_, name_='item', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='Items'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('item=[\n')
-        level += 1
-        for item_ in self.item:
-            showIndent(outfile, level)
-            outfile.write('model_.item(\n')
-            item_.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -902,12 +875,17 @@ class item(GeneratedsSuper):
         self.quantity = quantity
         self.USPrice = USPrice
         self.comment = comment
-        if isinstance(shipDate, basestring):
+        if isinstance(shipDate, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(shipDate, '%Y-%m-%d').date()
         else:
             initvalue_ = shipDate
         self.shipDate = initvalue_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, item)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if item.subclass:
             return item.subclass(*args_, **kwargs_)
         else:
@@ -965,7 +943,7 @@ class item(GeneratedsSuper):
             eol_ = ''
         if self.productName is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sproductName>%s</%sproductName>%s' % (namespace_, self.gds_format_string(quote_xml(self.productName).encode(ExternalEncoding), input_name='productName'), namespace_, eol_))
+            outfile.write('<%sproductName>%s</%sproductName>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.productName), input_name='productName')), namespace_, eol_))
         if self.quantity is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%squantity>%s</%squantity>%s' % (namespace_, self.gds_format_integer(self.quantity, input_name='quantity'), namespace_, eol_))
@@ -974,37 +952,10 @@ class item(GeneratedsSuper):
             outfile.write('<%sUSPrice>%s</%sUSPrice>%s' % (namespace_, self.gds_format_float(self.USPrice, input_name='USPrice'), namespace_, eol_))
         if self.comment is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scomment>%s</%scomment>%s' % (namespace_, self.gds_format_string(quote_xml(self.comment).encode(ExternalEncoding), input_name='comment'), namespace_, eol_))
+            outfile.write('<%scomment>%s</%scomment>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.comment), input_name='comment')), namespace_, eol_))
         if self.shipDate is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sshipDate>%s</%sshipDate>%s' % (namespace_, self.gds_format_date(self.shipDate, input_name='shipDate'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='item'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.partNum is not None and 'partNum' not in already_processed:
-            already_processed.add('partNum')
-            showIndent(outfile, level)
-            outfile.write('partNum=%s,\n' % (self.partNum,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.productName is not None:
-            showIndent(outfile, level)
-            outfile.write('productName=%s,\n' % quote_python(self.productName).encode(ExternalEncoding))
-        if self.quantity is not None:
-            showIndent(outfile, level)
-            outfile.write('quantity=%d,\n' % self.quantity)
-        if self.USPrice is not None:
-            showIndent(outfile, level)
-            outfile.write('USPrice=%f,\n' % self.USPrice)
-        if self.comment is not None:
-            showIndent(outfile, level)
-            outfile.write('comment=%s,\n' % quote_python(self.comment).encode(ExternalEncoding))
-        if self.shipDate is not None:
-            showIndent(outfile, level)
-            outfile.write('shipDate=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.shipDate, input_name='shipDate'))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1026,7 +977,7 @@ class item(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             if ival_ <= 0:
                 raise_parse_error(child_, 'requires positiveInteger')
@@ -1036,7 +987,7 @@ class item(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'USPrice')
             self.USPrice = fval_
@@ -1060,6 +1011,11 @@ class quantity(GeneratedsSuper):
         self.original_tagname_ = None
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, quantity)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if quantity.subclass:
             return quantity.subclass(*args_, **kwargs_)
         else:
@@ -1093,16 +1049,6 @@ class quantity(GeneratedsSuper):
         pass
     def exportChildren(self, outfile, level, namespace_='ipo:', name_='quantity', fromsubclass_=False, pretty_print=True):
         pass
-    def exportLiteral(self, outfile, level, name_='quantity'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        pass
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1132,6 +1078,11 @@ class Address(GeneratedsSuper):
         self.city = city
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, Address)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if Address.subclass:
             return Address.subclass(*args_, **kwargs_)
         else:
@@ -1185,31 +1136,13 @@ class Address(GeneratedsSuper):
             eol_ = ''
         if self.name is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sname>%s</%sname>%s' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_, eol_))
+            outfile.write('<%sname>%s</%sname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.name), input_name='name')), namespace_, eol_))
         if self.street is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstreet>%s</%sstreet>%s' % (namespace_, self.gds_format_string(quote_xml(self.street).encode(ExternalEncoding), input_name='street'), namespace_, eol_))
+            outfile.write('<%sstreet>%s</%sstreet>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.street), input_name='street')), namespace_, eol_))
         if self.city is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scity>%s</%scity>%s' % (namespace_, self.gds_format_string(quote_xml(self.city).encode(ExternalEncoding), input_name='city'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='Address'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.name is not None:
-            showIndent(outfile, level)
-            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
-        if self.street is not None:
-            showIndent(outfile, level)
-            outfile.write('street=%s,\n' % quote_python(self.street).encode(ExternalEncoding))
-        if self.city is not None:
-            showIndent(outfile, level)
-            outfile.write('city=%s,\n' % quote_python(self.city).encode(ExternalEncoding))
+            outfile.write('<%scity>%s</%scity>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.city), input_name='city')), namespace_, eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1249,8 +1182,14 @@ class USAddress(Address):
         self.original_tagname_ = None
         super(USAddress, self).__init__(name, street, city, )
         self.state = state
+        self.validate_USState(self.state)
         self.zip = zip
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, USAddress)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if USAddress.subclass:
             return USAddress.subclass(*args_, **kwargs_)
         else:
@@ -1262,7 +1201,16 @@ class USAddress(Address):
     def set_zip(self, zip): self.zip = zip
     def validate_USState(self, value):
         # Validate type USState, a restriction on string.
-        pass
+        if value is not None and Validate_simpletypes_:
+            value = str(value)
+            enumerations = ['AK', 'AL', 'AR', 'PA']
+            enumeration_respectee = False
+            for enum in enumerations:
+                if value == enum:
+                    enumeration_respectee = True
+                    break
+            if not enumeration_respectee:
+                warnings_.warn('Value "%(value)s" does not match xsd enumeration restriction on USState' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
             self.state is not None or
@@ -1300,26 +1248,10 @@ class USAddress(Address):
             eol_ = ''
         if self.state is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstate>%s</%sstate>%s' % (namespace_, self.gds_format_string(quote_xml(self.state).encode(ExternalEncoding), input_name='state'), namespace_, eol_))
+            outfile.write('<%sstate>%s</%sstate>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.state), input_name='state')), namespace_, eol_))
         if self.zip is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%szip>%s</%szip>%s' % (namespace_, self.gds_format_integer(self.zip, input_name='zip'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='USAddress'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(USAddress, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(USAddress, self).exportLiteralChildren(outfile, level, name_)
-        if self.state is not None:
-            showIndent(outfile, level)
-            outfile.write('state=%s,\n' % quote_python(self.state).encode(ExternalEncoding))
-        if self.zip is not None:
-            showIndent(outfile, level)
-            outfile.write('zip=%d,\n' % self.zip)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1334,12 +1266,13 @@ class USAddress(Address):
             state_ = child_.text
             state_ = self.gds_validate_string(state_, node, 'state')
             self.state = state_
-            self.validate_USState(self.state)    # validate type USState
+            # validate type USState
+            self.validate_USState(self.state)
         elif nodeName_ == 'zip':
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             if ival_ <= 0:
                 raise_parse_error(child_, 'requires positiveInteger')
@@ -1351,21 +1284,22 @@ class USAddress(Address):
 
 class UKAddress(Address):
     member_data_items_ = [
-        MemberSpec_('category_attr', 'xs:string', 0),
         MemberSpec_('exportCode', 'positiveInteger', 0),
-        MemberSpec_('postcode', ['UKPostcode', 'string'], 0),
-        MemberSpec_('category', 'string', 0),
+        MemberSpec_('postcode', 'string', 0),
     ]
     subclass = None
     superclass = Address
-    def __init__(self, name=None, street=None, city=None, category_attr=None, exportCode=None, postcode=None, category=None):
+    def __init__(self, name=None, street=None, city=None, exportCode=None, postcode=None):
         self.original_tagname_ = None
         super(UKAddress, self).__init__(name, street, city, )
-        self.category_attr = _cast(None, category_attr)
         self.exportCode = _cast(int, exportCode)
         self.postcode = postcode
-        self.category = category
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, UKAddress)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if UKAddress.subclass:
             return UKAddress.subclass(*args_, **kwargs_)
         else:
@@ -1373,19 +1307,11 @@ class UKAddress(Address):
     factory = staticmethod(factory)
     def get_postcode(self): return self.postcode
     def set_postcode(self, postcode): self.postcode = postcode
-    def get_category(self): return self.category
-    def set_category(self, category): self.category = category
-    def get_category_attr(self): return self.category_attr
-    def set_category_attr(self, category_attr): self.category_attr = category_attr
     def get_exportCode(self): return self.exportCode
     def set_exportCode(self, exportCode): self.exportCode = exportCode
-    def validate_UKPostcode(self, value):
-        # Validate type UKPostcode, a restriction on string.
-        pass
     def hasContent_(self):
         if (
             self.postcode is not None or
-            self.category is not None or
             super(UKAddress, self).hasContent_()
         ):
             return True
@@ -1411,9 +1337,6 @@ class UKAddress(Address):
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='ipo:', name_='UKAddress'):
         super(UKAddress, self).exportAttributes(outfile, level, already_processed, namespace_, name_='UKAddress')
-        if self.category_attr is not None and 'category_attr' not in already_processed:
-            already_processed.add('category_attr')
-            outfile.write(' category=%s' % (quote_attrib(self.category_attr), ))
         if self.exportCode is not None and 'exportCode' not in already_processed:
             already_processed.add('exportCode')
             outfile.write(' exportCode="%s"' % self.gds_format_integer(self.exportCode, input_name='exportCode'))
@@ -1425,34 +1348,7 @@ class UKAddress(Address):
             eol_ = ''
         if self.postcode is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%spostcode>%s</%spostcode>%s' % (namespace_, self.gds_format_string(quote_xml(self.postcode).encode(ExternalEncoding), input_name='postcode'), namespace_, eol_))
-        if self.category is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%scategory>%s</%scategory>%s' % (namespace_, self.gds_format_string(quote_xml(self.category).encode(ExternalEncoding), input_name='category'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='UKAddress'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.category_attr is not None and 'category_attr' not in already_processed:
-            already_processed.add('category_attr')
-            showIndent(outfile, level)
-            outfile.write('category_attr=%s,\n' % (self.category_attr,))
-        if self.exportCode is not None and 'exportCode' not in already_processed:
-            already_processed.add('exportCode')
-            showIndent(outfile, level)
-            outfile.write('exportCode=%d,\n' % (self.exportCode,))
-        super(UKAddress, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(UKAddress, self).exportLiteralChildren(outfile, level, name_)
-        if self.postcode is not None:
-            showIndent(outfile, level)
-            outfile.write('postcode=%s,\n' % quote_python(self.postcode).encode(ExternalEncoding))
-        if self.category is not None:
-            showIndent(outfile, level)
-            outfile.write('category=%s,\n' % quote_python(self.category).encode(ExternalEncoding))
+            outfile.write('<%spostcode>%s</%spostcode>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.postcode), input_name='postcode')), namespace_, eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1461,16 +1357,12 @@ class UKAddress(Address):
             self.buildChildren(child, node, nodeName_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('category', node)
-        if value is not None and 'category_attr' not in already_processed:
-            already_processed.add('category_attr')
-            self.category_attr = value
         value = find_attr_value_('exportCode', node)
         if value is not None and 'exportCode' not in already_processed:
             already_processed.add('exportCode')
             try:
                 self.exportCode = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.exportCode <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
@@ -1480,20 +1372,15 @@ class UKAddress(Address):
             postcode_ = child_.text
             postcode_ = self.gds_validate_string(postcode_, node, 'postcode')
             self.postcode = postcode_
-            self.validate_UKPostcode(self.postcode)    # validate type UKPostcode
-        elif nodeName_ == 'category':
-            category_ = child_.text
-            category_ = self.gds_validate_string(category_, node, 'category')
-            self.category = category_
         super(UKAddress, self).buildChildren(child_, node, nodeName_, True)
 # end class UKAddress
 
 
 GDSClassesMapping = {
+    'billTo': Address,
     'items': Items,
     'purchaseOrder': PurchaseOrderType,
     'shipTo': Address,
-    'billTo': Address,
 }
 
 
@@ -1503,7 +1390,7 @@ Usage: python <Parser>.py [ -s ] <in_xml_file>
 
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 
@@ -1516,7 +1403,8 @@ def get_root_tag(node):
 
 
 def parse(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -1536,7 +1424,8 @@ def parse(inFileName, silence=False):
 
 
 def parseEtree(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -1560,7 +1449,8 @@ def parseEtree(inFileName, silence=False):
 
 def parseString(inString, silence=False):
     from StringIO import StringIO
-    doc = parsexml_(StringIO(inString))
+    parser = None
+    doc = parsexml_(StringIO(inString), parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -1579,7 +1469,8 @@ def parseString(inString, silence=False):
 
 
 def parseLiteral(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:

@@ -67,18 +67,18 @@ supermod.classBType.subclass = classBTypeSub
 # end class classBTypeSub
 
 
-class inner_001Sub(supermod.inner_001):
+class innerTypeSub(supermod.innerType):
     def __init__(self, attrA1=None, attrA2=None):
-        super(inner_001Sub, self).__init__(attrA1, attrA2, )
-supermod.inner_001.subclass = inner_001Sub
-# end class inner_001Sub
+        super(innerTypeSub, self).__init__(attrA1, attrA2, )
+supermod.innerType.subclass = innerTypeSub
+# end class innerTypeSub
 
 
-class inner_002Sub(supermod.inner_002):
+class innerType1Sub(supermod.innerType1):
     def __init__(self, attrB1=None, attrB2=None):
-        super(inner_002Sub, self).__init__(attrB1, attrB2, )
-supermod.inner_002.subclass = inner_002Sub
-# end class inner_002Sub
+        super(innerType1Sub, self).__init__(attrB1, attrB2, )
+supermod.innerType1.subclass = innerType1Sub
+# end class innerType1Sub
 
 
 def get_root_tag(node):

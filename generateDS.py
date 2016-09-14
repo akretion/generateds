@@ -4207,9 +4207,10 @@ def generateCtor(wrt, prefix, element):
                     wrt('        self.%s = %s\n' % (name, mbrname))
                     # validate if it is a simple type.  Validation shows
                     # a warning so no fear that an error would rise.
-                    if (child.getSimpleType()):
+                    typeName = child.getSimpleType()
+                    if typeName and typeName in SimpleTypeDict:
                         wrt('        self.validate_%s(self.%s)\n' % (
-                            child.getSimpleType(), name))
+                            cleanupName(typeName), mapName(name)))
     eltype = element.getType()
     if (element.getSimpleContent() or
             element.isMixed() or
