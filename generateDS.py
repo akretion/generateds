@@ -204,7 +204,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.23a'
+VERSION = '2.23b'
 ##VERSION##
 
 if sys.version_info.major == 2:
@@ -3590,8 +3590,11 @@ def generateBuildStandard_1(
         else:
             wrt("            %s_ = child_.text\n" % name)
         if childType == TokenType:
-            wrt('            %s_ = re_.sub('
+            wrt('            if %s_:\n' % (name, ))
+            wrt('                %s_ = re_.sub('
                 'String_cleanup_pat_, " ", %s_).strip()\n' % (name, name))
+            wrt('            else:\n')
+            wrt('                %s_ = ""\n' % (name, ))
         if child.isListType():
             if (childType in IntegerType or
                     childType == PositiveIntegerType or
