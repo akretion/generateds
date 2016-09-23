@@ -98,6 +98,29 @@ include tests/to_etree.xsd tests/to_etree.xml
 include tests/to_etree1.xml tests/to_etree2.xml
 include tests/to_etree1_sub.py tests/to_etree1_sup.py
 include tests/to_etree2_sub.py tests/to_etree2_sup.py
+include tests/defaults_cases1_out.xml  tests/defaults_cases.xsd
+include tests/defaults_cases1_sub.py   tests/defaults_coverage1_sub.py
+include tests/defaults_cases1_sup.py   tests/defaults_coverage1_sup.py
+include tests/defaults_cases.xml       tests/defaults_coverage.xsd
+include tests/address.xsd
+include tests/cdata1_sub.py tests/cdata1_sup.py
+include tests/cdata1.xml tests/cdata.xsd
+include tests/cleanupname1_sub.py tests/cleanupname1_sup.py
+include tests/cleanupname.xsd
+include tests/groups.xml tests/groups.xsd
+include tests/mapcleanname1_sub.py tests/mapcleanname1_sup.py
+include tests/mapcleanname.xsd
+include tests/nested_def1_out.xml
+include tests/nested_def.xml tests/nested_def.xsd
+include tests/nested_def1_sub.py tests/nested_def1_sup.py
+include tests/prefix_classname1_out.xml
+include tests/prefix_classname1_sub.py tests/prefix_classname1_sup.py
+include tests/prefix_classname.xml tests/prefix_classname.xsd
+include tests/validate_simpletypes1_out.xml
+include tests/validate_simpletypes1_sub.py tests/validate_simpletypes1_sup.py
+include tests/validate_simpletypes1_warnings.txt
+include tests/validate_simpletypes2_sub.py tests/validate_simpletypes2_sup.py
+include tests/validate_simpletypes.xml tests/validate_simpletypes.xsd
 
 include gui/generateds_gui.py
 include gui/generateds_gui.glade
