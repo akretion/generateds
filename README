@@ -141,6 +141,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.23c (10/05/2016)
+
+- Added entry_points to setup.py so that distutils will generate
+  executable scripts for executable .py files (for example,
+  generateDS.py and process_includes.py).  Thanks to Michael Jenny
+  for suggesting this and for showing the way to do it.
+
 Version 2.23b (09/26/2016)
 
 - Added missing unit test files to build (MANIFEST.in).

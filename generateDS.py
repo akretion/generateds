@@ -204,7 +204,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.23b'
+VERSION = '2.23c'
 ##VERSION##
 
 if sys.version_info.major == 2:
