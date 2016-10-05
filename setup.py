@@ -7,7 +7,7 @@ setup(name="generateDS",
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-    version="2.23b",
+    version="2.23c",
 ##VERSION##
     author="Dave Kuhlman",
     author_email="dkuhlman@davekuhlman.org",
@@ -48,5 +48,15 @@ XML document.""",
         "django/gends_extract_simple_types.py",
         "django/gends_generate_django.py",
         ],
+    entry_points = {
+        "console_scripts": [
+            "generateDS = generateDS:main",
+            "process_includes = process_includes:main",
+            "generateds_gui = generateds_gui:main",
+            "gends_run_gen_django = gends_run_gen_django:main",
+            "gends_extract_simple_types = gends_extract_simple_types:main",
+            "gends_generate_django = gends_generate_django:main",
+        ],
+      }
     )
 
