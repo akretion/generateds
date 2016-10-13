@@ -548,7 +548,8 @@ class MixedContainer:
         elif self.category == MixedContainer.CategorySimple:
             self.exportSimple(outfile, level, name)
         else:    # category == MixedContainer.CategoryComplex
-            self.value.export(outfile, level, namespace, name, pretty_print)
+            self.value.export(
+                outfile, level, namespace, name, pretty_print=pretty_print)
     def exportSimple(self, outfile, level, name):
         if self.content_type == MixedContainer.TypeString:
             outfile.write('<%s>%s</%s>' % (
@@ -1511,7 +1512,10 @@ class programmerType(personType):
             self.eldatetime1 = dval_
         elif nodeName_ == 'eltoken':
             eltoken_ = child_.text
-            eltoken_ = re_.sub(String_cleanup_pat_, " ", eltoken_).strip()
+            if eltoken_:
+                eltoken_ = re_.sub(String_cleanup_pat_, " ", eltoken_).strip()
+            else:
+                eltoken_ = ""
             eltoken_ = self.gds_validate_string(eltoken_, node, 'eltoken')
             self.eltoken = eltoken_
         elif nodeName_ == 'elshort':
