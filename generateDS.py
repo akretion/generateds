@@ -98,6 +98,10 @@ Options:
                              search pattern and second is a replacement.
                              Example: "[('[-:.]', '_'), ('^__', 'Special')]"
                              Default: "[('[-:.]', '_')]"
+    --remove-duplicate-child-elements
+                             If a child element with the same name is
+                             defined multiple times under a parent, then
+                             remove it and issue a warning.
     -q, --no-questions       Do not ask questions, for example,
                              force overwrite.
     --session=mysession.session
@@ -153,7 +157,6 @@ import sys
 import os.path
 import time
 import getopt
-from pprint import pprint
 
 if sys.version_info.major == 2:
     import urllib2
@@ -276,6 +279,7 @@ SingleFileOutput = True
 OutputDirectory = None
 ModuleSuffix = ""
 PreserveCdataTags = False
+RemoveDuplicateChildElements = False
 
 SchemaToPythonTypeMap = {}
 
@@ -918,7 +922,12 @@ class XschemaElement(XschemaElementBase):
         self.expandGroupReferences_tree(visited)
         self.collect_element_dict()
         self.annotate_find_type()
-        self.annotate_tree()
+        element_dict = {}
+        to_be_removed = []
+        self.annotate_tree(
+            element_dict=element_dict,
+            to_be_removed=to_be_removed)
+        self.remove_children(to_be_removed)
         self.fix_dup_names()
         self.coerce_attr_types()
         self.checkMixedBases()
@@ -1153,7 +1162,19 @@ class XschemaElement(XschemaElementBase):
         for child in self.children:
             child.annotate_find_type()
 
-    def annotate_tree(self):
+    def annotate_tree(self, element_dict, to_be_removed):
+        if RemoveDuplicateChildElements:
+            name = self.getName()
+            if name in element_dict:
+                # If we've already seen this element (name), make it a
+                # list and throw the previous one away.
+                self.maxOccurs = 2
+                to_be_removed.append(element_dict[name])
+                err_msg(
+                    '*** warning.  Removing child with duplicate '
+                    'name: "{}"\n'.format(name))
+            else:
+                element_dict[name] = self
         # If there is a namespace, replace it with an underscore.
         if self.base:
             self.base = strip_namespace(self.base)
@@ -1193,7 +1214,6 @@ class XschemaElement(XschemaElementBase):
             sys.exit(1)
         self.minOccurs = minOccurs
         self.maxOccurs = maxOccurs
-
         # If it does not have a type, then make the type the same as the name.
         if self.type == 'NoneType' and self.name:
             self.type = self.name
@@ -1212,8 +1232,21 @@ class XschemaElement(XschemaElementBase):
                     parent.collapseWhiteSpace):
                 self.collapseWhiteSpace = 1
         # Do it recursively for all descendents.
+        element_dict = {}
+        to_be_removed = []
         for child in self.children:
-            child.annotate_tree()
+            child.annotate_tree(
+                element_dict=element_dict,
+                to_be_removed=to_be_removed)
+        self.remove_children(to_be_removed)
+
+    def remove_children(self, to_be_removed):
+        for element in to_be_removed:
+            if element in self.children:
+                self.children.remove(element)
+            else:
+                err_msg("*** warning.  child {} already removed\n".format(
+                    element.getName()))
 
     #
     # For each name in the attributeGroupNameList for this element,
@@ -6882,7 +6915,8 @@ def main():
         ExportWrite, ExportEtree, ExportLiteral, \
         FixTypeNames, SingleFileOutput, OutputDirectory, \
         ModuleSuffix, UseOldSimpleTypeValidators, \
-        PreserveCdataTags, CleanupNameList
+        PreserveCdataTags, CleanupNameList, \
+        RemoveDuplicateChildElements
     outputText = True
     args = sys.argv[1:]
     try:
@@ -6900,6 +6934,7 @@ def main():
                 'one-file-per-xsd', 'output-directory=',
                 'module-suffix=', 'use-old-simpletype-validators',
                 'preserve-cdata-tags', 'cleanup-name-list=',
+                'remove-duplicate-child-elements',
             ])
     except getopt.GetoptError:
         usage()
@@ -7084,6 +7119,8 @@ def main():
             PreserveCdataTags = True
         elif option[0] == '--cleanup-name-list':
             CleanupNameList = capture_cleanup_name_list(option[1])
+        elif option[0] == '--remove-duplicate-child-elements':
+            RemoveDuplicateChildElements = True
     if showVersion:
         print('generateDS.py version %s' % VERSION)
         sys.exit(0)

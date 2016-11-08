@@ -48,6 +48,7 @@
             <xs:any minOccurs="1" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
+    <!--
 	<xs:complexType name="DescriptionType">
 		<xs:annotation>
 			<xs:documentation>A standard complexType.</xs:documentation>
@@ -66,4 +67,5 @@
             <xs:element name="catagory" type="xs:integer"/>
 		</xs:sequence>
 	</xs:complexType>
+    -->
 </xs:schema>
