@@ -653,7 +653,7 @@ def _cast(typ, value):
 
 class simpleTypeTestsType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('simpleTypeTest', 'simpleTypeTest', 1),
+        MemberSpec_('simpleTypeTest', 'simpleTypeTestDefs', 1),
     ]
     subclass = None
     superclass = None
@@ -712,8 +712,7 @@ class simpleTypeTestsType(GeneratedsSuper):
         else:
             eol_ = ''
         for simpleTypeTest_ in self.simpleTypeTest:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%ssimpleTypeTest>%s</%ssimpleTypeTest>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(simpleTypeTest_), input_name='simpleTypeTest')), namespace_, eol_))
+            simpleTypeTest_.export(outfile, level, namespace_, name_='simpleTypeTest', pretty_print=pretty_print)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -725,13 +724,14 @@ class simpleTypeTestsType(GeneratedsSuper):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'simpleTypeTest':
-            simpleTypeTest_ = child_.text
-            simpleTypeTest_ = self.gds_validate_string(simpleTypeTest_, node, 'simpleTypeTest')
-            self.simpleTypeTest.append(simpleTypeTest_)
+            obj_ = simpleTypeTestDefs.factory()
+            obj_.build(child_)
+            self.simpleTypeTest.append(obj_)
+            obj_.original_tagname_ = 'simpleTypeTest'
 # end class simpleTypeTestsType
 
 
-class simpleTypeTest(GeneratedsSuper):
+class simpleTypeTestDefs(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('datetime1', 'xs:gYear', 0),
         MemberSpec_('datetime2', 'xs:gYearMonth', 0),
@@ -815,13 +815,13 @@ class simpleTypeTest(GeneratedsSuper):
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:
             subclass = getSubclassFromModule_(
-                CurrentSubclassModule_, simpleTypeTest)
+                CurrentSubclassModule_, simpleTypeTestDefs)
             if subclass is not None:
                 return subclass(*args_, **kwargs_)
-        if simpleTypeTest.subclass:
-            return simpleTypeTest.subclass(*args_, **kwargs_)
+        if simpleTypeTestDefs.subclass:
+            return simpleTypeTestDefs.subclass(*args_, **kwargs_)
         else:
-            return simpleTypeTest(*args_, **kwargs_)
+            return simpleTypeTestDefs(*args_, **kwargs_)
     factory = staticmethod(factory)
     def get_datetime1(self): return self.datetime1
     def set_datetime1(self, datetime1): self.datetime1 = datetime1
@@ -916,7 +916,7 @@ class simpleTypeTest(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='simpleTypeTest', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='simpleTypeTestDefs', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -926,17 +926,17 @@ class simpleTypeTest(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='simpleTypeTest')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='simpleTypeTestDefs')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='simpleTypeTest', pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='simpleTypeTestDefs', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='simpleTypeTest'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='simpleTypeTestDefs'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='simpleTypeTest', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='simpleTypeTestDefs', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -1142,10 +1142,11 @@ class simpleTypeTest(GeneratedsSuper):
             sval_ = child_.text
             dval_ = self.gds_parse_datetime(sval_)
             self.dateTimeVal2.append(dval_)
-# end class simpleTypeTest
+# end class simpleTypeTestDefs
 
 
 GDSClassesMapping = {
+    'simpleTypeTest': simpleTypeTestDefs,
     'simpleTypeTests': simpleTypeTestsType,
 }
 
@@ -1269,6 +1270,6 @@ if __name__ == '__main__':
 
 
 __all__ = [
-    "simpleTypeTest",
+    "simpleTypeTestDefs",
     "simpleTypeTestsType"
 ]

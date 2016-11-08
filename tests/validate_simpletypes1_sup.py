@@ -807,7 +807,6 @@ class simpleOneType(GeneratedsSuper):
         MemberSpec_('integer_range_1_value', ['integer_range_1_st', 'integer_range_2_st', 'xs:integer'], 0),
         MemberSpec_('pattern_value', ['pattern_st', 'pattern_1_st', 'min_length_st', 'xs:string'], 0),
         MemberSpec_('token_enum_value', ['token_enum_st', 'xs:NMTOKEN'], 0),
-        MemberSpec_('token_enum_value', ['token_enum_st', 'xs:NMTOKEN'], 0),
         MemberSpec_('integer_range_incl_value', ['integer_range_incl_st', 'xs:integer'], 0),
         MemberSpec_('integer_range_excl_value', ['integer_range_excl_st', 'xs:integer'], 0),
         MemberSpec_('min_max_length_value', ['min_max_length_st', 'xs:string'], 0),
@@ -837,8 +836,6 @@ class simpleOneType(GeneratedsSuper):
         self.validate_integer_range_1_st(self.integer_range_1_value)
         self.pattern_value = pattern_value
         self.validate_pattern_st(self.pattern_value)
-        self.token_enum_value = token_enum_value
-        self.validate_token_enum_st(self.token_enum_value)
         self.token_enum_value = token_enum_value
         self.validate_token_enum_st(self.token_enum_value)
         self.integer_range_incl_value = integer_range_incl_value
@@ -930,8 +927,6 @@ class simpleOneType(GeneratedsSuper):
     def set_integer_range_1_value(self, integer_range_1_value): self.integer_range_1_value = integer_range_1_value
     def get_pattern_value(self): return self.pattern_value
     def set_pattern_value(self, pattern_value): self.pattern_value = pattern_value
-    def get_token_enum_value(self): return self.token_enum_value
-    def set_token_enum_value(self, token_enum_value): self.token_enum_value = token_enum_value
     def get_token_enum_value(self): return self.token_enum_value
     def set_token_enum_value(self, token_enum_value): self.token_enum_value = token_enum_value
     def get_integer_range_incl_value(self): return self.integer_range_incl_value
@@ -1105,7 +1100,6 @@ class simpleOneType(GeneratedsSuper):
             self.integer_range_1_value is not None or
             self.pattern_value is not None or
             self.token_enum_value is not None or
-            self.token_enum_value is not None or
             self.integer_range_incl_value is not None or
             self.integer_range_excl_value is not None or
             self.min_max_length_value is not None or
@@ -1161,9 +1155,6 @@ class simpleOneType(GeneratedsSuper):
         if self.pattern_value is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%spattern_value>%s</%spattern_value>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.pattern_value), input_name='pattern_value')), namespace_, eol_))
-        if self.token_enum_value is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%stoken_enum_value>%s</%stoken_enum_value>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.token_enum_value), input_name='token_enum_value')), namespace_, eol_))
         if self.token_enum_value is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%stoken_enum_value>%s</%stoken_enum_value>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.token_enum_value), input_name='token_enum_value')), namespace_, eol_))
@@ -1253,12 +1244,6 @@ class simpleOneType(GeneratedsSuper):
             self.pattern_value = pattern_value_
             # validate type pattern_st
             self.validate_pattern_st(self.pattern_value)
-        elif nodeName_ == 'token_enum_value':
-            token_enum_value_ = child_.text
-            token_enum_value_ = self.gds_validate_string(token_enum_value_, node, 'token_enum_value')
-            self.token_enum_value = token_enum_value_
-            # validate type token_enum_st
-            self.validate_token_enum_st(self.token_enum_value)
         elif nodeName_ == 'token_enum_value':
             token_enum_value_ = child_.text
             token_enum_value_ = self.gds_validate_string(token_enum_value_, node, 'token_enum_value')

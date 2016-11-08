@@ -54,11 +54,11 @@ supermod.simpleTypeTestsType.subclass = simpleTypeTestsTypeSub
 # end class simpleTypeTestsTypeSub
 
 
-class simpleTypeTestSub(supermod.simpleTypeTest):
+class simpleTypeTestDefsSub(supermod.simpleTypeTestDefs):
     def __init__(self, datetime1=None, datetime2=None, datetime3=None, datetime4=None, datetime5=None, integerVal1=None, integerVal2=None, stringVal1=None, stringVal2=None, booleanVal1=None, booleanVal2=None, decimalVal1=None, decimalVal2=None, doubleVal1=None, doubleVal2=None, floatVal1=None, floatVal2=None, dateVal1=None, dateVal2=None, dateTimeVal1=None, dateTimeVal2=None):
-        super(simpleTypeTestSub, self).__init__(datetime1, datetime2, datetime3, datetime4, datetime5, integerVal1, integerVal2, stringVal1, stringVal2, booleanVal1, booleanVal2, decimalVal1, decimalVal2, doubleVal1, doubleVal2, floatVal1, floatVal2, dateVal1, dateVal2, dateTimeVal1, dateTimeVal2, )
-supermod.simpleTypeTest.subclass = simpleTypeTestSub
-# end class simpleTypeTestSub
+        super(simpleTypeTestDefsSub, self).__init__(datetime1, datetime2, datetime3, datetime4, datetime5, integerVal1, integerVal2, stringVal1, stringVal2, booleanVal1, booleanVal2, decimalVal1, decimalVal2, doubleVal1, doubleVal2, floatVal1, floatVal2, dateVal1, dateVal2, dateTimeVal1, dateTimeVal2, )
+supermod.simpleTypeTestDefs.subclass = simpleTypeTestDefsSub
+# end class simpleTypeTestDefsSub
 
 
 def get_root_tag(node):

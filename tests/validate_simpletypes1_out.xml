@@ -4,7 +4,6 @@
         <integer_range_1_value>5</integer_range_1_value>
         <pattern_value>bbbmn456opxxx</pattern_value>
         <token_enum_value>float</token_enum_value>
-        <token_enum_value>float</token_enum_value>
         <integer_range_incl_value>2</integer_range_incl_value>
         <integer_range_excl_value>7</integer_range_excl_value>
         <min_max_length_value>abc def ghi</min_max_length_value>
@@ -28,7 +27,6 @@
     <sample2_bad>
         <integer_range_1_value>2</integer_range_1_value>
         <pattern_value>mmaaa1234mnopzzz</pattern_value>
-        <token_enum_value>floatxx</token_enum_value>
         <token_enum_value>floatxx</token_enum_value>
         <integer_range_incl_value>22</integer_range_incl_value>
         <integer_range_excl_value>-40</integer_range_excl_value>
