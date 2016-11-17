@@ -797,6 +797,32 @@ class GenTest(unittest.TestCase):
         self.remove('{}2_sup.py'.format(t_))
         self.remove('{}2_sub.py'.format(t_))
 
+    def test_032_rem_dup_elems(self):
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
+            '--member-specs=list -f -a "xsd:" '
+            '-o tests/%s2_sup.py -s tests/%s2_sub.py '
+            '--super=%s2_sup --no-warnings '
+            'tests/%s.xsd'
+        )
+        t_ = 'rem_dup_elems'
+        cmd = cmdTempl % (t_, t_, t_, t_, )
+        self.executeClean(cmd, cwd='..')
+        self.compareFiles(
+            '{}1_sup.py'.format(t_),
+            '{}2_sup.py'.format(t_),
+            ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
+        # Need to preserve generated files for next command, cleanup at end
+        cmdTempl = 'python tests/%s2_sup.py tests/%s.xml > tests/%s2_out.xml'
+        cmd = cmdTempl % (t_, t_, t_, )
+        self.executeClean(cmd, cwd='..')
+        self.compareFiles('{}1_out.xml'.format(t_), '{}2_out.xml'.format(t_))
+        # cleanup generated files
+        self.remove('{}2_sup.py'.format(t_))
+        self.remove('{}2_sub.py'.format(t_))
+        self.remove('{}2_out.xml'.format(t_))
+
     def compareFiles(self, left, right, ignore=None):
         with open(left) as left_file:
             with open(right) as right_file:

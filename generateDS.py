@@ -98,12 +98,9 @@ Options:
                              search pattern and second is a replacement.
                              Example: "[('[-:.]', '_'), ('^__', 'Special')]"
                              Default: "[('[-:.]', '_')]"
-    --remove-duplicate-child-elements
-                             If a child element with the same name is
-                             defined multiple times under a parent, then
-                             remove it and issue a warning.
     -q, --no-questions       Do not ask questions, for example,
                              force overwrite.
+    --no-warnings            Do not print warning messages.
     --session=mysession.session
                              Load and use options from session file. You can
                              create session file in generateds_gui.py.  Or,
@@ -207,7 +204,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.23c'
+VERSION = '2.24a'
 ##VERSION##
 
 if sys.version_info.major == 2:
@@ -279,7 +276,7 @@ SingleFileOutput = True
 OutputDirectory = None
 ModuleSuffix = ""
 PreserveCdataTags = False
-RemoveDuplicateChildElements = False
+NoWarnings = False
 
 SchemaToPythonTypeMap = {}
 
@@ -922,12 +919,11 @@ class XschemaElement(XschemaElementBase):
         self.expandGroupReferences_tree(visited)
         self.collect_element_dict()
         self.annotate_find_type()
-        element_dict = {}
-        to_be_removed = []
+        element_dict = None
+        to_be_removed = None
         self.annotate_tree(
             element_dict=element_dict,
             to_be_removed=to_be_removed)
-        self.remove_children(to_be_removed)
         self.fix_dup_names()
         self.coerce_attr_types()
         self.checkMixedBases()
@@ -1163,11 +1159,18 @@ class XschemaElement(XschemaElementBase):
             child.annotate_find_type()
 
     def annotate_tree(self, element_dict, to_be_removed):
-        if RemoveDuplicateChildElements:
-            name = self.getName()
-            if name in element_dict:
-                # If we've already seen this element (name), make it a
-                # list and throw the previous one away.
+        name = self.getName()
+        if element_dict is not None:
+            dup_element = element_dict.get(name)
+            if (dup_element is not None and
+                    # The element_dict keys are the element name.
+                    # So, we do not need to compare names.
+                    #dup_element.getName() == name and
+                    not self.complexType and
+                    not dup_element.complexType):
+                # If we've already seen this element (name), and
+                # these are both xsd:complexType, then
+                # make it a list and throw the previous one away.
                 self.maxOccurs = 2
                 to_be_removed.append(element_dict[name])
                 err_msg(
@@ -6894,7 +6897,8 @@ def capture_cleanup_name_list(option):
 
 
 def err_msg(msg):
-    sys.stderr.write(msg)
+    if not NoWarnings:
+        sys.stderr.write(msg)
 
 
 USAGE_TEXT = __doc__
@@ -6916,7 +6920,7 @@ def main():
         FixTypeNames, SingleFileOutput, OutputDirectory, \
         ModuleSuffix, UseOldSimpleTypeValidators, \
         PreserveCdataTags, CleanupNameList, \
-        RemoveDuplicateChildElements
+        NoWarnings
     outputText = True
     args = sys.argv[1:]
     try:
@@ -6934,7 +6938,7 @@ def main():
                 'one-file-per-xsd', 'output-directory=',
                 'module-suffix=', 'use-old-simpletype-validators',
                 'preserve-cdata-tags', 'cleanup-name-list=',
-                'remove-duplicate-child-elements',
+                'no-warnings',
             ])
     except getopt.GetoptError:
         usage()
@@ -7119,8 +7123,8 @@ def main():
             PreserveCdataTags = True
         elif option[0] == '--cleanup-name-list':
             CleanupNameList = capture_cleanup_name_list(option[1])
-        elif option[0] == '--remove-duplicate-child-elements':
-            RemoveDuplicateChildElements = True
+        elif option[0] == '--no-warnings':
+            NoWarnings = True
     if showVersion:
         print('generateDS.py version %s' % VERSION)
         sys.exit(0)

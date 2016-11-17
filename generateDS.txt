@@ -12,7 +12,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.23c
+:revision: 2.24a
 
 .. version
 
@@ -223,7 +223,7 @@ Here is the usage message displayed by ``generateDS.py``::
 
 
     Synopsis:
-        Generate Python classes from XML Schema definition.
+        Generate Python classes from XML schema definition.
         Input is read from in_xsd_file or, if "-" (dash) arg, from stdin.
         Output is written to files named in "-o" and "-s" options.
     Usage:
@@ -253,7 +253,7 @@ Here is the usage message displayed by ``generateDS.py``::
                                  top level class; if YY omitted XX is the default.
                                  class. Also see section "Recognizing the top level
                                  element" in the documentation.
-        --super="XXX"            Super module name in generated in subclass
+        --super="XXX"            Super module name in generated subclass
                                  module. Default="???"
         --validator-bodies=path  Path to a directory containing files that provide
                                  bodies (implementations) of validator methods.
@@ -278,10 +278,10 @@ Here is the usage message displayed by ``generateDS.py``::
                                  generated files. This is useful if you want
                                  to minimize the amount of (no-operation)
                                  changes to the generated python code.
-        --no-process-includes    Do not process included XML Schema files.  By
+        --no-process-includes    Do not process included XML schema files.  By
                                  default, generateDS.py will insert content
                                  from files referenced by <include ... />
-                                 elements into the XML Schema to be processed.
+                                 elements into the XML schema to be processed.
         --silence                Normally, the code generated with generateDS
                                  echoes the information being parsed. To prevent
                                  the echo from occurring, use the --silence switch.
@@ -322,6 +322,7 @@ Here is the usage message displayed by ``generateDS.py``::
                                  Default: "[('[-:.]', '_')]"
         -q, --no-questions       Do not ask questions, for example,
                                  force overwrite.
+        --no-warnings            Do not print warning messages.
         --session=mysession.session
                                  Load and use options from session file. You can
                                  create session file in generateds_gui.py.  Or,
@@ -342,6 +343,7 @@ Here is the usage message displayed by ``generateDS.py``::
 
     creates sample_lib.py superclass and sample_app1.py subclass modules;
     also generates member specifications in each class (in a dictionary).
+
 
 
 Command line options
@@ -612,6 +614,10 @@ q, no-questions
     will not ask whether the file should be overwritten.  (In this
     case, when "-q" is used, the "-f" must be used to force the
     output file to be written.
+
+no-warnings
+    While running generateDS.py, do not print warning messages that
+    would be written to stderr.
 
 session=mysession.session
     Load and use options from session file. You can create a
