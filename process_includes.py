@@ -40,7 +40,7 @@ except ImportError:
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.24a'
+VERSION = '2.24b'
 ##VERSION##
 
 CatalogDict = {}
@@ -208,7 +208,7 @@ def resolve_ref(node, params, options):
             else:
                 if os.path.exists(locn):
                     infile = open(locn)
-                    content = infile.read()
+                    content = infile.read().encode()
                     infile.close()
                     params.parent_url = locn
                     params.base_url = os.path.split(locn)[0]
@@ -240,11 +240,7 @@ def collect_inserts_aux(child, params, inserts, options):
     save_base_url = params.base_url
     string_content = resolve_ref(child, params, options)
     if string_content is not None:
-        if sys.version_info.major == 2:
-            root = etree.fromstring(string_content, base_url=params.base_url)
-        else:
-            root = etree.fromstring(
-                string_content.encode(), base_url=params.base_url)
+        root = etree.fromstring(string_content, base_url=params.base_url)
         roots.append(root)
         for child1 in root:
             if not isinstance(child1, etree._Comment):

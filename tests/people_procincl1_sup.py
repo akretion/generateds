@@ -2864,9 +2864,12 @@ def parseEtree(inFileName, silence=False):
 
 
 def parseString(inString, silence=False):
-    from StringIO import StringIO
+    if sys.version_info.major == 2:
+        from StringIO import StringIO as IOBuffer
+    else:
+        from io import BytesIO as IOBuffer
     parser = None
-    doc = parsexml_(StringIO(inString), parser)
+    doc = parsexml_(IOBuffer(inString), parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:

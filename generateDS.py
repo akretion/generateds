@@ -204,7 +204,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.24a'
+VERSION = '2.24b'
 ##VERSION##
 
 if sys.version_info.major == 2:
@@ -5761,8 +5761,11 @@ def parseEtree(inFileName, silence=False):
 
 
 def parseString(inString, silence=False):
-    from StringIO import StringIO
-%(preserve_cdata_tags)s    doc = parsexml_(StringIO(inString), parser)
+    if sys.version_info.major == 2:
+        from StringIO import StringIO as IOBuffer
+    else:
+        from io import BytesIO as IOBuffer
+%(preserve_cdata_tags)s    doc = parsexml_(IOBuffer(inString), parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:

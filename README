@@ -141,6 +141,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.24b (11/28/2016)
+
+- Added several fixes to generateDS.py and process_includes.py that
+  are needed for the support for Python 3.  Thank you Ian Glover for
+  catching this and for contributing the fixes.
+
 Version 2.24a (11/16/2016)
 
 - Added entry_points to setup.py so that distutils will generate
