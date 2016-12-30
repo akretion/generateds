@@ -824,13 +824,14 @@ class simpleOneType(GeneratedsSuper):
         MemberSpec_('datetime_maxincl_value', ['datetime_maxincl_st', 'xs:dateTime'], 0),
         MemberSpec_('datetime_minexcl_value', ['datetime_minexcl_st', 'xs:dateTime'], 0),
         MemberSpec_('datetime_maxexcl_value', ['datetime_maxexcl_st', 'xs:dateTime'], 0),
+        MemberSpec_('vbar_pattern_value', ['vbar_pattern_st', 'xs:string'], 0),
         MemberSpec_('anonymous_float_value', ['anonymous_float_valueType', 'xs:float'], 0),
         MemberSpec_('primative_integer', 'xs:integer', 0),
         MemberSpec_('primative_float', 'xs:float', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, integer_range_1_value=None, pattern_value=None, token_enum_value=None, integer_range_incl_value=None, integer_range_excl_value=None, min_max_length_value=None, length_value=None, totalDigits_value=None, date_minincl_value=None, date_maxincl_value=None, date_minexcl_value=None, date_maxexcl_value=None, time_minincl_value=None, time_maxincl_value=None, time_minexcl_value=None, time_maxexcl_value=None, datetime_minincl_value=None, datetime_maxincl_value=None, datetime_minexcl_value=None, datetime_maxexcl_value=None, anonymous_float_value=None, primative_integer=None, primative_float=None):
+    def __init__(self, integer_range_1_value=None, pattern_value=None, token_enum_value=None, integer_range_incl_value=None, integer_range_excl_value=None, min_max_length_value=None, length_value=None, totalDigits_value=None, date_minincl_value=None, date_maxincl_value=None, date_minexcl_value=None, date_maxexcl_value=None, time_minincl_value=None, time_maxincl_value=None, time_minexcl_value=None, time_maxexcl_value=None, datetime_minincl_value=None, datetime_maxincl_value=None, datetime_minexcl_value=None, datetime_maxexcl_value=None, vbar_pattern_value=None, anonymous_float_value=None, primative_integer=None, primative_float=None):
         self.original_tagname_ = None
         self.integer_range_1_value = integer_range_1_value
         self.validate_integer_range_1_st(self.integer_range_1_value)
@@ -908,6 +909,8 @@ class simpleOneType(GeneratedsSuper):
         else:
             initvalue_ = datetime_maxexcl_value
         self.datetime_maxexcl_value = initvalue_
+        self.vbar_pattern_value = vbar_pattern_value
+        self.validate_vbar_pattern_st(self.vbar_pattern_value)
         self.anonymous_float_value = anonymous_float_value
         self.validate_anonymous_float_valueType(self.anonymous_float_value)
         self.primative_integer = primative_integer
@@ -963,6 +966,8 @@ class simpleOneType(GeneratedsSuper):
     def set_datetime_minexcl_value(self, datetime_minexcl_value): self.datetime_minexcl_value = datetime_minexcl_value
     def get_datetime_maxexcl_value(self): return self.datetime_maxexcl_value
     def set_datetime_maxexcl_value(self, datetime_maxexcl_value): self.datetime_maxexcl_value = datetime_maxexcl_value
+    def get_vbar_pattern_value(self): return self.vbar_pattern_value
+    def set_vbar_pattern_value(self, vbar_pattern_value): self.vbar_pattern_value = vbar_pattern_value
     def get_anonymous_float_value(self): return self.anonymous_float_value
     def set_anonymous_float_value(self, anonymous_float_value): self.anonymous_float_value = anonymous_float_value
     def get_primative_integer(self): return self.primative_integer
@@ -1088,6 +1093,13 @@ class simpleOneType(GeneratedsSuper):
         if value is not None and Validate_simpletypes_:
             if value >= self.gds_parse_datetime('2015-10-31T16:20:10'):
                 warnings_.warn('Value "%(value)s" does not match xsd maxExclusive restriction on datetime_maxexcl_st' % {"value" : value} )
+    def validate_vbar_pattern_st(self, value):
+        # Validate type vbar_pattern_st, a restriction on xs:string.
+        if value is not None and Validate_simpletypes_:
+            if not self.gds_validate_simple_patterns(
+                    self.validate_vbar_pattern_st_patterns_, value):
+                warnings_.warn('Value "%s" does not match xsd pattern restrictions: %s' % (value.encode('utf-8'), self.validate_vbar_pattern_st_patterns_, ))
+    validate_vbar_pattern_st_patterns_ = [['^abcd$|^ef\\|gh$']]
     def validate_anonymous_float_valueType(self, value):
         # Validate type anonymous_float_valueType, a restriction on xs:float.
         if value is not None and Validate_simpletypes_:
@@ -1117,6 +1129,7 @@ class simpleOneType(GeneratedsSuper):
             self.datetime_maxincl_value is not None or
             self.datetime_minexcl_value is not None or
             self.datetime_maxexcl_value is not None or
+            self.vbar_pattern_value is not None or
             self.anonymous_float_value is not None or
             self.primative_integer is not None or
             self.primative_float is not None
@@ -1209,6 +1222,9 @@ class simpleOneType(GeneratedsSuper):
         if self.datetime_maxexcl_value is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sdatetime_maxexcl_value>%s</%sdatetime_maxexcl_value>%s' % (namespace_, self.gds_format_datetime(self.datetime_maxexcl_value, input_name='datetime_maxexcl_value'), namespace_, eol_))
+        if self.vbar_pattern_value is not None:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%svbar_pattern_value>%s</%svbar_pattern_value>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.vbar_pattern_value), input_name='vbar_pattern_value')), namespace_, eol_))
         if self.anonymous_float_value is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sanonymous_float_value>%s</%sanonymous_float_value>%s' % (namespace_, self.gds_format_float(self.anonymous_float_value, input_name='anonymous_float_value'), namespace_, eol_))
@@ -1364,6 +1380,12 @@ class simpleOneType(GeneratedsSuper):
             self.datetime_maxexcl_value = dval_
             # validate type datetime_maxexcl_st
             self.validate_datetime_maxexcl_st(self.datetime_maxexcl_value)
+        elif nodeName_ == 'vbar_pattern_value':
+            vbar_pattern_value_ = child_.text
+            vbar_pattern_value_ = self.gds_validate_string(vbar_pattern_value_, node, 'vbar_pattern_value')
+            self.vbar_pattern_value = vbar_pattern_value_
+            # validate type vbar_pattern_st
+            self.validate_vbar_pattern_st(self.vbar_pattern_value)
         elif nodeName_ == 'anonymous_float_value':
             sval_ = child_.text
             try:

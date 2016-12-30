@@ -141,11 +141,18 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version 2.24b (11/28/2016)
+Version 2.24b (01/02/2017)
 
 - Added several fixes to generateDS.py and process_includes.py that
   are needed for the support for Python 3.  Thank you Ian Glover for
   catching this and for contributing the fixes.
+- Fixed bug in generation of regular expression for validating
+  pattern in a restriction on a simpleType.  In the pattern, we
+  needed to replace "|" with "$|^", unless the vertical bar was
+  escaped with a backslash.  This was necessary so that each regular
+  expression separated by a vertical bar would be anchored at the
+  left and right.  Thanks to Clint Pitzak for catching and reporting
+  this.
 
 Version 2.24a (11/16/2016)
 

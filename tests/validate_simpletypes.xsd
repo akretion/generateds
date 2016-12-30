@@ -36,6 +36,7 @@
             <xs:element name="datetime_maxincl_value" type="datetime_maxincl_st"/>
             <xs:element name="datetime_minexcl_value" type="datetime_minexcl_st"/>
             <xs:element name="datetime_maxexcl_value" type="datetime_maxexcl_st"/>
+            <xs:element name="vbar_pattern_value" type="vbar_pattern_st"/>
 
             <!-- Test for use of anonymous simple type. -->
             <xs:element name="anonymous_float_value">
@@ -204,6 +205,12 @@
     <xs:simpleType name="datetime_maxexcl_st">
         <xs:restriction base="xs:dateTime">
             <xs:maxExclusive value="2015-10-31T16:20:10"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="vbar_pattern_st">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="abcd|ef\|gh" />
         </xs:restriction>
     </xs:simpleType>
 
