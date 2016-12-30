@@ -4309,6 +4309,15 @@ def get_target_value(default, stName):
     return targetValue
 
 
+Vbar_repl_pat = re.compile('([^\\\])\|')
+
+
+# Replace vertical bars with "$|^", unless escaped with backslash.
+def replaceVbars(instr):
+    outstr, count = re.subn(Vbar_repl_pat, '\\1$|^', instr)
+    return outstr
+
+
 # Generate validation code for each restriction.
 # Recursivly call to process possible chain of base types.
 def processValidatorBodyRestrictions(
@@ -4320,7 +4329,7 @@ def processValidatorBodyRestrictions(
         pats1 = restriction.xpath(
             "./xs:pattern/@value", namespaces=ns)
         if pats1:
-            pats2 = ['^%s$' % (p1, ) for p1 in pats1]
+            pats2 = ['^{}$'.format(replaceVbars(p1)) for p1 in pats1]
             patterns1.append(pats2)
         #
         # Check for and generate code for each possible type of restriction.
