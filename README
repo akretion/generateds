@@ -153,6 +153,8 @@ Version 2.24b (01/02/2017)
   expression separated by a vertical bar would be anchored at the
   left and right.  Thanks to Clint Pitzak for catching and reporting
   this.
+- Modified the Django support (in ./django/) so that it will run
+  under Python 3.  Thanks to Shane Rigby for reporting this problem.
 
 Version 2.24a (11/16/2016)
 
