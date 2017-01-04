@@ -4,10 +4,14 @@
 #
 # Imports
 
+from __future__ import print_function
 import sys
 import os
 import argparse
-import StringIO
+if sys.version_info.major == 2:
+    from StringIO import StringIO as stringio
+else:
+    from io import StringIO as stringio
 from lxml import etree
 import process_includes
 
@@ -18,8 +22,7 @@ import process_includes
 SchemaNS = 'http://www.w3.org/2001/XMLSchema'
 Nsmap = {
     'xs': SchemaNS,
-    }
-
+}
 
 
 #
@@ -34,40 +37,54 @@ class TypeDescriptor(object):
         self.name_ = name
         self.type_name_ = type_name
         self.type_obj_ = None
+
     def __str__(self):
-        return '<%s -- name: %s type: %s>' % (self.__class__.__name__,
+        return '<%s -- name: %s type: %s>' % (
+            self.__class__.__name__,
             self.name, self.type_name,)
+
     def get_name_(self):
         return self.name_
+
     def set_name_(self, name):
         self.name_ = name
     name = property(get_name_, set_name_)
+
     def get_type_name_(self):
         return self.type_name_
+
     def set_type_name_(self, type_name):
         self.type_name_ = type_name
     type_name = property(get_type_name_, set_type_name_)
+
     def get_type_obj_(self):
         return self.type_obj_
+
     def set_type_obj_(self, type_obj):
         self.type_obj_ = type_obj
     type_obj = property(get_type_obj_, set_type_obj_)
+
 
 class ComplexTypeDescriptor(TypeDescriptor):
     def __init__(self, name):
         super(ComplexTypeDescriptor, self).__init__(name)
         self.elements_ = []
         self.attributes_ = {}
+
     def get_elements_(self):
         return self.elements_
+
     def set_elements_(self, elements):
         self.elements_ = elements
     elements = property(get_elements_, set_elements_)
+
     def get_attributes_(self):
         return self.attributes_
+
     def set_attributes_(self, attributes):
         self.attributes_ = attributes
     attributes = property(get_attributes_, set_attributes_)
+
 
 class SimpleTypeDescriptor(TypeDescriptor):
     def __init__(self, name, type_name):
@@ -175,7 +192,6 @@ for name in Simple_type_names:
     Builtin_descriptors[name] = SimpleTypeDescriptor(name, name)
 
 
-
 #
 # Functions for internal use and testing
 
@@ -183,15 +199,16 @@ def extract_descriptors(args):
     if os.path.exists(args.outfilename) and not args.force:
         sys.stderr.write(
             '\nFile %s exists.  Use -f/--force to overwrite.\n\n' % (
-            args.outfilename,))
+                args.outfilename,))
         sys.exit(1)
     outfile = open(args.outfilename, 'w')
 
     schema_file_name = os.path.join(
         os.path.abspath(os.path.curdir),
         args.infilename)
-    infile = StringIO.StringIO()
-    process_includes.process_include_files(args.infilename, infile,
+    infile = stringio()
+    process_includes.process_include_files(
+        args.infilename, infile,
         inpath=schema_file_name)
     infile.seek(0)
 
@@ -199,7 +216,7 @@ def extract_descriptors(args):
     root = doc.getroot()
     descriptors = {}
     extract(root, descriptors, outfile)
-    for descriptor in descriptors.itervalues():
+    for descriptor in list(descriptors.values()):
         descriptor.export(outfile)
     outfile.close()
 
@@ -210,7 +227,6 @@ def get_descriptor_name(d):
 
 def extract(root, descriptors, outfile):
     unresolved = {}
-    complex_descriptors = {}
     # Process top level simpleTypes.  Resolve the base types.
     nodes = root.xpath('xs:simpleType', namespaces=Nsmap)
     for node in nodes:
@@ -227,7 +243,7 @@ def export_defined_simple_types(outfile, resolved):
     wrt = outfile.write
     wrt(Header_template)
     wrt('Defined_simple_type_table = {\n')
-    for descriptor in resolved.itervalues():
+    for descriptor in list(resolved.values()):
         name = descriptor.name
         prefix, type_name = get_prefix_name(descriptor.type_name)
         wrt("    '%s': SimpleTypeDescriptor('%s', '%s'),\n" % (
@@ -238,7 +254,7 @@ def export_defined_simple_types(outfile, resolved):
 def resolve_simple_types(unresolved):
     resolved = {}
     #import pdb; pdb.set_trace()
-    sorted_descriptors = unresolved.values()
+    sorted_descriptors = list(unresolved.values())
     sorted_descriptors.sort(key=get_descriptor_name)
     for descriptor in sorted_descriptors:
         resolve_1_simple_type(descriptor, resolved, unresolved)
@@ -259,7 +275,8 @@ def resolve_1_simple_type(descriptor, resolved, unresolved):
         return type_obj
     else:
         #import pdb; pdb.set_trace()
-        type_obj = resolve_1_simple_type(unresolved[descriptor.type_name],
+        type_obj = resolve_1_simple_type(
+            unresolved[descriptor.type_name],
             resolved, unresolved)
         descriptor.type_obj = type_obj
         resolved[descriptor.name] = descriptor
@@ -312,22 +329,28 @@ def etxpath(node, pat):
 
 USAGE_TEXT = __doc__
 
+
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 USAGE_TEXT = """synopsis: capture XML Schema simpleType descriptors
 """
 
+
 def main():
     parser = argparse.ArgumentParser(description=USAGE_TEXT)
-    parser.add_argument('-v', '--verbose', action='store_true',
+    parser.add_argument(
+        '-v', '--verbose', action='store_true',
         help='show additional info')
-    parser.add_argument('-f', '--force', action='store_true',
+    parser.add_argument(
+        '-f', '--force', action='store_true',
         help='force overwrite of output file without asking')
-    parser.add_argument('infilename', type=str,
+    parser.add_argument(
+        'infilename', type=str,
         help='input XML Schema file')
-    parser.add_argument('-o', '--outfile', type=str, dest='outfilename',
+    parser.add_argument(
+        '-o', '--outfile', type=str, dest='outfilename',
         default='generateds_definedsimpletypes.py',
         help='output (.py) file name')
     args = parser.parse_args()
@@ -337,5 +360,3 @@ def main():
 if __name__ == '__main__':
     #import pdb; pdb.set_trace()
     main()
-
-
