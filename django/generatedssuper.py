@@ -96,9 +96,17 @@ String_type_table = {
 }
 Date_type_table = {
     'date': None,
+    'gYear': None,
+    'gYearMonth': None,
+    'gMonth': None,
+    'gMonthDay': None,
+    'gDay': None,
 }
 DateTime_type_table = {
     'dateTime': None,
+}
+Time_type_table = {
+    'time': None,
 }
 Boolean_type_table = {
     'boolean': None,
@@ -182,6 +190,11 @@ class GeneratedsSuper(object):
                     wrtmodels('    %s = models.DateTimeField(%s)\n' % (
                         name, options, ))
                     wrtforms('    %s = forms.DateTimeField(%s)\n' % (
+                        name, options, ))
+                elif data_type in Time_type_table:
+                    wrtmodels('    %s = models.TimeField(%s)\n' % (
+                        name, options, ))
+                    wrtforms('    %s = forms.TimeField(%s)\n' % (
                         name, options, ))
                 elif data_type in Boolean_type_table:
                     wrtmodels('    %s = models.BooleanField(%s)\n' % (
