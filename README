@@ -155,6 +155,9 @@ Version 2.24b (01/02/2017)
   this.
 - Modified the Django support (in ./django/) so that it will run
   under Python 3.  Thanks to Shane Rigby for reporting this problem.
+- Fixed an error in encoding unicode valueOf_ for  <xs:complexType 
+  <xs:simpleContent> <xs:extension base="xs:string">.  Thanks to
+  Andrii Iudin for catching this.
 
 Version 2.24a (11/16/2016)
 
