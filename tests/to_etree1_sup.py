@@ -373,10 +373,10 @@ except ImportError as exp:
                 return instring
         @staticmethod
         def convert_unicode(instring):
-            if (type(instring) is str or
-                    (sys.version_info.major == 2
-                        and type(instring) == unicode)):
+            if isinstance(instring, str):
                 result = quote_xml(instring)
+            elif sys.version_info.major == 2 and isinstance(instring, unicode):
+                result = quote_xml(instring).encode('utf8')
             else:
                 result = GeneratedsSuper.gds_encode(str(instring))
             return result
