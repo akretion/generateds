@@ -204,7 +204,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.24b'
+VERSION = '2.24c'
 ##VERSION##
 
 if sys.version_info.major == 2:
@@ -4774,13 +4774,14 @@ def generateMemberSpec(wrt, element):
             item3 = 1
         else:
             item3 = 0
+        item4 = 1 if child.getOptional() else 0
         if generateDict:
-            item = "        '%s': MemberSpec_('%s', %s, %d)," % (
-                item1, item1, item2, item3, )
+            item = "        '%s': MemberSpec_('%s', %s, %d, %d)," % (
+                item1, item1, item2, item3, item4, )
         else:
             #item = "        ('%s', '%s', %d)," % (item1, item2, item3, )
-            item = "        MemberSpec_('%s', %s, %d)," % (
-                item1, item2, item3, )
+            item = "        MemberSpec_('%s', %s, %d, %d)," % (
+                item1, item2, item3, item4, )
         add(item)
     simplebase = element.getSimpleBase()
     if element.getSimpleContent() or element.isMixed():
@@ -5584,10 +5585,11 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0):
+    def __init__(self, name='', data_type='', container=0, optional=0):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -5602,6 +5604,8 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_optional(self, optional): self.optional = optional
+    def get_optional(self): return self.optional
 
 
 def _cast(typ, value):

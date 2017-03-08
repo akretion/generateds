@@ -1,4 +1,5 @@
 
+from __future__ import print_function
 import sys
 from generateds_definedsimpletypes import Defined_simple_type_table
 
@@ -159,6 +160,7 @@ class GeneratedsSuper(object):
             name = spec.get_name()
             prefix, name = cls.get_prefix_name(name)
             data_type = spec.get_data_type()
+            is_optional = spec.get_optional()
             prefix, data_type = cls.get_prefix_name(data_type)
             if data_type in Defined_simple_type_table:
                 data_type = Defined_simple_type_table[data_type]
@@ -213,14 +215,23 @@ class GeneratedsSuper(object):
                         name, data_type, ))
             else:
                 wrtmodels(
-                    '    %s = models.ForeignKey("%s_model")\n' % (
+                    '    %s = models.ForeignKey(\n        "%s_model",\n' % (
                         name, data_type, ))
+                wrtmodels(
+                    '        related_name="{}_{}",\n'.format(
+                        name, data_type, ))
+                if is_optional:
+                    wrtmodels(
+                        '        blank=True, null=True,\n')
+                wrtmodels('    )\n')
                 wrtforms(
                     '    %s = forms.MultipleChoiceField(%s_model.objects'
                     '.all())\n' % (
                         name, data_type, ))
+        wrtmodels('\n')
         wrtmodels('    def __unicode__(self):\n')
         wrtmodels('        return "id: %s" % (self.id, )\n')
+        wrtmodels('\n')
 
 
 #

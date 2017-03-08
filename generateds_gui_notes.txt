@@ -12,7 +12,7 @@ GenerateDS GUI Notes
 
 .. version
 
-:revision: 2.24b
+:revision: 2.24c
 
 .. version
 

@@ -7,7 +7,7 @@ setup(name="generateDS",
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-    version="2.24b",
+    version="2.24c",
 ##VERSION##
     author="Dave Kuhlman",
     author_email="dkuhlman@davekuhlman.org",
@@ -33,7 +33,7 @@ XML document.""",
 ##         "gui.generateds_gui_session",
 ##         ],
     py_modules=[
-        "process_includes", 
+        "process_includes",
         ],
     # include_package_data=True,
     packages = [

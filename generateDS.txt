@@ -12,7 +12,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.24b
+:revision: 2.24c
 
 .. version
 
@@ -551,10 +551,10 @@ external-encoding=<encoding>
     encodings here: http://docs.python.org/library/codecs.html#id3.
     Example use: --external-encoding='utf-8'.
 
-member-specs
-    Generate member (type) specifications in each class: a
-    dictionary of instances of class ``MemberSpec_`` containing
-    member name, type, and array or not.  See `User Methods`_
+member-specs Generate member (type) specifications in each class
+    A dictionary of instances of class ``MemberSpec_`` containing
+    member name, type, array or not, and whether the item is
+    optional (i.e. defined with minOccurs="0").  See `User Methods`_
     section for more information about ``MemberSpec_``.  Allowed
     values are "list" or "dict".  Default: do *not* generate member
     specifications (unless --user-methods specified).
@@ -2484,6 +2484,9 @@ information in each member specification:
   member variable is a single item or a list/container (i.e.
   generated from maxOccurs > 0): 0 indicates a single item; 1
   indicates a list.
+
+- ``m.get_optional()`` -- (an integer) Returns 0 (zero) if the item
+  is optional (defined with minOccurs="0"), else returns 1.
 
 There are a number of things of interest in this sample file
 (`gends_user_methods.py`_):
