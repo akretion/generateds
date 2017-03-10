@@ -5630,7 +5630,6 @@ class GeneratedsSuper(object):
         return True
     def __ne__(self, other):
         return not self.__eq__(other)
-            return instring
 
 def getSubclassFromModule_(module, class_):
     '''Get the subclass of a class from a specific module.'''
@@ -6544,6 +6543,18 @@ def getImportsForExternalXsds(root):
                     externalImports.add("from %s%s import %s" %
                                            (moduleName, ModuleSuffix,
                                             type))
+            if child.getBase():
+                parentName, parentObj = getParentName(child)
+                if parentObj.targetNamespace and \
+                        parentObj.targetNamespace != root.targetNamespace:
+                    fqn = parentObj.getFullyQualifiedName()
+                    if fqn in fqnToModuleNameMap:
+                        moduleName = fqnToModuleNameMap[fqn]
+                        type = parentObj.getType()
+                        if type == "xs:string":
+                            type = parentObj.getName()
+                        externalImports.add("from %s%s import %s" % (
+                            moduleName, ModuleSuffix, type))
             for subChild in child.getChildren():
                 childStack.append(subChild)
     return externalImports
