@@ -5624,10 +5624,7 @@ class GeneratedsSuper(object):
     def __eq__(self, other):
         if type(self) != type(other):
             return False
-        for key, val in self.__dict__.items():
-            if other.__dict__[key] != val:
-                return False
-        return True
+        return self.__dict__ == other.__dict__
     def __ne__(self, other):
         return not self.__eq__(other)
 
@@ -6548,8 +6545,8 @@ def getImportsForExternalXsds(root):
                 if parentObj.targetNamespace and \
                         parentObj.targetNamespace != root.targetNamespace:
                     fqn = parentObj.getFullyQualifiedName()
-                    if fqn in fqnToModuleNameMap:
-                        moduleName = fqnToModuleNameMap[fqn]
+                    moduleName = fqnToModuleNameMap.get(fqn)
+                    if moduleName is not None:
                         type = parentObj.getType()
                         if type == "xs:string":
                             type = parentObj.getName()
