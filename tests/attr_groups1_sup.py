@@ -4,66 +4,54 @@
 #
 # Generated  by generateDS.py.
 #
+# Command line options:
+#   ('--no-dates', '')
+#   ('--no-versions', '')
+#   ('--silence', '')
+#   ('--member-specs', 'list')
+#   ('-f', '')
+#   ('-o', 'tests/attr_groups2_sup.py')
+#   ('-s', 'tests/attr_groups2_sub.py')
+#   ('--super', 'attr_groups2_sup')
+#
+# Command line arguments:
+#   tests/attr_groups.xsd
+#
+# Command line:
+#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/attr_groups2_sup.py" -s "tests/attr_groups2_sub.py" --super="attr_groups2_sup" tests/attr_groups.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
-import getopt
 import re as re_
 import base64
 import datetime as datetime_
-
-etree_ = None
-Verbose_import_ = False
-(
-    XMLParser_import_none, XMLParser_import_lxml,
-    XMLParser_import_elementtree
-) = range(3)
-XMLParser_import_library = None
+import warnings as warnings_
 try:
-    # lxml
     from lxml import etree as etree_
-    XMLParser_import_library = XMLParser_import_lxml
-    if Verbose_import_:
-        print("running with lxml.etree")
 except ImportError:
-    try:
-        # cElementTree from Python 2.5+
-        import xml.etree.cElementTree as etree_
-        XMLParser_import_library = XMLParser_import_elementtree
-        if Verbose_import_:
-            print("running with cElementTree on Python 2.5+")
-    except ImportError:
-        try:
-            # ElementTree from Python 2.5+
-            import xml.etree.ElementTree as etree_
-            XMLParser_import_library = XMLParser_import_elementtree
-            if Verbose_import_:
-                print("running with ElementTree on Python 2.5+")
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree_
-                XMLParser_import_library = XMLParser_import_elementtree
-                if Verbose_import_:
-                    print("running with cElementTree")
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree_
-                    XMLParser_import_library = XMLParser_import_elementtree
-                    if Verbose_import_:
-                        print("running with ElementTree")
-                except ImportError:
-                    raise ImportError(
-                        "Failed to import ElementTree from any known place")
+    from xml.etree import ElementTree as etree_
 
 
-def parsexml_(*args, **kwargs):
-    if (XMLParser_import_library == XMLParser_import_lxml and
-            'parser' not in kwargs):
+Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
+
+
+def parsexml_(infile, parser=None, **kwargs):
+    if parser is None:
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
-        kwargs['parser'] = etree_.ETCompatXMLParser()
-    doc = etree_.parse(*args, **kwargs)
+        try:
+            parser = etree_.ETCompatXMLParser()
+        except AttributeError:
+            # fallback to xml.etree
+            parser = etree_.XMLParser()
+    doc = etree_.parse(infile, parser=parser, **kwargs)
     return doc
 
 #
@@ -75,7 +63,7 @@ def parsexml_(*args, **kwargs):
 
 try:
     from generatedssuper import GeneratedsSuper
-except ImportError, exp:
+except ImportError as exp:
 
     class GeneratedsSuper(object):
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
@@ -91,61 +79,68 @@ except ImportError, exp:
                 return None
         def gds_format_string(self, input_data, input_name=''):
             return input_data
-        def gds_validate_string(self, input_data, node, input_name=''):
-            return input_data
+        def gds_validate_string(self, input_data, node=None, input_name=''):
+            if not input_data:
+                return ''
+            else:
+                return input_data
         def gds_format_base64(self, input_data, input_name=''):
             return base64.b64encode(input_data)
-        def gds_validate_base64(self, input_data, node, input_name=''):
+        def gds_validate_base64(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer(self, input_data, input_name=''):
             return '%d' % input_data
-        def gds_validate_integer(self, input_data, node, input_name=''):
+        def gds_validate_integer(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_integer_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_integer_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
-                    float(value)
+                    int(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of integers')
-            return input_data
+            return values
         def gds_format_float(self, input_data, input_name=''):
             return ('%.15f' % input_data).rstrip('0')
-        def gds_validate_float(self, input_data, node, input_name=''):
+        def gds_validate_float(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_float_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_float_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_float_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of floats')
-            return input_data
+            return values
         def gds_format_double(self, input_data, input_name=''):
             return '%e' % input_data
-        def gds_validate_double(self, input_data, node, input_name=''):
+        def gds_validate_double(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_double_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_double_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_double_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of doubles')
-            return input_data
+            return values
         def gds_format_boolean(self, input_data, input_name=''):
             return ('%s' % input_data).lower()
-        def gds_validate_boolean(self, input_data, node, input_name=''):
+        def gds_validate_boolean(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_boolean_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_boolean_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 if value not in ('true', '1', 'false', '0', ):
@@ -153,8 +148,8 @@ except ImportError, exp:
                         node,
                         'Requires sequence of booleans '
                         '("true", "1", "false", "0")')
-            return input_data
-        def gds_validate_datetime(self, input_data, node, input_name=''):
+            return values
+        def gds_validate_datetime(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -208,7 +203,10 @@ except ImportError, exp:
                     tz = GeneratedsSuper._FixedOffsetTZ(
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
-            if len(input_data.split('.')) > 1:
+            time_parts = input_data.split('.')
+            if len(time_parts) > 1:
+                micro_seconds = int(float('0.' + time_parts[1]) * 1000000)
+                input_data = '%s.%s' % (time_parts[0], micro_seconds, )
                 dt = datetime_.datetime.strptime(
                     input_data, '%Y-%m-%dT%H:%M:%S.%f')
             else:
@@ -216,7 +214,7 @@ except ImportError, exp:
                     input_data, '%Y-%m-%dT%H:%M:%S')
             dt = dt.replace(tzinfo=tz)
             return dt
-        def gds_validate_date(self, input_data, node, input_name=''):
+        def gds_validate_date(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
             _svalue = '%04d-%02d-%02d' % (
@@ -239,7 +237,8 @@ except ImportError, exp:
                                 _svalue += '+'
                             hours = total_seconds // 3600
                             minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            _svalue += '{0:02d}:{1:02d}'.format(
+                                hours, minutes)
             except AttributeError:
                 pass
             return _svalue
@@ -262,7 +261,7 @@ except ImportError, exp:
             dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
             dt = dt.replace(tzinfo=tz)
             return dt.date()
-        def gds_validate_time(self, input_data, node, input_name=''):
+        def gds_validate_time(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_time(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -294,6 +293,21 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
+        def gds_validate_simple_patterns(self, patterns, target):
+            # pat is a list of lists of strings/patterns.  We should:
+            # - AND the outer elements
+            # - OR the inner elements
+            found1 = True
+            for patterns1 in patterns:
+                found2 = False
+                for patterns2 in patterns1:
+                    if re_.search(patterns2, target) is not None:
+                        found2 = True
+                        break
+                if not found2:
+                    found1 = False
+                    break
+            return found1
         @classmethod
         def gds_parse_time(cls, input_data):
             tz = None
@@ -349,6 +363,29 @@ except ImportError, exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
+        @staticmethod
+        def convert_unicode(instring):
+            if isinstance(instring, str):
+                result = quote_xml(instring)
+            elif sys.version_info.major == 2 and isinstance(instring, unicode):
+                result = quote_xml(instring).encode('utf8')
+            else:
+                result = GeneratedsSuper.gds_encode(str(instring))
+            return result
+
+    def getSubclassFromModule_(module, class_):
+        '''Get the subclass of a class from a specific module.'''
+        name = class_.__name__ + 'Sub'
+        if hasattr(module, name):
+            return getattr(module, name)
+        else:
+            return None
 
 
 #
@@ -374,6 +411,11 @@ ExternalEncoding = 'ascii'
 Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
+CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
+
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
 
 #
 # Support/utility functions.
@@ -387,19 +429,32 @@ def showIndent(outfile, level, pretty_print=True):
 
 
 def quote_xml(inStr):
+    "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%s' % inStr)
-    s1 = s1.replace('&', '&amp;')
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
+    s2 = ''
+    pos = 0
+    matchobjects = CDATA_pattern_.finditer(s1)
+    for mo in matchobjects:
+        s3 = s1[pos:mo.start()]
+        s2 += quote_xml_aux(s3)
+        s2 += s1[mo.start():mo.end()]
+        pos = mo.end()
+    s3 = s1[pos:]
+    s2 += quote_xml_aux(s3)
+    return s2
+
+
+def quote_xml_aux(inStr):
+    s1 = inStr.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     return s1
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -459,11 +514,7 @@ class GDSParseError(Exception):
 
 
 def raise_parse_error(node, msg):
-    if XMLParser_import_library == XMLParser_import_lxml:
-        msg = '%s (element %s/line %d)' % (
-            msg, node.tag, node.sourceline, )
-    else:
-        msg = '%s (element %s)' % (msg, node.tag, )
+    msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline, )
     raise GDSParseError(msg)
 
 
@@ -504,7 +555,8 @@ class MixedContainer:
         elif self.category == MixedContainer.CategorySimple:
             self.exportSimple(outfile, level, name)
         else:    # category == MixedContainer.CategoryComplex
-            self.value.export(outfile, level, namespace, name, pretty_print)
+            self.value.export(
+                outfile, level, namespace, name, pretty_print=pretty_print)
     def exportSimple(self, outfile, level, name):
         if self.content_type == MixedContainer.TypeString:
             outfile.write('<%s>%s</%s>' % (
@@ -610,29 +662,37 @@ def _cast(typ, value):
 
 class GetUserReq(GeneratedsSuper):
     member_data_items_ = [
+        MemberSpec_('sequence', 'xsd:unsignedLong', 0),
+        MemberSpec_('value01', 'xsd:string', 0),
+        MemberSpec_('value02', 'xsd:integer', 0),
+        MemberSpec_('value03', 'xsd:string', 0),
         MemberSpec_('value04', 'xsd:integer', 0),
         MemberSpec_('value05', 'xsd:string', 0),
         MemberSpec_('value06', 'xsd:integer', 0),
         MemberSpec_('value07', 'xsd:integer', 0),
-        MemberSpec_('value01', 'xsd:string', 0),
-        MemberSpec_('value02', 'xsd:integer', 0),
-        MemberSpec_('value03', 'xsd:string', 0),
-        MemberSpec_('sequence', 'xsd:unsignedLong', 0),
+        MemberSpec_('value08', 'xsd:string', 0),
         MemberSpec_('returnedTags', 'xsd:string', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, value04=None, value05=None, value06=None, value07=None, value01=None, value02=None, value03=None, sequence=None, returnedTags=None):
+    def __init__(self, sequence=None, value01=None, value02=None, value03=None, value04=None, value05=None, value06=None, value07=None, value08=None, returnedTags=None):
+        self.original_tagname_ = None
+        self.sequence = _cast(int, sequence)
+        self.value01 = _cast(None, value01)
+        self.value02 = _cast(int, value02)
+        self.value03 = _cast(None, value03)
         self.value04 = _cast(int, value04)
         self.value05 = _cast(None, value05)
         self.value06 = _cast(int, value06)
         self.value07 = _cast(int, value07)
-        self.value01 = _cast(None, value01)
-        self.value02 = _cast(int, value02)
-        self.value03 = _cast(None, value03)
-        self.sequence = _cast(int, sequence)
+        self.value08 = _cast(None, value08)
         self.returnedTags = returnedTags
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, GetUserReq)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if GetUserReq.subclass:
             return GetUserReq.subclass(*args_, **kwargs_)
         else:
@@ -640,6 +700,14 @@ class GetUserReq(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_returnedTags(self): return self.returnedTags
     def set_returnedTags(self, returnedTags): self.returnedTags = returnedTags
+    def get_sequence(self): return self.sequence
+    def set_sequence(self, sequence): self.sequence = sequence
+    def get_value01(self): return self.value01
+    def set_value01(self, value01): self.value01 = value01
+    def get_value02(self): return self.value02
+    def set_value02(self, value02): self.value02 = value02
+    def get_value03(self): return self.value03
+    def set_value03(self, value03): self.value03 = value03
     def get_value04(self): return self.value04
     def set_value04(self, value04): self.value04 = value04
     def get_value05(self): return self.value05
@@ -648,14 +716,8 @@ class GetUserReq(GeneratedsSuper):
     def set_value06(self, value06): self.value06 = value06
     def get_value07(self): return self.value07
     def set_value07(self, value07): self.value07 = value07
-    def get_value01(self): return self.value01
-    def set_value01(self, value01): self.value01 = value01
-    def get_value02(self): return self.value02
-    def set_value02(self, value02): self.value02 = value02
-    def get_value03(self): return self.value03
-    def set_value03(self, value03): self.value03 = value03
-    def get_sequence(self): return self.sequence
-    def set_sequence(self, sequence): self.sequence = sequence
+    def get_value08(self): return self.value08
+    def set_value08(self, value08): self.value08 = value08
     def hasContent_(self):
         if (
             self.returnedTags is not None
@@ -668,42 +730,47 @@ class GetUserReq(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='GetUserReq')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='GetUserReq', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='GetUserReq'):
+        if self.sequence is not None and 'sequence' not in already_processed:
+            already_processed.add('sequence')
+            outfile.write(' sequence="%s"' % self.gds_format_integer(self.sequence, input_name='sequence'))
+        if self.value01 is not None and 'value01' not in already_processed:
+            already_processed.add('value01')
+            outfile.write(' value01=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.value01), input_name='value01')), ))
+        if self.value02 is not None and 'value02' not in already_processed:
+            already_processed.add('value02')
+            outfile.write(' value02="%s"' % self.gds_format_integer(self.value02, input_name='value02'))
+        if self.value03 is not None and 'value03' not in already_processed:
+            already_processed.add('value03')
+            outfile.write(' value03=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.value03), input_name='value03')), ))
         if self.value04 is not None and 'value04' not in already_processed:
             already_processed.add('value04')
             outfile.write(' value04="%s"' % self.gds_format_integer(self.value04, input_name='value04'))
         if self.value05 is not None and 'value05' not in already_processed:
             already_processed.add('value05')
-            outfile.write(' value05=%s' % (self.gds_format_string(quote_attrib(self.value05).encode(ExternalEncoding), input_name='value05'), ))
+            outfile.write(' value05=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.value05), input_name='value05')), ))
         if self.value06 is not None and 'value06' not in already_processed:
             already_processed.add('value06')
             outfile.write(' value06="%s"' % self.gds_format_integer(self.value06, input_name='value06'))
         if self.value07 is not None and 'value07' not in already_processed:
             already_processed.add('value07')
             outfile.write(' value07="%s"' % self.gds_format_integer(self.value07, input_name='value07'))
-        if self.value01 is not None and 'value01' not in already_processed:
-            already_processed.add('value01')
-            outfile.write(' value01=%s' % (self.gds_format_string(quote_attrib(self.value01).encode(ExternalEncoding), input_name='value01'), ))
-        if self.value02 is not None and 'value02' not in already_processed:
-            already_processed.add('value02')
-            outfile.write(' value02="%s"' % self.gds_format_integer(self.value02, input_name='value02'))
-        if self.value03 is not None and 'value03' not in already_processed:
-            already_processed.add('value03')
-            outfile.write(' value03=%s' % (self.gds_format_string(quote_attrib(self.value03).encode(ExternalEncoding), input_name='value03'), ))
-        if self.sequence is not None and 'sequence' not in already_processed:
-            already_processed.add('sequence')
-            outfile.write(' sequence="%s"' % self.gds_format_integer(self.sequence, input_name='sequence'))
+        if self.value08 is not None and 'value08' not in already_processed:
+            already_processed.add('value08')
+            outfile.write(' value08=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.value08), input_name='value08')), ))
     def exportChildren(self, outfile, level, namespace_='', name_='GetUserReq', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -711,81 +778,21 @@ class GetUserReq(GeneratedsSuper):
             eol_ = ''
         if self.returnedTags is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sreturnedTags>%s</%sreturnedTags>%s' % (namespace_, self.gds_format_string(quote_xml(self.returnedTags).encode(ExternalEncoding), input_name='returnedTags'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='GetUserReq'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.value04 is not None and 'value04' not in already_processed:
-            already_processed.add('value04')
-            showIndent(outfile, level)
-            outfile.write('value04=%d,\n' % (self.value04,))
-        if self.value05 is not None and 'value05' not in already_processed:
-            already_processed.add('value05')
-            showIndent(outfile, level)
-            outfile.write('value05="%s",\n' % (self.value05,))
-        if self.value06 is not None and 'value06' not in already_processed:
-            already_processed.add('value06')
-            showIndent(outfile, level)
-            outfile.write('value06=%d,\n' % (self.value06,))
-        if self.value07 is not None and 'value07' not in already_processed:
-            already_processed.add('value07')
-            showIndent(outfile, level)
-            outfile.write('value07=%d,\n' % (self.value07,))
-        if self.value01 is not None and 'value01' not in already_processed:
-            already_processed.add('value01')
-            showIndent(outfile, level)
-            outfile.write('value01="%s",\n' % (self.value01,))
-        if self.value02 is not None and 'value02' not in already_processed:
-            already_processed.add('value02')
-            showIndent(outfile, level)
-            outfile.write('value02=%d,\n' % (self.value02,))
-        if self.value03 is not None and 'value03' not in already_processed:
-            already_processed.add('value03')
-            showIndent(outfile, level)
-            outfile.write('value03="%s",\n' % (self.value03,))
-        if self.sequence is not None and 'sequence' not in already_processed:
-            already_processed.add('sequence')
-            showIndent(outfile, level)
-            outfile.write('sequence=%d,\n' % (self.sequence,))
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.returnedTags is not None:
-            showIndent(outfile, level)
-            outfile.write('returnedTags=%s,\n' % quote_python(self.returnedTags).encode(ExternalEncoding))
+            outfile.write('<%sreturnedTags>%s</%sreturnedTags>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.returnedTags), input_name='returnedTags')), namespace_, eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('value04', node)
-        if value is not None and 'value04' not in already_processed:
-            already_processed.add('value04')
+        value = find_attr_value_('sequence', node)
+        if value is not None and 'sequence' not in already_processed:
+            already_processed.add('sequence')
             try:
-                self.value04 = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('value05', node)
-        if value is not None and 'value05' not in already_processed:
-            already_processed.add('value05')
-            self.value05 = value
-        value = find_attr_value_('value06', node)
-        if value is not None and 'value06' not in already_processed:
-            already_processed.add('value06')
-            try:
-                self.value06 = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('value07', node)
-        if value is not None and 'value07' not in already_processed:
-            already_processed.add('value07')
-            try:
-                self.value07 = int(value)
-            except ValueError, exp:
+                self.sequence = int(value)
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
         value = find_attr_value_('value01', node)
         if value is not None and 'value01' not in already_processed:
@@ -796,19 +803,41 @@ class GetUserReq(GeneratedsSuper):
             already_processed.add('value02')
             try:
                 self.value02 = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
         value = find_attr_value_('value03', node)
         if value is not None and 'value03' not in already_processed:
             already_processed.add('value03')
             self.value03 = value
-        value = find_attr_value_('sequence', node)
-        if value is not None and 'sequence' not in already_processed:
-            already_processed.add('sequence')
+        value = find_attr_value_('value04', node)
+        if value is not None and 'value04' not in already_processed:
+            already_processed.add('value04')
             try:
-                self.sequence = int(value)
-            except ValueError, exp:
+                self.value04 = int(value)
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+        value = find_attr_value_('value05', node)
+        if value is not None and 'value05' not in already_processed:
+            already_processed.add('value05')
+            self.value05 = value
+        value = find_attr_value_('value06', node)
+        if value is not None and 'value06' not in already_processed:
+            already_processed.add('value06')
+            try:
+                self.value06 = int(value)
+            except ValueError as exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+        value = find_attr_value_('value07', node)
+        if value is not None and 'value07' not in already_processed:
+            already_processed.add('value07')
+            try:
+                self.value07 = int(value)
+            except ValueError as exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+        value = find_attr_value_('value08', node)
+        if value is not None and 'value08' not in already_processed:
+            already_processed.add('value08')
+            self.value08 = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'returnedTags':
             returnedTags_ = child_.text
@@ -828,7 +857,7 @@ Usage: python <Parser>.py [ -s ] <in_xml_file>
 
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 
@@ -841,11 +870,12 @@ def get_root_tag(node):
 
 
 def parse(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'getUser'
+        rootTag = 'GetUserReq'
         rootClass = GetUserReq
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -861,11 +891,12 @@ def parse(inFileName, silence=False):
 
 
 def parseEtree(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'getUser'
+        rootTag = 'GetUserReq'
         rootClass = GetUserReq
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -884,12 +915,16 @@ def parseEtree(inFileName, silence=False):
 
 
 def parseString(inString, silence=False):
-    from StringIO import StringIO
-    doc = parsexml_(StringIO(inString))
+    if sys.version_info.major == 2:
+        from StringIO import StringIO as IOBuffer
+    else:
+        from io import BytesIO as IOBuffer
+    parser = None
+    doc = parsexml_(IOBuffer(inString), parser)
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'GetUserReq'
         rootClass = GetUserReq
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -898,17 +933,18 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="getUser",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='')
     return rootObj
 
 
 def parseLiteral(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'getUser'
+        rootTag = 'GetUserReq'
         rootClass = GetUserReq
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -917,7 +953,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from attr_groups2_sup import *\n\n')
 ##         sys.stdout.write('import attr_groups2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj

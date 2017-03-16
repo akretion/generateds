@@ -4,66 +4,54 @@
 #
 # Generated  by generateDS.py.
 #
+# Command line options:
+#   ('--no-dates', '')
+#   ('--no-versions', '')
+#   ('--silence', '')
+#   ('--member-specs', 'list')
+#   ('-f', '')
+#   ('-o', 'tests/simpletypes_other2_sup.py')
+#   ('-s', 'tests/simpletypes_other2_sub.py')
+#   ('--super', 'simpletypes_other2_sup')
+#
+# Command line arguments:
+#   tests/simpletypes_other.xsd
+#
+# Command line:
+#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/simpletypes_other2_sup.py" -s "tests/simpletypes_other2_sub.py" --super="simpletypes_other2_sup" tests/simpletypes_other.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
-import getopt
 import re as re_
 import base64
 import datetime as datetime_
-
-etree_ = None
-Verbose_import_ = False
-(
-    XMLParser_import_none, XMLParser_import_lxml,
-    XMLParser_import_elementtree
-) = range(3)
-XMLParser_import_library = None
+import warnings as warnings_
 try:
-    # lxml
     from lxml import etree as etree_
-    XMLParser_import_library = XMLParser_import_lxml
-    if Verbose_import_:
-        print("running with lxml.etree")
 except ImportError:
-    try:
-        # cElementTree from Python 2.5+
-        import xml.etree.cElementTree as etree_
-        XMLParser_import_library = XMLParser_import_elementtree
-        if Verbose_import_:
-            print("running with cElementTree on Python 2.5+")
-    except ImportError:
-        try:
-            # ElementTree from Python 2.5+
-            import xml.etree.ElementTree as etree_
-            XMLParser_import_library = XMLParser_import_elementtree
-            if Verbose_import_:
-                print("running with ElementTree on Python 2.5+")
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree_
-                XMLParser_import_library = XMLParser_import_elementtree
-                if Verbose_import_:
-                    print("running with cElementTree")
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree_
-                    XMLParser_import_library = XMLParser_import_elementtree
-                    if Verbose_import_:
-                        print("running with ElementTree")
-                except ImportError:
-                    raise ImportError(
-                        "Failed to import ElementTree from any known place")
+    from xml.etree import ElementTree as etree_
 
 
-def parsexml_(*args, **kwargs):
-    if (XMLParser_import_library == XMLParser_import_lxml and
-            'parser' not in kwargs):
+Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
+
+
+def parsexml_(infile, parser=None, **kwargs):
+    if parser is None:
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
-        kwargs['parser'] = etree_.ETCompatXMLParser()
-    doc = etree_.parse(*args, **kwargs)
+        try:
+            parser = etree_.ETCompatXMLParser()
+        except AttributeError:
+            # fallback to xml.etree
+            parser = etree_.XMLParser()
+    doc = etree_.parse(infile, parser=parser, **kwargs)
     return doc
 
 #
@@ -75,7 +63,7 @@ def parsexml_(*args, **kwargs):
 
 try:
     from generatedssuper import GeneratedsSuper
-except ImportError, exp:
+except ImportError as exp:
 
     class GeneratedsSuper(object):
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
@@ -91,61 +79,68 @@ except ImportError, exp:
                 return None
         def gds_format_string(self, input_data, input_name=''):
             return input_data
-        def gds_validate_string(self, input_data, node, input_name=''):
-            return input_data
+        def gds_validate_string(self, input_data, node=None, input_name=''):
+            if not input_data:
+                return ''
+            else:
+                return input_data
         def gds_format_base64(self, input_data, input_name=''):
             return base64.b64encode(input_data)
-        def gds_validate_base64(self, input_data, node, input_name=''):
+        def gds_validate_base64(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer(self, input_data, input_name=''):
             return '%d' % input_data
-        def gds_validate_integer(self, input_data, node, input_name=''):
+        def gds_validate_integer(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_integer_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_integer_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
-                    float(value)
+                    int(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of integers')
-            return input_data
+            return values
         def gds_format_float(self, input_data, input_name=''):
             return ('%.15f' % input_data).rstrip('0')
-        def gds_validate_float(self, input_data, node, input_name=''):
+        def gds_validate_float(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_float_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_float_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_float_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of floats')
-            return input_data
+            return values
         def gds_format_double(self, input_data, input_name=''):
             return '%e' % input_data
-        def gds_validate_double(self, input_data, node, input_name=''):
+        def gds_validate_double(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_double_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_double_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_double_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of doubles')
-            return input_data
+            return values
         def gds_format_boolean(self, input_data, input_name=''):
             return ('%s' % input_data).lower()
-        def gds_validate_boolean(self, input_data, node, input_name=''):
+        def gds_validate_boolean(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_boolean_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_boolean_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 if value not in ('true', '1', 'false', '0', ):
@@ -153,8 +148,8 @@ except ImportError, exp:
                         node,
                         'Requires sequence of booleans '
                         '("true", "1", "false", "0")')
-            return input_data
-        def gds_validate_datetime(self, input_data, node, input_name=''):
+            return values
+        def gds_validate_datetime(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -208,7 +203,10 @@ except ImportError, exp:
                     tz = GeneratedsSuper._FixedOffsetTZ(
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
-            if len(input_data.split('.')) > 1:
+            time_parts = input_data.split('.')
+            if len(time_parts) > 1:
+                micro_seconds = int(float('0.' + time_parts[1]) * 1000000)
+                input_data = '%s.%s' % (time_parts[0], micro_seconds, )
                 dt = datetime_.datetime.strptime(
                     input_data, '%Y-%m-%dT%H:%M:%S.%f')
             else:
@@ -216,7 +214,7 @@ except ImportError, exp:
                     input_data, '%Y-%m-%dT%H:%M:%S')
             dt = dt.replace(tzinfo=tz)
             return dt
-        def gds_validate_date(self, input_data, node, input_name=''):
+        def gds_validate_date(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
             _svalue = '%04d-%02d-%02d' % (
@@ -239,7 +237,8 @@ except ImportError, exp:
                                 _svalue += '+'
                             hours = total_seconds // 3600
                             minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            _svalue += '{0:02d}:{1:02d}'.format(
+                                hours, minutes)
             except AttributeError:
                 pass
             return _svalue
@@ -262,7 +261,7 @@ except ImportError, exp:
             dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
             dt = dt.replace(tzinfo=tz)
             return dt.date()
-        def gds_validate_time(self, input_data, node, input_name=''):
+        def gds_validate_time(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_time(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -294,6 +293,21 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
+        def gds_validate_simple_patterns(self, patterns, target):
+            # pat is a list of lists of strings/patterns.  We should:
+            # - AND the outer elements
+            # - OR the inner elements
+            found1 = True
+            for patterns1 in patterns:
+                found2 = False
+                for patterns2 in patterns1:
+                    if re_.search(patterns2, target) is not None:
+                        found2 = True
+                        break
+                if not found2:
+                    found1 = False
+                    break
+            return found1
         @classmethod
         def gds_parse_time(cls, input_data):
             tz = None
@@ -349,6 +363,29 @@ except ImportError, exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
+        @staticmethod
+        def convert_unicode(instring):
+            if isinstance(instring, str):
+                result = quote_xml(instring)
+            elif sys.version_info.major == 2 and isinstance(instring, unicode):
+                result = quote_xml(instring).encode('utf8')
+            else:
+                result = GeneratedsSuper.gds_encode(str(instring))
+            return result
+
+    def getSubclassFromModule_(module, class_):
+        '''Get the subclass of a class from a specific module.'''
+        name = class_.__name__ + 'Sub'
+        if hasattr(module, name):
+            return getattr(module, name)
+        else:
+            return None
 
 
 #
@@ -374,6 +411,11 @@ ExternalEncoding = 'ascii'
 Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
+CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
+
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
 
 #
 # Support/utility functions.
@@ -387,19 +429,32 @@ def showIndent(outfile, level, pretty_print=True):
 
 
 def quote_xml(inStr):
+    "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%s' % inStr)
-    s1 = s1.replace('&', '&amp;')
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
+    s2 = ''
+    pos = 0
+    matchobjects = CDATA_pattern_.finditer(s1)
+    for mo in matchobjects:
+        s3 = s1[pos:mo.start()]
+        s2 += quote_xml_aux(s3)
+        s2 += s1[mo.start():mo.end()]
+        pos = mo.end()
+    s3 = s1[pos:]
+    s2 += quote_xml_aux(s3)
+    return s2
+
+
+def quote_xml_aux(inStr):
+    s1 = inStr.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     return s1
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -459,11 +514,7 @@ class GDSParseError(Exception):
 
 
 def raise_parse_error(node, msg):
-    if XMLParser_import_library == XMLParser_import_lxml:
-        msg = '%s (element %s/line %d)' % (
-            msg, node.tag, node.sourceline, )
-    else:
-        msg = '%s (element %s)' % (msg, node.tag, )
+    msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline, )
     raise GDSParseError(msg)
 
 
@@ -504,7 +555,8 @@ class MixedContainer:
         elif self.category == MixedContainer.CategorySimple:
             self.exportSimple(outfile, level, name)
         else:    # category == MixedContainer.CategoryComplex
-            self.value.export(outfile, level, namespace, name, pretty_print)
+            self.value.export(
+                outfile, level, namespace, name, pretty_print=pretty_print)
     def exportSimple(self, outfile, level, name):
         if self.content_type == MixedContainer.TypeString:
             outfile.write('<%s>%s</%s>' % (
@@ -610,16 +662,22 @@ def _cast(typ, value):
 
 class simpleTypeTestsType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('simpleTypeTest', 'simpleTypeTest', 1),
+        MemberSpec_('simpleTypeTest', 'simpleTypeTestDefs', 1),
     ]
     subclass = None
     superclass = None
     def __init__(self, simpleTypeTest=None):
+        self.original_tagname_ = None
         if simpleTypeTest is None:
             self.simpleTypeTest = []
         else:
             self.simpleTypeTest = simpleTypeTest
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, simpleTypeTestsType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if simpleTypeTestsType.subclass:
             return simpleTypeTestsType.subclass(*args_, **kwargs_)
         else:
@@ -628,7 +686,8 @@ class simpleTypeTestsType(GeneratedsSuper):
     def get_simpleTypeTest(self): return self.simpleTypeTest
     def set_simpleTypeTest(self, simpleTypeTest): self.simpleTypeTest = simpleTypeTest
     def add_simpleTypeTest(self, value): self.simpleTypeTest.append(value)
-    def insert_simpleTypeTest(self, index, value): self.simpleTypeTest[index] = value
+    def insert_simpleTypeTest_at(self, index, value): self.simpleTypeTest.insert(index, value)
+    def replace_simpleTypeTest_at(self, index, value): self.simpleTypeTest[index] = value
     def hasContent_(self):
         if (
             self.simpleTypeTest
@@ -641,13 +700,15 @@ class simpleTypeTestsType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='simpleTypeTestsType')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='simpleTypeTestsType', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -660,43 +721,26 @@ class simpleTypeTestsType(GeneratedsSuper):
         else:
             eol_ = ''
         for simpleTypeTest_ in self.simpleTypeTest:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<%ssimpleTypeTest>%s</%ssimpleTypeTest>%s' % (namespace_, self.gds_format_string(quote_xml(simpleTypeTest_).encode(ExternalEncoding), input_name='simpleTypeTest'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='simpleTypeTestsType'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('simpleTypeTest=[\n')
-        level += 1
-        for simpleTypeTest_ in self.simpleTypeTest:
-            showIndent(outfile, level)
-            outfile.write('%s,\n' % quote_python(simpleTypeTest_).encode(ExternalEncoding))
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
+            simpleTypeTest_.export(outfile, level, namespace_, name_='simpleTypeTest', pretty_print=pretty_print)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'simpleTypeTest':
-            simpleTypeTest_ = child_.text
-            simpleTypeTest_ = self.gds_validate_string(simpleTypeTest_, node, 'simpleTypeTest')
-            self.simpleTypeTest.append(simpleTypeTest_)
+            obj_ = simpleTypeTestDefs.factory()
+            obj_.build(child_)
+            self.simpleTypeTest.append(obj_)
+            obj_.original_tagname_ = 'simpleTypeTest'
 # end class simpleTypeTestsType
 
 
-class simpleTypeTest(GeneratedsSuper):
+class simpleTypeTestDefs(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('datetime1', 'xs:gYear', 0),
         MemberSpec_('datetime2', 'xs:gYearMonth', 0),
@@ -723,6 +767,7 @@ class simpleTypeTest(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, datetime1=None, datetime2=None, datetime3=None, datetime4=None, datetime5=None, integerVal1=None, integerVal2=None, stringVal1=None, stringVal2=None, booleanVal1=None, booleanVal2=None, decimalVal1=None, decimalVal2=None, doubleVal1=None, doubleVal2=None, floatVal1=None, floatVal2=None, dateVal1=None, dateVal2=None, dateTimeVal1=None, dateTimeVal2=None):
+        self.original_tagname_ = None
         self.datetime1 = datetime1
         self.datetime2 = datetime2
         self.datetime3 = datetime3
@@ -758,7 +803,7 @@ class simpleTypeTest(GeneratedsSuper):
             self.floatVal2 = []
         else:
             self.floatVal2 = floatVal2
-        if isinstance(dateVal1, basestring):
+        if isinstance(dateVal1, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(dateVal1, '%Y-%m-%d').date()
         else:
             initvalue_ = dateVal1
@@ -767,7 +812,7 @@ class simpleTypeTest(GeneratedsSuper):
             self.dateVal2 = []
         else:
             self.dateVal2 = dateVal2
-        if isinstance(dateTimeVal1, basestring):
+        if isinstance(dateTimeVal1, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(dateTimeVal1, '%Y-%m-%dT%H:%M:%S')
         else:
             initvalue_ = dateTimeVal1
@@ -777,10 +822,15 @@ class simpleTypeTest(GeneratedsSuper):
         else:
             self.dateTimeVal2 = dateTimeVal2
     def factory(*args_, **kwargs_):
-        if simpleTypeTest.subclass:
-            return simpleTypeTest.subclass(*args_, **kwargs_)
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, simpleTypeTestDefs)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if simpleTypeTestDefs.subclass:
+            return simpleTypeTestDefs.subclass(*args_, **kwargs_)
         else:
-            return simpleTypeTest(*args_, **kwargs_)
+            return simpleTypeTestDefs(*args_, **kwargs_)
     factory = staticmethod(factory)
     def get_datetime1(self): return self.datetime1
     def set_datetime1(self, datetime1): self.datetime1 = datetime1
@@ -797,49 +847,57 @@ class simpleTypeTest(GeneratedsSuper):
     def get_integerVal2(self): return self.integerVal2
     def set_integerVal2(self, integerVal2): self.integerVal2 = integerVal2
     def add_integerVal2(self, value): self.integerVal2.append(value)
-    def insert_integerVal2(self, index, value): self.integerVal2[index] = value
+    def insert_integerVal2_at(self, index, value): self.integerVal2.insert(index, value)
+    def replace_integerVal2_at(self, index, value): self.integerVal2[index] = value
     def get_stringVal1(self): return self.stringVal1
     def set_stringVal1(self, stringVal1): self.stringVal1 = stringVal1
     def get_stringVal2(self): return self.stringVal2
     def set_stringVal2(self, stringVal2): self.stringVal2 = stringVal2
     def add_stringVal2(self, value): self.stringVal2.append(value)
-    def insert_stringVal2(self, index, value): self.stringVal2[index] = value
+    def insert_stringVal2_at(self, index, value): self.stringVal2.insert(index, value)
+    def replace_stringVal2_at(self, index, value): self.stringVal2[index] = value
     def get_booleanVal1(self): return self.booleanVal1
     def set_booleanVal1(self, booleanVal1): self.booleanVal1 = booleanVal1
     def get_booleanVal2(self): return self.booleanVal2
     def set_booleanVal2(self, booleanVal2): self.booleanVal2 = booleanVal2
     def add_booleanVal2(self, value): self.booleanVal2.append(value)
-    def insert_booleanVal2(self, index, value): self.booleanVal2[index] = value
+    def insert_booleanVal2_at(self, index, value): self.booleanVal2.insert(index, value)
+    def replace_booleanVal2_at(self, index, value): self.booleanVal2[index] = value
     def get_decimalVal1(self): return self.decimalVal1
     def set_decimalVal1(self, decimalVal1): self.decimalVal1 = decimalVal1
     def get_decimalVal2(self): return self.decimalVal2
     def set_decimalVal2(self, decimalVal2): self.decimalVal2 = decimalVal2
     def add_decimalVal2(self, value): self.decimalVal2.append(value)
-    def insert_decimalVal2(self, index, value): self.decimalVal2[index] = value
+    def insert_decimalVal2_at(self, index, value): self.decimalVal2.insert(index, value)
+    def replace_decimalVal2_at(self, index, value): self.decimalVal2[index] = value
     def get_doubleVal1(self): return self.doubleVal1
     def set_doubleVal1(self, doubleVal1): self.doubleVal1 = doubleVal1
     def get_doubleVal2(self): return self.doubleVal2
     def set_doubleVal2(self, doubleVal2): self.doubleVal2 = doubleVal2
     def add_doubleVal2(self, value): self.doubleVal2.append(value)
-    def insert_doubleVal2(self, index, value): self.doubleVal2[index] = value
+    def insert_doubleVal2_at(self, index, value): self.doubleVal2.insert(index, value)
+    def replace_doubleVal2_at(self, index, value): self.doubleVal2[index] = value
     def get_floatVal1(self): return self.floatVal1
     def set_floatVal1(self, floatVal1): self.floatVal1 = floatVal1
     def get_floatVal2(self): return self.floatVal2
     def set_floatVal2(self, floatVal2): self.floatVal2 = floatVal2
     def add_floatVal2(self, value): self.floatVal2.append(value)
-    def insert_floatVal2(self, index, value): self.floatVal2[index] = value
+    def insert_floatVal2_at(self, index, value): self.floatVal2.insert(index, value)
+    def replace_floatVal2_at(self, index, value): self.floatVal2[index] = value
     def get_dateVal1(self): return self.dateVal1
     def set_dateVal1(self, dateVal1): self.dateVal1 = dateVal1
     def get_dateVal2(self): return self.dateVal2
     def set_dateVal2(self, dateVal2): self.dateVal2 = dateVal2
     def add_dateVal2(self, value): self.dateVal2.append(value)
-    def insert_dateVal2(self, index, value): self.dateVal2[index] = value
+    def insert_dateVal2_at(self, index, value): self.dateVal2.insert(index, value)
+    def replace_dateVal2_at(self, index, value): self.dateVal2[index] = value
     def get_dateTimeVal1(self): return self.dateTimeVal1
     def set_dateTimeVal1(self, dateTimeVal1): self.dateTimeVal1 = dateTimeVal1
     def get_dateTimeVal2(self): return self.dateTimeVal2
     def set_dateTimeVal2(self, dateTimeVal2): self.dateTimeVal2 = dateTimeVal2
     def add_dateTimeVal2(self, value): self.dateTimeVal2.append(value)
-    def insert_dateTimeVal2(self, index, value): self.dateTimeVal2[index] = value
+    def insert_dateTimeVal2_at(self, index, value): self.dateTimeVal2.insert(index, value)
+    def replace_dateTimeVal2_at(self, index, value): self.dateTimeVal2[index] = value
     def hasContent_(self):
         if (
             self.datetime1 is not None or
@@ -867,44 +925,46 @@ class simpleTypeTest(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='simpleTypeTest', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='simpleTypeTestDefs', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='simpleTypeTest')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='simpleTypeTestDefs')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='simpleTypeTestDefs', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='simpleTypeTest'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='simpleTypeTestDefs'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='simpleTypeTest', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='simpleTypeTestDefs', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
         if self.datetime1 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime1>%s</%sdatetime1>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime1).encode(ExternalEncoding), input_name='datetime1'), namespace_, eol_))
+            outfile.write('<%sdatetime1>%s</%sdatetime1>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.datetime1), input_name='datetime1')), namespace_, eol_))
         if self.datetime2 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime2>%s</%sdatetime2>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime2).encode(ExternalEncoding), input_name='datetime2'), namespace_, eol_))
+            outfile.write('<%sdatetime2>%s</%sdatetime2>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.datetime2), input_name='datetime2')), namespace_, eol_))
         if self.datetime3 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime3>%s</%sdatetime3>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime3).encode(ExternalEncoding), input_name='datetime3'), namespace_, eol_))
+            outfile.write('<%sdatetime3>%s</%sdatetime3>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.datetime3), input_name='datetime3')), namespace_, eol_))
         if self.datetime4 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime4>%s</%sdatetime4>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime4).encode(ExternalEncoding), input_name='datetime4'), namespace_, eol_))
+            outfile.write('<%sdatetime4>%s</%sdatetime4>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.datetime4), input_name='datetime4')), namespace_, eol_))
         if self.datetime5 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdatetime5>%s</%sdatetime5>%s' % (namespace_, self.gds_format_string(quote_xml(self.datetime5).encode(ExternalEncoding), input_name='datetime5'), namespace_, eol_))
+            outfile.write('<%sdatetime5>%s</%sdatetime5>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.datetime5), input_name='datetime5')), namespace_, eol_))
         if self.integerVal1 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sintegerVal1>%s</%sintegerVal1>%s' % (namespace_, self.gds_format_integer(self.integerVal1, input_name='integerVal1'), namespace_, eol_))
@@ -913,10 +973,10 @@ class simpleTypeTest(GeneratedsSuper):
             outfile.write('<%sintegerVal2>%s</%sintegerVal2>%s' % (namespace_, self.gds_format_integer(integerVal2_, input_name='integerVal2'), namespace_, eol_))
         if self.stringVal1 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstringVal1>%s</%sstringVal1>%s' % (namespace_, self.gds_format_string(quote_xml(self.stringVal1).encode(ExternalEncoding), input_name='stringVal1'), namespace_, eol_))
+            outfile.write('<%sstringVal1>%s</%sstringVal1>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.stringVal1), input_name='stringVal1')), namespace_, eol_))
         for stringVal2_ in self.stringVal2:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sstringVal2>%s</%sstringVal2>%s' % (namespace_, self.gds_format_string(quote_xml(stringVal2_).encode(ExternalEncoding), input_name='stringVal2'), namespace_, eol_))
+            outfile.write('<%sstringVal2>%s</%sstringVal2>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(stringVal2_), input_name='stringVal2')), namespace_, eol_))
         if self.booleanVal1 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sbooleanVal1>%s</%sbooleanVal1>%s' % (namespace_, self.gds_format_boolean(self.booleanVal1, input_name='booleanVal1'), namespace_, eol_))
@@ -953,132 +1013,13 @@ class simpleTypeTest(GeneratedsSuper):
         for dateTimeVal2_ in self.dateTimeVal2:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sdateTimeVal2>%s</%sdateTimeVal2>%s' % (namespace_, self.gds_format_datetime(dateTimeVal2_, input_name='dateTimeVal2'), namespace_, eol_))
-    def exportLiteral(self, outfile, level, name_='simpleTypeTest'):
-        level += 1
-        already_processed = set()
-        self.exportLiteralAttributes(outfile, level, already_processed, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.datetime1 is not None:
-            showIndent(outfile, level)
-            outfile.write('datetime1=%s,\n' % quote_python(self.datetime1).encode(ExternalEncoding))
-        if self.datetime2 is not None:
-            showIndent(outfile, level)
-            outfile.write('datetime2=%s,\n' % quote_python(self.datetime2).encode(ExternalEncoding))
-        if self.datetime3 is not None:
-            showIndent(outfile, level)
-            outfile.write('datetime3=%s,\n' % quote_python(self.datetime3).encode(ExternalEncoding))
-        if self.datetime4 is not None:
-            showIndent(outfile, level)
-            outfile.write('datetime4=%s,\n' % quote_python(self.datetime4).encode(ExternalEncoding))
-        if self.datetime5 is not None:
-            showIndent(outfile, level)
-            outfile.write('datetime5=%s,\n' % quote_python(self.datetime5).encode(ExternalEncoding))
-        if self.integerVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('integerVal1=%d,\n' % self.integerVal1)
-        showIndent(outfile, level)
-        outfile.write('integerVal2=[\n')
-        level += 1
-        for integerVal2_ in self.integerVal2:
-            showIndent(outfile, level)
-            outfile.write('%d,\n' % integerVal2_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.stringVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('stringVal1=%s,\n' % quote_python(self.stringVal1).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('stringVal2=[\n')
-        level += 1
-        for stringVal2_ in self.stringVal2:
-            showIndent(outfile, level)
-            outfile.write('%s,\n' % quote_python(stringVal2_).encode(ExternalEncoding))
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.booleanVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('booleanVal1=%s,\n' % self.booleanVal1)
-        showIndent(outfile, level)
-        outfile.write('booleanVal2=[\n')
-        level += 1
-        for booleanVal2_ in self.booleanVal2:
-            showIndent(outfile, level)
-            outfile.write('%s,\n' % booleanVal2_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.decimalVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('decimalVal1=%f,\n' % self.decimalVal1)
-        showIndent(outfile, level)
-        outfile.write('decimalVal2=[\n')
-        level += 1
-        for decimalVal2_ in self.decimalVal2:
-            showIndent(outfile, level)
-            outfile.write('%f,\n' % decimalVal2_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.doubleVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('doubleVal1=%e,\n' % self.doubleVal1)
-        showIndent(outfile, level)
-        outfile.write('doubleVal2=[\n')
-        level += 1
-        for doubleVal2_ in self.doubleVal2:
-            showIndent(outfile, level)
-            outfile.write('%e,\n' % doubleVal2_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.floatVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('floatVal1=%f,\n' % self.floatVal1)
-        showIndent(outfile, level)
-        outfile.write('floatVal2=[\n')
-        level += 1
-        for floatVal2_ in self.floatVal2:
-            showIndent(outfile, level)
-            outfile.write('%f,\n' % floatVal2_)
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.dateVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('dateVal1=model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(self.dateVal1, input_name='dateVal1'))
-        showIndent(outfile, level)
-        outfile.write('dateVal2=[\n')
-        level += 1
-        for dateVal2_ in self.dateVal2:
-            showIndent(outfile, level)
-            outfile.write('model_.GeneratedsSuper.gds_parse_date("%s"),\n' % self.gds_format_date(dateVal2_, input_name='dateVal2'))
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
-        if self.dateTimeVal1 is not None:
-            showIndent(outfile, level)
-            outfile.write('dateTimeVal1=model_.GeneratedsSuper.gds_parse_datetime("%s"),\n' % self.gds_format_datetime(self.dateTimeVal1, input_name='dateTimeVal1'))
-        showIndent(outfile, level)
-        outfile.write('dateTimeVal2=[\n')
-        level += 1
-        for dateTimeVal2_ in self.dateTimeVal2:
-            showIndent(outfile, level)
-            outfile.write('model_.GeneratedsSuper.gds_parse_datetime("%s"),\n' % self.gds_format_datetime(dateTimeVal2_, input_name='dateTimeVal2'))
-        level -= 1
-        showIndent(outfile, level)
-        outfile.write('],\n')
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -1106,7 +1047,7 @@ class simpleTypeTest(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'integerVal1')
             self.integerVal1 = ival_
@@ -1114,7 +1055,7 @@ class simpleTypeTest(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'integerVal2')
             self.integerVal2.append(ival_)
@@ -1150,7 +1091,7 @@ class simpleTypeTest(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'decimalVal1')
             self.decimalVal1 = fval_
@@ -1158,7 +1099,7 @@ class simpleTypeTest(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'decimalVal2')
             self.decimalVal2.append(fval_)
@@ -1166,7 +1107,7 @@ class simpleTypeTest(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'doubleVal1')
             self.doubleVal1 = fval_
@@ -1174,7 +1115,7 @@ class simpleTypeTest(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'doubleVal2')
             self.doubleVal2.append(fval_)
@@ -1182,7 +1123,7 @@ class simpleTypeTest(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'floatVal1')
             self.floatVal1 = fval_
@@ -1190,7 +1131,7 @@ class simpleTypeTest(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'floatVal2')
             self.floatVal2.append(fval_)
@@ -1210,10 +1151,11 @@ class simpleTypeTest(GeneratedsSuper):
             sval_ = child_.text
             dval_ = self.gds_parse_datetime(sval_)
             self.dateTimeVal2.append(dval_)
-# end class simpleTypeTest
+# end class simpleTypeTestDefs
 
 
 GDSClassesMapping = {
+    'simpleTypeTest': simpleTypeTestDefs,
     'simpleTypeTests': simpleTypeTestsType,
 }
 
@@ -1224,7 +1166,7 @@ Usage: python <Parser>.py [ -s ] <in_xml_file>
 
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 
@@ -1237,11 +1179,12 @@ def get_root_tag(node):
 
 
 def parse(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'simpleTypeTests'
+        rootTag = 'simpleTypeTestsType'
         rootClass = simpleTypeTestsType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1257,11 +1200,12 @@ def parse(inFileName, silence=False):
 
 
 def parseEtree(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'simpleTypeTests'
+        rootTag = 'simpleTypeTestsType'
         rootClass = simpleTypeTestsType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1280,12 +1224,16 @@ def parseEtree(inFileName, silence=False):
 
 
 def parseString(inString, silence=False):
-    from StringIO import StringIO
-    doc = parsexml_(StringIO(inString))
+    if sys.version_info.major == 2:
+        from StringIO import StringIO as IOBuffer
+    else:
+        from io import BytesIO as IOBuffer
+    parser = None
+    doc = parsexml_(IOBuffer(inString), parser)
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'simpleTypeTestsType'
         rootClass = simpleTypeTestsType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1294,17 +1242,18 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="simpleTypeTests",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='')
     return rootObj
 
 
 def parseLiteral(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'simpleTypeTests'
+        rootTag = 'simpleTypeTestsType'
         rootClass = simpleTypeTestsType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -1313,7 +1262,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from simpletypes_other2_sup import *\n\n')
 ##         sys.stdout.write('import simpletypes_other2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj
@@ -1333,6 +1282,6 @@ if __name__ == '__main__':
 
 
 __all__ = [
-    "simpleTypeTest",
+    "simpleTypeTestDefs",
     "simpleTypeTestsType"
 ]

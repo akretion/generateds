@@ -96,9 +96,17 @@ String_type_table = {
 }
 Date_type_table = {
     'date': None,
+    'gYear': None,
+    'gYearMonth': None,
+    'gMonth': None,
+    'gMonthDay': None,
+    'gDay': None,
 }
 DateTime_type_table = {
     'dateTime': None,
+}
+Time_type_table = {
+    'time': None,
 }
 Boolean_type_table = {
     'boolean': None,
@@ -111,14 +119,19 @@ Boolean_type_table = {
 class GeneratedsSuper(object):
     def gds_format_string(self, input_data, input_name=''):
         return input_data
+
     def gds_format_integer(self, input_data, input_name=''):
         return '%d' % input_data
+
     def gds_format_float(self, input_data, input_name=''):
         return '%f' % input_data
+
     def gds_format_double(self, input_data, input_name=''):
         return '%e' % input_data
+
     def gds_format_boolean(self, input_data, input_name=''):
         return '%s' % input_data
+
     def gds_str_lower(self, instring):
         return instring.lower()
 
@@ -178,6 +191,11 @@ class GeneratedsSuper(object):
                         name, options, ))
                     wrtforms('    %s = forms.DateTimeField(%s)\n' % (
                         name, options, ))
+                elif data_type in Time_type_table:
+                    wrtmodels('    %s = models.TimeField(%s)\n' % (
+                        name, options, ))
+                    wrtforms('    %s = forms.TimeField(%s)\n' % (
+                        name, options, ))
                 elif data_type in Boolean_type_table:
                     wrtmodels('    %s = models.BooleanField(%s)\n' % (
                         name, options, ))
@@ -186,20 +204,21 @@ class GeneratedsSuper(object):
                 elif data_type in String_type_table:
                     wrtmodels(
                         '    %s = models.CharField(max_length=1000, %s)\n' % (
-                        name, options, ))
+                            name, options, ))
                     wrtforms(
                         '    %s = forms.CharField(max_length=1000, %s)\n' % (
-                        name, options, ))
+                            name, options, ))
                 else:
                     sys.stderr.write('Unhandled simple type: %s %s\n' % (
                         name, data_type, ))
             else:
                 wrtmodels(
                     '    %s = models.ForeignKey("%s_model")\n' % (
-                    name, data_type, ))
+                        name, data_type, ))
                 wrtforms(
-                    '    %s = forms.MultipleChoiceField(%s_model.objects.all())\n' % (
-                    name, data_type, ))
+                    '    %s = forms.MultipleChoiceField(%s_model.objects'
+                    '.all())\n' % (
+                        name, data_type, ))
         wrtmodels('    def __unicode__(self):\n')
         wrtmodels('        return "id: %s" % (self.id, )\n')
 
@@ -212,5 +231,3 @@ def cleanupName(oldName):
     newName = newName.replace('-', '_')
     newName = newName.replace('.', '_')
     return newName
-
-

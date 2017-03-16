@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Synopsis:
-    Generate Python classes from XML Schema definition.
+    Generate Python classes from XML schema definition.
     Input is read from in_xsd_file or, if "-" (dash) arg, from stdin.
     Output is written to files named in "-o" and "-s" options.
 Usage:
@@ -18,16 +18,28 @@ Options:
     -b <behaviorfilename>    Input file name for behaviors added to subclasses
     -m                       Generate properties for member variables
     -c <xmlcatalogfilename>  Input file name to load an XML catalog
+    --one-file-per-xsd       Create a python module for each XSD processed.
+    --output-directory="XXX" Used in conjunction with --one-file-per-xsd.
+                             The directory where the modules will be created.
+    --module-suffix="XXX"    To be used in conjunction with --one-file-per-xsd.
+                             Append XXX to the end of each file created.
     --subclass-suffix="XXX"  Append XXX to the generated subclass names.
                              Default="Sub".
-    --root-element="XXX"     Assume XXX is root element of instance docs.
-                             Default is first element defined in schema.
-                             Also see section "Recognizing the top level
+    --root-element="XX"      When parsing, assume XX is root element of
+    --root-element="XX|YY"   instance docs.  Default is first element defined
+                             in schema.  If YY is added, then YY is used as the
+                             top level class; if YY omitted XX is the default.
+                             class. Also see section "Recognizing the top level
                              element" in the documentation.
-    --super="XXX"            Super module name in generated in subclass
+    --super="XXX"            Super module name in generated subclass
                              module. Default="???"
     --validator-bodies=path  Path to a directory containing files that provide
                              bodies (implementations) of validator methods.
+    --use-old-simpletype-validators
+                             Use the old style simpleType validator functions
+                             stored in a specified directory, instead of the
+                             new style validators generated directly from the
+                             XML schema.  See option --validator-bodies.
     --use-getter-setter      Generate getter and setter methods.  Values:
                              "old" - Name getters/setters getVar()/setVar().
                              "new" - Name getters/setters get_var()/set_var().
@@ -44,10 +56,10 @@ Options:
                              generated files. This is useful if you want
                              to minimize the amount of (no-operation)
                              changes to the generated python code.
-    --no-process-includes    Do not process included XML Schema files.  By
+    --no-process-includes    Do not process included XML schema files.  By
                              default, generateDS.py will insert content
                              from files referenced by <include ... />
-                             elements into the XML Schema to be processed.
+                             elements into the XML schema to be processed.
     --silence                Normally, the code generated with generateDS
                              echoes the information being parsed. To prevent
                              the echo from occurring, use the --silence switch.
@@ -79,8 +91,18 @@ Options:
                                      to XML)
                              Example: "write etree"
                              Default: "write"
+    --disable-xml            Disables generation of all XML build/export
+                             methods and command line interface
+    --preserve-cdata-tags    Preserve CDATA tags.  Default: False
+    --cleanup-name-list=<replacement-map>
+                             Specifies list of 2-tuples used for cleaning
+                             names.  First element is a regular expression
+                             search pattern and second is a replacement.
+                             Example: "[('[-:.]', '_'), ('^__', 'Special')]"
+                             Default: "[('[-:.]', '_')]"
     -q, --no-questions       Do not ask questions, for example,
                              force overwrite.
+    --no-warnings            Do not print warning messages.
     --session=mysession.session
                              Load and use options from session file. You can
                              create session file in generateds_gui.py.  Or,
@@ -129,17 +151,29 @@ also generates member specifications in each class (in a dictionary).
 ## SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+from __future__ import print_function
 import sys
 import os.path
 import time
 import getopt
-import urllib2
+
+if sys.version_info.major == 2:
+    import urllib2
+    import StringIO
+else:
+    import urllib.request
+    import urllib.error
+    import urllib.parse
+    import io
+    from functools import reduce
 import imp
 from xml.sax import handler, make_parser
 import logging
 import keyword
-import StringIO
 import textwrap
+import hashlib
+import operator
+import re
 
 # Default logger configuration
 logging.basicConfig(
@@ -172,19 +206,31 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.11b'
+VERSION = '2.24b'
 ##VERSION##
+
+if sys.version_info.major == 2:
+    BaseStrType = basestring
+else:
+    BaseStrType = str
 
 GenerateProperties = 0
 UseGetterSetter = 'new'
+UseOldSimpleTypeValidators = False
+UseGeneratedssuperLookup = True
+SchemaLxmlTree = None
+XsdFileName = []
 MemberSpecs = None
-DelayedElements = []
-DelayedElements_subclass = []
-AlreadyGenerated = []
-AlreadyGenerated_subclass = []
+DelayedElements = set()
+DelayedElements_subclass = set()
+AlreadyGenerated = set()
+AlreadyGenerated_subclass = set()
 PostponedExtensions = []
+LoopcheckOneperChecksums = set()
 ElementsForSubclasses = []
 ElementDict = {}
+fqnToElementDict = {}
+fqnToModuleNameMap = {}
 Force = False
 NoQuestions = False
 NoDates = False
@@ -192,8 +238,10 @@ NoVersion = False
 Dirpath = []
 ExternalEncoding = sys.getdefaultencoding()
 Namespacedef = ''
+CleanupNameList = [(re.compile('[-:.]'), '_')]
 
 NamespacesDict = {}
+prefixToNamespaceMap = {}
 MappingTypes = {}
 Targetnamespace = ""
 
@@ -225,8 +273,14 @@ CurrentNamespacePrefix = 'xs:'
 AnyTypeIdentifier = '__ANY__'
 ExportWrite = True
 ExportEtree = False
-ExportLiteral = True
+ExportLiteral = False
+XmlDisabled = False
 FixTypeNames = None
+SingleFileOutput = True
+OutputDirectory = None
+ModuleSuffix = ""
+PreserveCdataTags = False
+NoWarnings = False
 
 SchemaToPythonTypeMap = {}
 
@@ -243,6 +297,7 @@ NonNegativeIntegerType = None
 BooleanType = None
 FloatType = None
 DoubleType = None
+NumericTypes = None
 ElementType = None
 ComplexTypeType = None
 GroupType = None
@@ -292,6 +347,7 @@ def set_type_constants(nameSpace):
         PositiveIntegerType, NegativeIntegerType, \
         NonPositiveIntegerType, NonNegativeIntegerType, \
         BooleanType, FloatType, DoubleType, \
+        NumericTypes, \
         ElementType, ComplexTypeType, GroupType, SequenceType, ChoiceType, \
         AttributeGroupType, AttributeType, SchemaType, \
         DateTimeType, DateType, TimeType, \
@@ -367,6 +423,17 @@ def set_type_constants(nameSpace):
         nameSpace + 'Name',
         nameSpace + 'language',
     )
+    NumericTypes = set([
+        IntegerType,
+        DecimalType,
+        PositiveIntegerType,
+        NegativeIntegerType,
+        NonPositiveIntegerType,
+        NonNegativeIntegerType,
+        FloatType,
+        DoubleType,
+    ])
+    NumericTypes.update(set(IntegerType))
     Base64Type = nameSpace + 'base64Binary'
     TokenType = nameSpace + 'token'
     NameType = nameSpace + 'Name'
@@ -451,12 +518,12 @@ DEBUG = 0
 
 def dbgprint(level, msg):
     if DEBUG and level > 0:
-        print msg
+        print(msg)
 
 
 def pplist(lst):
     for count, item in enumerate(lst):
-        print '%d. %s' % (count, item)
+        print('%d. %s' % (count, item))
 
 
 #
@@ -530,11 +597,7 @@ class SimpleTypeElement(XschemaElementBase):
         s1 = '<"%s" SimpleTypeElement instance at 0x%x>' % \
             (self.getName(), id(self))
         return s1
-
-    def __repr__(self):
-        s1 = '<"%s" SimpleTypeElement instance at 0x%x>' % \
-            (self.getName(), id(self))
-        return s1
+    __repr__ = __str__
 
     def resolve_list_type(self):
         if self.isListType():
@@ -547,23 +610,48 @@ class SimpleTypeElement(XschemaElementBase):
 
 
 class XschemaElement(XschemaElementBase):
-    def __init__(self, attrs):
+    def __init__(self, attrs, targetNamespace=None):
         XschemaElementBase.__init__(self)
         self.cleanName = ''
         self.attrs = dict(attrs)
         name_val = ''
         type_val = ''
         ref_val = ''
+        self.prefix = None
+        self.namespace = None
+        self.is_root_element = False
+        self.targetNamespace = targetNamespace
+        self.fullyQualifiedName = None
+        self.fullyQualifiedType = None
+        self.type = 'NoneType'
+
         if 'name' in self.attrs:
-            name_val = strip_namespace(self.attrs['name'])
+            self.prefix, name_val = get_prefix_and_value(self.attrs['name'])
+            self.fullyQualifiedName = "%s:%s" % (targetNamespace, name_val)
+
         if 'type' in self.attrs:
             if (len(XsdNameSpace) > 0 and
                     self.attrs['type'].startswith(XsdNameSpace)):
                 type_val = self.attrs['type']
             else:
-                type_val = strip_namespace(self.attrs['type'])
+                self.prefix, type_val = get_prefix_and_value(
+                    self.attrs['type'])
+                self.type = type_val
         if 'ref' in self.attrs:
-            ref_val = strip_namespace(self.attrs['ref'])
+            self.prefix, ref_val = get_prefix_and_value(self.attrs['ref'])
+            if self.prefix in prefixToNamespaceMap:
+                xmlns = prefixToNamespaceMap[self.prefix]
+                fqn = "%s:%s" % (xmlns, ref_val)
+                if fqn in fqnToElementDict:
+                    referencedElement = fqnToElementDict[fqn]
+                    type_val = referencedElement.getType()
+                    if type_val == "NoneType":
+                        # anonymous types
+                        type_val = referencedElement.getName()
+                    name_val = ref_val
+            if not type_val:
+                type_val = ref_val
+
         if type_val and not name_val:
             name_val = type_val
         if ref_val and not name_val:
@@ -587,13 +675,14 @@ class XschemaElement(XschemaElementBase):
         self.maxOccurs = 1
         self.complex = 0
         self.complexType = 0
-        self.type = 'NoneType'
         self.mixed = 0
         self.base = None
         self.mixedExtensionError = 0
         self.collapseWhiteSpace = 0
         # Attribute definitions for the currect element.
         self.attributeDefs = {}
+        # Use this to maintain predictable order of attributes.
+        self.attributeDefsList = []
         # Attribute definitions for the current attributeGroup, if
         #   there is one.
         self.attributeGroup = None
@@ -627,6 +716,23 @@ class XschemaElement(XschemaElementBase):
 
     def getName(self):
         return self.name
+
+    def getFullyQualifiedName(self):
+        return self.fullyQualifiedName
+
+    def getFullyQualifiedType(self):
+        typeName = self.type
+        if not typeName or typeName == "NoneType":
+            typeName = self.name
+        if typeName and not self.fullyQualifiedType:
+            namespace = self.targetNamespace
+            if self.prefix and self.prefix in prefixToNamespaceMap:
+                xmlns = prefixToNamespaceMap[self.prefix]
+                if xmlns:
+                    namespace = xmlns
+            self.fullyQualifiedType = "%s:%s" % (namespace, typeName)
+
+        return self.fullyQualifiedType
 
     def getCleanName(self):
         return self.cleanName
@@ -682,11 +788,20 @@ class XschemaElement(XschemaElementBase):
     def isComplex(self):
         return self.complex
 
+    def setIsRootElement(self, is_root_elem):
+        self.is_root_element = is_root_elem
+
+    def isRootElement(self):
+        return self.is_root_element
+
     def addAttributeDefs(self, attrs):
         self.attributeDefs.append(attrs)
 
     def getAttributeDefs(self):
         return self.attributeDefs
+
+    def getAttributeDefsList(self):
+        return self.attributeDefsList
 
     def isMixed(self):
         return self.mixed
@@ -808,7 +923,11 @@ class XschemaElement(XschemaElementBase):
         self.expandGroupReferences_tree(visited)
         self.collect_element_dict()
         self.annotate_find_type()
-        self.annotate_tree()
+        element_dict = None
+        to_be_removed = None
+        self.annotate_tree(
+            element_dict=element_dict,
+            to_be_removed=to_be_removed)
         self.fix_dup_names()
         self.coerce_attr_types()
         self.checkMixedBases()
@@ -865,7 +984,10 @@ class XschemaElement(XschemaElementBase):
 
     def collectSimpleBases(self):
         if self.base:
-            self.addSimpleBase(self.base.encode('utf-8'))
+            if sys.version_info.major == 2:
+                self.addSimpleBase(self.base.encode('utf-8'))
+            else:
+                self.addSimpleBase(self.base)
         if self.simpleBase:
             base1 = SimpleTypeDict.get(self.simpleBase[0])
             if base1:
@@ -873,7 +995,10 @@ class XschemaElement(XschemaElementBase):
             else:
                 base2 = None
             while base2:
-                self.addSimpleBase(base2.encode('utf-8'))
+                if sys.version_info.major == 2:
+                    self.addSimpleBase(base2.encode('utf-8'))
+                else:
+                    self.addSimpleBase(base2)
                 base2 = SimpleTypeDict.get(base2)
                 if base2:
                     base2 = base2.getBase()
@@ -921,7 +1046,10 @@ class XschemaElement(XschemaElementBase):
         if type_val == AnyType:
             return AnyType
         if type_val in SimpleTypeDict:
-            self.addSimpleBase(type_val.encode('utf-8'))
+            if sys.version_info.major == 2:
+                self.addSimpleBase(type_val.encode('utf-8'))
+            else:
+                self.addSimpleBase(type_val)
             simple_type = SimpleTypeDict[type_val]
             list_type = simple_type.resolve_list_type()
             self.setListType(list_type)
@@ -1028,12 +1156,32 @@ class XschemaElement(XschemaElementBase):
             type_val = self.resolve_type()
             self.attrs['type'] = type_val
             self.type = type_val
+            self.fullyQualifiedType = None
         if not self.complex:
             SimpleElementDict[self.name] = self
         for child in self.children:
             child.annotate_find_type()
 
-    def annotate_tree(self):
+    def annotate_tree(self, element_dict, to_be_removed):
+        name = self.getName()
+        if element_dict is not None:
+            dup_element = element_dict.get(name)
+            if (dup_element is not None and
+                    # The element_dict keys are the element name.
+                    # So, we do not need to compare names.
+                    #dup_element.getName() == name and
+                    not self.complexType and
+                    not dup_element.complexType):
+                # If we've already seen this element (name), and
+                # these are both xsd:complexType, then
+                # make it a list and throw the previous one away.
+                self.maxOccurs = 2
+                to_be_removed.append(element_dict[name])
+                err_msg(
+                    '*** warning.  Removing child with duplicate '
+                    'name: "{}"\n'.format(name))
+            else:
+                element_dict[name] = self
         # If there is a namespace, replace it with an underscore.
         if self.base:
             self.base = strip_namespace(self.base)
@@ -1073,7 +1221,6 @@ class XschemaElement(XschemaElementBase):
             sys.exit(1)
         self.minOccurs = minOccurs
         self.maxOccurs = maxOccurs
-
         # If it does not have a type, then make the type the same as the name.
         if self.type == 'NoneType' and self.name:
             self.type = self.name
@@ -1092,8 +1239,21 @@ class XschemaElement(XschemaElementBase):
                     parent.collapseWhiteSpace):
                 self.collapseWhiteSpace = 1
         # Do it recursively for all descendents.
+        element_dict = {}
+        to_be_removed = []
         for child in self.children:
-            child.annotate_tree()
+            child.annotate_tree(
+                element_dict=element_dict,
+                to_be_removed=to_be_removed)
+        self.remove_children(to_be_removed)
+
+    def remove_children(self, to_be_removed):
+        for element in to_be_removed:
+            if element in self.children:
+                self.children.remove(element)
+            else:
+                err_msg("*** warning.  child {} already removed\n".format(
+                    element.getName()))
 
     #
     # For each name in the attributeGroupNameList for this element,
@@ -1117,15 +1277,22 @@ class XschemaElement(XschemaElementBase):
         if key is not None:
             attrGroup = AttributeGroups[key]
             for name in attrGroup.getKeys():
-                if (name in AttributeGroups or
-                        strip_namespace(name) in AttributeGroups):
+                group = attrGroup.get(name)
+                # If group is none, then it's an attributeGroup,
+                # not an attribute.
+                # Therefore, we might need to follow it recursively.
+                if (group is None and
+                        (name in AttributeGroups or
+                            strip_namespace(name) in AttributeGroups)):
                     self.replace_attributeGroup_names_1(name)
                 else:
                     attr = attrGroup.get(name)
                     self.attributeDefs[name] = attr
+                    self.attributeDefsList.append(name)
         else:
-            err_msg('*** Error. attributeGroup %s not defined.\n' % (
-                groupName, ))
+            err_msg('*** Error. Element %s attributeGroup %s '
+                    'not defined.\n' % (
+                        self.getName(), groupName, ))
 
     def __str__(self):
         s1 = '<XschemaElement name: "%s" type: "%s">' % \
@@ -1138,6 +1305,7 @@ class XschemaElement(XschemaElementBase):
         #   an attribute.
         #
         attrDefs = self.getAttributeDefs()
+        attrDefsList = self.getAttributeDefsList()
         # Collect a list of child element names.
         #   Must do this for base (extension) elements also.
         elementNames = set()
@@ -1153,17 +1321,21 @@ class XschemaElement(XschemaElementBase):
                 newName = mappedName + '_attr'
                 newAttr = XschemaAttribute(newName)
                 newAttr.setOrig_name(name)
-                attrDefs[newName] = newAttr
-                replaced.append(name)
+                replaced.append((name, newName, newAttr))
         # Remove the old (replaced) attributes.
-        for name in replaced:
+        for name, newName, newAttr in replaced:
             del attrDefs[name]
+            attrDefs[newName] = newAttr
+            try:
+                attrDefsList[attrDefsList.index(name)] = newName
+            except ValueError:
+                pass
         for child in self.children:
             child.fix_dup_names()
 
     def collectElementNames(self, elementNames, count):
         for child in self.children:
-            elementNames.add(mapName(cleanupName(child.cleanName)))
+            elementNames.add(child.getCleanName())
         base = self.getBase()
         if base and base in ElementDict:
             parent = ElementDict[base]
@@ -1191,12 +1363,16 @@ class XschemaElement(XschemaElementBase):
 
 
 class XschemaAttributeGroup:
-    def __init__(self, name='', group=None):
+    def __init__(self, name='', group=None, keyList=None):
         self.name = name
         if group:
             self.group = group
         else:
             self.group = {}
+        if keyList is not None:
+            self.keyList = keyList
+        else:
+            self.keyList = []
 
     def setName(self, name):
         self.name = name
@@ -1217,14 +1393,16 @@ class XschemaAttributeGroup:
             return default
 
     def getKeys(self):
-        return self.group.keys()
+        return self.keyList
 
     def add(self, name, attr):
         self.group[name] = attr
+        self.keyList.append(name)
 
     def delete(self, name):
         if name in self.group:
             del self.group[name]
+            self.keyList.remove(name)
             return 1
         else:
             return 0
@@ -1271,6 +1449,45 @@ class XschemaAttribute:
         if self.data_type in SimpleElementDict:
             typeObj = SimpleElementDict[self.data_type]
             typeObjType = typeObj.getRawType()
+
+##        if self.data_type in SimpleElementDict:
+##            typeObj = SimpleElementDict[self.data_type]
+##            typeObjType = typeObj.getRawType()
+
+##        if strip_namespace(self.data_type) in SimpleTypeDict:
+##            typeObj = SimpleTypeDict[strip_namespace(self.data_type)]
+##            typeObjType = typeObj.getBase()
+
+            if (typeObjType in StringType or
+                    typeObjType == TokenType or
+                    typeObjType in DateTimeGroupType or
+                    typeObjType == Base64Type or
+                    typeObjType in IntegerType or
+                    typeObjType == DecimalType or
+                    typeObjType == PositiveIntegerType or
+                    typeObjType == NegativeIntegerType or
+                    typeObjType == NonPositiveIntegerType or
+                    typeObjType == NonNegativeIntegerType or
+                    typeObjType == BooleanType or
+                    typeObjType == FloatType or
+                    typeObjType == DoubleType):
+                returnType = typeObjType
+        return returnType
+
+    def getBaseType(self):
+        returnType = self.data_type
+##        if self.data_type in SimpleElementDict:
+##            typeObj = SimpleElementDict[self.data_type]
+##            typeObjType = typeObj.getRawType()
+
+##        if self.data_type in SimpleElementDict:
+##            typeObj = SimpleElementDict[self.data_type]
+##            typeObjType = typeObj.getRawType()
+
+        if strip_namespace(self.data_type) in SimpleTypeDict:
+            typeObj = SimpleTypeDict[strip_namespace(self.data_type)]
+            typeObjType = typeObj.getBase()
+
             if (typeObjType in StringType or
                     typeObjType == TokenType or
                     typeObjType in DateTimeGroupType or
@@ -1319,6 +1536,7 @@ class XschemaHandler(handler.ContentHandler):
         self.inComplexType = 0
         self.inNonanonymousComplexType = 0
         self.inSequence = 0
+        self.sequenceStack = []
         self.inChoice = 1
         self.inAttribute = 0
         self.attributeGroupLevel = 0
@@ -1350,7 +1568,7 @@ class XschemaHandler(handler.ContentHandler):
         return keys[0]
 
     def startElement(self, name, attrs):
-        global Targetnamespace, NamespacesDict, XsdNameSpace
+        global Targetnamespace, NamespacesDict, XsdNameSpace, fqnToElementDict
         logging.debug("Start element: %s %s" % (name, repr(attrs.items())))
         if len(self.stack) == 0 and self.firstElement:
             self.firstElement = False
@@ -1373,22 +1591,37 @@ class XschemaHandler(handler.ContentHandler):
             #   use that namespace prefix.
             for name, value in attrs.items():
                 if name[:6] == 'xmlns:':
-                    nameSpace = name[6:] + ':'
+                    prefix = name[6:]
+                    nameSpace = prefix + ':'
                     NamespacesDict[value] = nameSpace
+                    prefixToNamespaceMap[prefix] = value
                 elif name == 'targetNamespace':
                     Targetnamespace = value
+                    element.targetNamespace = value
         elif (name == ElementType or
                 ((name == ComplexTypeType) and (len(self.stack) == 1))):
             self.inElement = 1
             self.inNonanonymousComplexType = 1
-            element = XschemaElement(attrs)
-            if not 'type' in attrs.keys() and not 'ref' in attrs.keys():
+            element = XschemaElement(attrs, Targetnamespace)
+            fqn = element.getFullyQualifiedName()
+            if fqn:
+                fqnToElementDict[fqn] = element
+            if element.prefix in prefixToNamespaceMap:
+                element.namespace = prefixToNamespaceMap[element.prefix]
+            if self.sequenceStack:
+                minOccurs, maxOccurs = self.sequenceStack[-1]
+                if 'minOccurs' not in attrs and minOccurs is not None:
+                    element.attrs['minOccurs'] = minOccurs
+                if 'maxOccurs' not in attrs and maxOccurs is not None:
+                    element.attrs['maxOccurs'] = maxOccurs
+            if 'type' not in attrs and 'ref' not in attrs:
                 element.setExplicitDefine(1)
             if len(self.stack) == 1:
                 element.setTopLevel(1)
-            if 'substitutionGroup' in attrs.keys() and 'name' in attrs.keys():
+            if 'substitutionGroup' in attrs and 'name' in attrs:
                 substituteName = attrs['name']
                 headName = attrs['substitutionGroup']
+                _, headName = get_prefix_and_value(headName)
                 if headName not in SubstitutionGroups:
                     SubstitutionGroups[headName] = []
                 SubstitutionGroups[headName].append(substituteName)
@@ -1416,26 +1649,36 @@ class XschemaHandler(handler.ContentHandler):
             self.stack.append(element)
         elif name == SequenceType:
             self.inSequence = 1
+            self.sequenceStack.append(
+                [attrs.get('minOccurs'), attrs.get('maxOccurs')])
         elif name == ChoiceType:
             self.currentChoice = XschemaElement(attrs)
             self.inChoice = 1
         elif name == AttributeType:
             self.inAttribute = 1
-            if 'name' in attrs.keys():
+            if 'name' in attrs:
                 name = attrs['name']
-            elif 'ref' in attrs.keys():
+            elif 'ref' in attrs:
                 name = strip_namespace(attrs['ref'])
             else:
                 name = 'no_attribute_name'
-            if 'type' in attrs.keys():
+            data_type = StringType[0]
+            if 'type' in attrs:
                 data_type = attrs['type']
-            else:
-                data_type = StringType[0]
-            if 'use' in attrs.keys():
+            elif 'ref' in attrs and SchemaLxmlTree is not None:
+                nsmap = {'xs': 'http://www.w3.org/2001/XMLSchema'}
+                attr_types = SchemaLxmlTree.xpath(
+                    "./xs:attribute[@name=$attrname]",
+                    namespaces=nsmap, attrname=name)
+                if attr_types:
+                    data_type1 = attr_types[0].get('type')
+                    if data_type1 is not None:
+                        data_type = data_type1
+            if 'use' in attrs:
                 use = attrs['use']
             else:
                 use = 'optional'
-            if 'default' in attrs.keys():
+            if 'default' in attrs:
                 default = attrs['default']
             else:
                 default = None
@@ -1447,18 +1690,19 @@ class XschemaHandler(handler.ContentHandler):
                 # Add this attribute to the element/complexType.
                 attribute = XschemaAttribute(name, data_type, use, default)
                 self.stack[-1].attributeDefs[name] = attribute
+                self.stack[-1].attributeDefsList.append(name)
             self.lastAttribute = attribute
         elif name == AttributeGroupType:
             if self.attributeGroupLevel >= 1:
                 # We are in an attribute group and are declaring a reference
                 #   to another attribute group.
-                if 'ref' in attrs.keys():
+                if 'ref' in attrs:
                     self.stack[-1].attributeGroup.add(attrs['ref'], None)
             else:
                 # If it has attribute 'name', then we are defining a new
                 #   attribute group.
                 #   Prepare to save it as an attributeGroup.
-                if 'name' in attrs.keys():
+                if 'name' in attrs:
                     name = strip_namespace(attrs['name'])
                     attributeGroup = XschemaAttributeGroup(name)
                     element = XschemaElement(attrs)
@@ -1468,7 +1712,7 @@ class XschemaHandler(handler.ContentHandler):
                     self.stack.append(element)
                 # If it has attribute 'ref', add it to the list of
                 #   attributeGroups for this element/complexType.
-                if 'ref' in attrs.keys():
+                if 'ref' in attrs:
                     self.stack[-1].attributeGroupNameList.append(attrs['ref'])
             self.attributeGroupLevel += 1
         elif name == SimpleContentType:
@@ -1478,7 +1722,7 @@ class XschemaHandler(handler.ContentHandler):
         elif name == ComplexContentType:
             pass
         elif name == ExtensionType:
-            if 'base' in attrs.keys() and len(self.stack) > 0:
+            if 'base' in attrs and len(self.stack) > 0:
                 extensionBase = attrs['base']
                 if (extensionBase in StringType or
                         extensionBase in IDTypes or
@@ -1498,8 +1742,11 @@ class XschemaHandler(handler.ContentHandler):
                         extensionBase in OtherSimpleTypes):
                     if (len(self.stack) > 0 and
                             isinstance(self.stack[-1], XschemaElement)):
-                        self.stack[-1].addSimpleBase(
-                            extensionBase.encode('utf-8'))
+                        if sys.version_info.major == 2:
+                            self.stack[-1].addSimpleBase(
+                                extensionBase.encode('utf-8'))
+                        else:
+                            self.stack[-1].addSimpleBase(extensionBase)
                 else:
                     self.stack[-1].setBase(extensionBase)
         elif name == AnyAttributeType:
@@ -1512,10 +1759,10 @@ class XschemaHandler(handler.ContentHandler):
             elif self.inSimpleType <= 0:
                 # Save the name of the simpleType, but ignore everything
                 #   else about it (for now).
-                if 'name' in attrs.keys():
-                    stName = cleanupName(attrs['name'])
+                if 'name' in attrs:
+                    stName = attrs['name']
                 elif len(self.stack) > 0:
-                    stName = cleanupName(self.stack[-1].getName())
+                    stName = self.stack[-1].getName()
                 else:
                     stName = None
                 # If the parent is an element, mark it as a simpleType.
@@ -1523,6 +1770,7 @@ class XschemaHandler(handler.ContentHandler):
                     self.stack[-1].setSimpleType(1)
                 element = SimpleTypeElement(stName)
                 SimpleTypeDict[stName] = element
+                SimpleTypeDict[Targetnamespace+":"+stName] = element
                 self.stack.append(element)
             self.inSimpleType += 1
         elif name == RestrictionType:
@@ -1533,7 +1781,7 @@ class XschemaHandler(handler.ContentHandler):
                 # If we are in a simpleType, capture the name of
                 #   the restriction base.
                 if ((self.inSimpleType >= 1 or self.inSimpleContent) and
-                        'base' in attrs.keys()):
+                        'base' in attrs):
                     self.stack[-1].setBase(attrs['base'])
                 else:
                     if 'base' in attrs:
@@ -1615,6 +1863,8 @@ class XschemaHandler(handler.ContentHandler):
             if len(self.stack) >= 2:
                 element = self.stack.pop()
                 self.stack[-1].addChild(element)
+            if name == ElementType and len(self.stack) == 1:
+                element.setIsRootElement(True)
         elif name == AnyType:
             if len(self.stack) >= 2:
                 element = self.stack.pop()
@@ -1623,6 +1873,7 @@ class XschemaHandler(handler.ContentHandler):
             self.inComplexType = 0
         elif name == SequenceType:
             self.inSequence = 0
+            self.sequenceStack.pop()
         elif name == ChoiceType:
             self.currentChoice = None
             self.inChoice = 0
@@ -1717,7 +1968,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
     mappedName = mapName(cleanName)
     child_type = child.getType()
     if child_type == DateTimeType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
             "(namespace_, self.gds_format_datetime(self.%s, " \
@@ -1725,7 +1981,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
             (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == DateType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
             "(namespace_, self.gds_format_date(self.%s, " \
@@ -1733,7 +1994,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
             (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == TimeType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
             "(namespace_, self.gds_format_time(self.%s, " \
@@ -1743,29 +2009,45 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
     elif (child_type in StringType or
             child_type == TokenType or
             child_type in DateTimeGroupType):
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         # fixlist
         if (child.getSimpleType() in SimpleTypeDict and
                 SimpleTypeDict[child.getSimpleType()].isListType()):
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_string(quote_xml" \
-                "(' '.join(self.%s)).encode(ExternalEncoding), " \
-                "input_name='%s'), namespace_, eol_))\n" % \
+                "(namespace_, self.gds_encode(self.gds_format_string(" \
+                "quote_xml" \
+                "(' '.join(self.%s)), " \
+                "input_name='%s')), namespace_, eol_))\n" % \
                 (fill, name, name, mappedName, name, )
         else:
+            namespace = 'namespace_'
+            if child.prefix and 'ref' in child.attrs:
+                namespace = "'%s:'" % child.prefix
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_string(quote_xml(self.%s)." \
-                "encode(ExternalEncoding), input_name='%s'), " \
-                "namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+                "(%s, self.gds_encode(self.gds_format_string(" \
+                "quote_xml(self.%s), " \
+                "input_name='%s')), " \
+                "%s, eol_))\n" % \
+                (fill, name, name, namespace, mappedName,
+                    name, namespace, )
         wrt(s1)
     elif (child_type in IntegerType or
             child_type == PositiveIntegerType or
             child_type == NonPositiveIntegerType or
             child_type == NegativeIntegerType or
             child_type == NonNegativeIntegerType):
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != %s:\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -1779,7 +2061,17 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
                 (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == BooleanType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            if default == 'true':
+                wrt('%s        if not self.%s:\n' % (fill, mappedName, ))
+            elif default == 'false':
+                wrt('%s        if self.%s:\n' % (fill, mappedName, ))
+            else:
+                wrt('%s        if self.%s is not None:\n' % (
+                    fill, mappedName, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -1795,7 +2087,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
         wrt(s1)
     elif (child_type == FloatType or
             child_type == DecimalType):
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != %s:\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -1809,7 +2106,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
                 (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == DoubleType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != %s:\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -1838,9 +2140,12 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
                 "namespace_, pretty_print=pretty_print)\n" % \
                 (fill, mappedName)
         else:
-            s1 = "%s            self.%s.export(outfile, level, " \
-                "namespace_, name_='%s', pretty_print=pretty_print)\n" % \
-                (fill, mappedName, name)
+            namespace = 'namespace_'
+            if child.prefix and 'ref' in child.attrs:
+                namespace += "='%s:'" % child.prefix
+            s1 = "%s            self.%s.export(outfile, level, %s, " \
+                "name_='%s', pretty_print=pretty_print)\n" % \
+                (fill, mappedName, namespace, name)
         wrt(s1)
 # end generateExportFn_1
 
@@ -1877,8 +2182,9 @@ def generateExportFn_2(wrt, child, name, namespace, fill):
             child_type in DateTimeGroupType):
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
         wrt("%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% "
-            "(namespace_, self.gds_format_string(quote_xml(%s_).encode("
-            "ExternalEncoding), input_name='%s'), namespace_, eol_))\n" %
+            "(namespace_, self.gds_encode(self.gds_format_string("
+            "quote_xml(%s_), "
+            "input_name='%s')), namespace_, eol_))\n" %
             (fill, name, name, cleanName, name,))
     elif (child_type in IntegerType or
             child_type == PositiveIntegerType or
@@ -1952,9 +2258,12 @@ def generateExportFn_2(wrt, child, name, namespace, fill):
             s1 = "%s        %s_.export(outfile, level, namespace_, " \
                 "pretty_print=pretty_print)\n" % (fill, cleanName)
         else:
-            s1 = "%s        %s_.export(outfile, level, namespace_, " \
+            namespace = 'namespace_'
+            if child.prefix and 'ref' in child.attrs:
+                namespace += "='%s:'" % child.prefix
+            s1 = "%s        %s_.export(outfile, level, %s, " \
                 "name_='%s', pretty_print=pretty_print)\n" % \
-                (fill, cleanName, name)
+                (fill, cleanName, namespace, name)
         wrt(s1)
 # end generateExportFn_2
 
@@ -1965,7 +2274,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
     child_type = child.getType()
     # fix_simpletype
     if child_type == DateTimeType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
             "(namespace_, self.gds_format_datetime(" \
@@ -1973,7 +2287,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
             (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == DateType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
             "(namespace_, self.gds_format_date(" \
@@ -1981,7 +2300,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
             (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == TimeType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
             "(namespace_, self.gds_format_time(" \
@@ -1991,21 +2315,26 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
     elif (child_type in StringType or
             child_type == TokenType or
             child_type in DateTimeGroupType):
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != "%s":\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         # fixlist
         if (child.getSimpleType() in SimpleTypeDict and
                 SimpleTypeDict[child.getSimpleType()].isListType()):
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_string(" \
-                "quote_xml(' '.join(self.%s)).encode(ExternalEncoding), " \
-                "input_name='%s'), namespace_, eol_))\n" % \
+                "(namespace_, self.gds_encode(self.gds_format_string(" \
+                "quote_xml(' '.join(self.%s)), " \
+                "input_name='%s')), namespace_, eol_))\n" % \
                 (fill, name, name, mappedName, name, )
         else:
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_string(" \
-                "quote_xml(self.%s).encode(ExternalEncoding), " \
-                "input_name='%s'), namespace_, eol_))\n" % \
+                "(namespace_, self.gds_encode(self.gds_format_string(" \
+                "quote_xml(self.%s), " \
+                "input_name='%s')), namespace_, eol_))\n" % \
                 (fill, name, name, mappedName, name, )
         wrt(s1)
     elif (child_type in IntegerType or
@@ -2013,7 +2342,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
             child_type == NonPositiveIntegerType or
             child_type == NegativeIntegerType or
             child_type == NonNegativeIntegerType):
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != %s:\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -2027,7 +2361,17 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
                 (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == BooleanType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            if default == 'true':
+                wrt('%s        if not self.%s:\n' % (fill, mappedName, ))
+            elif default == 'false':
+                wrt('%s        if self.%s:\n' % (fill, mappedName, ))
+            else:
+                wrt('%s        if self.%s is not None:\n' % (
+                    fill, mappedName, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -2043,7 +2387,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
         wrt(s1)
     elif (child_type == FloatType or
             child_type == DecimalType):
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != %s:\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -2057,7 +2406,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
                 (fill, name, name, mappedName, name, )
         wrt(s1)
     elif child_type == DoubleType:
-        wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        default = child.getDefault()
+        if default is None:
+            wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
+        else:
+            wrt('%s        if self.%s != %s:\n' % (
+                fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
             s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
@@ -2086,9 +2440,12 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
                 "outfile, level, namespace_, pretty_print=pretty_print)\n" % \
                 (fill, mappedName)
         else:
-            s1 = "%s            self.%s.export(outfile, level, namespace_, " \
+            namespace = 'namespace_'
+            if child.prefix and 'ref' in child.attrs:
+                namespace += "='%s:'" % child.prefix
+            s1 = "%s            self.%s.export(outfile, level, %s, " \
                 "name_='%s', pretty_print=pretty_print)\n" % \
-                (fill, mappedName, name)
+                (fill, mappedName, namespace, name)
         wrt(s1)
 # end generateExportFn_3
 
@@ -2131,7 +2488,7 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
         else:
             for child in element.getChildren():
                 unmappedName = child.getName()
-                name = mapName(cleanupName(child.getName()))
+                name = child.getCleanName()
                 child_type = child.getType()
                 if child_type == AnyTypeIdentifier:
                     if child.getMaxOccurs() > 1:
@@ -2178,61 +2535,66 @@ def generateToEtreeChildren(wrt, element, Targetnamespace):
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_integer_list"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                         else:
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_integer"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                     elif child_type == BooleanType:
                         if child.isListType():
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_boolean_list"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                         else:
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_boolean"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                     elif child_type == FloatType or \
                             child_type == DecimalType:
                         if child.isListType():
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_float_list"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                         else:
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_float"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                     elif child_type == DoubleType:
                         if child.isListType():
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_double_list"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                         else:
                             wrt("            etree_.SubElement(element, "
                                 "'{%s}%s').text = self.gds_format_double"
                                 "(%s_)\n" % (
-                                Targetnamespace, unmappedName, name))
+                                    Targetnamespace, unmappedName, name))
                     elif child_type == Base64Type:
                         wrt("            etree_.SubElement(element, "
                             "'{%s}%s').text = self.gds_format_base64"
                             "(%s_)\n" % (
-                            Targetnamespace, unmappedName, name))
+                                Targetnamespace, unmappedName, name))
                     else:
                         wrt("            %s_.to_etree(element, name_='%s', "
                             "mapping_=mapping_)\n" % (
-                            name, unmappedName,))
+                                name, unmappedName,))
+    else:
+        if element.getSimpleContent() or element.isMixed():
+            wrt("        if self.hasContent_():\n")
+            wrt("            element.text = self.gds_format_string"
+                "(self.get_valueOf_())\n")
 #end generateToEtreeChildren
 
 
 def generateToEtreeAttributes(wrt, element):
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs.keys():
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         name = attrDef.getName()
         cleanName = mapName(cleanupName(name))
@@ -2282,7 +2644,7 @@ def generateExportAttributes(wrt, element, hasAttributes):
     if len(element.getAttributeDefs()) > 0:
         hasAttributes += 1
         attrDefs = element.getAttributeDefs()
-        for key in attrDefs.keys():
+        for key in element.getAttributeDefsList():
             attrDef = attrDefs[key]
             name = attrDef.getName()
             orig_name = attrDef.getOrig_name()
@@ -2290,9 +2652,32 @@ def generateExportAttributes(wrt, element, hasAttributes):
                 orig_name = name
             cleanName = mapName(cleanupName(name))
             if True:            # attrDef.getUse() == 'optional':
-                wrt("        if self.%s is not None and '%s' not in "
-                    "already_processed:\n" % (
-                    cleanName, cleanName, ))
+                default = attrDef.getDefault()
+                if default is None:
+                    s1 = '        if self.%s is not None and ' % (cleanName, )
+                else:
+                    attr_type = attrDef.getBaseType()
+                    if (attr_type in StringType or
+                            attr_type == TokenType or
+                            attr_type in DateTimeGroupType):
+                        s1 = '        if self.%s != "%s" and ' % (
+                            cleanName, default, )
+                    elif attr_type == BooleanType:
+                        if default == 'true':
+                            s1 = '        if not self.%s and ' % (cleanName, )
+                        elif default == 'false':
+                            s1 = '        if self.%s and ' % (cleanName, )
+                        else:
+                            s1 = '        if self.%s is not None and ' % (
+                                cleanName, )
+                    elif attr_type in NumericTypes:
+                        s1 = '        if self.%s != %s and ' % (
+                            cleanName, default, )
+                    else:
+                        s1 = '        if self.%s != "%s" and ' % (
+                            cleanName, default, )
+                s1 += "'%s' not in already_processed:\n" % (cleanName, )
+                wrt(s1)
                 wrt("            already_processed.add('%s')\n" % (
                     cleanName, ))
                 indent = "    "
@@ -2303,23 +2688,23 @@ def generateExportAttributes(wrt, element, hasAttributes):
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_datetime(self.%s, ''' \
                     '''input_name='%s'))\n''' % (
-                    indent, orig_name, cleanName, name)
+                        indent, orig_name, cleanName, name)
             elif attrDef.getType() == DateType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_date(self.%s, input_name='%s'))\n''' % (
-                    indent, orig_name, cleanName, name)
+                        indent, orig_name, cleanName, name)
             elif attrDef.getType() == TimeType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_time(self.%s, input_name='%s'))\n''' % (
-                    indent, orig_name, cleanName, name)
+                        indent, orig_name, cleanName, name)
             elif (attrDefType in StringType or
                     attrDefType in IDTypes or
                     attrDefType == TokenType or
                     attrDefType in DateTimeGroupType):
                 s1 = '''%s        outfile.write(' %s=%%s' %% ''' \
-                    '''(self.gds_format_string(quote_attrib(''' \
-                    '''self.%s).encode(''' \
-                    '''ExternalEncoding), input_name='%s'), ))\n''' % \
+                    '''(self.gds_encode(self.gds_format_string(''' \
+                    '''quote_attrib(self.%s), ''' \
+                    '''input_name='%s')), ))\n''' % \
                     (indent, orig_name, cleanName, name, )
             elif (attrDefType in IntegerType or
                     attrDefType == PositiveIntegerType or
@@ -2329,7 +2714,7 @@ def generateExportAttributes(wrt, element, hasAttributes):
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_integer(self.%s, ''' \
                     '''input_name='%s'))\n''' % (
-                    indent, orig_name, cleanName, name, )
+                        indent, orig_name, cleanName, name, )
             elif attrDefType == BooleanType:
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_boolean(''' \
@@ -2343,11 +2728,11 @@ def generateExportAttributes(wrt, element, hasAttributes):
                 s1 = '''%s        outfile.write(' %s="%%s"' %% ''' \
                     '''self.gds_format_double(self.%s, ''' \
                     '''input_name='%s'))\n''' % (
-                    indent, orig_name, cleanName, name)
+                        indent, orig_name, cleanName, name)
             else:
                 s1 = '''%s        outfile.write(' %s=%%s' %% ''' \
                     '''(quote_attrib(self.%s), ))\n''' % (
-                    indent, orig_name, cleanName, )
+                        indent, orig_name, cleanName, )
             wrt(s1)
     if element.getExtended():
         wrt("        if self.extensiontype_ is not None and 'xsi:type' "
@@ -2378,7 +2763,7 @@ def generateExportChildren(wrt, element, hasChildren, namespace):
             any_type_child = None
             for child in element.getChildren():
                 unmappedName = child.getName()
-                name = mapName(cleanupName(child.getName()))
+                name = child.getCleanName()
                 # fix_abstract
                 type_element = None
                 abstract_child = False
@@ -2395,13 +2780,13 @@ def generateExportChildren(wrt, element, hasChildren, namespace):
                             fill, name, name,))
                         wrt("%s    %s_.export(outfile, level, namespace_, "
                             "name_='%s', pretty_print=pretty_print)\n" % (
-                            fill, name, name, ))
+                                fill, name, unmappedName, ))
                     elif abstract_child:
                         wrt("%sif self.%s is not None:\n" % (fill, name, ))
                         wrt("%s    self.%s.export(outfile, level, "
                             "namespace_, name_='%s', "
                             "pretty_print=pretty_print)\n" % (
-                            fill, name, name, ))
+                                fill, name, unmappedName, ))
                     elif child.getMaxOccurs() > 1:
                         generateExportFn_2(
                             wrt, child, unmappedName, namespace, '    ')
@@ -2441,25 +2826,28 @@ def getParentName(element):
     parentObj = None
     if base and base in ElementDict:
         parentObj = ElementDict[base]
-        parentName = cleanupName(parentObj.getName())
+        parentName = parentObj.getCleanName()
     elif rBase:
         base = element.getRestrictionBase()
         parentObj = ElementDict[base]
-        parentName = cleanupName(parentObj.getName())
+        parentName = parentObj.getCleanName()
     return parentName, parentObj
 
 
-def generateExportFn(wrt, prefix, element, namespace):
+def generateExportFn(wrt, prefix, element, namespace, nameSpacesDef):
     childCount = countChildren(element, 0)
     name = element.getName()
     base = element.getBase()
     wrt("    def export(self, outfile, level, namespace_='%s', "
-        "name_='%s', namespacedef_='', pretty_print=True):\n" %
-        (namespace, name, ))
+        "name_='%s', namespacedef_='%s', pretty_print=True):\n" %
+        (namespace, name, nameSpacesDef))
     wrt('        if pretty_print:\n')
     wrt("            eol_ = '\\n'\n")
     wrt('        else:\n')
     wrt("            eol_ = ''\n")
+    # We need to be able to export the original tag name.
+    wrt("        if self.original_tagname_ is not None:\n")
+    wrt("            name_ = self.original_tagname_\n")
     wrt('        showIndent(outfile, level, pretty_print)\n')
     wrt("        outfile.write('<%s%s%s' % (namespace_, name_, "
         "namespacedef_ and ' ' + namespacedef_ or '', ))\n")
@@ -2484,12 +2872,13 @@ def generateExportFn(wrt, prefix, element, namespace):
         if element.getSimpleContent():
             wrt("            outfile.write('>')\n")
             if not element.isMixed():
-                wrt("            outfile.write(str(self.valueOf_).encode("
-                    "ExternalEncoding))\n")
+                wrt("            outfile.write(self.convert_unicode("
+                    "self.valueOf_))\n")
         else:
             wrt("            outfile.write('>%s' % (eol_, ))\n")
         wrt("            self.exportChildren(outfile, level + 1, "
-            "namespace_, name_, pretty_print=pretty_print)\n")
+            "namespace_='%s', name_='%s', pretty_print=pretty_print)\n" %
+            (namespace, name))
         # Put a condition on the indent to require children.
         if childCount != 0:
             wrt('            showIndent(outfile, level, pretty_print)\n')
@@ -2525,9 +2914,9 @@ def generateExportFn(wrt, prefix, element, namespace):
                                 name, quote_attrib(value), ))
                         else:
                             unique_counter += 1
-                            outfile.write(' xmlns:yyy%d=\"%s\"' % (
+                            outfile.write(' xmlns:%d=\"%s\"' % (
                                 unique_counter, namespace, ))
-                            outfile.write(' yyy%d:%s=%s' % (
+                            outfile.write(' %d:%s=%s' % (
                                 unique_counter, name, quote_attrib(value), ))
                 else:
                     if name not in already_processed:
@@ -2538,9 +2927,9 @@ def generateExportFn(wrt, prefix, element, namespace):
     if parentName:
         hasAttributes += 1
         elName = element.getCleanName()
-        wrt("        super(%s, self).exportAttributes("
+        wrt("        super(%s%s, self).exportAttributes("
             "outfile, level, already_processed, namespace_, name_='%s')\n" %
-            (elName, name, ))
+            (prefix, elName, name, ))
     hasAttributes += generateExportAttributes(wrt, element, hasAttributes)
     if hasAttributes == 0:
         wrt("        pass\n")
@@ -2554,9 +2943,9 @@ def generateExportFn(wrt, prefix, element, namespace):
     if parentName and not element.getRestrictionBaseObj():
         hasChildren += 1
         elName = element.getCleanName()
-        wrt("        super(%s, self).exportChildren(outfile, level, "
+        wrt("        super(%s%s, self).exportChildren(outfile, level, "
             "namespace_, name_, True, pretty_print=pretty_print)\n" %
-            (elName, ))
+            (prefix, elName, ))
     hasChildren += generateExportChildren(wrt, element, hasChildren, namespace)
     if childCount == 0:   # and not element.isMixed():
         wrt("        pass\n")
@@ -2609,15 +2998,15 @@ def generateExportLiteralFn_1(wrt, child, name, fill):
                     SimpleTypeDict[child.getSimpleType()].isListType()):
                 wrt("%s            if self.%s:\n" % (fill, mappedName, ))
                 wrt("%s                outfile.write('%s=%%s,\\n' %% "
-                    "quote_python(' '.join(self.%s)).encode("
-                    "ExternalEncoding)) \n" %
+                    "self.gds_encode(quote_python(' '.join(self.%s)))"
+                    ") \n" %
                     (fill, mappedName, mappedName, ))
                 wrt("%s            else:\n" % (fill, ))
                 wrt("%s                outfile.write('%s=None,\\n')\n" %
                     (fill, mappedName, ))
             else:
                 wrt("%s            outfile.write('%s=%%s,\\n' %% "
-                    "quote_python(self.%s).encode(ExternalEncoding))\n" %
+                    "self.gds_encode(quote_python(self.%s)))\n" %
                     (fill, mappedName, mappedName, ))
         elif (childType in IntegerType or
                 childType == PositiveIntegerType or
@@ -2680,8 +3069,8 @@ def generateExportLiteralFn_2(wrt, child, name, fill):
             childType == TokenType or
             childType in DateTimeGroupType):
         wrt('%s        showIndent(outfile, level)\n' % fill)
-        wrt("%s        outfile.write('%%s,\\n' %% quote_python(%s_).encode("
-            "ExternalEncoding))\n" % (fill, name))
+        wrt("%s        outfile.write('%%s,\\n' %% self.gds_encode("
+            "quote_python(%s_)))\n" % (fill, name, ))
     elif (childType in IntegerType or
             childType == PositiveIntegerType or
             childType == NonPositiveIntegerType or
@@ -2733,7 +3122,7 @@ def generateExportLiteralFn(wrt, prefix, element):
         "already_processed, name_):\n")
     count = 0
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs:
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         count += 1
         name = attrDef.getName()
@@ -2746,7 +3135,7 @@ def generateExportLiteralFn(wrt, prefix, element):
             attrType = SimpleTypeDict[attrType].getBase()
         wrt("        if self.%s is not None and '%s' not in "
             "already_processed:\n" % (
-            mappedName, mappedName, ))
+                mappedName, mappedName, ))
         wrt("            already_processed.add('%s')\n" % (
             mappedName, ))
         if attrType == DateTimeType:
@@ -2809,18 +3198,18 @@ def generateExportLiteralFn(wrt, prefix, element):
     if parentName:
         count += 1
         elName = element.getCleanName()
-        wrt("        super(%s, self).exportLiteralAttributes("
+        wrt("        super(%s%s, self).exportLiteralAttributes("
             "outfile, level, already_processed, name_)\n" %
-            (elName, ))
+            (prefix, elName, ))
     if count == 0:
         wrt("        pass\n")
     wrt("    def exportLiteralChildren(self, outfile, level, name_):\n")
     parentName, parent = getParentName(element)
     if parentName:
         elName = element.getCleanName()
-        wrt("        super(%s, self).exportLiteralChildren("
+        wrt("        super(%s%s, self).exportLiteralChildren("
             "outfile, level, name_)\n" %
-            (elName, ))
+            (prefix, elName, ))
     for child in element.getChildren():
         name = child.getName()
         name = cleanupName(name)
@@ -2878,7 +3267,7 @@ def generateExportLiteralFn(wrt, prefix, element):
 
 def generateBuildAttributes(wrt, element, hasAttributes):
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs:
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         hasAttributes += 1
         name = attrDef.getName()
@@ -2900,7 +3289,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt('            try:\n')
             wrt("                self.%s = self.gds_parse_datetime("
                 "value)\n" % (mappedName, ))
-            wrt('            except ValueError, exp:\n')
+            wrt('            except ValueError as exp:\n')
             wrt("                raise ValueError("
                 "'Bad date-time attribute (%s): %%s' %% exp)\n" %
                 (name, ))
@@ -2914,7 +3303,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt('            try:\n')
             wrt("                self.%s = self.gds_parse_date("
                 "value)\n" % (mappedName, ))
-            wrt('            except ValueError, exp:\n')
+            wrt('            except ValueError as exp:\n')
             wrt("                raise ValueError("
                 "'Bad date attribute (%s): %%s' %% exp)\n" %
                 (name, ))
@@ -2928,7 +3317,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt('            try:\n')
             wrt("                self.%s = self.gds_parse_time("
                 "value)\n" % (mappedName, ))
-            wrt('            except ValueError, exp:\n')
+            wrt('            except ValueError as exp:\n')
             wrt("                raise ValueError("
                 "'Bad time attribute (%s): %%s' %% exp)\n" %
                 (name, ))
@@ -2945,7 +3334,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt("            already_processed.add('%s')\n" % (name, ))
             wrt('            try:\n')
             wrt("                self.%s = int(value)\n" % (mappedName, ))
-            wrt('            except ValueError, exp:\n')
+            wrt('            except ValueError as exp:\n')
             wrt("                raise_parse_error("
                 "node, 'Bad integer attribute: %s' % exp)\n")
             if atype == PositiveIntegerType:
@@ -2988,7 +3377,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
             wrt('            try:\n')
             wrt("                self.%s = float(value)\n" %
                 (mappedName, ))
-            wrt('            except ValueError, exp:\n')
+            wrt('            except ValueError as exp:\n')
             wrt("                raise ValueError('Bad float/double "
                 "attribute (%s): %%s' %% exp)\n" %
                 (name, ))
@@ -3015,7 +3404,7 @@ def generateBuildAttributes(wrt, element, hasAttributes):
         if typeName and typeName in SimpleTypeDict:
             wrt("            self.validate_%s(self.%s)    "
                 "# validate type %s\n" %
-                (typeName, mappedName, typeName, ))
+                (cleanupName(typeName), mappedName, typeName, ))
     if element.getAnyAttribute():
         hasAttributes += 1
         wrt('        self.anyAttributes_ = {}\n')
@@ -3062,7 +3451,7 @@ def generateBuildMixed_1(wrt, prefix, child, headChild, keyword, delayed):
         wrt("            sval_ = child_.text\n")
         wrt("            try:\n")
         wrt("                ival_ = int(sval_)\n")
-        wrt("            except (TypeError, ValueError), exp:\n")
+        wrt("            except (TypeError, ValueError) as exp:\n")
         wrt("                raise_parse_error(child_, "
             "'requires integer: %s' % exp)\n")
         if childType == PositiveIntegerType:
@@ -3108,7 +3497,7 @@ def generateBuildMixed_1(wrt, prefix, child, headChild, keyword, delayed):
         wrt("            sval_ = child_.text\n")
         wrt("            try:\n")
         wrt("                fval_ = float(sval_)\n")
-        wrt("            except (TypeError, ValueError), exp:\n")
+        wrt("            except (TypeError, ValueError) as exp:\n")
         wrt("                raise_parse_error(child_, "
             "'requires float or double: %s' % exp)\n")
         wrt("            obj_ = self.mixedclass_("
@@ -3122,7 +3511,7 @@ def generateBuildMixed_1(wrt, prefix, child, headChild, keyword, delayed):
         wrt("            sval_ = child_.text\n")
         wrt("            try:\n")
         wrt("                bval_ = base64.b64decode(sval_)\n")
-        wrt("            except (TypeError, ValueError), exp:\n")
+        wrt("            except (TypeError, ValueError) as exp:\n")
         wrt("                raise_parse_error(child_, "
             "'requires base64 encoded string: %s' % exp)\n")
         wrt("            obj_ = self.mixedclass_("
@@ -3140,9 +3529,9 @@ def generateBuildMixed_1(wrt, prefix, child, headChild, keyword, delayed):
             type_element = ElementDict.get(type_name)
         if type_element and type_element.isAbstract():
             abstract_child = True
-        if not delayed and not child in DelayedElements:
-            DelayedElements.append(child)
-            DelayedElements_subclass.append(child)
+        if not delayed and child not in DelayedElements:
+            DelayedElements.add(child)
+            DelayedElements_subclass.add(child)
         wrt("        %s nodeName_ == '%s':\n" % (keyword, origName, ))
         if abstract_child:
             wrt(TEMPLATE_ABSTRACT_CHILD % (mappedName, ))
@@ -3151,8 +3540,9 @@ def generateBuildMixed_1(wrt, prefix, child, headChild, keyword, delayed):
             if type_obj is not None and type_obj.getExtended():
                 wrt("            class_obj_ = self.get_class_obj_("
                     "child_, %s%s)\n" % (
+                        prefix, cleanupName(mapName(childType)), ))
+                wrt("            class_obj_ = %s%s.factory()\n" % (
                     prefix, cleanupName(mapName(childType)), ))
-                wrt("            class_obj_ = %s%s.factory()\n")
             else:
                 wrt("            obj_ = %s%s.factory()\n" % (
                     prefix, cleanupName(mapName(childType))))
@@ -3232,10 +3622,18 @@ def generateBuildStandard_1(
                 childType in DateTimeGroupType or
                 child.isListType())):
         wrt("        %s nodeName_ == '%s':\n" % (keyword, origName, ))
-        wrt("            %s_ = child_.text\n" % name)
+        if PreserveCdataTags:
+            wrt("            mo_ = PRESERVE_CDATA_TAGS_PAT.search("
+                "etree_.tostring(child_).strip())\n")
+            wrt("            %s_ = mo_.group(1)\n" % name)
+        else:
+            wrt("            %s_ = child_.text\n" % name)
         if childType == TokenType:
-            wrt('            %s_ = re_.sub('
+            wrt('            if %s_:\n' % (name, ))
+            wrt('                %s_ = re_.sub('
                 'String_cleanup_pat_, " ", %s_).strip()\n' % (name, name))
+            wrt('            else:\n')
+            wrt('                %s_ = ""\n' % (name, ))
         if child.isListType():
             if (childType in IntegerType or
                     childType == PositiveIntegerType or
@@ -3275,7 +3673,7 @@ def generateBuildStandard_1(
         wrt("            sval_ = child_.text\n")
         wrt("            try:\n")
         wrt("                ival_ = int(sval_)\n")
-        wrt("            except (TypeError, ValueError), exp:\n")
+        wrt("            except (TypeError, ValueError) as exp:\n")
         wrt("                raise_parse_error(child_, "
             "'requires integer: %s' % exp)\n")
         if childType == PositiveIntegerType:
@@ -3324,7 +3722,7 @@ def generateBuildStandard_1(
         wrt("            sval_ = child_.text\n")
         wrt("            try:\n")
         wrt("                fval_ = float(sval_)\n")
-        wrt("            except (TypeError, ValueError), exp:\n")
+        wrt("            except (TypeError, ValueError) as exp:\n")
         wrt("                raise_parse_error("
             "child_, 'requires float or double: %s' % exp)\n")
         wrt("            fval_ = self.gds_validate_float("
@@ -3340,7 +3738,7 @@ def generateBuildStandard_1(
         wrt("            if sval_ is not None:\n")
         wrt("                try:\n")
         wrt("                    bval_ = base64.b64decode(sval_)\n")
-        wrt("                except (TypeError, ValueError), exp:\n")
+        wrt("                except (TypeError, ValueError) as exp:\n")
         wrt("                    raise_parse_error(child_, "
             "'requires base64 encoded string: %s' % exp)\n")
         wrt("                bval_ = self.gds_validate_base64("
@@ -3363,9 +3761,9 @@ def generateBuildStandard_1(
             type_element = ElementDict.get(type_name)
         if type_element and type_element.isAbstract():
             abstract_child = True
-        if not delayed and not child in DelayedElements:
-            DelayedElements.append(child)
-            DelayedElements_subclass.append(child)
+        if not delayed and child not in DelayedElements:
+            DelayedElements.add(child)
+            DelayedElements_subclass.add(child)
         wrt("        %s nodeName_ == '%s':\n" % (keyword, origName, ))
         # Is this a simple type?
         if child.getSimpleType():
@@ -3396,18 +3794,23 @@ def generateBuildStandard_1(
         if headChild.getMaxOccurs() > 1:
             substitutionGroup = child.getAttrs().get('substitutionGroup')
             if substitutionGroup is not None:
-                name = substitutionGroup
+                _, name = get_prefix_and_value(substitutionGroup)
+                name = mapName(name)
             else:
                 name = mappedName
+            name = cleanupName(name)
             s1 = "            self.%s.append(obj_)\n" % (name, )
         else:
             substitutionGroup = child.getAttrs().get('substitutionGroup')
             if substitutionGroup is not None:
-                name = substitutionGroup
+                _, name = get_prefix_and_value(substitutionGroup)
+                name = mapName(name)
             else:
-                name = headName
-            s1 = "            self.%s = obj_\n" % (mappedName, )
+                name = mapName(headName)
+            name = cleanupName(name)
+            s1 = "            self.%s = obj_\n" % (name, )
         wrt(s1)
+        wrt("            obj_.original_tagname_ = '%s'\n" % (origName, ))
     #
     # If this child is defined in a simpleType, then generate
     #   a validator method.
@@ -3419,23 +3822,33 @@ def generateBuildStandard_1(
             ElementDict[childType].getSimpleType()):
         typeName = ElementDict[childType].getType()
     # fixlist
-    if (child.getSimpleType() in SimpleTypeDict and
-            SimpleTypeDict[child.getSimpleType()].isListType()):
-        wrt("            self.%s = self.%s.split()\n" % (
-            mappedName, mappedName, ))
+    # splitting the list is now done in gds_validate_xxx_list.
+##     if (child.getSimpleType() in SimpleTypeDict and
+##             SimpleTypeDict[child.getSimpleType()].isListType()):
+##         wrt("            self.%s = self.%s.split()\n" % (
+##             mappedName, mappedName, ))
     typeName = child.getSimpleType()
     if typeName and typeName in SimpleTypeDict:
-        wrt("            self.validate_%s(self.%s)    # validate type %s\n" % (
-            typeName, mappedName, typeName, ))
+        if child.getMaxOccurs() > 1:
+            wrt("            # validate type %s\n" % (typeName, ))
+            wrt("            self.validate_%s(self.%s[-1])\n" % (
+                cleanupName(typeName), mappedName, ))
+        else:
+            wrt("            # validate type %s\n" % (typeName, ))
+            wrt("            self.validate_%s(self.%s)\n" % (
+                cleanupName(typeName), mappedName, ))
 # end generateBuildStandard_1
 
 
-def transitiveClosure(m, e):
+def transitiveClosure(m, e, seen):
     t = []
+    if e in seen:
+        return t
     if e in m:
         t += m[e]
+        seen.add(e)
         for f in m[e]:
-            t += transitiveClosure(m, f)
+            t += transitiveClosure(m, f, seen)
     return t
 
 
@@ -3455,8 +3868,9 @@ def generateBuildStandard(wrt, prefix, element, keyword, delayed, hasChildren):
             #   substitutionGroup.
             childName = child.getName()
             if childName in SubstitutionGroups:
+                seen = set()
                 for memberName in transitiveClosure(
-                        SubstitutionGroups, childName):
+                        SubstitutionGroups, childName, seen):
                     memberName = cleanupName(memberName)
                     if memberName in ElementDict:
                         member = ElementDict[memberName]
@@ -3514,9 +3928,9 @@ def generateBuildFn(wrt, prefix, element, delayed):
     if parentName:
         hasAttributes += 1
         elName = element.getCleanName()
-        wrt('        super(%s, self).buildAttributes('
+        wrt('        super(%s%s, self).buildAttributes('
             'node, attrs, already_processed)\n' %
-            (elName, ))
+            (prefix, elName, ))
     if hasAttributes == 0:
         wrt('        pass\n')
     wrt('    def buildChildren(self, child_, node, nodeName_, '
@@ -3534,8 +3948,8 @@ def generateBuildFn(wrt, prefix, element, delayed):
     base = element.getBase()
     if base and not element.getSimpleContent():
         elName = element.getCleanName()
-        wrt("        super(%s, self).buildChildren("
-            "child_, node, nodeName_, True)\n" % (elName, ))
+        wrt("        super(%s%s, self).buildChildren("
+            "child_, node, nodeName_, True)\n" % (prefix, elName, ))
     if hasChildren == 0:
         wrt("        pass\n")
 # end generateBuildFn
@@ -3579,12 +3993,14 @@ def buildCtorArgs_multilevel_aux(addedArgs, add, element):
 
 def buildCtorArgs_aux(addedArgs, add, element):
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs:
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         name = attrDef.getName()
         default = attrDef.getDefault()
         mappedName = name.replace(':', '_')
         mappedName = cleanupName(mapName(mappedName))
+        if mappedName == element.getCleanName():
+            mappedName += '_member'
         if mappedName in addedArgs:
             continue
         addedArgs[mappedName] = 1
@@ -3645,6 +4061,8 @@ def buildCtorArgs_aux(addedArgs, add, element):
                 add(", %s='%s'" % (mappedName, default, ))
     for child in element.getChildren():
         cleanName = child.getCleanName()
+        if cleanName == element.getCleanName():
+            cleanName += '_member'
         if cleanName in addedArgs:
             continue
         addedArgs[cleanName] = 1
@@ -3706,11 +4124,16 @@ MixedCtorInitializers = '''\
 '''
 
 
-def generateCtor(wrt, element):
+def generateCtor(wrt, prefix, element):
     elName = element.getCleanName()
     childCount = countChildren(element, 0)
     s2 = buildCtorArgs_multilevel(element, childCount)
     wrt('    def __init__(self%s):\n' % s2)
+    # Save the original tag name.  This is needed when there is a
+    # xs:substitutionGroup and we later (e.g. during export) do not know
+    # which member of the xs:substitutionGroup this specific element
+    # came from.
+    wrt('        self.original_tagname_ = None\n')
     parentName, parent = getParentName(element)
     if parentName:
         if parentName in AlreadyGenerated:
@@ -3718,46 +4141,53 @@ def generateCtor(wrt, element):
             s2 = ''.join(args)
             if len(args) > 254:
                 wrt('        arglist_ = (%s)\n' % (s2, ))
-                wrt('        super(%s, self).__init__(*arglist_)\n' %
-                    (elName, ))
+                wrt('        super(%s%s, self).__init__(*arglist_)\n' %
+                    (prefix, elName, ))
             else:
-                wrt('        super(%s, self).__init__(%s)\n' % (elName, s2, ))
+                wrt('        super(%s%s, self).__init__(%s)\n' % (
+                    prefix, elName, s2, ))
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs:
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         mappedName = cleanupName(attrDef.getName())
         name = mapName(mappedName)
+        if name == element.getCleanName():
+            mbrname = name + '_member'
+        else:
+            mbrname = name
         attrType = attrDef.getType()
         if attrType == DateTimeType:
-            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("        if isinstance(%s, BaseStrType_):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
-                "%s, '%%Y-%%m-%%dT%%H:%%M:%%S')\n" % (name, ))
+                "%s, '%%Y-%%m-%%dT%%H:%%M:%%S')\n" % (mbrname, ))
             wrt("        else:\n")
-            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("            initvalue_ = %s\n" % (mbrname, ))
             wrt("        self.%s = initvalue_\n" % (name, ))
         elif attrType == DateType:
-            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("        if isinstance(%s, BaseStrType_):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
-                "%s, '%%Y-%%m-%%d').date()\n" % (name, ))
+                "%s, '%%Y-%%m-%%d').date()\n" % (mbrname, ))
             wrt("        else:\n")
-            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("            initvalue_ = %s\n" % (mbrname, ))
             wrt("        self.%s = initvalue_\n" % (name, ))
         elif attrType == TimeType:
-            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("        if isinstance(%s, BaseStrType_):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
-                "%s, '%%H:%%M:%%S').time()\n" % (name, ))
+                "%s, '%%H:%%M:%%S').time()\n" % (mbrname, ))
             wrt("        else:\n")
-            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("            initvalue_ = %s\n" % (mbrname, ))
             wrt("        self.%s = initvalue_\n" % (name, ))
         else:
             pythonType = SchemaToPythonTypeMap.get(attrDef.getType())
-            attrVal = "_cast(%s, %s)" % (pythonType, name, )
+            attrVal = "_cast(%s, %s)" % (pythonType, mbrname, )
             wrt('        self.%s = %s\n' % (name, attrVal, ))
-        member = 1
     # Generate member initializers in ctor.
-    member = 0
     for child in element.getChildren():
         name = cleanupName(child.getCleanName())
+        if name == element.getCleanName():
+            mbrname = name + '_member'
+        else:
+            mbrname = name
         logging.debug("Constructor child: %s" % name)
         logging.debug("Dump: %s" % child.__dict__)
         childType = child.getType()
@@ -3770,103 +4200,403 @@ def generateCtor(wrt, element):
             else:
                 wrt('        self.anytypeobjs_ = anytypeobjs_\n')
         elif childType == DateTimeType and child.getMaxOccurs() <= 1:
-            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("        if isinstance(%s, BaseStrType_):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
-                "%s, '%%Y-%%m-%%dT%%H:%%M:%%S')\n" % (name, ))
+                "%s, '%%Y-%%m-%%dT%%H:%%M:%%S')\n" % (mbrname, ))
             wrt("        else:\n")
-            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("            initvalue_ = %s\n" % (mbrname, ))
             if child.getMaxOccurs() > 1:
                 wrt("        self.%s.append(initvalue_)\n" % (name, ))
             else:
                 wrt("        self.%s = initvalue_\n" % (name, ))
         elif childType == DateType and child.getMaxOccurs() <= 1:
-            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("        if isinstance(%s, BaseStrType_):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
-                "%s, '%%Y-%%m-%%d').date()\n" % (name, ))
+                "%s, '%%Y-%%m-%%d').date()\n" % (mbrname, ))
             wrt("        else:\n")
-            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("            initvalue_ = %s\n" % (mbrname, ))
             if child.getMaxOccurs() > 1:
                 wrt("        self.%s.append(initvalue_)\n" % (name, ))
             else:
                 wrt("        self.%s = initvalue_\n" % (name, ))
         elif childType == TimeType and child.getMaxOccurs() <= 1:
-            wrt("        if isinstance(%s, basestring):\n" % (name, ))
+            wrt("        if isinstance(%s, BaseStrType_):\n" % (mbrname, ))
             wrt("            initvalue_ = datetime_.datetime.strptime("
-                "%s, '%%H:%%M:%%S').time()\n" % (name, ))
+                "%s, '%%H:%%M:%%S').time()\n" % (mbrname, ))
             wrt("        else:\n")
-            wrt("            initvalue_ = %s\n" % (name, ))
+            wrt("            initvalue_ = %s\n" % (mbrname, ))
             if child.getMaxOccurs() > 1:
                 wrt("        self.%s.append(initvalue_)\n" % (name, ))
             else:
                 wrt("        self.%s = initvalue_\n" % (name, ))
         else:
             if child.getMaxOccurs() > 1:
-                wrt('        if %s is None:\n' % (name, ))
+                wrt('        if %s is None:\n' % (mbrname, ))
                 wrt('            self.%s = []\n' % (name, ))
                 wrt('        else:\n')
-                wrt('            self.%s = %s\n' % (name, name))
+                wrt('            self.%s = %s\n' % (name, mbrname))
             else:
                 typeObj = ElementDict.get(child.getType())
                 if (child.getDefault() and
                         typeObj is not None and
                         typeObj.getSimpleContent()):
-                    wrt('        if %s is None:\n' % (name, ))
+                    wrt('        if %s is None:\n' % (mbrname, ))
                     wrt("            self.%s = globals()['%s']('%s')\n" %
                         (name, child.getType(), child.getDefault(), ))
                     wrt('        else:\n')
-                    wrt('            self.%s = %s\n' % (name, name))
+                    wrt('            self.%s = %s\n' % (name, mbrname))
                 else:
-                    wrt('        self.%s = %s\n' % (name, name))
-        member = 1
+                    wrt('        self.%s = %s\n' % (name, mbrname))
+                    # validate if it is a simple type.  Validation shows
+                    # a warning so no fear that an error would rise.
+                    typeName = child.getSimpleType()
+                    if typeName and typeName in SimpleTypeDict:
+                        wrt('        self.validate_%s(self.%s)\n' % (
+                            cleanupName(typeName), mapName(name)))
     eltype = element.getType()
     if (element.getSimpleContent() or
             element.isMixed() or
             eltype in SimpleTypeDict or
             CurrentNamespacePrefix + eltype in OtherSimpleTypes):
         wrt('        self.valueOf_ = valueOf_\n')
-        member = 1
     if element.getAnyAttribute():
         wrt('        self.anyAttributes_ = {}\n')
-        member = 1
     if element.getExtended():
         wrt('        self.extensiontype_ = extensiontype_\n')
-        member = 1
-    if not member:
-        wrt('        pass\n')
     if element.isMixed():
         wrt(MixedCtorInitializers)
 # end generateCtor
 
 
-#
-# Attempt to retrieve the body (implementation) of a validator
-#   from a directory containing one file for each simpleType.
-#   The name of the file should be the same as the name of the
-#   simpleType with and optional ".py" extension.
-def getValidatorBody(stName):
-    retrieved = 0
-    if ValidatorBodiesBasePath:
-        found = 0
-        path = '%s%s%s.py' % (ValidatorBodiesBasePath, os.sep, stName, )
-        if os.path.exists(path):
-            found = 1
-        else:
-            path = '%s%s%s' % (ValidatorBodiesBasePath, os.sep, stName, )
+# find the simple type, either a named simpleType or an anonymous one.
+def find_simple_type_def(tree, stName, element, child, ns, base):
+    st = None
+    path1 = ("//xs:complexType[@name=$typeName]"
+             "//xs:element[@name=$childName]/xs:simpleType")
+    path2 = ("//xs:element[@name=$typeName]/xs:complexType//xs:element"
+             "[@name=$childName]/xs:simpleType")
+    if stName:
+        st_defs = tree.xpath(
+            "//xs:simpleType[@name=$n]",
+            namespaces=ns, n=stName)
+        if st_defs:
+            st = st_defs[0]
+        elif element is not None and child is not None:
+            typeName = element.getType()
+            childName = child.getName()
+            # search for an anonymous simpleType.
+            el_defs = tree.xpath(
+                path1,
+                namespaces=ns, typeName=typeName, childName=childName)
+            if el_defs:
+                st = el_defs[0]
+            else:
+                # search for an anonymous simpleType inside an anonymous
+                # complexType.
+                el_defs = tree.xpath(
+                    path2,
+                    namespaces=ns, typeName=typeName, childName=childName)
+    return st
+
+
+def get_target_value(default, stName):
+    stObj = SimpleTypeDict.get(stName)
+    targetValue = default
+    if stObj is not None:
+        if stObj.getBase() == DateType:
+            targetValue = "self.gds_parse_date('{}')".format(default)
+        elif stObj.getBase() == TimeType:
+            targetValue = "self.gds_parse_time('{}')".format(default)
+        elif stObj.getBase() == DateTimeType:
+            targetValue = "self.gds_parse_datetime('{}')".format(default)
+    return targetValue
+
+
+Vbar_repl_pat = re.compile('([^\\\])\|')
+
+
+# Replace vertical bars with "$|^", unless escaped with backslash.
+def replaceVbars(instr):
+    outstr, count = re.subn(Vbar_repl_pat, '\\1$|^', instr)
+    return outstr
+
+
+# Generate validation code for each restriction.
+# Recursivly call to process possible chain of base types.
+def processValidatorBodyRestrictions(
+        tree, s1, restrictions, st, ns, stName, base,
+        patterns1):
+    for restriction in restrictions:
+        #
+        # pattern
+        pats1 = restriction.xpath(
+            "./xs:pattern/@value", namespaces=ns)
+        if pats1:
+            pats2 = ['^{}$'.format(replaceVbars(p1)) for p1 in pats1]
+            patterns1.append(pats2)
+        #
+        # Check for and generate code for each possible type of restriction.
+        #
+        # enumerations
+        enumerations = restriction.xpath(
+            "./xs:enumeration/@value", namespaces=ns)
+        if enumerations:
+            toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            value = str(value)\n"
+            s1 += "            enumerations = %(enumerations)s\n" % {
+                'enumerations': enumerations}
+            s1 += "            enumeration_respectee = False\n"
+            s1 += "            for enum in enumerations:\n"
+            s1 += "                if value == enum:\n"
+            s1 += "                    enumeration_respectee = True\n"
+            s1 += "                    break\n"
+            s1 += "            if not enumeration_respectee:\n"
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd enumeration restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # maxLength
+        maxLength = restriction.xpath(
+            "./xs:maxLength/@value", namespaces=ns)
+        if maxLength:
+            maxLength = maxLength[0]
+            toencode = '% {"value" : value}'
+            valuestring = '(str(value))'
+            if 'string' in base:
+                valuestring = '(value)'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            if len%(valuestr)s > %(maxLen)s:\n" % {
+                'maxLen': maxLength, "valuestr": valuestring}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd maxLength restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # minLength
+        minLength = restriction.xpath(
+            "./xs:minLength/@value", namespaces=ns)
+        if minLength:
+            minLength = minLength[0]
+            toencode = '% {"value" : value}'
+            valuestring = '(str(value))'
+            if 'string' in base:
+                valuestring = '(value)'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            if len%(valuestr)s < %(minLen)s:\n" % {
+                'minLen': minLength, "valuestr": valuestring}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd minLength restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # length
+        length = restriction.xpath(
+            "./xs:length/@value", namespaces=ns)
+        if length:
+            length = length[0]
+            toencode = '% {"value" : value}'
+            valuestring = '(str(value))'
+            if 'string' in base:
+                valuestring = '(value)'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            if len%(valuestring)s != %(length)s:\n" % {
+                'length': length, "valuestring": valuestring}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd length restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # minInclusive
+        minInclusive = restriction.xpath(
+            "./xs:minInclusive/@value", namespaces=ns)
+        if minInclusive:
+            minIncl = minInclusive[0]
+            toencode = '% {"value" : value}'
+            valuestring = 'value'
+            if 'string' in base:
+                valuestring = 'len(str(value))'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            targetValue = get_target_value(minIncl, stName)
+            s1 += "            if %(valuestring)s < %(minIncl)s:\n" % {
+                'minIncl': targetValue, "valuestring": valuestring}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd minInclusive restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # maxInclusive
+        maxInclusive = restriction.xpath(
+            "./xs:maxInclusive/@value", namespaces=ns)
+        if maxInclusive:
+            maxIncl = maxInclusive[0]
+            toencode = '% {"value" : value}'
+            valuestring = 'value'
+            if 'string' in base:
+                valuestring = 'len(str(value))'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            targetValue = get_target_value(maxIncl, stName)
+            s1 += "            if %(valuestring)s > %(maxIncl)s:\n" % {
+                'maxIncl': targetValue, "valuestring": valuestring}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd maxInclusive restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # minExclusive
+        minExclusive = restriction.xpath(
+            "./xs:minExclusive/@value", namespaces=ns)
+        if minExclusive:
+            minExclusive = minExclusive[0]
+            toencode = '% {"value" : value}'
+            valstr = 'value'
+            if 'string' in base:
+                valstr = 'len(str(value))'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            targetValue = get_target_value(minExclusive, stName)
+            s1 += "            if %(valstr)s <= %(minExclusive)s:\n" % {
+                'minExclusive': targetValue, "valstr": valstr}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd minExclusive restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # maxExclusive
+        maxExclusive = restriction.xpath(
+            "./xs:maxExclusive/@value", namespaces=ns)
+        if maxExclusive:
+            maxExclusive = maxExclusive[0]
+            toencode = '% {"value" : value}'
+            valstr = 'value'
+            if 'string' in base:
+                valstr = 'len(str(value))'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            targetValue = get_target_value(maxExclusive, stName)
+            s1 += "            if %(valstr)s >= %(maxExclusive)s:\n" % {
+                'maxExclusive': targetValue, "valstr": valstr}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd maxExclusive restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # totalDigits
+        totalDigits = restriction.xpath(
+            "./xs:totalDigits/@value", namespaces=ns)
+        if totalDigits:
+            totalDigits = totalDigits[0]
+            toencode = '% {"value" : value}'
+            valstr = '(str(value))'
+            if 'string' in base:
+                valstr = '(value)'
+                toencode = '% {"value" : value.encode("utf-8")}'
+            s1 += "            if len%(valstr)s >= %(totalDigits)s:\n" % {
+                'totalDigits': totalDigits, "valstr": valstr}
+            s1 += ("                warnings_.warn('Value \"%(val)s\" "
+                   "does not match xsd maxInclusive restriction on "
+                   "%(typename)s' %(express)s )\n" % {
+                       "val": '%(value)s',
+                       "typename": stName,
+                       "express": toencode}
+                   )
+        #
+        # Recurse into base simpleType, if it exists.
+        base1 = restriction.get('base')
+        if base1 is not None:
+            if ":" in base1:
+                base1 = base1.split(":")[1]
+            st1 = find_simple_type_def(tree, base1, None, None, ns, base)
+            if st1 is not None:
+                restrictions1 = st1.xpath(
+                    "./xs:restriction",
+                    namespaces=ns, n=stName, b=base)
+                if restrictions1:
+                    s2 = processValidatorBodyRestrictions(
+                        tree, '', restrictions1, st1, ns, stName,
+                        base1, patterns1)
+                    s1 += s2
+    return s1
+# end processValidatorBodyRestrictions
+
+
+# Generate validator method bodies.
+def getValidatorBody(stName, base, element, child):
+    s1 = None
+    patterns1 = ''
+    if not UseOldSimpleTypeValidators and SchemaLxmlTree is not None:
+        # generate validator bodies directly from the XML schema.
+        ns = {'xs': 'http://www.w3.org/2001/XMLSchema'}
+        tree = SchemaLxmlTree
+        # on determine l elemnt ou le type est definit
+        st = find_simple_type_def(tree, stName, element, child, ns, base)
+        if st is not None:
+            restrictions = st.xpath(
+                "./xs:restriction",
+                namespaces=ns, n=stName, b=base)
+            # une liste qui contient les restrictions deja traitees
+            if restrictions:
+                s1 = ('        if value is not None and '
+                      'Validate_simpletypes_:\n')
+                initial_len = len(s1)
+                patterns1 = []
+                s1 = processValidatorBodyRestrictions(
+                    tree, s1, restrictions, st, ns, stName, base,
+                    patterns1)
+                if len(s1) == initial_len and not patterns1:
+                    s1 += '            pass\n'
+        if s1 is None:
+            s1 = '        pass\n'
+        return s1, patterns1
+    #
+    # if UseOldSimpleTypeValidators
+    else:
+        # Generate validator bodies from user code.
+        retrieved = 0
+        if ValidatorBodiesBasePath:
+            found = 0
+            path = '%s%s%s.py' % (ValidatorBodiesBasePath, os.sep, stName, )
             if os.path.exists(path):
                 found = 1
-        if found:
-            infile = open(path, 'r')
-            lines = infile.readlines()
-            infile.close()
-            lines1 = []
-            for line in lines:
-                if not line.startswith('##'):
-                    lines1.append(line)
-            s1 = ''.join(lines1)
-            retrieved = 1
-    if not retrieved:
-        s1 = '        pass\n'
-    return s1
+            else:
+                path = '%s%s%s' % (ValidatorBodiesBasePath, os.sep, stName, )
+                if os.path.exists(path):
+                    found = 1
+            if found:
+                infile = open(path, 'r')
+                lines = infile.readlines()
+                infile.close()
+                lines1 = []
+                for line in lines:
+                    if not line.startswith('##'):
+                        lines1.append(line)
+                s1 = ''.join(lines1)
+                retrieved = 1
+        if not retrieved:
+            s1 = '        pass\n'
+        return s1, None
 # end getValidatorBody
 
 
@@ -3892,14 +4622,18 @@ def generateGettersAndSetters(wrt, element):
             if child.getMaxOccurs() > 1:
                 wrt('    def add%s(self, value): self.%s.append(value)\n' %
                     (capName, name))
-                wrt('    def insert%s(self, index, value): '
+                suffix = make_gs_name('at')
+                wrt('    def insert%s%s(self, index, value): '
+                    'self.%s.insert(index, value)\n' %
+                    (capName, suffix, name))
+                wrt('    def replace%s%s(self, index, value): '
                     'self.%s[index] = value\n' %
-                    (capName, name))
+                    (capName, suffix, name))
             if GenerateProperties:
                 wrt('    %sProp = property(get%s, set%s)\n' %
                     (unmappedName, capName, capName))
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs:
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         name = cleanupName(attrDef.getName().replace(':', '_'))
         mappedName = mapName(name)
@@ -3942,8 +4676,10 @@ def generateValidatorDefs(wrt, element):
         if (typeName and
                 typeName in SimpleTypeDict and
                 typeName not in generatedSimpleTypes):
+            cleanTypeName = cleanupName(typeName)
             generatedSimpleTypes.append(typeName)
-            wrt('    def validate_%s(self, value):\n' % (typeName, ))
+            wrt('    def validate_%s(self, value):\n' % (
+                cleanupName(typeName), ))
             if typeName in SimpleTypeDict:
                 stObj = SimpleTypeDict[typeName]
                 wrt('        # Validate type %s, a restriction '
@@ -3951,23 +4687,53 @@ def generateValidatorDefs(wrt, element):
                     (typeName, stObj.getBase(), ))
             else:
                 wrt('        # validate type %s\n' % (typeName, ))
-            wrt(getValidatorBody(typeName))
+            body, patterns = getValidatorBody(
+                typeName, stObj.getBase(), element, child)
+            wrt(body)
+            if patterns:
+                wrt('            if not self.gds_validate_simple_patterns(\n')
+                wrt('                    self.validate_%s_patterns_, '
+                    'value):\n' % (cleanTypeName, ))
+                s1 = ("                warnings_.warn('Value \"%%s\" "
+                      "does not match xsd pattern restrictions: %%s' "
+                      "%% (value.encode('utf-8'), "
+                      "self.validate_%s_patterns_, ))\n" % (cleanTypeName, )
+                      )
+                wrt(s1)
+                wrt('    validate_%s_patterns_ = %s\n' % (
+                    cleanTypeName, patterns, ))
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs:
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         typeName = attrDef.getType()
         if (typeName and
                 typeName in SimpleTypeDict and
                 typeName not in generatedSimpleTypes):
+            cleanTypeName = cleanupName(typeName)
             generatedSimpleTypes.append(typeName)
-            wrt('    def validate_%s(self, value):\n' % (typeName, ))
+            wrt('    def validate_%s(self, value):\n' % (
+                cleanupName(typeName), ))
             if typeName in SimpleTypeDict:
                 stObj = SimpleTypeDict[typeName]
                 wrt('        # Validate type %s, a restriction on %s.\n' % (
                     typeName, stObj.getBase(), ))
             else:
                 wrt('        # validate type %s\n' % (typeName, ))
-            wrt(getValidatorBody(typeName))
+            body, patterns = getValidatorBody(
+                typeName, stObj.getBase(), None, None)
+            wrt(body)
+            if patterns:
+                wrt('            if not self.gds_validate_simple_patterns(\n')
+                wrt('                    self.validate_%s_patterns_, '
+                    'value):\n' % (cleanTypeName, ))
+                s1 = ("                warnings_.warn('Value \"%%s\" "
+                      "does not match xsd pattern restrictions: %%s' "
+                      "%% (value.encode('utf-8'), "
+                      "self.validate_%s_patterns_, ))\n" % (cleanTypeName, )
+                      )
+                wrt(s1)
+                wrt('    validate_%s_patterns_ = %s\n' % (
+                    cleanTypeName, patterns, ))
 # end generateValidatorDefs
 
 
@@ -3983,16 +4749,18 @@ def generateMemberSpec(wrt, element):
     else:
         content = ['    member_data_items_ = [']
     add = content.append
-    for attrName, attrDef in element.getAttributeDefs().items():
-        item1 = attrName
+    attrDefs = element.getAttributeDefs()
+    for attrName in element.getAttributeDefsList():
+        attrDef = attrDefs[attrName]
+        item1 = mapName(attrName)
         item2 = attrDef.getType()
         item3 = 0
         if generateDict:
-            item = "        '%s': MemberSpec_('%s', '%s', %d)," % (
-                item1, item1, item2, item3, )
+            item = "        '%s': MemberSpec_('%s', '%s', %d, %s)," % (
+                item1, item1, item2, item3, str({'use':attrDef.getUse()}))
         else:
-            item = "        MemberSpec_('%s', '%s', %d)," % (
-                item1, item2, item3, )
+            item = "        MemberSpec_('%s', '%s', %d, %s)," % (
+                item1, item2, item3, str({'use':attrDef.getUse()}))
         add(item)
     for child in element.getChildren():
         name = cleanupName(child.getCleanName())
@@ -4014,12 +4782,14 @@ def generateMemberSpec(wrt, element):
         else:
             item3 = 0
         if generateDict:
-            item = "        '%s': MemberSpec_('%s', %s, %d)," % (
-                item1, item1, item2, item3, )
+            item = "        '%s': MemberSpec_('%s', %s, %d, %s, %s)," % (
+                item1, item1, item2, item3, str(child.getAttrs()),
+                id(child.choice) if child.choice else None)
         else:
             #item = "        ('%s', '%s', %d)," % (item1, item2, item3, )
-            item = "        MemberSpec_('%s', %s, %d)," % (
-                item1, item2, item3, )
+            item = "        MemberSpec_('%s', %s, %d, %s, %s)," % (
+                item1, item2, item3, str(child.getAttrs()),
+                id(child.choice) if child.choice else None)
         add(item)
     simplebase = element.getSimpleBase()
     if element.getSimpleContent() or element.isMixed():
@@ -4061,7 +4831,7 @@ def generateUserMethods(wrt, element):
             wrt(source)
 
 
-def generateHascontentMethod(wrt, element):
+def generateHascontentMethod(wrt, prefix, element):
     wrt('    def hasContent_(self):\n')
     wrt('        if (\n')
     firstTime = True
@@ -4069,34 +4839,67 @@ def generateHascontentMethod(wrt, element):
         if child.getType() == AnyTypeIdentifier:
             name = 'anytypeobjs_'
         else:
-            name = mapName(cleanupName(child.getName()))
+            name = child.getCleanName()
         if not firstTime:
             wrt(' or\n')
         firstTime = False
         if child.getMaxOccurs() > 1:
             wrt('            self.%s' % (name, ))
         else:
-            wrt('            self.%s is not None' % (name, ))
+            default = child.getDefault()
+            if default is None:
+                wrt('            self.%s is not None' % (name, ))
+            else:
+                child_type = child.getType()
+                if (child_type in StringType or
+                        child_type == TokenType or
+                        child_type in DateTimeGroupType):
+                    wrt('            self.%s != "%s"' % (name, default, ))
+                elif child_type == BooleanType:
+                    if default == 'true':
+                        wrt('            not self.%s' % (name, ))
+                    elif default == 'false':
+                        wrt('            self.%s' % (name, ))
+                    else:
+                        wrt('            self.%s is not None' % (name, ))
+                else:
+                    wrt('            self.%s != %s' % (name, default, ))
     if element.getSimpleContent() or element.isMixed():
         if not firstTime:
             wrt(' or\n')
         firstTime = False
-        wrt('            self.valueOf_')
+        wrt('            1 if type(self.valueOf_) '
+            'in [int,float] else self.valueOf_')
     parentName, parent = getParentName(element)
     if parentName:
         elName = element.getCleanName()
         if not firstTime:
             wrt(' or\n')
         firstTime = False
-        wrt('            super(%s, self).hasContent_()' % (elName, ))
+        wrt('            super(%s%s, self).hasContent_()' % (prefix, elName, ))
     wrt('\n        ):\n')
     wrt('            return True\n')
     wrt('        else:\n')
     wrt('            return False\n')
 
 
-def generateClasses(wrt, prefix, element, delayed):
+FactoryMethodTemplate = """\
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, {prefix}{name})
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if {prefix}{name}.subclass:
+            return {prefix}{name}.subclass(*args_, **kwargs_)
+        else:
+            return {prefix}{name}(*args_, **kwargs_)
+"""
+
+
+def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     logging.debug("Generating class for: %s" % element)
+    mappedName = element.getCleanName()
     parentName, base = getParentName(element)
     logging.debug("Element base: %s" % base)
     if not element.isExplicitDefine():
@@ -4107,13 +4910,12 @@ def generateClasses(wrt, prefix, element, delayed):
     # If this element is an extension (has a base) and the base has
     #   not been generated, then postpone it.
     if parentName:
-        if (parentName not in AlreadyGenerated and
-                parentName not in SimpleTypeDict):
+        if parentName not in AlreadyGenerated:
             PostponedExtensions.append(element)
             return
-    if element.getName() in AlreadyGenerated:
+    if mappedName in AlreadyGenerated:
         return
-    AlreadyGenerated.append(element.getName())
+    AlreadyGenerated.add(mappedName)
     if element.getMixedExtensionError():
         err_msg('*** Element %s extension chain contains mixed and '
                 'non-mixed content.  Not generated.\n' %
@@ -4122,125 +4924,108 @@ def generateClasses(wrt, prefix, element, delayed):
     ElementsForSubclasses.append(element)
     name = element.getCleanName()
     if parentName:
-        s1 = 'class %s%s(%s):\n' % (prefix, name, parentName,)
+        s1 = 'class %s%s(%s%s):\n' % (prefix, name, prefix, parentName,)
     else:
         s1 = 'class %s%s(GeneratedsSuper):\n' % (prefix, name)
     wrt(s1)
     # If this element has documentation, generate a doc-string.
     if element.documentation:
         s2 = ' '.join(element.documentation.strip().split())
-        s2 = s2.encode('utf-8')
         s2 = textwrap.fill(s2, width=68, subsequent_indent='    ')
-        if s2[0] == '"' or s2[-1] == '"':
-            s2 = '    """ %s """\n' % (s2, )
-        else:
-            s2 = '    """%s"""\n' % (s2, )
-        wrt(s2)
+        if sys.version_info.major == 2:
+            s2 = s2.encode('utf-8')
+        if len(s2) > 1:
+            if s2[0] == '"' or s2[-1] == '"':
+                s2 = '    """ %s """\n' % (s2, )
+            else:
+                s2 = '    """%s"""\n' % (s2, )
+            wrt(s2)
     if UserMethodsModule or MemberSpecs:
         generateMemberSpec(wrt, element)
     wrt('    subclass = None\n')
     parentName, parent = getParentName(element)
     superclass_name = 'None'
     if parentName and parentName in AlreadyGenerated:
-        superclass_name = mapName(cleanupName(parentName))
+        superclass_name = prefix + parentName
     wrt('    superclass = %s\n' % (superclass_name, ))
-    generateCtor(wrt, element)
-    wrt('    def factory(*args_, **kwargs_):\n')
-    wrt('        if %s%s.subclass:\n' % (prefix, name))
-    wrt('            return %s%s.subclass(*args_, **kwargs_)\n' % (
-        prefix, name))
-    wrt('        else:\n')
-    wrt('            return %s%s(*args_, **kwargs_)\n' % (prefix, name))
+    generateCtor(wrt, prefix, element)
+    wrt(FactoryMethodTemplate.format(prefix=prefix, name=name))
     wrt('    factory = staticmethod(factory)\n')
     if UseGetterSetter != 'none':
         generateGettersAndSetters(wrt, element)
     generateValidatorDefs(wrt, element)
-    if Targetnamespace in NamespacesDict:
+    if element.namespace:
+        namespace = element.namespace
+    elif element.targetNamespace in NamespacesDict:
+        namespace = NamespacesDict[element.targetNamespace]
+    elif Targetnamespace in NamespacesDict:
         namespace = NamespacesDict[Targetnamespace]
     else:
         namespace = ''
-    generateHascontentMethod(wrt, element)
-    if ExportWrite:
-        generateExportFn(wrt, prefix, element, namespace)
-    if ExportEtree:
-        generateToEtree(wrt, element, Targetnamespace)
-    if ExportLiteral:
-        generateExportLiteralFn(wrt, prefix, element)
-    generateBuildFn(wrt, prefix, element, delayed)
+    generateHascontentMethod(wrt, prefix, element)
+    if not XmlDisabled:
+        if ExportWrite:
+            generateExportFn(wrt, prefix, element, namespace, nameSpacesDef)
+        if ExportEtree:
+            generateToEtree(wrt, element, Targetnamespace)
+        if ExportLiteral:
+            generateExportLiteralFn(wrt, prefix, element)
+        generateBuildFn(wrt, prefix, element, delayed)
     generateUserMethods(wrt, element)
-    wrt('# end class %s\n' % name)
+    wrt('# end class %s%s\n' % (prefix, name, ))
     wrt('\n\n')
 # end generateClasses
 
 
 TEMPLATE_HEADER = """\
-#!/usr/bin/env python
+#xmldisable##!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #
-# Generated %s by generateDS.py%s.
+# Generated {tstamp} by generateDS.py{version}.
+#
+# Command line options:
+{options1}
+#
+# Command line arguments:
+#   {args1}
+#
+# Command line:
+#   {command_line}
+#
+# Current working directory (os.getcwd()):
+#   {current_working_directory}
 #
 
 import sys
-import getopt
 import re as re_
 import base64
 import datetime as datetime_
-
-etree_ = None
-Verbose_import_ = False
-(
-    XMLParser_import_none, XMLParser_import_lxml,
-    XMLParser_import_elementtree
-) = range(3)
-XMLParser_import_library = None
-try:
-    # lxml
-    from lxml import etree as etree_
-    XMLParser_import_library = XMLParser_import_lxml
-    if Verbose_import_:
-        print("running with lxml.etree")
-except ImportError:
-    try:
-        # cElementTree from Python 2.5+
-        import xml.etree.cElementTree as etree_
-        XMLParser_import_library = XMLParser_import_elementtree
-        if Verbose_import_:
-            print("running with cElementTree on Python 2.5+")
-    except ImportError:
-        try:
-            # ElementTree from Python 2.5+
-            import xml.etree.ElementTree as etree_
-            XMLParser_import_library = XMLParser_import_elementtree
-            if Verbose_import_:
-                print("running with ElementTree on Python 2.5+")
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree_
-                XMLParser_import_library = XMLParser_import_elementtree
-                if Verbose_import_:
-                    print("running with cElementTree")
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree_
-                    XMLParser_import_library = XMLParser_import_elementtree
-                    if Verbose_import_:
-                        print("running with ElementTree")
-                except ImportError:
-                    raise ImportError(
-                        "Failed to import ElementTree from any known place")
+import warnings as warnings_
+#xmldisable#try:
+#xmldisable#    from lxml import etree as etree_
+#xmldisable#except ImportError:
+#xmldisable#    from xml.etree import ElementTree as etree_
 
 
-def parsexml_(*args, **kwargs):
-    if (XMLParser_import_library == XMLParser_import_lxml and
-            'parser' not in kwargs):
-        # Use the lxml ElementTree compatible parser so that, e.g.,
-        #   we ignore comments.
-        kwargs['parser'] = etree_.ETCompatXMLParser()
-    doc = etree_.parse(*args, **kwargs)
-    return doc
+Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
+
+
+#xmldisable#def parsexml_(infile, parser=None, **kwargs):
+#xmldisable#    if parser is None:
+#xmldisable#        # Use the lxml ElementTree compatible parser so that, e.g.,
+#xmldisable#        #   we ignore comments.
+#xmldisable#        try:
+#xmldisable#            parser = etree_.ETCompatXMLParser()
+#xmldisable#        except AttributeError:
+#xmldisable#            # fallback to xml.etree
+#xmldisable#            parser = etree_.XMLParser()
+#xmldisable#    doc = etree_.parse(infile, parser=parser, **kwargs)
+#xmldisable#    return doc
 
 #
 # User methods
@@ -4249,283 +5034,7 @@ def parsexml_(*args, **kwargs):
 # You can replace these methods by re-implementing the following class
 #   in a module named generatedssuper.py.
 
-try:
-    from generatedssuper import GeneratedsSuper
-except ImportError, exp:
-
-    class GeneratedsSuper(object):
-        tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
-        class _FixedOffsetTZ(datetime_.tzinfo):
-            def __init__(self, offset, name):
-                self.__offset = datetime_.timedelta(minutes=offset)
-                self.__name = name
-            def utcoffset(self, dt):
-                return self.__offset
-            def tzname(self, dt):
-                return self.__name
-            def dst(self, dt):
-                return None
-        def gds_format_string(self, input_data, input_name=''):
-            return input_data
-        def gds_validate_string(self, input_data, node, input_name=''):
-            return input_data
-        def gds_format_base64(self, input_data, input_name=''):
-            return base64.b64encode(input_data)
-        def gds_validate_base64(self, input_data, node, input_name=''):
-            return input_data
-        def gds_format_integer(self, input_data, input_name=''):
-            return '%%d' %% input_data
-        def gds_validate_integer(self, input_data, node, input_name=''):
-            return input_data
-        def gds_format_integer_list(self, input_data, input_name=''):
-            return '%%s' %% input_data
-        def gds_validate_integer_list(self, input_data, node, input_name=''):
-            values = input_data.split()
-            for value in values:
-                try:
-                    float(value)
-                except (TypeError, ValueError):
-                    raise_parse_error(node, 'Requires sequence of integers')
-            return input_data
-        def gds_format_float(self, input_data, input_name=''):
-            return ('%%.15f' %% input_data).rstrip('0')
-        def gds_validate_float(self, input_data, node, input_name=''):
-            return input_data
-        def gds_format_float_list(self, input_data, input_name=''):
-            return '%%s' %% input_data
-        def gds_validate_float_list(self, input_data, node, input_name=''):
-            values = input_data.split()
-            for value in values:
-                try:
-                    float(value)
-                except (TypeError, ValueError):
-                    raise_parse_error(node, 'Requires sequence of floats')
-            return input_data
-        def gds_format_double(self, input_data, input_name=''):
-            return '%%e' %% input_data
-        def gds_validate_double(self, input_data, node, input_name=''):
-            return input_data
-        def gds_format_double_list(self, input_data, input_name=''):
-            return '%%s' %% input_data
-        def gds_validate_double_list(self, input_data, node, input_name=''):
-            values = input_data.split()
-            for value in values:
-                try:
-                    float(value)
-                except (TypeError, ValueError):
-                    raise_parse_error(node, 'Requires sequence of doubles')
-            return input_data
-        def gds_format_boolean(self, input_data, input_name=''):
-            return ('%%s' %% input_data).lower()
-        def gds_validate_boolean(self, input_data, node, input_name=''):
-            return input_data
-        def gds_format_boolean_list(self, input_data, input_name=''):
-            return '%%s' %% input_data
-        def gds_validate_boolean_list(self, input_data, node, input_name=''):
-            values = input_data.split()
-            for value in values:
-                if value not in ('true', '1', 'false', '0', ):
-                    raise_parse_error(
-                        node,
-                        'Requires sequence of booleans '
-                        '("true", "1", "false", "0")')
-            return input_data
-        def gds_validate_datetime(self, input_data, node, input_name=''):
-            return input_data
-        def gds_format_datetime(self, input_data, input_name=''):
-            if input_data.microsecond == 0:
-                _svalue = '%%04d-%%02d-%%02dT%%02d:%%02d:%%02d' %% (
-                    input_data.year,
-                    input_data.month,
-                    input_data.day,
-                    input_data.hour,
-                    input_data.minute,
-                    input_data.second,
-                )
-            else:
-                _svalue = '%%04d-%%02d-%%02dT%%02d:%%02d:%%02d.%%s' %% (
-                    input_data.year,
-                    input_data.month,
-                    input_data.day,
-                    input_data.hour,
-                    input_data.minute,
-                    input_data.second,
-                    ('%%f' %% (float(input_data.microsecond) / 1000000))[2:],
-                )
-            if input_data.tzinfo is not None:
-                tzoff = input_data.tzinfo.utcoffset(input_data)
-                if tzoff is not None:
-                    total_seconds = tzoff.seconds + (86400 * tzoff.days)
-                    if total_seconds == 0:
-                        _svalue += 'Z'
-                    else:
-                        if total_seconds < 0:
-                            _svalue += '-'
-                            total_seconds *= -1
-                        else:
-                            _svalue += '+'
-                        hours = total_seconds // 3600
-                        minutes = (total_seconds - (hours * 3600)) // 60
-                        _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
-            return _svalue
-        @classmethod
-        def gds_parse_datetime(cls, input_data):
-            tz = None
-            if input_data[-1] == 'Z':
-                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
-                input_data = input_data[:-1]
-            else:
-                results = GeneratedsSuper.tzoff_pattern.search(input_data)
-                if results is not None:
-                    tzoff_parts = results.group(2).split(':')
-                    tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
-                    if results.group(1) == '-':
-                        tzoff *= -1
-                    tz = GeneratedsSuper._FixedOffsetTZ(
-                        tzoff, results.group(0))
-                    input_data = input_data[:-6]
-            if len(input_data.split('.')) > 1:
-                dt = datetime_.datetime.strptime(
-                    input_data, '%%Y-%%m-%%dT%%H:%%M:%%S.%%f')
-            else:
-                dt = datetime_.datetime.strptime(
-                    input_data, '%%Y-%%m-%%dT%%H:%%M:%%S')
-            dt = dt.replace(tzinfo=tz)
-            return dt
-        def gds_validate_date(self, input_data, node, input_name=''):
-            return input_data
-        def gds_format_date(self, input_data, input_name=''):
-            _svalue = '%%04d-%%02d-%%02d' %% (
-                input_data.year,
-                input_data.month,
-                input_data.day,
-            )
-            try:
-                if input_data.tzinfo is not None:
-                    tzoff = input_data.tzinfo.utcoffset(input_data)
-                    if tzoff is not None:
-                        total_seconds = tzoff.seconds + (86400 * tzoff.days)
-                        if total_seconds == 0:
-                            _svalue += 'Z'
-                        else:
-                            if total_seconds < 0:
-                                _svalue += '-'
-                                total_seconds *= -1
-                            else:
-                                _svalue += '+'
-                            hours = total_seconds // 3600
-                            minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
-            except AttributeError:
-                pass
-            return _svalue
-        @classmethod
-        def gds_parse_date(cls, input_data):
-            tz = None
-            if input_data[-1] == 'Z':
-                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
-                input_data = input_data[:-1]
-            else:
-                results = GeneratedsSuper.tzoff_pattern.search(input_data)
-                if results is not None:
-                    tzoff_parts = results.group(2).split(':')
-                    tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
-                    if results.group(1) == '-':
-                        tzoff *= -1
-                    tz = GeneratedsSuper._FixedOffsetTZ(
-                        tzoff, results.group(0))
-                    input_data = input_data[:-6]
-            dt = datetime_.datetime.strptime(input_data, '%%Y-%%m-%%d')
-            dt = dt.replace(tzinfo=tz)
-            return dt.date()
-        def gds_validate_time(self, input_data, node, input_name=''):
-            return input_data
-        def gds_format_time(self, input_data, input_name=''):
-            if input_data.microsecond == 0:
-                _svalue = '%%02d:%%02d:%%02d' %% (
-                    input_data.hour,
-                    input_data.minute,
-                    input_data.second,
-                )
-            else:
-                _svalue = '%%02d:%%02d:%%02d.%%s' %% (
-                    input_data.hour,
-                    input_data.minute,
-                    input_data.second,
-                    ('%%f' %% (float(input_data.microsecond) / 1000000))[2:],
-                )
-            if input_data.tzinfo is not None:
-                tzoff = input_data.tzinfo.utcoffset(input_data)
-                if tzoff is not None:
-                    total_seconds = tzoff.seconds + (86400 * tzoff.days)
-                    if total_seconds == 0:
-                        _svalue += 'Z'
-                    else:
-                        if total_seconds < 0:
-                            _svalue += '-'
-                            total_seconds *= -1
-                        else:
-                            _svalue += '+'
-                        hours = total_seconds // 3600
-                        minutes = (total_seconds - (hours * 3600)) // 60
-                        _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
-            return _svalue
-        @classmethod
-        def gds_parse_time(cls, input_data):
-            tz = None
-            if input_data[-1] == 'Z':
-                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
-                input_data = input_data[:-1]
-            else:
-                results = GeneratedsSuper.tzoff_pattern.search(input_data)
-                if results is not None:
-                    tzoff_parts = results.group(2).split(':')
-                    tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
-                    if results.group(1) == '-':
-                        tzoff *= -1
-                    tz = GeneratedsSuper._FixedOffsetTZ(
-                        tzoff, results.group(0))
-                    input_data = input_data[:-6]
-            if len(input_data.split('.')) > 1:
-                dt = datetime_.datetime.strptime(input_data, '%%H:%%M:%%S.%%f')
-            else:
-                dt = datetime_.datetime.strptime(input_data, '%%H:%%M:%%S')
-            dt = dt.replace(tzinfo=tz)
-            return dt.time()
-        def gds_str_lower(self, instring):
-            return instring.lower()
-        def get_path_(self, node):
-            path_list = []
-            self.get_path_list_(node, path_list)
-            path_list.reverse()
-            path = '/'.join(path_list)
-            return path
-        Tag_strip_pattern_ = re_.compile(r'\{.*\}')
-        def get_path_list_(self, node, path_list):
-            if node is None:
-                return
-            tag = GeneratedsSuper.Tag_strip_pattern_.sub('', node.tag)
-            if tag:
-                path_list.append(tag)
-            self.get_path_list_(node.getparent(), path_list)
-        def get_class_obj_(self, node, default_class=None):
-            class_obj1 = default_class
-            if 'xsi' in node.nsmap:
-                classname = node.get('{%%s}type' %% node.nsmap['xsi'])
-                if classname is not None:
-                    names = classname.split(':')
-                    if len(names) == 2:
-                        classname = names[1]
-                    class_obj2 = globals().get(classname)
-                    if class_obj2 is not None:
-                        class_obj1 = class_obj2
-            return class_obj1
-        def gds_build_any(self, node, type_name=None):
-            return None
-        @classmethod
-        def gds_reverse_node_mapping(cls, mapping):
-            return dict(((v, k) for k, v in mapping.iteritems()))
-
+{generatedssuper_import}
 
 #
 # If you have installed IPython you can uncomment and use the following.
@@ -4546,11 +5055,16 @@ except ImportError, exp:
 # Globals
 #
 
-ExternalEncoding = '%s'
-Tag_pattern_ = re_.compile(r'({.*})?(.*)')
+ExternalEncoding = '{ExternalEncoding}'
+Tag_pattern_ = re_.compile(r'({{.*}})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\\n\\r\\s]+")
-Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
+Namespace_extract_pat_ = re_.compile(r'{{(.*)}}(.*)')
+CDATA_pattern_ = re_.compile(r"<!\\[CDATA\\[.*?\\]\\]>", re_.DOTALL)
 
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
+{preserve_cdata_tags_pat}
 #
 # Support/utility functions.
 #
@@ -4563,29 +5077,42 @@ def showIndent(outfile, level, pretty_print=True):
 
 
 def quote_xml(inStr):
+    "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%%s' %% inStr)
-    s1 = s1.replace('&', '&amp;')
+    {quote_xml_text}
+    s2 = ''
+    pos = 0
+    matchobjects = CDATA_pattern_.finditer(s1)
+    for mo in matchobjects:
+        s3 = s1[pos:mo.start()]
+        s2 += quote_xml_aux(s3)
+        s2 += s1[mo.start():mo.end()]
+        pos = mo.end()
+    s3 = s1[pos:]
+    s2 += quote_xml_aux(s3)
+    return s2
+
+
+def quote_xml_aux(inStr):
+    s1 = inStr.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     return s1
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%%s' %% inStr)
+    {quote_attrib_text}
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     if '"' in s1:
         if "'" in s1:
-            s1 = '"%%s"' %% s1.replace('"', "&quot;")
+            s1 = '"%s"' % s1.replace('"', "&quot;")
         else:
-            s1 = "'%%s'" %% s1
+            s1 = "'%s'" % s1
     else:
-        s1 = '"%%s"' %% s1
+        s1 = '"%s"' % s1
     return s1
 
 
@@ -4593,28 +5120,19 @@ def quote_python(inStr):
     s1 = inStr
     if s1.find("'") == -1:
         if s1.find('\\n') == -1:
-            return "'%%s'" %% s1
+            return "'%s'" % s1
         else:
-            return "'''%%s'''" %% s1
+            return "'''%s'''" % s1
     else:
         if s1.find('"') != -1:
             s1 = s1.replace('"', '\\\\"')
         if s1.find('\\n') == -1:
-            return '"%%s"' %% s1
+            return '"%s"' % s1
         else:
-            return '\"\"\"%%s\"\"\"' %% s1
+            return '\"\"\"%s\"\"\"' % s1
 
 
-def get_all_text_(node):
-    if node.text is not None:
-        text = node.text
-    else:
-        text = ''
-    for child in node:
-        if child.tail is not None:
-            text += child.tail
-    return text
-
+{preserve_cdata_get_text}
 
 def find_attr_value_(attr_name, node):
     attrs = node.attrib
@@ -4626,7 +5144,7 @@ def find_attr_value_(attr_name, node):
         prefix, name = attr_parts
         namespace = node.nsmap.get(prefix)
         if namespace is not None:
-            value = attrs.get('{%%s}%%s' %% (namespace, name, ))
+            value = attrs.get('{{%s}}%s' % (namespace, name, ))
     return value
 
 
@@ -4635,11 +5153,7 @@ class GDSParseError(Exception):
 
 
 def raise_parse_error(node, msg):
-    if XMLParser_import_library == XMLParser_import_lxml:
-        msg = '%%s (element %%s/line %%d)' %% (
-            msg, node.tag, node.sourceline, )
-    else:
-        msg = '%%s (element %%s)' %% (msg, node.tag, )
+    msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline, )
     raise GDSParseError(msg)
 
 
@@ -4672,92 +5186,95 @@ class MixedContainer:
         return self.value
     def getName(self):
         return self.name
-    def export(self, outfile, level, name, namespace, pretty_print=True):
-        if self.category == MixedContainer.CategoryText:
-            # Prevent exporting empty content as empty lines.
-            if self.value.strip():
-                outfile.write(self.value)
-        elif self.category == MixedContainer.CategorySimple:
-            self.exportSimple(outfile, level, name)
-        else:    # category == MixedContainer.CategoryComplex
-            self.value.export(outfile, level, namespace, name, pretty_print)
-    def exportSimple(self, outfile, level, name):
-        if self.content_type == MixedContainer.TypeString:
-            outfile.write('<%%s>%%s</%%s>' %% (
-                self.name, self.value, self.name))
-        elif self.content_type == MixedContainer.TypeInteger or \\
-                self.content_type == MixedContainer.TypeBoolean:
-            outfile.write('<%%s>%%d</%%s>' %% (
-                self.name, self.value, self.name))
-        elif self.content_type == MixedContainer.TypeFloat or \\
-                self.content_type == MixedContainer.TypeDecimal:
-            outfile.write('<%%s>%%f</%%s>' %% (
-                self.name, self.value, self.name))
-        elif self.content_type == MixedContainer.TypeDouble:
-            outfile.write('<%%s>%%g</%%s>' %% (
-                self.name, self.value, self.name))
-        elif self.content_type == MixedContainer.TypeBase64:
-            outfile.write('<%%s>%%s</%%s>' %% (
-                self.name, base64.b64encode(self.value), self.name))
-    def to_etree(self, element):
-        if self.category == MixedContainer.CategoryText:
-            # Prevent exporting empty content as empty lines.
-            if self.value.strip():
-                if len(element) > 0:
-                    if element[-1].tail is None:
-                        element[-1].tail = self.value
-                    else:
-                        element[-1].tail += self.value
-                else:
-                    if element.text is None:
-                        element.text = self.value
-                    else:
-                        element.text += self.value
-        elif self.category == MixedContainer.CategorySimple:
-            subelement = etree_.SubElement(element, '%%s' %% self.name)
-            subelement.text = self.to_etree_simple()
-        else:    # category == MixedContainer.CategoryComplex
-            self.value.to_etree(element)
-    def to_etree_simple(self):
-        if self.content_type == MixedContainer.TypeString:
-            text = self.value
-        elif (self.content_type == MixedContainer.TypeInteger or
-                self.content_type == MixedContainer.TypeBoolean):
-            text = '%%d' %% self.value
-        elif (self.content_type == MixedContainer.TypeFloat or
-                self.content_type == MixedContainer.TypeDecimal):
-            text = '%%f' %% self.value
-        elif self.content_type == MixedContainer.TypeDouble:
-            text = '%%g' %% self.value
-        elif self.content_type == MixedContainer.TypeBase64:
-            text = '%%s' %% base64.b64encode(self.value)
-        return text
-    def exportLiteral(self, outfile, level, name):
-        if self.category == MixedContainer.CategoryText:
-            showIndent(outfile, level)
-            outfile.write(
-                'model_.MixedContainer(%%d, %%d, "%%s", "%%s"),\\n' %% (
-                    self.category, self.content_type, self.name, self.value))
-        elif self.category == MixedContainer.CategorySimple:
-            showIndent(outfile, level)
-            outfile.write(
-                'model_.MixedContainer(%%d, %%d, "%%s", "%%s"),\\n' %% (
-                    self.category, self.content_type, self.name, self.value))
-        else:    # category == MixedContainer.CategoryComplex
-            showIndent(outfile, level)
-            outfile.write(
-                'model_.MixedContainer(%%d, %%d, "%%s",\\n' %% (
-                    self.category, self.content_type, self.name,))
-            self.value.exportLiteral(outfile, level + 1)
-            showIndent(outfile, level)
-            outfile.write(')\\n')
+#xmldisable#    def export(self, outfile, level, name, namespace, pretty_print=True):
+#xmldisable#        if self.category == MixedContainer.CategoryText:
+#xmldisable#            # Prevent exporting empty content as empty lines.
+#xmldisable#            if self.value.strip():
+#xmldisable#                outfile.write(self.value)
+#xmldisable#        elif self.category == MixedContainer.CategorySimple:
+#xmldisable#            self.exportSimple(outfile, level, name)
+#xmldisable#        else:    # category == MixedContainer.CategoryComplex
+#xmldisable#            self.value.export(
+#xmldisable#                outfile, level, namespace, name, pretty_print=pretty_print)
+#xmldisable#    def exportSimple(self, outfile, level, name):
+#xmldisable#        if self.content_type == MixedContainer.TypeString:
+#xmldisable#            outfile.write('<%s>%s</%s>' % (
+#xmldisable#                self.name, self.value, self.name))
+#xmldisable#        elif self.content_type == MixedContainer.TypeInteger or \\
+#xmldisable#                self.content_type == MixedContainer.TypeBoolean:
+#xmldisable#            outfile.write('<%s>%d</%s>' % (
+#xmldisable#                self.name, self.value, self.name))
+#xmldisable#        elif self.content_type == MixedContainer.TypeFloat or \\
+#xmldisable#                self.content_type == MixedContainer.TypeDecimal:
+#xmldisable#            outfile.write('<%s>%f</%s>' % (
+#xmldisable#                self.name, self.value, self.name))
+#xmldisable#        elif self.content_type == MixedContainer.TypeDouble:
+#xmldisable#            outfile.write('<%s>%g</%s>' % (
+#xmldisable#                self.name, self.value, self.name))
+#xmldisable#        elif self.content_type == MixedContainer.TypeBase64:
+#xmldisable#            outfile.write('<%s>%s</%s>' % (
+#xmldisable#                self.name, base64.b64encode(self.value), self.name))
+#xmldisable#    def to_etree(self, element):
+#xmldisable#        if self.category == MixedContainer.CategoryText:
+#xmldisable#            # Prevent exporting empty content as empty lines.
+#xmldisable#            if self.value.strip():
+#xmldisable#                if len(element) > 0:
+#xmldisable#                    if element[-1].tail is None:
+#xmldisable#                        element[-1].tail = self.value
+#xmldisable#                    else:
+#xmldisable#                        element[-1].tail += self.value
+#xmldisable#                else:
+#xmldisable#                    if element.text is None:
+#xmldisable#                        element.text = self.value
+#xmldisable#                    else:
+#xmldisable#                        element.text += self.value
+#xmldisable#        elif self.category == MixedContainer.CategorySimple:
+#xmldisable#            subelement = etree_.SubElement(element, '%s' % self.name)
+#xmldisable#            subelement.text = self.to_etree_simple()
+#xmldisable#        else:    # category == MixedContainer.CategoryComplex
+#xmldisable#            self.value.to_etree(element)
+#xmldisable#    def to_etree_simple(self):
+#xmldisable#        if self.content_type == MixedContainer.TypeString:
+#xmldisable#            text = self.value
+#xmldisable#        elif (self.content_type == MixedContainer.TypeInteger or
+#xmldisable#                self.content_type == MixedContainer.TypeBoolean):
+#xmldisable#            text = '%d' % self.value
+#xmldisable#        elif (self.content_type == MixedContainer.TypeFloat or
+#xmldisable#                self.content_type == MixedContainer.TypeDecimal):
+#xmldisable#            text = '%f' % self.value
+#xmldisable#        elif self.content_type == MixedContainer.TypeDouble:
+#xmldisable#            text = '%g' % self.value
+#xmldisable#        elif self.content_type == MixedContainer.TypeBase64:
+#xmldisable#            text = '%s' % base64.b64encode(self.value)
+#xmldisable#        return text
+#xmldisable#    def exportLiteral(self, outfile, level, name):
+#xmldisable#        if self.category == MixedContainer.CategoryText:
+#xmldisable#            showIndent(outfile, level)
+#xmldisable#            outfile.write(
+#xmldisable#                'model_.MixedContainer(%d, %d, "%s", "%s"),\\n' % (
+#xmldisable#                    self.category, self.content_type, self.name, self.value))
+#xmldisable#        elif self.category == MixedContainer.CategorySimple:
+#xmldisable#            showIndent(outfile, level)
+#xmldisable#            outfile.write(
+#xmldisable#                'model_.MixedContainer(%d, %d, "%s", "%s"),\\n' % (
+#xmldisable#                    self.category, self.content_type, self.name, self.value))
+#xmldisable#        else:    # category == MixedContainer.CategoryComplex
+#xmldisable#            showIndent(outfile, level)
+#xmldisable#            outfile.write(
+#xmldisable#                'model_.MixedContainer(%d, %d, "%s",\\n' % (
+#xmldisable#                    self.category, self.content_type, self.name,))
+#xmldisable#            self.value.exportLiteral(outfile, level + 1)
+#xmldisable#            showIndent(outfile, level)
+#xmldisable#            outfile.write(')\\n')
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0):
+    def __init__(self, name='', data_type='', container=0, child_attrs=None, choice=None):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.child_attrs = child_attrs
+        self.choice = choice
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -4772,6 +5289,10 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_child_attrs(self, child_attrs): self.child_attrs = child_attrs
+    def get_child_attrs(self): return self.child_attrs
+    def set_choice(self, choice): self.choice = choice
+    def get_choice(self): return self.choice
 
 
 def _cast(typ, value):
@@ -4783,21 +5304,453 @@ def _cast(typ, value):
 # Data representation classes.
 #
 
+"""
 
+
+TEMPLATE_GENERATEDS_SUPER = """
+class GeneratedsSuper(object):
+    tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
+    class _FixedOffsetTZ(datetime_.tzinfo):
+        def __init__(self, offset, name):
+            self.__offset = datetime_.timedelta(minutes=offset)
+            self.__name = name
+        def utcoffset(self, dt):
+            return self.__offset
+        def tzname(self, dt):
+            return self.__name
+        def dst(self, dt):
+            return None
+    def gds_format_string(self, input_data, input_name=''):
+        return input_data
+    def gds_validate_string(self, input_data, node=None, input_name=''):
+        if not input_data:
+            return ''
+        else:
+            return input_data
+    def gds_format_base64(self, input_data, input_name=''):
+        return base64.b64encode(input_data)
+    def gds_validate_base64(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_integer(self, input_data, input_name=''):
+        return '%d' % input_data
+    def gds_validate_integer(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_integer_list(self, input_data, input_name=''):
+        return '%s' % ' '.join(input_data)
+    def gds_validate_integer_list(
+            self, input_data, node=None, input_name=''):
+        values = input_data.split()
+        for value in values:
+            try:
+                int(value)
+            except (TypeError, ValueError):
+                raise_parse_error(node, 'Requires sequence of integers')
+        return values
+    def gds_format_float(self, input_data, input_name=''):
+        return ('%.15f' % input_data).rstrip('0')
+    def gds_validate_float(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_float_list(self, input_data, input_name=''):
+        return '%s' % ' '.join(input_data)
+    def gds_validate_float_list(
+            self, input_data, node=None, input_name=''):
+        values = input_data.split()
+        for value in values:
+            try:
+                float(value)
+            except (TypeError, ValueError):
+                raise_parse_error(node, 'Requires sequence of floats')
+        return values
+    def gds_format_double(self, input_data, input_name=''):
+        return '%e' % input_data
+    def gds_validate_double(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_double_list(self, input_data, input_name=''):
+        return '%s' % ' '.join(input_data)
+    def gds_validate_double_list(
+            self, input_data, node=None, input_name=''):
+        values = input_data.split()
+        for value in values:
+            try:
+                float(value)
+            except (TypeError, ValueError):
+                raise_parse_error(node, 'Requires sequence of doubles')
+        return values
+    def gds_format_boolean(self, input_data, input_name=''):
+        return ('%s' % input_data).lower()
+    def gds_validate_boolean(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_boolean_list(self, input_data, input_name=''):
+        return '%s' % ' '.join(input_data)
+    def gds_validate_boolean_list(
+            self, input_data, node=None, input_name=''):
+        values = input_data.split()
+        for value in values:
+            if value not in ('true', '1', 'false', '0', ):
+                raise_parse_error(
+                    node,
+                    'Requires sequence of booleans '
+                    '("true", "1", "false", "0")')
+        return values
+    def gds_validate_datetime(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_datetime(self, input_data, input_name=''):
+        if input_data.microsecond == 0:
+            _svalue = '%04d-%02d-%02dT%02d:%02d:%02d' % (
+                input_data.year,
+                input_data.month,
+                input_data.day,
+                input_data.hour,
+                input_data.minute,
+                input_data.second,
+            )
+        else:
+            _svalue = '%04d-%02d-%02dT%02d:%02d:%02d.%s' % (
+                input_data.year,
+                input_data.month,
+                input_data.day,
+                input_data.hour,
+                input_data.minute,
+                input_data.second,
+                ('%f' % (float(input_data.microsecond) / 1000000))[2:],
+            )
+        if input_data.tzinfo is not None:
+            tzoff = input_data.tzinfo.utcoffset(input_data)
+            if tzoff is not None:
+                total_seconds = tzoff.seconds + (86400 * tzoff.days)
+                if total_seconds == 0:
+                    _svalue += 'Z'
+                else:
+                    if total_seconds < 0:
+                        _svalue += '-'
+                        total_seconds *= -1
+                    else:
+                        _svalue += '+'
+                    hours = total_seconds // 3600
+                    minutes = (total_seconds - (hours * 3600)) // 60
+                    _svalue += '{{0:02d}}:{{1:02d}}'.format(hours, minutes)
+        return _svalue
+    @classmethod
+    def gds_parse_datetime(cls, input_data):
+        tz = None
+        if input_data[-1] == 'Z':
+            tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
+            input_data = input_data[:-1]
+        else:
+            results = GeneratedsSuper.tzoff_pattern.search(input_data)
+            if results is not None:
+                tzoff_parts = results.group(2).split(':')
+                tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
+                if results.group(1) == '-':
+                    tzoff *= -1
+                tz = GeneratedsSuper._FixedOffsetTZ(
+                    tzoff, results.group(0))
+                input_data = input_data[:-6]
+        time_parts = input_data.split('.')
+        if len(time_parts) > 1:
+            micro_seconds = int(float('0.' + time_parts[1]) * 1000000)
+            input_data = '%s.%s' % (time_parts[0], micro_seconds, )
+            dt = datetime_.datetime.strptime(
+                input_data, '%Y-%m-%dT%H:%M:%S.%f')
+        else:
+            dt = datetime_.datetime.strptime(
+                input_data, '%Y-%m-%dT%H:%M:%S')
+        dt = dt.replace(tzinfo=tz)
+        return dt
+    def gds_validate_date(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_date(self, input_data, input_name=''):
+        _svalue = '%04d-%02d-%02d' % (
+            input_data.year,
+            input_data.month,
+            input_data.day,
+        )
+        try:
+            if input_data.tzinfo is not None:
+                tzoff = input_data.tzinfo.utcoffset(input_data)
+                if tzoff is not None:
+                    total_seconds = tzoff.seconds + (86400 * tzoff.days)
+                    if total_seconds == 0:
+                        _svalue += 'Z'
+                    else:
+                        if total_seconds < 0:
+                            _svalue += '-'
+                            total_seconds *= -1
+                        else:
+                            _svalue += '+'
+                        hours = total_seconds // 3600
+                        minutes = (total_seconds - (hours * 3600)) // 60
+                        _svalue += '{{0:02d}}:{{1:02d}}'.format(
+                            hours, minutes)
+        except AttributeError:
+            pass
+        return _svalue
+    @classmethod
+    def gds_parse_date(cls, input_data):
+        tz = None
+        if input_data[-1] == 'Z':
+            tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
+            input_data = input_data[:-1]
+        else:
+            results = GeneratedsSuper.tzoff_pattern.search(input_data)
+            if results is not None:
+                tzoff_parts = results.group(2).split(':')
+                tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
+                if results.group(1) == '-':
+                    tzoff *= -1
+                tz = GeneratedsSuper._FixedOffsetTZ(
+                    tzoff, results.group(0))
+                input_data = input_data[:-6]
+        dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
+        dt = dt.replace(tzinfo=tz)
+        return dt.date()
+    def gds_validate_time(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_time(self, input_data, input_name=''):
+        if input_data.microsecond == 0:
+            _svalue = '%02d:%02d:%02d' % (
+                input_data.hour,
+                input_data.minute,
+                input_data.second,
+            )
+        else:
+            _svalue = '%02d:%02d:%02d.%s' % (
+                input_data.hour,
+                input_data.minute,
+                input_data.second,
+                ('%f' % (float(input_data.microsecond) / 1000000))[2:],
+            )
+        if input_data.tzinfo is not None:
+            tzoff = input_data.tzinfo.utcoffset(input_data)
+            if tzoff is not None:
+                total_seconds = tzoff.seconds + (86400 * tzoff.days)
+                if total_seconds == 0:
+                    _svalue += 'Z'
+                else:
+                    if total_seconds < 0:
+                        _svalue += '-'
+                        total_seconds *= -1
+                    else:
+                        _svalue += '+'
+                    hours = total_seconds // 3600
+                    minutes = (total_seconds - (hours * 3600)) // 60
+                    _svalue += '{{0:02d}}:{{1:02d}}'.format(hours, minutes)
+        return _svalue
+    def gds_validate_simple_patterns(self, patterns, target):
+        # pat is a list of lists of strings/patterns.  We should:
+        # - AND the outer elements
+        # - OR the inner elements
+        found1 = True
+        for patterns1 in patterns:
+            found2 = False
+            for patterns2 in patterns1:
+                if re_.search(patterns2, target) is not None:
+                    found2 = True
+                    break
+            if not found2:
+                found1 = False
+                break
+        return found1
+    @classmethod
+    def gds_parse_time(cls, input_data):
+        tz = None
+        if input_data[-1] == 'Z':
+            tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
+            input_data = input_data[:-1]
+        else:
+            results = GeneratedsSuper.tzoff_pattern.search(input_data)
+            if results is not None:
+                tzoff_parts = results.group(2).split(':')
+                tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
+                if results.group(1) == '-':
+                    tzoff *= -1
+                tz = GeneratedsSuper._FixedOffsetTZ(
+                    tzoff, results.group(0))
+                input_data = input_data[:-6]
+        if len(input_data.split('.')) > 1:
+            dt = datetime_.datetime.strptime(input_data, '%H:%M:%S.%f')
+        else:
+            dt = datetime_.datetime.strptime(input_data, '%H:%M:%S')
+        dt = dt.replace(tzinfo=tz)
+        return dt.time()
+    def gds_str_lower(self, instring):
+        return instring.lower()
+    def get_path_(self, node):
+        path_list = []
+        self.get_path_list_(node, path_list)
+        path_list.reverse()
+        path = '/'.join(path_list)
+        return path
+    Tag_strip_pattern_ = re_.compile(r'\{{.*\}}')
+    def get_path_list_(self, node, path_list):
+        if node is None:
+            return
+        tag = GeneratedsSuper.Tag_strip_pattern_.sub('', node.tag)
+        if tag:
+            path_list.append(tag)
+        self.get_path_list_(node.getparent(), path_list)
+    def get_class_obj_(self, node, default_class=None):
+        class_obj1 = default_class
+        if 'xsi' in node.nsmap:
+            classname = node.get('{{%s}}type' % node.nsmap['xsi'])
+            if classname is not None:
+                names = classname.split(':')
+                if len(names) == 2:
+                    classname = names[1]
+                class_obj2 = globals().get(classname)
+                if class_obj2 is not None:
+                    class_obj1 = class_obj2
+        return class_obj1
+    def gds_build_any(self, node, type_name=None):
+        return None
+    @classmethod
+    def gds_reverse_node_mapping(cls, mapping):
+        {gds_reverse_node_mapping_text}
+    @staticmethod
+    def gds_encode(instring):
+        if sys.version_info.major == 2:
+            return instring.encode(ExternalEncoding)
+        else:
+            return instring
+    @staticmethod
+    def convert_unicode(instring):
+        if isinstance(instring, str):
+            result = quote_xml(instring)
+        elif sys.version_info.major == 2 and isinstance(instring, unicode):
+            result = quote_xml(instring).encode('utf8')
+        else:
+            result = GeneratedsSuper.gds_encode(str(instring))
+        return result
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        for key, val in self.__dict__.items():
+            if other.__dict__[key] != val:
+                return False
+        return True
+    def __ne__(self, other):
+        return not self.__eq__(other)
+            return instring
+
+def getSubclassFromModule_(module, class_):
+    '''Get the subclass of a class from a specific module.'''
+    name = class_.__name__ + 'Sub'
+    if hasattr(module, name):
+        return getattr(module, name)
+    else:
+        return None
 """
 
 # Fool (and straighten out) the syntax highlighting.
 # DUMMY = """
 
 
-def generateHeader(wrt, prefix):
+def format_options_args(options, args):
+    options1 = '\n'.join(['#   %s' % (item, ) for item in options])
+    args1 = '\n'.join(['#   %s' % (item, ) for item in args])
+    program = sys.argv[0]
+    options2 = ''
+    for name, value in options:
+        if value:
+            if name.startswith('--'):
+                options2 += ' %s="%s"' % (name, value, )
+            else:
+                options2 += ' %s "%s"' % (name, value, )
+        else:
+            options2 += ' %s' % name
+    args1 = ' '.join(args)
+    command_line = '%s%s %s' % (program, options2, args1, )
+    return options1, args1, command_line
+
+
+Preserve_cdata_get_all_text1 = """\
+PRESERVE_CDATA_TAGS_PAT1 = re_.compile(
+    r'^<.+?>(.*?)</?[a-zA-Z0-9\-]+>(?!.*</?[a-zA-Z0-9\-]+>)')
+PRESERVE_CDATA_TAGS_PAT2 = re_.compile(r'^<.+?>.*?</.+?>(.*)$')
+
+
+def get_all_text_(node):
+    if node.text is not None:
+        mo_ = PRESERVE_CDATA_TAGS_PAT1.search(etree_.tostring(node).strip())
+        if mo_ is not None:
+            text = mo_.group(1)
+    else:
+        text = ''
+    for child in node:
+        if child.tail is not None:
+            mo_ = PRESERVE_CDATA_TAGS_PAT2.search(
+                etree_.tostring(child).strip())
+            if mo_ is not None:
+                text += mo_.group(1)
+    return text
+"""
+
+Preserve_cdata_get_all_text2 = """\
+def get_all_text_(node):
+    if node.text is not None:
+        text = node.text
+    else:
+        text = ''
+    for child in node:
+        if child.tail is not None:
+            text += child.tail
+    return text
+"""
+
+
+def generateHeader(wrt, prefix, options, args, externalImports):
+    global TEMPLATE_HEADER
     tstamp = (not NoDates and time.ctime()) or ''
     if NoVersion:
         version = ''
     else:
         version = ' version %s' % VERSION
-    s1 = TEMPLATE_HEADER % (tstamp, version, ExternalEncoding, )
+    options1, args1, command_line = format_options_args(options, args)
+    current_working_directory = os.path.split(os.getcwd())[1]
+    if PreserveCdataTags and not XmlDisabled:
+        preserve_cdata_tags_pat = \
+            "PRESERVE_CDATA_TAGS_PAT = re_.compile(r'^<.+?>(.*)<.+>$')\n\n"
+        preserve_cdata_get_text = Preserve_cdata_get_all_text1
+    else:
+        preserve_cdata_tags_pat = ""
+        preserve_cdata_get_text = Preserve_cdata_get_all_text2
+    gds_reverse_node_mapping_text = \
+        "return dict(((v, k) for k, v in mapping.iteritems()))"
+    quote_xml_text = \
+        "s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)"
+    quote_attrib_text = \
+        "s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)"
+
+    import_string = TEMPLATE_GENERATEDS_SUPER.format(
+        gds_reverse_node_mapping_text=gds_reverse_node_mapping_text)
+    if UseGeneratedssuperLookup:
+        s0 = """try:
+    from generatedssuper import GeneratedsSuper
+except ImportError as exp:
+"""
+        for line in StringIO.StringIO(import_string).readlines():
+            s0 += "    "+line
+        import_string = s0
+
+    s1 = TEMPLATE_HEADER.format(
+        tstamp=tstamp,
+        version=version,
+        options1=options1,
+        args1=args1,
+        command_line=command_line,
+        current_working_directory=current_working_directory,
+        ExternalEncoding=ExternalEncoding,
+        preserve_cdata_tags_pat=preserve_cdata_tags_pat,
+        preserve_cdata_get_text=preserve_cdata_get_text,
+        generatedssuper_import=import_string,
+        quote_xml_text=quote_xml_text,
+        quote_attrib_text=quote_attrib_text,
+    )
     wrt(s1)
+    for externalImport in externalImports:
+        wrt(externalImport + "\n")
+
+    wrt("\n")
 
 
 TEMPLATE_MAIN = """\
@@ -4807,7 +5760,7 @@ Usage: python <%(prefix)sParser>.py [ -s ] <in_xml_file>
 
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 
@@ -4820,12 +5773,12 @@ def get_root_tag(node):
 
 
 def parse(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+%(preserve_cdata_tags)s    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = '%(name)s'
-        rootClass = %(prefix)s%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = %(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -4840,12 +5793,12 @@ def parse(inFileName, silence=False):
 
 
 def parseEtree(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+%(preserve_cdata_tags)s    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = '%(name)s'
-        rootClass = %(prefix)s%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = %(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -4863,13 +5816,16 @@ def parseEtree(inFileName, silence=False):
 
 
 def parseString(inString, silence=False):
-    from StringIO import StringIO
-    doc = parsexml_(StringIO(inString))
+    if sys.version_info.major == 2:
+        from StringIO import StringIO as IOBuffer
+    else:
+        from io import BytesIO as IOBuffer
+%(preserve_cdata_tags)s    doc = parsexml_(IOBuffer(inString), parser)
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootClass = %(prefix)s%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = %(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -4877,18 +5833,18 @@ def parseString(inString, silence=False):
 #silence#    if not silence:
 #silence#        sys.stdout.write('<?xml version="1.0" ?>\\n')
 #silence#        rootObj.export(
-#silence#            sys.stdout, 0, name_="%(name)s",
+#silence#            sys.stdout, 0, name_=rootTag,
 #silence#            namespacedef_='%(namespacedef)s')
     return rootObj
 
 
 def parseLiteral(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+%(preserve_cdata_tags)s    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = '%(name)s'
-        rootClass = %(prefix)s%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = %(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -4896,7 +5852,7 @@ def parseLiteral(inFileName, silence=False):
 #silence#    if not silence:
 #silence#        sys.stdout.write('#from %(module_name)s import *\\n\\n')
 #silence#        sys.stdout.write('import %(module_name)s as model_\\n\\n')
-#silence#        sys.stdout.write('rootObj = model_.rootTag(\\n')
+#silence#        sys.stdout.write('rootObj = model_.rootClass(\\n')
 #silence#        rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 #silence#        sys.stdout.write(')\\n')
     return rootObj
@@ -4922,28 +5878,45 @@ if __name__ == '__main__':
 
 
 def generateMain(outfile, prefix, root):
-    exportDictLine = "GDSClassesMapping = {\n"
+    lines = []
     for classType in MappingTypes:
-        if MappingTypes[classType] in AlreadyGenerated:
-            exportDictLine += "    '%s': %s,\n" % (
-                classType,
-                cleanupName(mapName(MappingTypes[classType])))
-    exportDictLine += "}\n\n\n"
+        mappedName = mapName(cleanupName(MappingTypes[classType]))
+        if mappedName in AlreadyGenerated:
+            lines.append("    '%s': %s%s,\n" % (
+                classType, prefix, mappedName, ))
+    lines.sort()
+    exportDictLine = "GDSClassesMapping = {{\n{}}}\n\n\n".format(
+        ''.join(lines))
     outfile.write(exportDictLine)
+    if XmlDisabled:
+        return
     children = root.getChildren()
+    rootClass = None
     if children:
         name = RootElement or children[0].getName()
         elType = cleanupName(children[0].getType())
         if RootElement:
-            rootElement = RootElement
+            roots = RootElement.split('|')
+            if len(roots) > 1:
+                rootElement = roots[0]
+                rootClass = roots[1]
+            else:
+                rootElement = roots[0]
         else:
             rootElement = elType
     else:
         name = ''
         if RootElement:
-            rootElement = RootElement
+            roots = RootElement.split('|')
+            if len(roots) > 1:
+                rootElement = roots[0]
+                rootClass = roots[1]
+            else:
+                rootElement = roots[0]
         else:
             rootElement = ''
+    if rootClass is None:
+        rootClass = rootElement
     if Namespacedef:
         namespace = Namespacedef
     elif Targetnamespace:
@@ -4960,9 +5933,16 @@ def generateMain(outfile, prefix, root):
         'name': name,
         'cleanname': cleanupName(name),
         'module_name': os.path.splitext(os.path.basename(outfile.name))[0],
-        'root': rootElement,
+        'rootElement': rootElement,
+        'rootClass': rootClass,
         'namespacedef': namespace,
     }
+    if PreserveCdataTags:
+        params['preserve_cdata_tags'] = \
+            "    parser = etree_.ETCompatXMLParser(strip_cdata=False)\n"
+    else:
+        params['preserve_cdata_tags'] = "    parser = None\n"
+        params['preserve_cdata_tags_pat'] = ""
     s1 = TEMPLATE_MAIN % params
     outfile.write(s1)
 
@@ -4971,8 +5951,6 @@ def buildCtorParams(element, parent, childCount):
     content = []
     addedArgs = {}
     add = content.append
-##     if not element.isMixed():
-##         buildCtorParams_aux(addedArgs, add, parent)
     buildCtorParams_aux(addedArgs, add, parent)
     if element.getSimpleContent() or element.isMixed():
         add("valueOf_, ")
@@ -4989,10 +5967,12 @@ def buildCtorParams_aux(addedArgs, add, element):
     if parentName:
         buildCtorParams_aux(addedArgs, add, parentObj)
     attrDefs = element.getAttributeDefs()
-    for key in attrDefs:
+    for key in element.getAttributeDefsList():
         attrDef = attrDefs[key]
         name = attrDef.getName()
         name = cleanupName(mapName(name))
+        if name == element.getCleanName():
+            name += '_member'
         if name not in addedArgs:
             addedArgs[name] = 1
             add('%s, ' % name)
@@ -5001,6 +5981,8 @@ def buildCtorParams_aux(addedArgs, add, element):
             add('anytypeobjs_, ')
         else:
             name = child.getCleanName()
+            if name == element.getCleanName():
+                name += '_member'
             if name not in addedArgs:
                 addedArgs[name] = 1
                 add('%s, ' % name)
@@ -5028,13 +6010,21 @@ def get_impl_body(classBehavior, baseImplUrl, implUrl):
     if implUrl:
         if baseImplUrl:
             implUrl = '%s%s' % (baseImplUrl, implUrl)
+        if sys.version_info.major == 2:
+            urllib_urlopen = urllib2.urlopen
+            urllib_httperror = urllib2.HTTPError
+            urllib_urlerror = urllib2.URLError
+        else:
+            urllib_urlopen = urllib.request.urlopen
+            urllib_httperror = urllib.error.HTTPError
+            urllib_urlerror = urllib.error.URLError
         try:
-            implFile = urllib2.urlopen(implUrl)
+            implFile = urllib_urlopen(implUrl)
             impl = implFile.read()
             implFile.close()
-        except urllib2.HTTPError:
+        except urllib_httperror:
             err_msg('*** Implementation at %s not found.\n' % implUrl)
-        except urllib2.URLError:
+        except urllib_urlerror:
             err_msg('*** Connection refused for URL: %s\n' % implUrl)
     return impl
 
@@ -5129,14 +6119,16 @@ def generateClassBehaviors(wrt, classBehaviors, baseImplUrl):
         wrt('\n')
 
 
-def generateSubclass(wrt, element, prefix, xmlbehavior,  behaviors, baseUrl):
+def generateSubclass(wrt, element, prefix, xmlbehavior, behaviors, baseUrl):
     if not element.isComplex():
         return
-    if element.getName() in AlreadyGenerated_subclass:
+    mappedName = element.getCleanName()
+    if mappedName in AlreadyGenerated_subclass:
         return
-    AlreadyGenerated_subclass.append(element.getName())
+    AlreadyGenerated_subclass.add(mappedName)
     name = element.getCleanName()
-    wrt('class %s%s%s(supermod.%s):\n' % (prefix, name, SubclassSuffix, name))
+    wrt('class %s%s%s(supermod.%s%s):\n' % (
+        prefix, name, SubclassSuffix, prefix, name))
     childCount = countChildren(element, 0)
     s1 = buildCtorArgs_multilevel(element, childCount)
     wrt('    def __init__(self%s):\n' % s1)
@@ -5163,7 +6155,8 @@ def generateSubclass(wrt, element, prefix, xmlbehavior,  behaviors, baseUrl):
             classBehaviors = None
         if classBehaviors:
             generateClassBehaviors(wrt, classBehaviors, baseUrl)
-    wrt('supermod.%s.subclass = %s%s\n' % (name, name, SubclassSuffix))
+    wrt('supermod.%s%s.subclass = %s%s%s\n' % (
+        prefix, name, prefix, name, SubclassSuffix))
     wrt('# end class %s%s%s\n' % (prefix, name, SubclassSuffix))
     wrt('\n\n')
 
@@ -5174,65 +6167,31 @@ TEMPLATE_SUBCLASS_HEADER = """\
 #
 # Generated %s by generateDS.py%s.
 #
+# Command line options:
+%s
+#
+# Command line arguments:
+#   %s
+#
+# Command line:
+#   %s
+#
+# Current working directory (os.getcwd()):
+#   %s
+#
 
 import sys
+#xmldisable#from lxml import etree as etree_
 
 import %s as supermod
 
-etree_ = None
-Verbose_import_ = False
-(
-    XMLParser_import_none, XMLParser_import_lxml,
-    XMLParser_import_elementtree
-) = range(3)
-XMLParser_import_library = None
-try:
-    # lxml
-    from lxml import etree as etree_
-    XMLParser_import_library = XMLParser_import_lxml
-    if Verbose_import_:
-        print("running with lxml.etree")
-except ImportError:
-    try:
-        # cElementTree from Python 2.5+
-        import xml.etree.cElementTree as etree_
-        XMLParser_import_library = XMLParser_import_elementtree
-        if Verbose_import_:
-            print("running with cElementTree on Python 2.5+")
-    except ImportError:
-        try:
-            # ElementTree from Python 2.5+
-            import xml.etree.ElementTree as etree_
-            XMLParser_import_library = XMLParser_import_elementtree
-            if Verbose_import_:
-                print("running with ElementTree on Python 2.5+")
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree_
-                XMLParser_import_library = XMLParser_import_elementtree
-                if Verbose_import_:
-                    print("running with cElementTree")
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree_
-                    XMLParser_import_library = XMLParser_import_elementtree
-                    if Verbose_import_:
-                        print("running with ElementTree")
-                except ImportError:
-                    raise ImportError(
-                        "Failed to import ElementTree from any known place")
-
-
-def parsexml_(*args, **kwargs):
-    if (XMLParser_import_library == XMLParser_import_lxml and
-            'parser' not in kwargs):
-        # Use the lxml ElementTree compatible parser so that, e.g.,
-        #   we ignore comments.
-        kwargs['parser'] = etree_.ETCompatXMLParser()
-    doc = etree_.parse(*args, **kwargs)
-    return doc
+#xmldisable#def parsexml_(infile, parser=None, **kwargs):
+#xmldisable#    if parser is None:
+#xmldisable#        # Use the lxml ElementTree compatible parser so that, e.g.,
+#xmldisable#        #   we ignore comments.
+#xmldisable#        parser = etree_.ETCompatXMLParser()
+#xmldisable#    doc = etree_.parse(infile, parser=parser, **kwargs)
+#xmldisable#    return doc
 
 #
 # Globals
@@ -5258,12 +6217,12 @@ def get_root_tag(node):
 
 
 def parse(inFilename, silence=False):
-    doc = parsexml_(inFilename)
+%(preserve_cdata_tags)s    doc = parsexml_(inFilename, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = '%(name)s'
-        rootClass = supermod.%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = supermod.%(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -5278,12 +6237,12 @@ def parse(inFilename, silence=False):
 
 
 def parseEtree(inFilename, silence=False):
-    doc = parsexml_(inFilename)
+%(preserve_cdata_tags)s    doc = parsexml_(inFilename, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = '%(name)s'
-        rootClass = supermod.%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = supermod.%(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -5302,12 +6261,12 @@ def parseEtree(inFilename, silence=False):
 
 def parseString(inString, silence=False):
     from StringIO import StringIO
-    doc = parsexml_(StringIO(inString))
+%(preserve_cdata_tags)s    doc = parsexml_(StringIO(inString), parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = '%(name)s'
-        rootClass = supermod.%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = supermod.%(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -5321,12 +6280,12 @@ def parseString(inString, silence=False):
 
 
 def parseLiteral(inFilename, silence=False):
-    doc = parsexml_(inFilename)
+%(preserve_cdata_tags)s    doc = parsexml_(inFilename, parser)
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootClass = supermod.%(root)s
+        rootTag = '%(rootElement)s'
+        rootClass = supermod.%(prefix)s%(rootClass)s
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -5334,8 +6293,8 @@ def parseLiteral(inFilename, silence=False):
 #silence#    if not silence:
 #silence#        sys.stdout.write('#from %(super)s import *\\n\\n')
 #silence#        sys.stdout.write('import %(super)s as model_\\n\\n')
-#silence#        sys.stdout.write('rootObj = model_.%(cleanname)s(\\n')
-#silence#        rootObj.exportLiteral(sys.stdout, 0, name_="%(cleanname)s")
+#silence#        sys.stdout.write('rootObj = model_.rootClass(\\n')
+#silence#        rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 #silence#        sys.stdout.write(')\\n')
     return rootObj
 
@@ -5346,7 +6305,7 @@ Usage: python ???.py <infilename>
 
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 
@@ -5413,8 +6372,23 @@ TEMPLATE_ABSTRACT_CHILD = """\
 """
 
 
+def getNamespace(element):
+    namespace = ''
+    if element.targetNamespace in NamespacesDict:
+        namespace = 'xmlns:%s="%s"' % (
+            NamespacesDict[element.targetNamespace].rstrip(':'),
+            element.targetNamespace, )
+    elif Namespacedef:
+        namespace = Namespacedef
+    elif Targetnamespace in NamespacesDict:
+            namespace = 'xmlns:%s="%s"' % (
+                NamespacesDict[Targetnamespace].rstrip(':'),
+                Targetnamespace, )
+    return namespace
+
+
 def generateSubclasses(root, subclassFilename, behaviorFilename,
-                       prefix, superModule='xxx'):
+                       prefix, options, args, superModule='xxx'):
     subclassFile = makeFile(subclassFilename)
     wrt = subclassFile.write
     if subclassFile:
@@ -5444,25 +6418,44 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
             version = ''
         else:
             version = ' version %s' % VERSION
+        options1, args1, command_line = format_options_args(options, args)
+        current_working_directory = os.path.split(os.getcwd())[1]
         wrt(TEMPLATE_SUBCLASS_HEADER % (tstamp, version,
+            options1, args1,
+            command_line, current_working_directory,
             superModule, ExternalEncoding, ))
         for element in ElementsForSubclasses:
             generateSubclass(
                 wrt, element, prefix, xmlbehavior, behaviors, baseUrl)
+        if XmlDisabled:
+            return
         children = root.getChildren()
+        rootClass = None
         if children:
             name = children[0].getName()
             elType = cleanupName(children[0].getType())
             if RootElement:
-                rootElement = RootElement
+                roots = RootElement.split('|')
+                if len(roots) > 1:
+                    rootElement = roots[0]
+                    rootClass = roots[1]
+                else:
+                    rootElement = roots[0]
             else:
                 rootElement = elType
         else:
             name = ''
             if RootElement:
-                rootElement = RootElement
+                roots = RootElement.split('|')
+                if len(roots) > 1:
+                    rootElement = roots[0]
+                    rootClass = roots[1]
+                else:
+                    rootElement = roots[0]
             else:
                 rootElement = ''
+        if rootClass is None:
+            rootClass = rootElement
         if Namespacedef:
             namespace = Namespacedef
         elif Targetnamespace:
@@ -5477,23 +6470,47 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
         params = {
             'cap_name': make_gs_name(cleanupName(name)),
             'name': name,
+            'prefix': prefix,
             'cleanname': cleanupName(name),
             'module_name': os.path.splitext(
                 os.path.basename(subclassFilename))[0],
-            'root': rootElement,
+            'root': root,
+            'rootElement': rootElement,
+            'rootClass': rootClass,
             'namespacedef': namespace,
             'super': superModule,
         }
+        if PreserveCdataTags:
+            params['preserve_cdata_tags'] = \
+                "    parser = etree_.ETCompatXMLParser(strip_cdata=False)\n"
+        else:
+            params['preserve_cdata_tags'] = \
+                "    parser = None\n"
         wrt(TEMPLATE_SUBCLASS_FOOTER % params)
         subclassFile.close()
 
 
+def getUsedNamespacesDefs(element):
+    processedPrefixes = []
+    nameSpacesDef = getNamespace(element)
+    for child in element.getChildren():
+        if child.prefix not in processedPrefixes and \
+           child.prefix in prefixToNamespaceMap:
+            spaceDef = 'xmlns:%s="%s" ' % (
+                child.prefix, prefixToNamespaceMap[child.prefix])
+            if spaceDef.strip() not in nameSpacesDef:
+                nameSpacesDef += ' ' + spaceDef
+            processedPrefixes.append(child.prefix)
+    return nameSpacesDef
+
+
 def generateFromTree(wrt, prefix, elements, processed):
     for element in elements:
+        nameSpacesDef = getUsedNamespacesDefs(element)
         name = element.getCleanName()
         if 1:     # if name not in processed:
             processed.append(name)
-            generateClasses(wrt, prefix, element, 0)
+            generateClasses(wrt, prefix, element, 0, nameSpacesDef)
             children = element.getChildren()
             if children:
                 generateFromTree(wrt, prefix, element.getChildren(), processed)
@@ -5506,14 +6523,56 @@ def generateSimpleTypes(wrt, prefix, simpleTypeDict):
         wrt('\n\n')
 
 
+def getImportsForExternalXsds(root):
+    '''
+    If we are creating a file per xsd, then
+    we need to import any external classes we use
+    '''
+    externalImports = set()
+    if not SingleFileOutput:
+        childStack = list(root.getChildren())
+        while len(childStack) > 0:
+            child = childStack.pop()
+            if child.namespace and child.namespace != root.targetNamespace:
+                fqn = child.getFullyQualifiedType()
+                if fqn in fqnToModuleNameMap and fqn in fqnToElementDict:
+                    schemaElement = fqnToElementDict[fqn]
+                    moduleName = fqnToModuleNameMap[fqn]
+                    type = schemaElement.getType()
+                    if type == "xs:string":
+                        type = schemaElement.getName()
+                    externalImports.add("from %s%s import %s" %
+                                           (moduleName, ModuleSuffix,
+                                            type))
+            for subChild in child.getChildren():
+                childStack.append(subChild)
+    return externalImports
+
+
+def isNewState():
+    state = reduce(
+        operator.concat,
+        (str(id(item)) for item in PostponedExtensions))
+    if sys.version_info.major == 2:
+        sum = hashlib.sha1(str(state)).hexdigest()
+    else:
+        sum = hashlib.sha1(str(state).encode()).hexdigest()
+    if sum in LoopcheckOneperChecksums:
+        return False
+    LoopcheckOneperChecksums.add(sum)
+    return True
+
+
 def generate(outfileName, subclassFilename, behaviorFilename,
-             prefix, root, superModule):
-    global DelayedElements, DelayedElements_subclass
+             prefix, root, options, args, superModule):
+    global DelayedElements, DelayedElements_subclass, AlreadyGenerated
     # Create an output file.
     # Note that even if the user does not request an output file,
     #   we still need to go through the process of generating classes
     #   because it produces data structures needed during generation of
     #   subclasses.
+    MappingTypes.clear()
+    #AlreadyGenerated = set()
     outfile = None
     if outfileName:
         outfile = makeFile(outfileName)
@@ -5521,10 +6580,11 @@ def generate(outfileName, subclassFilename, behaviorFilename,
         outfile = os.tmpfile()
     wrt = outfile.write
     processed = []
-    generateHeader(wrt, prefix)
+    externalImports = getImportsForExternalXsds(root)
+    generateHeader(wrt, prefix, options, args, externalImports)
     #generateSimpleTypes(outfile, prefix, SimpleTypeDict)
-    DelayedElements = []
-    DelayedElements_subclass = []
+    DelayedElements = set()
+    DelayedElements_subclass = set()
     elements = root.getChildren()
     generateFromTree(wrt, prefix, elements, processed)
     while 1:
@@ -5538,9 +6598,11 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     #
     # Generate the elements that were postponed because we had not
     #   yet generated their base class.
-    while 1:
-        if len(PostponedExtensions) <= 0:
-            break
+    while len(PostponedExtensions) > 0:
+        if not isNewState():
+            sys.stderr.write('\n*** maxLoops exceeded.  Something is '
+                             'wrong with --one-file-per-xsd.\n\n')
+            sys.exit(1)
         element = PostponedExtensions.pop()
         parentName, parent = getParentName(element)
         if parentName:
@@ -5549,6 +6611,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
                 generateClasses(wrt, prefix, element, 1)
             else:
                 PostponedExtensions.insert(0, element)
+
     #
     # Disable the generation of SAX handler/parser.
     # It failed when we stopped putting simple types into ElementDict.
@@ -5559,7 +6622,8 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     if subclassFilename:
         generateSubclasses(
             root, subclassFilename, behaviorFilename,
-            prefix, superModule)
+            prefix, options, args, superModule)
+# end generate
 
 
 def makeFile(outFileName):
@@ -5571,12 +6635,16 @@ def makeFile(outFileName):
                 outFileName)
             sys.exit(1)
         else:
-            reply = raw_input(
-                'File %s exists.  Overwrite? (y/n): ' % outFileName)
+            if sys.version_info.major == 2:
+                reply = raw_input(
+                    'File %s exists.  Overwrite? (y/n): ' % outFileName)
+            else:
+                reply = input(
+                    'File %s exists.  Overwrite? (y/n): ' % outFileName)
             if reply == 'y':
-                outFile = file(outFileName, 'w')
+                outFile = open(outFileName, 'w')
     else:
-        outFile = file(outFileName, 'w')
+        outFile = open(outFileName, 'w')
     return outFile
 
 
@@ -5588,9 +6656,9 @@ def mapName(oldName):
 
 
 def cleanupName(oldName):
-    newName = oldName.replace(':', '_')
-    newName = newName.replace('-', '_')
-    newName = newName.replace('.', '_')
+    newName = oldName
+    for pattern, repl in CleanupNameList:
+        newName = re.sub(pattern, repl, newName)
     return newName
 
 
@@ -5606,6 +6674,12 @@ def make_gs_name(oldName):
 
 def strip_namespace(val):
     return val.split(':')[-1]
+
+
+def get_prefix_and_value(val):
+    if ':' in val:
+        return val.split(':')
+    return None, val
 
 
 def escape_string(instring):
@@ -5634,62 +6708,18 @@ def is_builtin_simple_type(type_val):
         return False
 
 
-##def process_include(inpath, outpath):
-##    from xml.etree import ElementTree as etree
-##    if inpath:
-##        doc = etree.parse(inpath)
-##        root = doc.getroot()
-##        process_include_tree(root)
-##    else:
-##        s1 = sys.stdin.read()
-##        root = etree.fromstring(s1)
-##        process_include_tree(root)
-##        doc = etree.ElementTree(root)
-##    if outpath:
-##        outfile = make_file(outpath)
-##        if outfile:
-##            doc.write(outfile)
-##            outfile.close()
-##    else:
-##        doc.write(sys.stdout)
-##
-##def process_include_tree(root):
-##    idx = 0
-##    children = root.getchildren()
-##    while idx < len(children):
-##        child = children[idx]
-##        tag = child.tag
-##        if type(tag) == type(""):
-##            tag = NAMESPACE_PAT.sub("", tag)
-##        else:
-##            tag = None
-##        if tag == 'include' and 'schemaLocation' in child.attrib:
-##            root.remove(child)
-##            path = child.attrib['schemaLocation']
-##            if os.path.exists(path):
-##                doc = etree.parse(path)
-##                node = doc.getroot()
-##                process_include_tree(node)
-##                children1 = node.getchildren()
-##                for child1 in children1:
-##                    root.insert(idx, child1)
-##                    idx += 1
-##        else:
-##            process_include_tree(child)
-##            idx += 1
-##        children = root.getchildren()
-
 def parseAndGenerate(
         outfileName, subclassFilename, prefix,
         xschemaFileName, behaviorFilename, catalogFilename,
-        processIncludes, superModule='???'):
+        processIncludes, options, args, superModule='???'):
     global DelayedElements, DelayedElements_subclass, \
         AlreadyGenerated, SaxDelayedElements, \
-        AlreadyGenerated_subclass, UserMethodsPath, UserMethodsModule
-    DelayedElements = []
-    DelayedElements_subclass = []
-    AlreadyGenerated = []
-    AlreadyGenerated_subclass = []
+        AlreadyGenerated_subclass, UserMethodsPath, UserMethodsModule, \
+        SchemaLxmlTree, ModuleSuffix
+    DelayedElements = set()
+    DelayedElements_subclass = set()
+    AlreadyGenerated = set()
+    AlreadyGenerated_subclass = set()
     if UserMethodsPath:
         # UserMethodsModule = __import__(UserMethodsPath)
         path_list = UserMethodsPath.split('.')
@@ -5698,47 +6728,128 @@ def parseAndGenerate(
         module_spec = imp.find_module(mod_name, [mod_path, ])
         UserMethodsModule = imp.load_module(mod_name, *module_spec)
 ##    parser = saxexts.make_parser("xml.sax.drivers2.drv_pyexpat")
-    parser = make_parser()
-    dh = XschemaHandler()
-##    parser.setDocumentHandler(dh)
-    parser.setContentHandler(dh)
     if xschemaFileName == '-':
         infile = sys.stdin
     else:
         infile = open(xschemaFileName, 'r')
-    if processIncludes:
+    if SingleFileOutput:
+        parser = make_parser()
+        dh = XschemaHandler()
+        parser.setContentHandler(dh)
+        if processIncludes:
+            import process_includes
+            if sys.version_info.major == 2:
+                outfile = StringIO.StringIO()
+            else:
+                outfile = io.StringIO()
+            doc = process_includes.process_include_files(
+                infile, outfile,
+                inpath=xschemaFileName,
+                catalogpath=catalogFilename,
+                fixtypenames=FixTypeNames)
+            outfile.seek(0)
+            infile = outfile
+            SchemaLxmlTree = doc.getroot()
+        parser.parse(infile)
+        root = dh.getRoot()
+        root.annotate()
+        generate(
+            outfileName, subclassFilename, behaviorFilename,
+            prefix, root, options, args, superModule)
+        # Generate __all__.  When using the parser as a module it is useful
+        # to isolate important classes from internal ones. This way one
+        # can do a reasonably safe "from parser import *"
+        if outfileName:
+            exportableClassList = [
+                '"%s%s"' % (prefix, name, )
+                for name in AlreadyGenerated]
+            exportableClassList.sort()
+            exportableClassNames = ',\n    '.join(exportableClassList)
+            exportLine = "\n__all__ = [\n    %s\n]\n" % exportableClassNames
+            outfile = open(outfileName, "a")
+            outfile.write(exportLine)
+            outfile.close()
+    else:    # not SingleFileOutput
         import process_includes
-        outfile = StringIO.StringIO()
-        process_includes.process_include_files(
-            infile, outfile,
-            inpath=xschemaFileName,
-            catalogpath=catalogFilename,
-            fixtypenames=FixTypeNames)
-        outfile.seek(0)
-        infile = outfile
-    parser.parse(infile)
-    root = dh.getRoot()
-    root.annotate()
-##     print '-' * 60
-##     root.show(sys.stdout, 0)
-##     print '-' * 60
-    #debug_show_elements(root)
-    generate(
-        outfileName, subclassFilename, behaviorFilename,
-        prefix, root, superModule)
-    # Generate __all__.  When using the parser as a module it is useful
-    # to isolate important classes from internal ones. This way one
-    # can do a reasonably safe "from parser import *"
-    if outfileName:
-        exportableClassList = [
-            '"%s"' % mapName(cleanupName(name))
-            for name in AlreadyGenerated]
-        exportableClassList.sort()
-        exportableClassNames = ',\n    '.join(exportableClassList)
-        exportLine = "\n__all__ = [\n    %s\n]\n" % exportableClassNames
-        outfile = open(outfileName, "a")
-        outfile.write(exportLine)
-        outfile.close()
+        if 1:
+            if sys.version_info.major == 2:
+                outfile = StringIO.StringIO()
+            else:
+                outfile = io.StringIO()
+            doc = process_includes.process_include_files(
+                infile, outfile,
+                inpath=xschemaFileName,
+                catalogpath=catalogFilename,
+                fixtypenames=FixTypeNames)
+            outfile.close()
+            outfile = None
+            SchemaLxmlTree = doc.getroot()
+        infile.seek(0)
+        rootPaths = process_includes.get_all_root_file_paths(
+            infile, inpath=xschemaFileName,
+            catalogpath=catalogFilename)
+        roots = []
+        rootInfos = []
+        for path in rootPaths:
+            if path.startswith('http:') or path.startswith('ftp:'):
+                try:
+                    urlfile = urllib2.urlopen(path)
+                    content = urlfile.read()
+                    urlfile.close()
+                    if sys.version_info.major == 2:
+                        rootFile = StringIO.StringIO()
+                    else:
+                        rootFile = io.StringIO()
+                    rootFile.write(content)
+                    rootFile.seek(0)
+                except urllib2.HTTPError:
+                    msg = "Can't find file %s." % (path, )
+                    raise IOError(msg)
+            else:
+                rootFile = open(path, 'r')
+            parser = make_parser()
+            dh = XschemaHandler()
+            parser.setContentHandler(dh)
+            parser.parse(rootFile)
+            root = dh.getRoot()
+            roots.append(root)
+            rootFile.close()
+        for root, rootPath in zip(roots, rootPaths):
+            root.annotate()
+            moduleName = os.path.splitext(os.path.basename(rootPath))[0]
+            modulePath = None
+            # use the first root element to set
+            # up the module name and path
+            for child in root.getChildren():
+                fqnToModuleNameMap[child.getFullyQualifiedType()] = \
+                    moduleName
+                fqnToModuleNameMap[child.getFullyQualifiedName()] = \
+                    moduleName
+            # use the root file name as module name
+            modulePath = os.path.join(
+                OutputDirectory,
+                moduleName + ModuleSuffix + ".py")
+            rootInfos.append((root, modulePath))
+        for root, modulePath in rootInfos:
+            if modulePath:
+                generate(
+                    modulePath, subclassFilename, behaviorFilename,
+                    prefix, root, options, args, superModule)
+                # Generate __all__.  When using the parser as a module
+                # it is useful
+                # to isolate important classes from internal ones. This way one
+                # can do a reasonably safe "from parser import *"
+                exportableClassList = [
+                    '"%s%s"' % (prefix, name, )
+                    for name in AlreadyGenerated]
+                exportableClassList.sort()
+                exportableClassNames = ',\n    '.join(exportableClassList)
+                exportLine = "\n__all__ = [\n    %s\n]\n" % (
+                    exportableClassNames, )
+                outfile = open(modulePath, "a")
+                outfile.write(exportLine)
+                outfile.close()
+# end parseAndGenerate
 
 
 # Function that gets called recursively in order to expand nested references
@@ -5778,21 +6889,6 @@ def expandGroupReferences(grp):
     _expandGR(grp, visited)
 
 
-def debug_show_elements(root):
-    #print 'ElementDict:', ElementDict
-    print '=' * 50
-    for name, obj in ElementDict.iteritems():
-        print 'element:', name, obj.getName(), obj.type
-    print '=' * 50
-    #ipshell('debug')
-##     root.show(sys.stdout, 0)
-##     print '=' * 50
-##     response = raw_input('Press Enter')
-##     root.show(sys.stdout, 0)
-##     print '=' * 50
-##     print ']]] root: ', root, '[[['
-
-
 def load_config():
     try:
         #print '1. updating NameTable'
@@ -5812,15 +6908,65 @@ def fixSilence(txt, silent):
     return txt
 
 
+def fixXmlDisable(txt, disabled):
+    if disabled:
+        txt = txt.replace('#xmldisable#', '## ')
+    else:
+        txt = txt.replace('#xmldisable#', '')
+    return txt
+
+def capture_cleanup_name_list(option):
+    cleanupNameList = []
+    if not option:
+        return cleanupNameList
+    cleanup_str = option
+    from ast import literal_eval
+    try:
+        cleanup_list = literal_eval(cleanup_str)
+    except ValueError:
+        raise RuntimeError(
+            'Unable to parse option --cleanup-name-list.')
+    if type(cleanup_list) not in (list, tuple):
+        raise RuntimeError(
+            'Option --cleanup-name-list must be a list or a tuple.')
+    for cleanup_pair in cleanup_list:
+        if sys.version_info.major == 2:
+            if (type(cleanup_pair) not in (list, tuple) or
+                    len(cleanup_pair) != 2 or
+                    not isinstance(cleanup_pair[0], BaseStrType) or
+                    not isinstance(cleanup_pair[1], BaseStrType)):
+                raise RuntimeError(
+                    'Option --cleanup-name-list contains '
+                    'invalid element.')
+        else:
+            if (type(cleanup_pair) not in (list, tuple) or
+                    len(cleanup_pair) != 2 or
+                    not isinstance(cleanup_pair[0], str) or
+                    not isinstance(cleanup_pair[1], str)):
+                raise RuntimeError(
+                    'Option --cleanup-name-list contains '
+                    'invalid element.')
+        try:
+            cleanupNameList.append(
+                (re.compile(cleanup_pair[0]), cleanup_pair[1]))
+        except Exception:
+            raise RuntimeError(
+                'Option --cleanup-name-list contains invalid '
+                'pattern "%s".'
+                % cleanup_pair[0])
+    return cleanupNameList
+
+
 def err_msg(msg):
-    sys.stderr.write(msg)
+    if not NoWarnings:
+        sys.stderr.write(msg)
 
 
 USAGE_TEXT = __doc__
 
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 
@@ -5828,11 +6974,15 @@ def main():
     global Force, GenerateProperties, SubclassSuffix, RootElement, \
         ValidatorBodiesBasePath, UseGetterSetter, \
         UserMethodsPath, XsdNameSpace, \
-        Namespacedef, NoDates, NoVersion, \
-        TEMPLATE_MAIN, TEMPLATE_SUBCLASS_FOOTER, Dirpath, \
-        ExternalEncoding, MemberSpecs, NoQuestions, \
-        ExportWrite, ExportEtree, ExportLiteral, \
-        FixTypeNames
+        Namespacedef, NoDates, NoVersion, TEMPLATE_HEADER, \
+        TEMPLATE_MAIN, TEMPLATE_SUBCLASS_FOOTER, TEMPLATE_SUBCLASS_HEADER,\
+        Dirpath, ExternalEncoding, MemberSpecs, NoQuestions, \
+        ExportWrite, ExportEtree, ExportLiteral, XmlDisabled, \
+        FixTypeNames, SingleFileOutput, OutputDirectory, \
+        ModuleSuffix, UseOldSimpleTypeValidators, \
+        UseGeneratedssuperLookup, \
+        PreserveCdataTags, CleanupNameList, \
+        NoWarnings
     outputText = True
     args = sys.argv[1:]
     try:
@@ -5846,7 +6996,12 @@ def main():
                 'namespacedef=', 'external-encoding=',
                 'member-specs=', 'no-dates', 'no-versions',
                 'no-questions', 'session=', 'fix-type-names=',
-                'version', 'export=',
+                'version', 'export=', 'disable-xml',
+                'one-file-per-xsd', 'output-directory=',
+                'module-suffix=', 'use-old-simpletype-validators',
+                'preserve-cdata-tags', 'cleanup-name-list=',
+                'disable-generatedssuper-lookup',
+                'no-warnings',
             ])
     except getopt.GetoptError:
         usage()
@@ -5869,7 +7024,7 @@ def main():
         if option[0] == '--session':
             sessionFilename = option[1]
             from libgenerateDS.gui import generateds_gui_session
-            from xml.etree import ElementTree as etree
+            from lxml import etree
             doc = etree.parse(sessionFilename)
             rootNode = doc.getroot()
             sessionObj = generateds_gui_session.sessionType()
@@ -5922,6 +7077,28 @@ def main():
                 ExternalEncoding = sessionObj.get_external_encoding()
             if sessionObj.get_member_specs() in ('list', 'dict'):
                 MemberSpecs = sessionObj.get_member_specs()
+            exports = sessionObj.get_export_spec()
+            if exports:
+                ExportWrite = False
+                ExportEtree = False
+                ExportLiteral = False
+                exports = exports.split()
+                if 'write' in exports:
+                    ExportWrite = True
+                if 'etree' in exports:
+                    ExportEtree = True
+                if 'literal' in exports:
+                    ExportLiteral = True
+            if sessionObj.get_one_file_per_xsd():
+                SingleFileOutput = False
+            if sessionObj.get_output_directory():
+                OutputDirectory = sessionObj.get_output_directory()
+            if sessionObj.get_module_suffix():
+                ModuleSuffix = sessionObj.get_module_suffix()
+            if sessionObj.get_preserve_cdata_tags():
+                PreserveCdataTags = True
+            CleanupNameList = capture_cleanup_name_list(
+                sessionObj.get_cleanup_name_list())
             break
     for option in options:
         if option[0] == '-h' or option[0] == '--help':
@@ -5965,6 +7142,8 @@ def main():
                 err_msg('*** Option use-getter-setter must '
                         '"old" or "new" or "none".\n')
                 sys.exit(1)
+        elif option[0] == '--use-old-simpletype-validators':
+            UseOldSimpleTypeValidators = True
         elif option[0] in ('-u', '--user-methods'):
             UserMethodsPath = option[1]
         elif option[0] == '--no-process-includes':
@@ -5997,8 +7176,24 @@ def main():
                 ExportEtree = True
             if 'literal' in tmpoptions:
                 ExportLiteral = True
+        elif option[0] == '--disable-xml':
+            XmlDisabled = True
+        elif option[0] == '--disable-generatedssuper-lookup':
+            UseGeneratedssuperLookup = False
+        elif option[0] == '--one-file-per-xsd':
+            SingleFileOutput = False
+        elif option[0] == "--output-directory":
+            OutputDirectory = option[1]
+        elif option[0] == "--module-suffix":
+            ModuleSuffix = option[1]
+        elif option[0] == "--preserve-cdata-tags":
+            PreserveCdataTags = True
+        elif option[0] == '--cleanup-name-list':
+            CleanupNameList = capture_cleanup_name_list(option[1])
+        elif option[0] == '--no-warnings':
+            NoWarnings = True
     if showVersion:
-        print 'generateDS.py version %s' % VERSION
+        print('generateDS.py version %s' % VERSION)
         sys.exit(0)
     XsdNameSpace = nameSpace
     Namespacedef = namespacedef
@@ -6011,14 +7206,19 @@ def main():
             usage()
         else:
             xschemaFileName = args[0]
+            XsdFileName.append(xschemaFileName)
     silent = not outputText
+    TEMPLATE_HEADER = fixXmlDisable(TEMPLATE_HEADER, XmlDisabled)
     TEMPLATE_MAIN = fixSilence(TEMPLATE_MAIN, silent)
+    TEMPLATE_SUBCLASS_HEADER = fixXmlDisable(
+        TEMPLATE_SUBCLASS_HEADER, XmlDisabled)
     TEMPLATE_SUBCLASS_FOOTER = fixSilence(TEMPLATE_SUBCLASS_FOOTER, silent)
+
     load_config()
     parseAndGenerate(
         outFilename, subclassFilename, prefix,
         xschemaFileName, behaviorFilename, catalogFilename,
-        processIncludes, superModule=superModule)
+        processIncludes, options, args, superModule=superModule)
 
 
 if __name__ == '__main__':

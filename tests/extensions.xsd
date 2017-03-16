@@ -22,14 +22,14 @@
 			</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="xs:string">
-			<xs:enumeration value="down">
+			<xs:enumeration value="right">
 				<xs:annotation>
 					<xs:documentation xml:lang="en">
 						An item in this container.
 					</xs:documentation>
 				</xs:annotation>
 			</xs:enumeration>
-			<xs:enumeration value="add">
+			<xs:enumeration value="divide">
 				<xs:annotation>
 					<xs:documentation xml:lang="en">
 						Add something to this container.
@@ -47,14 +47,14 @@
 			</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="RelationType3">
-			<xs:enumeration value="down">
+			<xs:enumeration value="up">
 				<xs:annotation>
 					<xs:documentation xml:lang="en">
 						An item in this container.
 					</xs:documentation>
 				</xs:annotation>
 			</xs:enumeration>
-			<xs:enumeration value="add">
+			<xs:enumeration value="subtract">
 				<xs:annotation>
 					<xs:documentation xml:lang="en">
 						Add something to this container.

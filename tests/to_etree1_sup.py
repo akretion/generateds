@@ -4,66 +4,56 @@
 #
 # Generated  by generateDS.py.
 #
+# Command line options:
+#   ('--no-dates', '')
+#   ('--no-versions', '')
+#   ('--silence', '')
+#   ('--member-specs', 'list')
+#   ('-f', '')
+#   ('-o', 'tests/to_etree2_sup.py')
+#   ('-s', 'tests/to_etree2_sub.py')
+#   ('--export', 'etree')
+#   ('--silence', '')
+#   ('--super', 'to_etree2_sup')
+#
+# Command line arguments:
+#   tests/to_etree.xsd
+#
+# Command line:
+#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/to_etree2_sup.py" -s "tests/to_etree2_sub.py" --export="etree" --silence --super="to_etree2_sup" tests/to_etree.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
-import getopt
 import re as re_
 import base64
 import datetime as datetime_
-
-etree_ = None
-Verbose_import_ = False
-(
-    XMLParser_import_none, XMLParser_import_lxml,
-    XMLParser_import_elementtree
-) = range(3)
-XMLParser_import_library = None
+import warnings as warnings_
 try:
-    # lxml
     from lxml import etree as etree_
-    XMLParser_import_library = XMLParser_import_lxml
-    if Verbose_import_:
-        print("running with lxml.etree")
 except ImportError:
-    try:
-        # cElementTree from Python 2.5+
-        import xml.etree.cElementTree as etree_
-        XMLParser_import_library = XMLParser_import_elementtree
-        if Verbose_import_:
-            print("running with cElementTree on Python 2.5+")
-    except ImportError:
-        try:
-            # ElementTree from Python 2.5+
-            import xml.etree.ElementTree as etree_
-            XMLParser_import_library = XMLParser_import_elementtree
-            if Verbose_import_:
-                print("running with ElementTree on Python 2.5+")
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree_
-                XMLParser_import_library = XMLParser_import_elementtree
-                if Verbose_import_:
-                    print("running with cElementTree")
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree_
-                    XMLParser_import_library = XMLParser_import_elementtree
-                    if Verbose_import_:
-                        print("running with ElementTree")
-                except ImportError:
-                    raise ImportError(
-                        "Failed to import ElementTree from any known place")
+    from xml.etree import ElementTree as etree_
 
 
-def parsexml_(*args, **kwargs):
-    if (XMLParser_import_library == XMLParser_import_lxml and
-            'parser' not in kwargs):
+Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
+
+
+def parsexml_(infile, parser=None, **kwargs):
+    if parser is None:
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
-        kwargs['parser'] = etree_.ETCompatXMLParser()
-    doc = etree_.parse(*args, **kwargs)
+        try:
+            parser = etree_.ETCompatXMLParser()
+        except AttributeError:
+            # fallback to xml.etree
+            parser = etree_.XMLParser()
+    doc = etree_.parse(infile, parser=parser, **kwargs)
     return doc
 
 #
@@ -75,7 +65,7 @@ def parsexml_(*args, **kwargs):
 
 try:
     from generatedssuper import GeneratedsSuper
-except ImportError, exp:
+except ImportError as exp:
 
     class GeneratedsSuper(object):
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
@@ -91,61 +81,68 @@ except ImportError, exp:
                 return None
         def gds_format_string(self, input_data, input_name=''):
             return input_data
-        def gds_validate_string(self, input_data, node, input_name=''):
-            return input_data
+        def gds_validate_string(self, input_data, node=None, input_name=''):
+            if not input_data:
+                return ''
+            else:
+                return input_data
         def gds_format_base64(self, input_data, input_name=''):
             return base64.b64encode(input_data)
-        def gds_validate_base64(self, input_data, node, input_name=''):
+        def gds_validate_base64(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer(self, input_data, input_name=''):
             return '%d' % input_data
-        def gds_validate_integer(self, input_data, node, input_name=''):
+        def gds_validate_integer(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_integer_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_integer_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
-                    float(value)
+                    int(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of integers')
-            return input_data
+            return values
         def gds_format_float(self, input_data, input_name=''):
             return ('%.15f' % input_data).rstrip('0')
-        def gds_validate_float(self, input_data, node, input_name=''):
+        def gds_validate_float(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_float_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_float_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_float_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of floats')
-            return input_data
+            return values
         def gds_format_double(self, input_data, input_name=''):
             return '%e' % input_data
-        def gds_validate_double(self, input_data, node, input_name=''):
+        def gds_validate_double(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_double_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_double_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_double_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of doubles')
-            return input_data
+            return values
         def gds_format_boolean(self, input_data, input_name=''):
             return ('%s' % input_data).lower()
-        def gds_validate_boolean(self, input_data, node, input_name=''):
+        def gds_validate_boolean(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_boolean_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_boolean_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 if value not in ('true', '1', 'false', '0', ):
@@ -153,8 +150,8 @@ except ImportError, exp:
                         node,
                         'Requires sequence of booleans '
                         '("true", "1", "false", "0")')
-            return input_data
-        def gds_validate_datetime(self, input_data, node, input_name=''):
+            return values
+        def gds_validate_datetime(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -208,7 +205,10 @@ except ImportError, exp:
                     tz = GeneratedsSuper._FixedOffsetTZ(
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
-            if len(input_data.split('.')) > 1:
+            time_parts = input_data.split('.')
+            if len(time_parts) > 1:
+                micro_seconds = int(float('0.' + time_parts[1]) * 1000000)
+                input_data = '%s.%s' % (time_parts[0], micro_seconds, )
                 dt = datetime_.datetime.strptime(
                     input_data, '%Y-%m-%dT%H:%M:%S.%f')
             else:
@@ -216,7 +216,7 @@ except ImportError, exp:
                     input_data, '%Y-%m-%dT%H:%M:%S')
             dt = dt.replace(tzinfo=tz)
             return dt
-        def gds_validate_date(self, input_data, node, input_name=''):
+        def gds_validate_date(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
             _svalue = '%04d-%02d-%02d' % (
@@ -239,7 +239,8 @@ except ImportError, exp:
                                 _svalue += '+'
                             hours = total_seconds // 3600
                             minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            _svalue += '{0:02d}:{1:02d}'.format(
+                                hours, minutes)
             except AttributeError:
                 pass
             return _svalue
@@ -262,7 +263,7 @@ except ImportError, exp:
             dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
             dt = dt.replace(tzinfo=tz)
             return dt.date()
-        def gds_validate_time(self, input_data, node, input_name=''):
+        def gds_validate_time(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_time(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -294,6 +295,21 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
+        def gds_validate_simple_patterns(self, patterns, target):
+            # pat is a list of lists of strings/patterns.  We should:
+            # - AND the outer elements
+            # - OR the inner elements
+            found1 = True
+            for patterns1 in patterns:
+                found2 = False
+                for patterns2 in patterns1:
+                    if re_.search(patterns2, target) is not None:
+                        found2 = True
+                        break
+                if not found2:
+                    found1 = False
+                    break
+            return found1
         @classmethod
         def gds_parse_time(cls, input_data):
             tz = None
@@ -349,6 +365,29 @@ except ImportError, exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
+        @staticmethod
+        def convert_unicode(instring):
+            if isinstance(instring, str):
+                result = quote_xml(instring)
+            elif sys.version_info.major == 2 and isinstance(instring, unicode):
+                result = quote_xml(instring).encode('utf8')
+            else:
+                result = GeneratedsSuper.gds_encode(str(instring))
+            return result
+
+    def getSubclassFromModule_(module, class_):
+        '''Get the subclass of a class from a specific module.'''
+        name = class_.__name__ + 'Sub'
+        if hasattr(module, name):
+            return getattr(module, name)
+        else:
+            return None
 
 
 #
@@ -374,6 +413,11 @@ ExternalEncoding = 'ascii'
 Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
+CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
+
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
 
 #
 # Support/utility functions.
@@ -387,19 +431,32 @@ def showIndent(outfile, level, pretty_print=True):
 
 
 def quote_xml(inStr):
+    "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%s' % inStr)
-    s1 = s1.replace('&', '&amp;')
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
+    s2 = ''
+    pos = 0
+    matchobjects = CDATA_pattern_.finditer(s1)
+    for mo in matchobjects:
+        s3 = s1[pos:mo.start()]
+        s2 += quote_xml_aux(s3)
+        s2 += s1[mo.start():mo.end()]
+        pos = mo.end()
+    s3 = s1[pos:]
+    s2 += quote_xml_aux(s3)
+    return s2
+
+
+def quote_xml_aux(inStr):
+    s1 = inStr.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     return s1
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -459,11 +516,7 @@ class GDSParseError(Exception):
 
 
 def raise_parse_error(node, msg):
-    if XMLParser_import_library == XMLParser_import_lxml:
-        msg = '%s (element %s/line %d)' % (
-            msg, node.tag, node.sourceline, )
-    else:
-        msg = '%s (element %s)' % (msg, node.tag, )
+    msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline, )
     raise GDSParseError(msg)
 
 
@@ -504,7 +557,8 @@ class MixedContainer:
         elif self.category == MixedContainer.CategorySimple:
             self.exportSimple(outfile, level, name)
         else:    # category == MixedContainer.CategoryComplex
-            self.value.export(outfile, level, namespace, name, pretty_print)
+            self.value.export(
+                outfile, level, namespace, name, pretty_print=pretty_print)
     def exportSimple(self, outfile, level, name):
         if self.content_type == MixedContainer.TypeString:
             outfile.write('<%s>%s</%s>' % (
@@ -620,6 +674,7 @@ class peopleType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, comments=None, person=None, specialperson=None, programmer=None, python_programmer=None, java_programmer=None):
+        self.original_tagname_ = None
         if comments is None:
             self.comments = []
         else:
@@ -645,6 +700,11 @@ class peopleType(GeneratedsSuper):
         else:
             self.java_programmer = java_programmer
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, peopleType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if peopleType.subclass:
             return peopleType.subclass(*args_, **kwargs_)
         else:
@@ -653,27 +713,33 @@ class peopleType(GeneratedsSuper):
     def get_comments(self): return self.comments
     def set_comments(self, comments): self.comments = comments
     def add_comments(self, value): self.comments.append(value)
-    def insert_comments(self, index, value): self.comments[index] = value
+    def insert_comments_at(self, index, value): self.comments.insert(index, value)
+    def replace_comments_at(self, index, value): self.comments[index] = value
     def get_person(self): return self.person
     def set_person(self, person): self.person = person
     def add_person(self, value): self.person.append(value)
-    def insert_person(self, index, value): self.person[index] = value
+    def insert_person_at(self, index, value): self.person.insert(index, value)
+    def replace_person_at(self, index, value): self.person[index] = value
     def get_specialperson(self): return self.specialperson
     def set_specialperson(self, specialperson): self.specialperson = specialperson
     def add_specialperson(self, value): self.specialperson.append(value)
-    def insert_specialperson(self, index, value): self.specialperson[index] = value
+    def insert_specialperson_at(self, index, value): self.specialperson.insert(index, value)
+    def replace_specialperson_at(self, index, value): self.specialperson[index] = value
     def get_programmer(self): return self.programmer
     def set_programmer(self, programmer): self.programmer = programmer
     def add_programmer(self, value): self.programmer.append(value)
-    def insert_programmer(self, index, value): self.programmer[index] = value
+    def insert_programmer_at(self, index, value): self.programmer.insert(index, value)
+    def replace_programmer_at(self, index, value): self.programmer[index] = value
     def get_python_programmer(self): return self.python_programmer
     def set_python_programmer(self, python_programmer): self.python_programmer = python_programmer
     def add_python_programmer(self, value): self.python_programmer.append(value)
-    def insert_python_programmer(self, index, value): self.python_programmer[index] = value
+    def insert_python_programmer_at(self, index, value): self.python_programmer.insert(index, value)
+    def replace_python_programmer_at(self, index, value): self.python_programmer[index] = value
     def get_java_programmer(self): return self.java_programmer
     def set_java_programmer(self, java_programmer): self.java_programmer = java_programmer
     def add_java_programmer(self, value): self.java_programmer.append(value)
-    def insert_java_programmer(self, index, value): self.java_programmer[index] = value
+    def insert_java_programmer_at(self, index, value): self.java_programmer.insert(index, value)
+    def replace_java_programmer_at(self, index, value): self.java_programmer[index] = value
     def hasContent_(self):
         if (
             self.comments or
@@ -712,6 +778,7 @@ class peopleType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -719,28 +786,34 @@ class peopleType(GeneratedsSuper):
             obj_ = commentsType.factory()
             obj_.build(child_)
             self.comments.append(obj_)
+            obj_.original_tagname_ = 'comments'
         elif nodeName_ == 'person':
             class_obj_ = self.get_class_obj_(child_, personType)
             obj_ = class_obj_.factory()
             obj_.build(child_)
             self.person.append(obj_)
+            obj_.original_tagname_ = 'person'
         elif nodeName_ == 'specialperson':
             obj_ = specialperson.factory()
             obj_.build(child_)
             self.specialperson.append(obj_)
+            obj_.original_tagname_ = 'specialperson'
         elif nodeName_ == 'programmer':
             class_obj_ = self.get_class_obj_(child_, programmerType)
             obj_ = class_obj_.factory()
             obj_.build(child_)
             self.programmer.append(obj_)
+            obj_.original_tagname_ = 'programmer'
         elif nodeName_ == 'python-programmer':
             obj_ = python_programmerType.factory()
             obj_.build(child_)
             self.python_programmer.append(obj_)
+            obj_.original_tagname_ = 'python-programmer'
         elif nodeName_ == 'java-programmer':
             obj_ = java_programmerType.factory()
             obj_.build(child_)
             self.java_programmer.append(obj_)
+            obj_.original_tagname_ = 'java-programmer'
 # end class peopleType
 
 
@@ -753,6 +826,7 @@ class commentsType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, emp=None, bold=None, valueOf_=None, mixedclass_=None, content_=None):
+        self.original_tagname_ = None
         if emp is None:
             self.emp = []
         else:
@@ -772,6 +846,11 @@ class commentsType(GeneratedsSuper):
             self.content_ = content_
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, commentsType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if commentsType.subclass:
             return commentsType.subclass(*args_, **kwargs_)
         else:
@@ -780,18 +859,20 @@ class commentsType(GeneratedsSuper):
     def get_emp(self): return self.emp
     def set_emp(self, emp): self.emp = emp
     def add_emp(self, value): self.emp.append(value)
-    def insert_emp(self, index, value): self.emp[index] = value
+    def insert_emp_at(self, index, value): self.emp.insert(index, value)
+    def replace_emp_at(self, index, value): self.emp[index] = value
     def get_bold(self): return self.bold
     def set_bold(self, bold): self.bold = bold
     def add_bold(self, value): self.bold.append(value)
-    def insert_bold(self, index, value): self.bold[index] = value
+    def insert_bold_at(self, index, value): self.bold.insert(index, value)
+    def replace_bold_at(self, index, value): self.bold[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
             self.emp or
             self.bold or
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -817,6 +898,7 @@ class commentsType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -839,11 +921,11 @@ class commentsType(GeneratedsSuper):
 
 class personType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('vegetable', 'xs:string', 0),
-        MemberSpec_('fruit', 'xs:string', 0),
-        MemberSpec_('ratio', 'xs:float', 0),
-        MemberSpec_('id', 'xs:integer', 0),
         MemberSpec_('value', 'xs:string', 0),
+        MemberSpec_('id', 'xs:integer', 0),
+        MemberSpec_('ratio', 'xs:float', 0),
+        MemberSpec_('fruit', 'xs:string', 0),
+        MemberSpec_('vegetable', 'xs:string', 0),
         MemberSpec_('name', 'xs:string', 0),
         MemberSpec_('interest', 'xs:string', 1),
         MemberSpec_('category', 'xs:integer', 0),
@@ -855,12 +937,13 @@ class personType(GeneratedsSuper):
     ]
     subclass = None
     superclass = None
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, extensiontype_=None):
-        self.vegetable = _cast(None, vegetable)
-        self.fruit = _cast(None, fruit)
-        self.ratio = _cast(float, ratio)
-        self.id = _cast(int, id)
+    def __init__(self, value=None, id=None, ratio=None, fruit=None, vegetable=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, extensiontype_=None):
+        self.original_tagname_ = None
         self.value = _cast(None, value)
+        self.id = _cast(int, id)
+        self.ratio = _cast(float, ratio)
+        self.fruit = _cast(None, fruit)
+        self.vegetable = _cast(None, vegetable)
         self.name = name
         if interest is None:
             self.interest = []
@@ -878,8 +961,14 @@ class personType(GeneratedsSuper):
             self.promoter = promoter
         self.description = description
         self.range_ = range_
+        self.validate_RangeType(self.range_)
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, personType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if personType.subclass:
             return personType.subclass(*args_, **kwargs_)
         else:
@@ -890,7 +979,8 @@ class personType(GeneratedsSuper):
     def get_interest(self): return self.interest
     def set_interest(self, interest): self.interest = interest
     def add_interest(self, value): self.interest.append(value)
-    def insert_interest(self, index, value): self.interest[index] = value
+    def insert_interest_at(self, index, value): self.interest.insert(index, value)
+    def replace_interest_at(self, index, value): self.interest[index] = value
     def get_category(self): return self.category
     def set_category(self, category): self.category = category
     def get_hot_agent(self): return self.hot_agent
@@ -898,30 +988,33 @@ class personType(GeneratedsSuper):
     def get_agent(self): return self.agent
     def set_agent(self, agent): self.agent = agent
     def add_agent(self, value): self.agent.append(value)
-    def insert_agent(self, index, value): self.agent[index] = value
+    def insert_agent_at(self, index, value): self.agent.insert(index, value)
+    def replace_agent_at(self, index, value): self.agent[index] = value
     def get_promoter(self): return self.promoter
     def set_promoter(self, promoter): self.promoter = promoter
     def add_promoter(self, value): self.promoter.append(value)
-    def insert_promoter(self, index, value): self.promoter[index] = value
+    def insert_promoter_at(self, index, value): self.promoter.insert(index, value)
+    def replace_promoter_at(self, index, value): self.promoter[index] = value
     def get_description(self): return self.description
     def set_description(self, description): self.description = description
     def get_range(self): return self.range_
     def set_range(self, range_): self.range_ = range_
-    def get_vegetable(self): return self.vegetable
-    def set_vegetable(self, vegetable): self.vegetable = vegetable
-    def get_fruit(self): return self.fruit
-    def set_fruit(self, fruit): self.fruit = fruit
-    def get_ratio(self): return self.ratio
-    def set_ratio(self, ratio): self.ratio = ratio
-    def get_id(self): return self.id
-    def set_id(self, id): self.id = id
     def get_value(self): return self.value
     def set_value(self, value): self.value = value
+    def get_id(self): return self.id
+    def set_id(self, id): self.id = id
+    def get_ratio(self): return self.ratio
+    def set_ratio(self, ratio): self.ratio = ratio
+    def get_fruit(self): return self.fruit
+    def set_fruit(self, fruit): self.fruit = fruit
+    def get_vegetable(self): return self.vegetable
+    def set_vegetable(self, vegetable): self.vegetable = vegetable
     def get_extensiontype_(self): return self.extensiontype_
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def validate_RangeType(self, value):
         # Validate type RangeType, a restriction on xs:integer.
-        pass
+        if value is not None and Validate_simpletypes_:
+            pass
     def hasContent_(self):
         if (
             self.name is not None or
@@ -943,16 +1036,16 @@ class personType(GeneratedsSuper):
             element = etree_.SubElement(parent_element, '{}' + name_)
         if self.extensiontype_ is not None:
             element.set('{http://www.w3.org/2001/XMLSchema-instance}type', self.extensiontype_)
-        if self.vegetable is not None:
-            element.set('vegetable', self.gds_format_string(self.vegetable))
-        if self.fruit is not None:
-            element.set('fruit', self.gds_format_string(self.fruit))
-        if self.ratio is not None:
-            element.set('ratio', self.gds_format_float(self.ratio))
-        if self.id is not None:
-            element.set('id', self.gds_format_integer(self.id))
         if self.value is not None:
             element.set('value', self.gds_format_string(self.value))
+        if self.id is not None:
+            element.set('id', self.gds_format_integer(self.id))
+        if self.ratio is not None:
+            element.set('ratio', self.gds_format_float(self.ratio))
+        if self.fruit is not None:
+            element.set('fruit', self.gds_format_string(self.fruit))
+        if self.vegetable is not None:
+            element.set('vegetable', self.gds_format_string(self.vegetable))
         if self.name is not None:
             name_ = self.name
             etree_.SubElement(element, '{}name').text = self.gds_format_string(name_)
@@ -983,33 +1076,34 @@ class personType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('vegetable', node)
-        if value is not None and 'vegetable' not in already_processed:
-            already_processed.add('vegetable')
-            self.vegetable = value
-        value = find_attr_value_('fruit', node)
-        if value is not None and 'fruit' not in already_processed:
-            already_processed.add('fruit')
-            self.fruit = value
-        value = find_attr_value_('ratio', node)
-        if value is not None and 'ratio' not in already_processed:
-            already_processed.add('ratio')
-            try:
-                self.ratio = float(value)
-            except ValueError, exp:
-                raise ValueError('Bad float/double attribute (ratio): %s' % exp)
+        value = find_attr_value_('value', node)
+        if value is not None and 'value' not in already_processed:
+            already_processed.add('value')
+            self.value = value
         value = find_attr_value_('id', node)
         if value is not None and 'id' not in already_processed:
             already_processed.add('id')
             try:
                 self.id = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('value', node)
-        if value is not None and 'value' not in already_processed:
-            already_processed.add('value')
-            self.value = value
+        value = find_attr_value_('ratio', node)
+        if value is not None and 'ratio' not in already_processed:
+            already_processed.add('ratio')
+            try:
+                self.ratio = float(value)
+            except ValueError as exp:
+                raise ValueError('Bad float/double attribute (ratio): %s' % exp)
+        value = find_attr_value_('fruit', node)
+        if value is not None and 'fruit' not in already_processed:
+            already_processed.add('fruit')
+            self.fruit = value
+        value = find_attr_value_('vegetable', node)
+        if value is not None and 'vegetable' not in already_processed:
+            already_processed.add('vegetable')
+            self.vegetable = value
         value = find_attr_value_('xsi:type', node)
         if value is not None and 'xsi:type' not in already_processed:
             already_processed.add('xsi:type')
@@ -1027,7 +1121,7 @@ class personType(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'category')
             self.category = ival_
@@ -1035,15 +1129,18 @@ class personType(GeneratedsSuper):
             obj_ = hot_agent.factory()
             obj_.build(child_)
             self.hot_agent = obj_
+            obj_.original_tagname_ = 'hot.agent'
         elif nodeName_ == 'agent':
             class_obj_ = self.get_class_obj_(child_, agentType)
             obj_ = class_obj_.factory()
             obj_.build(child_)
             self.agent.append(obj_)
+            obj_.original_tagname_ = 'agent'
         elif nodeName_ == 'promoter':
             obj_ = boosterType.factory()
             obj_.build(child_)
             self.promoter.append(obj_)
+            obj_.original_tagname_ = 'promoter'
         elif nodeName_ == 'description':
             description_ = child_.text
             description_ = self.gds_validate_string(description_, node, 'description')
@@ -1052,11 +1149,12 @@ class personType(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'range')
             self.range_ = ival_
-            self.validate_RangeType(self.range_)    # validate type RangeType
+            # validate type RangeType
+            self.validate_RangeType(self.range_)
 # end class personType
 
 
@@ -1065,10 +1163,15 @@ class specialperson(personType):
     ]
     subclass = None
     superclass = personType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None):
-        super(specialperson, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, )
-        pass
+    def __init__(self, value=None, id=None, ratio=None, fruit=None, vegetable=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None):
+        self.original_tagname_ = None
+        super(specialperson, self).__init__(value, id, ratio, fruit, vegetable, name, interest, category, hot_agent, agent, promoter, description, range_, )
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, specialperson)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if specialperson.subclass:
             return specialperson.subclass(*args_, **kwargs_)
         else:
@@ -1092,6 +1195,7 @@ class specialperson(personType):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         super(specialperson, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -1104,10 +1208,10 @@ class programmerType(personType):
     member_data_items_ = [
         MemberSpec_('language', 'xs:string', 0),
         MemberSpec_('area', 'xs:string', 0),
-        MemberSpec_('attrnegint', 'xs:negativeInteger', 0),
         MemberSpec_('attrposint', 'xs:positiveInteger', 0),
-        MemberSpec_('attrnonnegint', 'xs:nonNegativeInteger', 0),
         MemberSpec_('attrnonposint', 'xs:nonPositiveInteger', 0),
+        MemberSpec_('attrnegint', 'xs:negativeInteger', 0),
+        MemberSpec_('attrnonnegint', 'xs:nonNegativeInteger', 0),
         MemberSpec_('email', 'xs:string', 0),
         MemberSpec_('elposint', 'xs:positiveInteger', 0),
         MemberSpec_('elnonposint', 'xs:nonPositiveInteger', 0),
@@ -1124,30 +1228,31 @@ class programmerType(personType):
     ]
     subclass = None
     superclass = personType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, extensiontype_=None):
-        super(programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, extensiontype_, )
+    def __init__(self, value=None, id=None, ratio=None, fruit=None, vegetable=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrposint=None, attrnonposint=None, attrnegint=None, attrnonnegint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, extensiontype_=None):
+        self.original_tagname_ = None
+        super(programmerType, self).__init__(value, id, ratio, fruit, vegetable, name, interest, category, hot_agent, agent, promoter, description, range_, extensiontype_, )
         self.language = _cast(None, language)
         self.area = _cast(None, area)
-        self.attrnegint = _cast(int, attrnegint)
         self.attrposint = _cast(int, attrposint)
-        self.attrnonnegint = _cast(int, attrnonnegint)
         self.attrnonposint = _cast(int, attrnonposint)
+        self.attrnegint = _cast(int, attrnegint)
+        self.attrnonnegint = _cast(int, attrnonnegint)
         self.email = email
         self.elposint = elposint
         self.elnonposint = elnonposint
         self.elnegint = elnegint
         self.elnonnegint = elnonnegint
-        if isinstance(eldate, basestring):
+        if isinstance(eldate, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(eldate, '%Y-%m-%d').date()
         else:
             initvalue_ = eldate
         self.eldate = initvalue_
-        if isinstance(eldatetime, basestring):
+        if isinstance(eldatetime, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(eldatetime, '%Y-%m-%dT%H:%M:%S')
         else:
             initvalue_ = eldatetime
         self.eldatetime = initvalue_
-        if isinstance(eldatetime1, basestring):
+        if isinstance(eldatetime1, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(eldatetime1, '%Y-%m-%dT%H:%M:%S')
         else:
             initvalue_ = eldatetime1
@@ -1157,8 +1262,14 @@ class programmerType(personType):
         self.ellong = ellong
         self.elparam = elparam
         self.elarraytypes = elarraytypes
+        self.validate_ArrayTypes(self.elarraytypes)
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, programmerType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if programmerType.subclass:
             return programmerType.subclass(*args_, **kwargs_)
         else:
@@ -1194,19 +1305,28 @@ class programmerType(personType):
     def set_language(self, language): self.language = language
     def get_area(self): return self.area
     def set_area(self, area): self.area = area
-    def get_attrnegint(self): return self.attrnegint
-    def set_attrnegint(self, attrnegint): self.attrnegint = attrnegint
     def get_attrposint(self): return self.attrposint
     def set_attrposint(self, attrposint): self.attrposint = attrposint
-    def get_attrnonnegint(self): return self.attrnonnegint
-    def set_attrnonnegint(self, attrnonnegint): self.attrnonnegint = attrnonnegint
     def get_attrnonposint(self): return self.attrnonposint
     def set_attrnonposint(self, attrnonposint): self.attrnonposint = attrnonposint
+    def get_attrnegint(self): return self.attrnegint
+    def set_attrnegint(self, attrnegint): self.attrnegint = attrnegint
+    def get_attrnonnegint(self): return self.attrnonnegint
+    def set_attrnonnegint(self, attrnonnegint): self.attrnonnegint = attrnonnegint
     def get_extensiontype_(self): return self.extensiontype_
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def validate_ArrayTypes(self, value):
         # Validate type ArrayTypes, a restriction on xs:NMTOKEN.
-        pass
+        if value is not None and Validate_simpletypes_:
+            value = str(value)
+            enumerations = ['float', 'int', 'Name', 'token']
+            enumeration_respectee = False
+            for enum in enumerations:
+                if value == enum:
+                    enumeration_respectee = True
+                    break
+            if not enumeration_respectee:
+                warnings_.warn('Value "%(value)s" does not match xsd enumeration restriction on ArrayTypes' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
             self.email is not None or
@@ -1235,14 +1355,14 @@ class programmerType(personType):
             element.set('language', self.gds_format_string(self.language))
         if self.area is not None:
             element.set('area', self.gds_format_string(self.area))
-        if self.attrnegint is not None:
-            element.set('attrnegint', self.gds_format_integer(self.attrnegint))
         if self.attrposint is not None:
             element.set('attrposint', self.gds_format_integer(self.attrposint))
-        if self.attrnonnegint is not None:
-            element.set('attrnonnegint', self.gds_format_integer(self.attrnonnegint))
         if self.attrnonposint is not None:
             element.set('attrnonposint', self.gds_format_integer(self.attrnonposint))
+        if self.attrnegint is not None:
+            element.set('attrnegint', self.gds_format_integer(self.attrnegint))
+        if self.attrnonnegint is not None:
+            element.set('attrnonnegint', self.gds_format_integer(self.attrnonnegint))
         if self.email is not None:
             email_ = self.email
             etree_.SubElement(element, '{}email').text = self.gds_format_string(email_)
@@ -1291,6 +1411,7 @@ class programmerType(personType):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('language', node)
         if value is not None and 'language' not in already_processed:
@@ -1300,42 +1421,42 @@ class programmerType(personType):
         if value is not None and 'area' not in already_processed:
             already_processed.add('area')
             self.area = value
-        value = find_attr_value_('attrnegint', node)
-        if value is not None and 'attrnegint' not in already_processed:
-            already_processed.add('attrnegint')
-            try:
-                self.attrnegint = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-            if self.attrnegint >= 0:
-                raise_parse_error(node, 'Invalid NegativeInteger')
         value = find_attr_value_('attrposint', node)
         if value is not None and 'attrposint' not in already_processed:
             already_processed.add('attrposint')
             try:
                 self.attrposint = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.attrposint <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
-        value = find_attr_value_('attrnonnegint', node)
-        if value is not None and 'attrnonnegint' not in already_processed:
-            already_processed.add('attrnonnegint')
-            try:
-                self.attrnonnegint = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-            if self.attrnonnegint < 0:
-                raise_parse_error(node, 'Invalid NonNegativeInteger')
         value = find_attr_value_('attrnonposint', node)
         if value is not None and 'attrnonposint' not in already_processed:
             already_processed.add('attrnonposint')
             try:
                 self.attrnonposint = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.attrnonposint > 0:
                 raise_parse_error(node, 'Invalid NonPositiveInteger')
+        value = find_attr_value_('attrnegint', node)
+        if value is not None and 'attrnegint' not in already_processed:
+            already_processed.add('attrnegint')
+            try:
+                self.attrnegint = int(value)
+            except ValueError as exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+            if self.attrnegint >= 0:
+                raise_parse_error(node, 'Invalid NegativeInteger')
+        value = find_attr_value_('attrnonnegint', node)
+        if value is not None and 'attrnonnegint' not in already_processed:
+            already_processed.add('attrnonnegint')
+            try:
+                self.attrnonnegint = int(value)
+            except ValueError as exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+            if self.attrnonnegint < 0:
+                raise_parse_error(node, 'Invalid NonNegativeInteger')
         value = find_attr_value_('xsi:type', node)
         if value is not None and 'xsi:type' not in already_processed:
             already_processed.add('xsi:type')
@@ -1350,7 +1471,7 @@ class programmerType(personType):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             if ival_ <= 0:
                 raise_parse_error(child_, 'requires positiveInteger')
@@ -1360,7 +1481,7 @@ class programmerType(personType):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             if ival_ > 0:
                 raise_parse_error(child_, 'requires nonPositiveInteger')
@@ -1370,7 +1491,7 @@ class programmerType(personType):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             if ival_ >= 0:
                 raise_parse_error(child_, 'requires negativeInteger')
@@ -1380,7 +1501,7 @@ class programmerType(personType):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             if ival_ < 0:
                 raise_parse_error(child_, 'requires nonNegativeInteger')
@@ -1400,14 +1521,17 @@ class programmerType(personType):
             self.eldatetime1 = dval_
         elif nodeName_ == 'eltoken':
             eltoken_ = child_.text
-            eltoken_ = re_.sub(String_cleanup_pat_, " ", eltoken_).strip()
+            if eltoken_:
+                eltoken_ = re_.sub(String_cleanup_pat_, " ", eltoken_).strip()
+            else:
+                eltoken_ = ""
             eltoken_ = self.gds_validate_string(eltoken_, node, 'eltoken')
             self.eltoken = eltoken_
         elif nodeName_ == 'elshort':
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'elshort')
             self.elshort = ival_
@@ -1415,7 +1539,7 @@ class programmerType(personType):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'ellong')
             self.ellong = ival_
@@ -1423,61 +1547,70 @@ class programmerType(personType):
             obj_ = paramType.factory()
             obj_.build(child_)
             self.elparam = obj_
+            obj_.original_tagname_ = 'elparam'
         elif nodeName_ == 'elarraytypes':
             elarraytypes_ = child_.text
             elarraytypes_ = self.gds_validate_string(elarraytypes_, node, 'elarraytypes')
             self.elarraytypes = elarraytypes_
-            self.validate_ArrayTypes(self.elarraytypes)    # validate type ArrayTypes
+            # validate type ArrayTypes
+            self.validate_ArrayTypes(self.elarraytypes)
         super(programmerType, self).buildChildren(child_, node, nodeName_, True)
 # end class programmerType
 
 
 class paramType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('semantic', 'xs:token', 0),
-        MemberSpec_('name', 'xs:NCName', 0),
-        MemberSpec_('flow', 'FlowType', 0),
-        MemberSpec_('sid', 'xs:NCName', 0),
-        MemberSpec_('type', 'xs:NMTOKEN', 0),
         MemberSpec_('id', 'xs:string', 0),
+        MemberSpec_('name', 'xs:NCName', 0),
+        MemberSpec_('sid', 'xs:NCName', 0),
+        MemberSpec_('flow', 'FlowType', 0),
+        MemberSpec_('semantic', 'xs:token', 0),
+        MemberSpec_('type', 'xs:NMTOKEN', 0),
         MemberSpec_('valueOf_', 'xs:string', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, semantic=None, name=None, flow=None, sid=None, type_=None, id=None, valueOf_=None):
-        self.semantic = _cast(None, semantic)
-        self.name = _cast(None, name)
-        self.flow = _cast(None, flow)
-        self.sid = _cast(None, sid)
-        self.type_ = _cast(None, type_)
+    def __init__(self, id=None, name=None, sid=None, flow=None, semantic=None, type_=None, valueOf_=None):
+        self.original_tagname_ = None
         self.id = _cast(None, id)
+        self.name = _cast(None, name)
+        self.sid = _cast(None, sid)
+        self.flow = _cast(None, flow)
+        self.semantic = _cast(None, semantic)
+        self.type_ = _cast(None, type_)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, paramType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if paramType.subclass:
             return paramType.subclass(*args_, **kwargs_)
         else:
             return paramType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_semantic(self): return self.semantic
-    def set_semantic(self, semantic): self.semantic = semantic
-    def get_name(self): return self.name
-    def set_name(self, name): self.name = name
-    def get_flow(self): return self.flow
-    def set_flow(self, flow): self.flow = flow
-    def get_sid(self): return self.sid
-    def set_sid(self, sid): self.sid = sid
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
     def get_id(self): return self.id
     def set_id(self, id): self.id = id
+    def get_name(self): return self.name
+    def set_name(self, name): self.name = name
+    def get_sid(self): return self.sid
+    def set_sid(self, sid): self.sid = sid
+    def get_flow(self): return self.flow
+    def set_flow(self, flow): self.flow = flow
+    def get_semantic(self): return self.semantic
+    def set_semantic(self, semantic): self.semantic = semantic
+    def get_type(self): return self.type_
+    def set_type(self, type_): self.type_ = type_
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def validate_FlowType(self, value):
         # Validate type FlowType, a restriction on xs:integer.
-        pass
+        if value is not None and Validate_simpletypes_:
+            pass
     def hasContent_(self):
         if (
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -1487,18 +1620,20 @@ class paramType(GeneratedsSuper):
             element = etree_.Element('{}' + name_)
         else:
             element = etree_.SubElement(parent_element, '{}' + name_)
-        if self.semantic is not None:
-            element.set('semantic', self.gds_format_string(self.semantic))
-        if self.name is not None:
-            element.set('name', self.name)
-        if self.flow is not None:
-            element.set('flow', self.flow)
-        if self.sid is not None:
-            element.set('sid', self.sid)
-        if self.type_ is not None:
-            element.set('type', self.gds_format_string(self.type_))
         if self.id is not None:
             element.set('id', self.gds_format_string(self.id))
+        if self.name is not None:
+            element.set('name', self.name)
+        if self.sid is not None:
+            element.set('sid', self.sid)
+        if self.flow is not None:
+            element.set('flow', self.flow)
+        if self.semantic is not None:
+            element.set('semantic', self.gds_format_string(self.semantic))
+        if self.type_ is not None:
+            element.set('type', self.gds_format_string(self.type_))
+        if self.hasContent_():
+            element.text = self.gds_format_string(self.get_valueOf_())
         if mapping_ is not None:
             mapping_[self] = element
         return element
@@ -1509,36 +1644,37 @@ class paramType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('semantic', node)
-        if value is not None and 'semantic' not in already_processed:
-            already_processed.add('semantic')
-            self.semantic = value
-            self.semantic = ' '.join(self.semantic.split())
+        value = find_attr_value_('id', node)
+        if value is not None and 'id' not in already_processed:
+            already_processed.add('id')
+            self.id = value
         value = find_attr_value_('name', node)
         if value is not None and 'name' not in already_processed:
             already_processed.add('name')
             self.name = value
+        value = find_attr_value_('sid', node)
+        if value is not None and 'sid' not in already_processed:
+            already_processed.add('sid')
+            self.sid = value
         value = find_attr_value_('flow', node)
         if value is not None and 'flow' not in already_processed:
             already_processed.add('flow')
             try:
                 self.flow = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             self.validate_FlowType(self.flow)    # validate type FlowType
-        value = find_attr_value_('sid', node)
-        if value is not None and 'sid' not in already_processed:
-            already_processed.add('sid')
-            self.sid = value
+        value = find_attr_value_('semantic', node)
+        if value is not None and 'semantic' not in already_processed:
+            already_processed.add('semantic')
+            self.semantic = value
+            self.semantic = ' '.join(self.semantic.split())
         value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.add('type')
             self.type_ = value
-        value = find_attr_value_('id', node)
-        if value is not None and 'id' not in already_processed:
-            already_processed.add('id')
-            self.id = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
 # end class paramType
@@ -1546,8 +1682,8 @@ class paramType(GeneratedsSuper):
 
 class python_programmerType(programmerType):
     member_data_items_ = [
-        MemberSpec_('drcs_attr', 'xs:string', 0),
         MemberSpec_('nick-name', 'xs:string', 0),
+        MemberSpec_('drcs_attr', 'xs:string', 0),
         MemberSpec_('gui_developer', 'xs:boolean', 0),
         MemberSpec_('favorite_editor', 'xs:string', 0),
         MemberSpec_('flowvalue', ['FlowType', 'xs:integer'], 0),
@@ -1555,15 +1691,22 @@ class python_programmerType(programmerType):
     ]
     subclass = None
     superclass = programmerType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, drcs_attr=None, nick_name=None, gui_developer=None, favorite_editor=None, flowvalue=None, drcs=None):
-        super(python_programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
-        self.drcs_attr = _cast(None, drcs_attr)
+    def __init__(self, value=None, id=None, ratio=None, fruit=None, vegetable=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrposint=None, attrnonposint=None, attrnegint=None, attrnonnegint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, nick_name=None, drcs_attr=None, gui_developer=None, favorite_editor=None, flowvalue=None, drcs=None):
+        self.original_tagname_ = None
+        super(python_programmerType, self).__init__(value, id, ratio, fruit, vegetable, name, interest, category, hot_agent, agent, promoter, description, range_, language, area, attrposint, attrnonposint, attrnegint, attrnonnegint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
         self.nick_name = _cast(None, nick_name)
+        self.drcs_attr = _cast(None, drcs_attr)
         self.gui_developer = _cast(bool, gui_developer)
         self.favorite_editor = favorite_editor
         self.flowvalue = flowvalue
+        self.validate_FlowType(self.flowvalue)
         self.drcs = drcs
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, python_programmerType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if python_programmerType.subclass:
             return python_programmerType.subclass(*args_, **kwargs_)
         else:
@@ -1575,15 +1718,16 @@ class python_programmerType(programmerType):
     def set_flowvalue(self, flowvalue): self.flowvalue = flowvalue
     def get_drcs(self): return self.drcs
     def set_drcs(self, drcs): self.drcs = drcs
-    def get_drcs_attr(self): return self.drcs_attr
-    def set_drcs_attr(self, drcs_attr): self.drcs_attr = drcs_attr
     def get_nick_name(self): return self.nick_name
     def set_nick_name(self, nick_name): self.nick_name = nick_name
+    def get_drcs_attr(self): return self.drcs_attr
+    def set_drcs_attr(self, drcs_attr): self.drcs_attr = drcs_attr
     def get_gui_developer(self): return self.gui_developer
     def set_gui_developer(self, gui_developer): self.gui_developer = gui_developer
     def validate_FlowType(self, value):
         # Validate type FlowType, a restriction on xs:integer.
-        pass
+        if value is not None and Validate_simpletypes_:
+            pass
     def hasContent_(self):
         if (
             self.favorite_editor is not None or
@@ -1596,10 +1740,10 @@ class python_programmerType(programmerType):
             return False
     def to_etree(self, parent_element=None, name_='python-programmerType', mapping_=None):
         element = super(python_programmerType, self).to_etree(parent_element, name_, mapping_)
-        if self.drcs_attr is not None:
-            element.set('drcs_attr', self.gds_format_string(self.drcs_attr))
         if self.nick_name is not None:
             element.set('nick-name', self.gds_format_string(self.nick_name))
+        if self.drcs_attr is not None:
+            element.set('drcs_attr', self.gds_format_string(self.drcs_attr))
         if self.gui_developer is not None:
             element.set('gui_developer', self.gds_format_boolean(self.gui_developer))
         if self.favorite_editor is not None:
@@ -1620,15 +1764,16 @@ class python_programmerType(programmerType):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('drcs', node)
-        if value is not None and 'drcs_attr' not in already_processed:
-            already_processed.add('drcs_attr')
-            self.drcs_attr = value
         value = find_attr_value_('nick-name', node)
         if value is not None and 'nick-name' not in already_processed:
             already_processed.add('nick-name')
             self.nick_name = value
+        value = find_attr_value_('drcs', node)
+        if value is not None and 'drcs_attr' not in already_processed:
+            already_processed.add('drcs_attr')
+            self.drcs_attr = value
         value = find_attr_value_('gui_developer', node)
         if value is not None and 'gui_developer' not in already_processed:
             already_processed.add('gui_developer')
@@ -1648,11 +1793,12 @@ class python_programmerType(programmerType):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'flowvalue')
             self.flowvalue = ival_
-            self.validate_FlowType(self.flowvalue)    # validate type FlowType
+            # validate type FlowType
+            self.validate_FlowType(self.flowvalue)
         elif nodeName_ == 'drcs':
             drcs_ = child_.text
             drcs_ = self.gds_validate_string(drcs_, node, 'drcs')
@@ -1663,8 +1809,8 @@ class python_programmerType(programmerType):
 
 class java_programmerType(programmerType):
     member_data_items_ = [
-        MemberSpec_('status', 'xs:string', 0),
         MemberSpec_('nick-name', 'xs:string', 0),
+        MemberSpec_('status', 'xs:string', 0),
         MemberSpec_('favorite_editor', 'xs:string', 0),
         MemberSpec_('datetime1', 'xs:gYear', 0),
         MemberSpec_('datetime2', 'xs:gYearMonth', 0),
@@ -1674,10 +1820,11 @@ class java_programmerType(programmerType):
     ]
     subclass = None
     superclass = programmerType
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, status=None, nick_name=None, favorite_editor=None, datetime1=None, datetime2=None, datetime3=None, datetime4=None, datetime5=None):
-        super(java_programmerType, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, hot_agent, agent, promoter, description, range_, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
-        self.status = _cast(None, status)
+    def __init__(self, value=None, id=None, ratio=None, fruit=None, vegetable=None, name=None, interest=None, category=None, hot_agent=None, agent=None, promoter=None, description=None, range_=None, language=None, area=None, attrposint=None, attrnonposint=None, attrnegint=None, attrnonnegint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eldatetime1=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, nick_name=None, status=None, favorite_editor=None, datetime1=None, datetime2=None, datetime3=None, datetime4=None, datetime5=None):
+        self.original_tagname_ = None
+        super(java_programmerType, self).__init__(value, id, ratio, fruit, vegetable, name, interest, category, hot_agent, agent, promoter, description, range_, language, area, attrposint, attrnonposint, attrnegint, attrnonnegint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eldatetime1, eltoken, elshort, ellong, elparam, elarraytypes, )
         self.nick_name = _cast(None, nick_name)
+        self.status = _cast(None, status)
         self.favorite_editor = favorite_editor
         self.datetime1 = datetime1
         self.datetime2 = datetime2
@@ -1685,6 +1832,11 @@ class java_programmerType(programmerType):
         self.datetime4 = datetime4
         self.datetime5 = datetime5
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, java_programmerType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if java_programmerType.subclass:
             return java_programmerType.subclass(*args_, **kwargs_)
         else:
@@ -1702,10 +1854,10 @@ class java_programmerType(programmerType):
     def set_datetime4(self, datetime4): self.datetime4 = datetime4
     def get_datetime5(self): return self.datetime5
     def set_datetime5(self, datetime5): self.datetime5 = datetime5
-    def get_status(self): return self.status
-    def set_status(self, status): self.status = status
     def get_nick_name(self): return self.nick_name
     def set_nick_name(self, nick_name): self.nick_name = nick_name
+    def get_status(self): return self.status
+    def set_status(self, status): self.status = status
     def hasContent_(self):
         if (
             self.favorite_editor is not None or
@@ -1721,10 +1873,10 @@ class java_programmerType(programmerType):
             return False
     def to_etree(self, parent_element=None, name_='java-programmerType', mapping_=None):
         element = super(java_programmerType, self).to_etree(parent_element, name_, mapping_)
-        if self.status is not None:
-            element.set('status', self.gds_format_string(self.status))
         if self.nick_name is not None:
             element.set('nick-name', self.gds_format_string(self.nick_name))
+        if self.status is not None:
+            element.set('status', self.gds_format_string(self.status))
         if self.favorite_editor is not None:
             favorite_editor_ = self.favorite_editor
             etree_.SubElement(element, '{}favorite-editor').text = self.gds_format_string(favorite_editor_)
@@ -1752,15 +1904,16 @@ class java_programmerType(programmerType):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('status', node)
-        if value is not None and 'status' not in already_processed:
-            already_processed.add('status')
-            self.status = value
         value = find_attr_value_('nick-name', node)
         if value is not None and 'nick-name' not in already_processed:
             already_processed.add('nick-name')
             self.nick_name = value
+        value = find_attr_value_('status', node)
+        if value is not None and 'status' not in already_processed:
+            already_processed.add('status')
+            self.status = value
         super(java_programmerType, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'favorite-editor':
@@ -1802,6 +1955,7 @@ class agentType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, firstname=None, lastname=None, priority=None, info=None, vehicle=None, extensiontype_=None):
+        self.original_tagname_ = None
         self.firstname = firstname
         self.lastname = lastname
         self.priority = priority
@@ -1812,6 +1966,11 @@ class agentType(GeneratedsSuper):
             self.vehicle = vehicle
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, agentType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if agentType.subclass:
             return agentType.subclass(*args_, **kwargs_)
         else:
@@ -1828,7 +1987,8 @@ class agentType(GeneratedsSuper):
     def get_vehicle(self): return self.vehicle
     def set_vehicle(self, vehicle): self.vehicle = vehicle
     def add_vehicle(self, value): self.vehicle.append(value)
-    def insert_vehicle(self, index, value): self.vehicle[index] = value
+    def insert_vehicle_at(self, index, value): self.vehicle.insert(index, value)
+    def replace_vehicle_at(self, index, value): self.vehicle[index] = value
     def get_extensiontype_(self): return self.extensiontype_
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def hasContent_(self):
@@ -1872,6 +2032,7 @@ class agentType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('xsi:type', node)
         if value is not None and 'xsi:type' not in already_processed:
@@ -1890,7 +2051,7 @@ class agentType(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'priority')
             self.priority = fval_
@@ -1898,11 +2059,13 @@ class agentType(GeneratedsSuper):
             obj_ = infoType.factory()
             obj_.build(child_)
             self.info = obj_
+            obj_.original_tagname_ = 'info'
         elif nodeName_ == 'vehicle':
             class_obj_ = self.get_class_obj_(child_, vehicleType)
             obj_ = class_obj_.factory()
             obj_.build(child_)
             self.vehicle.append(obj_)
+            obj_.original_tagname_ = 'vehicle'
 # end class agentType
 
 
@@ -1918,12 +2081,18 @@ class special_agentType(agentType):
     subclass = None
     superclass = agentType
     def __init__(self, firstname=None, lastname=None, priority=None, info=None, vehicle=None):
+        self.original_tagname_ = None
         super(special_agentType, self).__init__(firstname, lastname, priority, info, vehicle, )
         self.firstname = firstname
         self.lastname = lastname
         self.priority = priority
         self.info = info
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, special_agentType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if special_agentType.subclass:
             return special_agentType.subclass(*args_, **kwargs_)
         else:
@@ -1971,6 +2140,7 @@ class special_agentType(agentType):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         super(special_agentType, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -1986,7 +2156,7 @@ class special_agentType(agentType):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'priority')
             self.priority = fval_
@@ -1994,6 +2164,7 @@ class special_agentType(agentType):
             obj_ = infoType.factory()
             obj_.build(child_)
             self.info = obj_
+            obj_.original_tagname_ = 'info'
         super(special_agentType, self).buildChildren(child_, node, nodeName_, True)
 # end class special_agentType
 
@@ -2010,12 +2181,18 @@ class weird_agentType(agentType):
     subclass = None
     superclass = agentType
     def __init__(self, firstname=None, lastname=None, priority=None, info=None, vehicle=None):
+        self.original_tagname_ = None
         super(weird_agentType, self).__init__(firstname, lastname, priority, info, vehicle, )
         self.firstname = firstname
         self.lastname = lastname
         self.priority = priority
         self.info = info
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, weird_agentType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if weird_agentType.subclass:
             return weird_agentType.subclass(*args_, **kwargs_)
         else:
@@ -2063,6 +2240,7 @@ class weird_agentType(agentType):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         super(weird_agentType, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -2078,7 +2256,7 @@ class weird_agentType(agentType):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'priority')
             self.priority = fval_
@@ -2086,6 +2264,7 @@ class weird_agentType(agentType):
             obj_ = infoType.factory()
             obj_.build(child_)
             self.info = obj_
+            obj_.original_tagname_ = 'info'
         super(weird_agentType, self).buildChildren(child_, node, nodeName_, True)
 # end class weird_agentType
 
@@ -2104,6 +2283,7 @@ class boosterType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, member_id=None, firstname=None, lastname=None, other_name=None, class_=None, other_value=None, type_=None, client_handler=None):
+        self.original_tagname_ = None
         self.member_id = _cast(None, member_id)
         self.firstname = firstname
         self.lastname = lastname
@@ -2122,6 +2302,11 @@ class boosterType(GeneratedsSuper):
         else:
             self.client_handler = client_handler
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, boosterType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if boosterType.subclass:
             return boosterType.subclass(*args_, **kwargs_)
         else:
@@ -2138,15 +2323,18 @@ class boosterType(GeneratedsSuper):
     def get_other_value(self): return self.other_value
     def set_other_value(self, other_value): self.other_value = other_value
     def add_other_value(self, value): self.other_value.append(value)
-    def insert_other_value(self, index, value): self.other_value[index] = value
+    def insert_other_value_at(self, index, value): self.other_value.insert(index, value)
+    def replace_other_value_at(self, index, value): self.other_value[index] = value
     def get_type(self): return self.type_
     def set_type(self, type_): self.type_ = type_
     def add_type(self, value): self.type_.append(value)
-    def insert_type(self, index, value): self.type_[index] = value
+    def insert_type_at(self, index, value): self.type_.insert(index, value)
+    def replace_type_at(self, index, value): self.type_[index] = value
     def get_client_handler(self): return self.client_handler
     def set_client_handler(self, client_handler): self.client_handler = client_handler
     def add_client_handler(self, value): self.client_handler.append(value)
-    def insert_client_handler(self, index, value): self.client_handler[index] = value
+    def insert_client_handler_at(self, index, value): self.client_handler.insert(index, value)
+    def replace_client_handler_at(self, index, value): self.client_handler[index] = value
     def get_member_id(self): return self.member_id
     def set_member_id(self, member_id): self.member_id = member_id
     def hasContent_(self):
@@ -2196,6 +2384,7 @@ class boosterType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('member-id', node)
         if value is not None and 'member-id' not in already_processed:
@@ -2214,7 +2403,7 @@ class boosterType(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'other_name')
             self.other_name = fval_
@@ -2222,7 +2411,7 @@ class boosterType(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'class')
             self.class_ = fval_
@@ -2230,7 +2419,7 @@ class boosterType(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'other_value')
             self.other_value.append(fval_)
@@ -2238,7 +2427,7 @@ class boosterType(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'type')
             self.type_.append(fval_)
@@ -2246,34 +2435,40 @@ class boosterType(GeneratedsSuper):
             obj_ = client_handlerType.factory()
             obj_.build(child_)
             self.client_handler.append(obj_)
+            obj_.original_tagname_ = 'client-handler'
 # end class boosterType
 
 
 class infoType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('rating', 'xs:float', 0),
-        MemberSpec_('type', 'xs:integer', 0),
         MemberSpec_('name', 'xs:string', 0),
+        MemberSpec_('type', 'xs:integer', 0),
+        MemberSpec_('rating', 'xs:float', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, rating=None, type_=None, name=None):
-        self.rating = _cast(float, rating)
-        self.type_ = _cast(int, type_)
+    def __init__(self, name=None, type_=None, rating=None):
+        self.original_tagname_ = None
         self.name = _cast(None, name)
-        pass
+        self.type_ = _cast(int, type_)
+        self.rating = _cast(float, rating)
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, infoType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if infoType.subclass:
             return infoType.subclass(*args_, **kwargs_)
         else:
             return infoType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_rating(self): return self.rating
-    def set_rating(self, rating): self.rating = rating
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
+    def get_type(self): return self.type_
+    def set_type(self, type_): self.type_ = type_
+    def get_rating(self): return self.rating
+    def set_rating(self, rating): self.rating = rating
     def hasContent_(self):
         if (
 
@@ -2286,12 +2481,12 @@ class infoType(GeneratedsSuper):
             element = etree_.Element('{}' + name_)
         else:
             element = etree_.SubElement(parent_element, '{}' + name_)
-        if self.rating is not None:
-            element.set('rating', self.gds_format_float(self.rating))
-        if self.type_ is not None:
-            element.set('type', self.gds_format_integer(self.type_))
         if self.name is not None:
             element.set('name', self.gds_format_string(self.name))
+        if self.type_ is not None:
+            element.set('type', self.gds_format_integer(self.type_))
+        if self.rating is not None:
+            element.set('rating', self.gds_format_float(self.rating))
         if mapping_ is not None:
             mapping_[self] = element
         return element
@@ -2301,25 +2496,26 @@ class infoType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('rating', node)
-        if value is not None and 'rating' not in already_processed:
-            already_processed.add('rating')
-            try:
-                self.rating = float(value)
-            except ValueError, exp:
-                raise ValueError('Bad float/double attribute (rating): %s' % exp)
+        value = find_attr_value_('name', node)
+        if value is not None and 'name' not in already_processed:
+            already_processed.add('name')
+            self.name = value
         value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.add('type')
             try:
                 self.type_ = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('name', node)
-        if value is not None and 'name' not in already_processed:
-            already_processed.add('name')
-            self.name = value
+        value = find_attr_value_('rating', node)
+        if value is not None and 'rating' not in already_processed:
+            already_processed.add('rating')
+            try:
+                self.rating = float(value)
+            except ValueError as exp:
+                raise ValueError('Bad float/double attribute (rating): %s' % exp)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
 # end class infoType
@@ -2332,9 +2528,15 @@ class vehicleType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, wheelcount=None, extensiontype_=None):
+        self.original_tagname_ = None
         self.wheelcount = wheelcount
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, vehicleType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if vehicleType.subclass:
             return vehicleType.subclass(*args_, **kwargs_)
         else:
@@ -2370,6 +2572,7 @@ class vehicleType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('xsi:type', node)
         if value is not None and 'xsi:type' not in already_processed:
@@ -2380,7 +2583,7 @@ class vehicleType(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'wheelcount')
             self.wheelcount = ival_
@@ -2394,9 +2597,15 @@ class automobile(vehicleType):
     subclass = None
     superclass = vehicleType
     def __init__(self, wheelcount=None, drivername=None):
+        self.original_tagname_ = None
         super(automobile, self).__init__(wheelcount, )
         self.drivername = drivername
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, automobile)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if automobile.subclass:
             return automobile.subclass(*args_, **kwargs_)
         else:
@@ -2426,6 +2635,7 @@ class automobile(vehicleType):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         super(automobile, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -2444,9 +2654,15 @@ class airplane(vehicleType):
     subclass = None
     superclass = vehicleType
     def __init__(self, wheelcount=None, pilotname=None):
+        self.original_tagname_ = None
         super(airplane, self).__init__(wheelcount, )
         self.pilotname = pilotname
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, airplane)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if airplane.subclass:
             return airplane.subclass(*args_, **kwargs_)
         else:
@@ -2476,6 +2692,7 @@ class airplane(vehicleType):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         super(airplane, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -2497,16 +2714,22 @@ class hot_agent(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, firstname='empty\\name', lastname='no \'last\' name', priority=None, startDate=None):
+        self.original_tagname_ = None
         self.firstname = firstname
         self.lastname = lastname
         self.priority = priority
-        if isinstance(startDate, basestring):
+        if isinstance(startDate, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(startDate, '%Y-%m-%d').date()
         else:
             initvalue_ = startDate
         self.startDate = initvalue_
         self.anyAttributes_ = {}
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, hot_agent)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if hot_agent.subclass:
             return hot_agent.subclass(*args_, **kwargs_)
         else:
@@ -2524,8 +2747,8 @@ class hot_agent(GeneratedsSuper):
     def set_anyAttributes_(self, anyAttributes_): self.anyAttributes_ = anyAttributes_
     def hasContent_(self):
         if (
-            self.firstname is not None or
-            self.lastname is not None or
+            self.firstname != "empty\name" or
+            self.lastname != "no 'last' name" or
             self.priority is not None or
             self.startDate is not None
         ):
@@ -2558,6 +2781,7 @@ class hot_agent(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         self.anyAttributes_ = {}
         for name, value in attrs.items():
@@ -2576,7 +2800,7 @@ class hot_agent(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'priority')
             self.priority = fval_
@@ -2595,9 +2819,15 @@ class client_handlerType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, fullname=None, refid=None):
+        self.original_tagname_ = None
         self.fullname = fullname
         self.refid = refid
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, client_handlerType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if client_handlerType.subclass:
             return client_handlerType.subclass(*args_, **kwargs_)
         else:
@@ -2635,6 +2865,7 @@ class client_handlerType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -2646,7 +2877,7 @@ class client_handlerType(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'refid')
             self.refid = ival_
@@ -2654,22 +2885,22 @@ class client_handlerType(GeneratedsSuper):
 
 
 GDSClassesMapping = {
-    'info': infoType,
-    'promoter': boosterType,
-    'special-agent': special_agentType,
-    'elparam': paramType,
-    'python-programmer': python_programmerType,
-    'people': peopleType,
+    'agent': agentType,
+    'booster': boosterType,
     'client-handler': client_handlerType,
     'comments': commentsType,
-    'weird-agent': weird_agentType,
-    'person': personType,
-    'agent': agentType,
+    'elparam': paramType,
+    'info': infoType,
     'java-programmer': java_programmerType,
-    'vehicle': vehicleType,
-    'programmer': programmerType,
     'param': paramType,
-    'booster': boosterType,
+    'people': peopleType,
+    'person': personType,
+    'programmer': programmerType,
+    'promoter': boosterType,
+    'python-programmer': python_programmerType,
+    'special-agent': special_agentType,
+    'vehicle': vehicleType,
+    'weird-agent': weird_agentType,
 }
 
 
@@ -2679,7 +2910,7 @@ Usage: python <Parser>.py [ -s ] <in_xml_file>
 
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 
@@ -2692,11 +2923,12 @@ def get_root_tag(node):
 
 
 def parse(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'people'
+        rootTag = 'peopleType'
         rootClass = peopleType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -2712,11 +2944,12 @@ def parse(inFileName, silence=False):
 
 
 def parseEtree(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'people'
+        rootTag = 'peopleType'
         rootClass = peopleType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -2735,12 +2968,16 @@ def parseEtree(inFileName, silence=False):
 
 
 def parseString(inString, silence=False):
-    from StringIO import StringIO
-    doc = parsexml_(StringIO(inString))
+    if sys.version_info.major == 2:
+        from StringIO import StringIO as IOBuffer
+    else:
+        from io import BytesIO as IOBuffer
+    parser = None
+    doc = parsexml_(IOBuffer(inString), parser)
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'peopleType'
         rootClass = peopleType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -2749,17 +2986,18 @@ def parseString(inString, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('<?xml version="1.0" ?>\n')
 ##         rootObj.export(
-##             sys.stdout, 0, name_="people",
+##             sys.stdout, 0, name_=rootTag,
 ##             namespacedef_='')
     return rootObj
 
 
 def parseLiteral(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'people'
+        rootTag = 'peopleType'
         rootClass = peopleType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -2768,7 +3006,7 @@ def parseLiteral(inFileName, silence=False):
 ##     if not silence:
 ##         sys.stdout.write('#from to_etree2_sup import *\n\n')
 ##         sys.stdout.write('import to_etree2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootTag(\n')
+##         sys.stdout.write('rootObj = model_.rootClass(\n')
 ##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
 ##         sys.stdout.write(')\n')
     return rootObj

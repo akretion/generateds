@@ -3,12 +3,12 @@ How to package a generateDS.py generated library
 ==================================================
 
 :author: Dave Kuhlman
-:address: dkuhlman@rexx.com
-    http://www.rexx.com/~dkuhlman
+:address: dkuhlman (at) davekuhlman (dot) org
+    http://www.davekuhlman.org
 
 .. version
 
-:revision: 2.11b
+:revision: 2.24b
 
 .. version
 
@@ -44,18 +44,18 @@ below will help you to create the following:
 
 The latest copy of these instructions is here:
 
-    http://www.rexx.com/~dkuhlman/librarytemplate_howto.html
+    http://www.davekuhlman.org/librarytemplate_howto.html
 
 and the template package itself is here:
 
-    http://www.rexx.com/~dkuhlman/librarytemplate0-1.0a.zip
+    http://www.davekuhlman.org/librarytemplate-1.0a.zip
 
 These instructions assume the name "peach" as the name of the
 schema.  You should replace "peach" in these instructions with the
 name of your schema.
 
 Find out more about generateDS.py here:
-http://www.rexx.com/~dkuhlman/generateDS.html
+http://www.davekuhlman.org/generateDS.html
 
 You will need to install Sphinx in order to build the documentation
 in your package.  Learn about Sphinx here: http://sphinx.pocoo.org/.

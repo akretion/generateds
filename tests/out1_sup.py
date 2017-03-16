@@ -4,66 +4,54 @@
 #
 # Generated  by generateDS.py.
 #
+# Command line options:
+#   ('--no-dates', '')
+#   ('--no-versions', '')
+#   ('-f', '')
+#   ('-o', 'tests/out2_sup.py')
+#   ('-s', 'tests/out2_sub.py')
+#   ('--export', 'write literal')
+#   ('--super', 'out2_sup')
+#   ('-u', 'gends_user_methods')
+#
+# Command line arguments:
+#   tests/people.xsd
+#
+# Command line:
+#   generateDS.py --no-dates --no-versions -f -o "tests/out2_sup.py" -s "tests/out2_sub.py" --export="write literal" --super="out2_sup" -u "gends_user_methods" tests/people.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
-import getopt
 import re as re_
 import base64
 import datetime as datetime_
-
-etree_ = None
-Verbose_import_ = False
-(
-    XMLParser_import_none, XMLParser_import_lxml,
-    XMLParser_import_elementtree
-) = range(3)
-XMLParser_import_library = None
+import warnings as warnings_
 try:
-    # lxml
     from lxml import etree as etree_
-    XMLParser_import_library = XMLParser_import_lxml
-    if Verbose_import_:
-        print("running with lxml.etree")
 except ImportError:
-    try:
-        # cElementTree from Python 2.5+
-        import xml.etree.cElementTree as etree_
-        XMLParser_import_library = XMLParser_import_elementtree
-        if Verbose_import_:
-            print("running with cElementTree on Python 2.5+")
-    except ImportError:
-        try:
-            # ElementTree from Python 2.5+
-            import xml.etree.ElementTree as etree_
-            XMLParser_import_library = XMLParser_import_elementtree
-            if Verbose_import_:
-                print("running with ElementTree on Python 2.5+")
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree_
-                XMLParser_import_library = XMLParser_import_elementtree
-                if Verbose_import_:
-                    print("running with cElementTree")
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree_
-                    XMLParser_import_library = XMLParser_import_elementtree
-                    if Verbose_import_:
-                        print("running with ElementTree")
-                except ImportError:
-                    raise ImportError(
-                        "Failed to import ElementTree from any known place")
+    from xml.etree import ElementTree as etree_
 
 
-def parsexml_(*args, **kwargs):
-    if (XMLParser_import_library == XMLParser_import_lxml and
-            'parser' not in kwargs):
+Validate_simpletypes_ = True
+if sys.version_info.major == 2:
+    BaseStrType_ = basestring
+else:
+    BaseStrType_ = str
+
+
+def parsexml_(infile, parser=None, **kwargs):
+    if parser is None:
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
-        kwargs['parser'] = etree_.ETCompatXMLParser()
-    doc = etree_.parse(*args, **kwargs)
+        try:
+            parser = etree_.ETCompatXMLParser()
+        except AttributeError:
+            # fallback to xml.etree
+            parser = etree_.XMLParser()
+    doc = etree_.parse(infile, parser=parser, **kwargs)
     return doc
 
 #
@@ -75,7 +63,7 @@ def parsexml_(*args, **kwargs):
 
 try:
     from generatedssuper import GeneratedsSuper
-except ImportError, exp:
+except ImportError as exp:
 
     class GeneratedsSuper(object):
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
@@ -91,61 +79,68 @@ except ImportError, exp:
                 return None
         def gds_format_string(self, input_data, input_name=''):
             return input_data
-        def gds_validate_string(self, input_data, node, input_name=''):
-            return input_data
+        def gds_validate_string(self, input_data, node=None, input_name=''):
+            if not input_data:
+                return ''
+            else:
+                return input_data
         def gds_format_base64(self, input_data, input_name=''):
             return base64.b64encode(input_data)
-        def gds_validate_base64(self, input_data, node, input_name=''):
+        def gds_validate_base64(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer(self, input_data, input_name=''):
             return '%d' % input_data
-        def gds_validate_integer(self, input_data, node, input_name=''):
+        def gds_validate_integer(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_integer_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_integer_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_integer_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
-                    float(value)
+                    int(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of integers')
-            return input_data
+            return values
         def gds_format_float(self, input_data, input_name=''):
             return ('%.15f' % input_data).rstrip('0')
-        def gds_validate_float(self, input_data, node, input_name=''):
+        def gds_validate_float(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_float_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_float_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_float_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of floats')
-            return input_data
+            return values
         def gds_format_double(self, input_data, input_name=''):
             return '%e' % input_data
-        def gds_validate_double(self, input_data, node, input_name=''):
+        def gds_validate_double(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_double_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_double_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_double_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 try:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of doubles')
-            return input_data
+            return values
         def gds_format_boolean(self, input_data, input_name=''):
             return ('%s' % input_data).lower()
-        def gds_validate_boolean(self, input_data, node, input_name=''):
+        def gds_validate_boolean(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
-            return '%s' % input_data
-        def gds_validate_boolean_list(self, input_data, node, input_name=''):
+            return '%s' % ' '.join(input_data)
+        def gds_validate_boolean_list(
+                self, input_data, node=None, input_name=''):
             values = input_data.split()
             for value in values:
                 if value not in ('true', '1', 'false', '0', ):
@@ -153,8 +148,8 @@ except ImportError, exp:
                         node,
                         'Requires sequence of booleans '
                         '("true", "1", "false", "0")')
-            return input_data
-        def gds_validate_datetime(self, input_data, node, input_name=''):
+            return values
+        def gds_validate_datetime(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -208,7 +203,10 @@ except ImportError, exp:
                     tz = GeneratedsSuper._FixedOffsetTZ(
                         tzoff, results.group(0))
                     input_data = input_data[:-6]
-            if len(input_data.split('.')) > 1:
+            time_parts = input_data.split('.')
+            if len(time_parts) > 1:
+                micro_seconds = int(float('0.' + time_parts[1]) * 1000000)
+                input_data = '%s.%s' % (time_parts[0], micro_seconds, )
                 dt = datetime_.datetime.strptime(
                     input_data, '%Y-%m-%dT%H:%M:%S.%f')
             else:
@@ -216,7 +214,7 @@ except ImportError, exp:
                     input_data, '%Y-%m-%dT%H:%M:%S')
             dt = dt.replace(tzinfo=tz)
             return dt
-        def gds_validate_date(self, input_data, node, input_name=''):
+        def gds_validate_date(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_date(self, input_data, input_name=''):
             _svalue = '%04d-%02d-%02d' % (
@@ -239,7 +237,8 @@ except ImportError, exp:
                                 _svalue += '+'
                             hours = total_seconds // 3600
                             minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
+                            _svalue += '{0:02d}:{1:02d}'.format(
+                                hours, minutes)
             except AttributeError:
                 pass
             return _svalue
@@ -262,7 +261,7 @@ except ImportError, exp:
             dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
             dt = dt.replace(tzinfo=tz)
             return dt.date()
-        def gds_validate_time(self, input_data, node, input_name=''):
+        def gds_validate_time(self, input_data, node=None, input_name=''):
             return input_data
         def gds_format_time(self, input_data, input_name=''):
             if input_data.microsecond == 0:
@@ -294,6 +293,21 @@ except ImportError, exp:
                         minutes = (total_seconds - (hours * 3600)) // 60
                         _svalue += '{0:02d}:{1:02d}'.format(hours, minutes)
             return _svalue
+        def gds_validate_simple_patterns(self, patterns, target):
+            # pat is a list of lists of strings/patterns.  We should:
+            # - AND the outer elements
+            # - OR the inner elements
+            found1 = True
+            for patterns1 in patterns:
+                found2 = False
+                for patterns2 in patterns1:
+                    if re_.search(patterns2, target) is not None:
+                        found2 = True
+                        break
+                if not found2:
+                    found1 = False
+                    break
+            return found1
         @classmethod
         def gds_parse_time(cls, input_data):
             tz = None
@@ -349,6 +363,29 @@ except ImportError, exp:
         @classmethod
         def gds_reverse_node_mapping(cls, mapping):
             return dict(((v, k) for k, v in mapping.iteritems()))
+        @staticmethod
+        def gds_encode(instring):
+            if sys.version_info.major == 2:
+                return instring.encode(ExternalEncoding)
+            else:
+                return instring
+        @staticmethod
+        def convert_unicode(instring):
+            if isinstance(instring, str):
+                result = quote_xml(instring)
+            elif sys.version_info.major == 2 and isinstance(instring, unicode):
+                result = quote_xml(instring).encode('utf8')
+            else:
+                result = GeneratedsSuper.gds_encode(str(instring))
+            return result
+
+    def getSubclassFromModule_(module, class_):
+        '''Get the subclass of a class from a specific module.'''
+        name = class_.__name__ + 'Sub'
+        if hasattr(module, name):
+            return getattr(module, name)
+        else:
+            return None
 
 
 #
@@ -374,6 +411,11 @@ ExternalEncoding = 'ascii'
 Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
+CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
+
+# Change this to redirect the generated superclass module to use a
+# specific subclass module.
+CurrentSubclassModule_ = None
 
 #
 # Support/utility functions.
@@ -387,19 +429,32 @@ def showIndent(outfile, level, pretty_print=True):
 
 
 def quote_xml(inStr):
+    "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%s' % inStr)
-    s1 = s1.replace('&', '&amp;')
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
+    s2 = ''
+    pos = 0
+    matchobjects = CDATA_pattern_.finditer(s1)
+    for mo in matchobjects:
+        s3 = s1[pos:mo.start()]
+        s2 += quote_xml_aux(s3)
+        s2 += s1[mo.start():mo.end()]
+        pos = mo.end()
+    s3 = s1[pos:]
+    s2 += quote_xml_aux(s3)
+    return s2
+
+
+def quote_xml_aux(inStr):
+    s1 = inStr.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     return s1
 
 
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%s' % inStr)
+    s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
@@ -459,11 +514,7 @@ class GDSParseError(Exception):
 
 
 def raise_parse_error(node, msg):
-    if XMLParser_import_library == XMLParser_import_lxml:
-        msg = '%s (element %s/line %d)' % (
-            msg, node.tag, node.sourceline, )
-    else:
-        msg = '%s (element %s)' % (msg, node.tag, )
+    msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline, )
     raise GDSParseError(msg)
 
 
@@ -504,7 +555,8 @@ class MixedContainer:
         elif self.category == MixedContainer.CategorySimple:
             self.exportSimple(outfile, level, name)
         else:    # category == MixedContainer.CategoryComplex
-            self.value.export(outfile, level, namespace, name, pretty_print)
+            self.value.export(
+                outfile, level, namespace, name, pretty_print=pretty_print)
     def exportSimple(self, outfile, level, name):
         if self.content_type == MixedContainer.TypeString:
             outfile.write('<%s>%s</%s>' % (
@@ -619,6 +671,7 @@ class people(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, comments=None, person=None, programmer=None, python_programmer=None, java_programmer=None):
+        self.original_tagname_ = None
         if comments is None:
             self.comments = []
         else:
@@ -640,6 +693,11 @@ class people(GeneratedsSuper):
         else:
             self.java_programmer = java_programmer
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, people)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if people.subclass:
             return people.subclass(*args_, **kwargs_)
         else:
@@ -648,23 +706,28 @@ class people(GeneratedsSuper):
     def get_comments(self): return self.comments
     def set_comments(self, comments): self.comments = comments
     def add_comments(self, value): self.comments.append(value)
-    def insert_comments(self, index, value): self.comments[index] = value
+    def insert_comments_at(self, index, value): self.comments.insert(index, value)
+    def replace_comments_at(self, index, value): self.comments[index] = value
     def get_person(self): return self.person
     def set_person(self, person): self.person = person
     def add_person(self, value): self.person.append(value)
-    def insert_person(self, index, value): self.person[index] = value
+    def insert_person_at(self, index, value): self.person.insert(index, value)
+    def replace_person_at(self, index, value): self.person[index] = value
     def get_programmer(self): return self.programmer
     def set_programmer(self, programmer): self.programmer = programmer
     def add_programmer(self, value): self.programmer.append(value)
-    def insert_programmer(self, index, value): self.programmer[index] = value
+    def insert_programmer_at(self, index, value): self.programmer.insert(index, value)
+    def replace_programmer_at(self, index, value): self.programmer[index] = value
     def get_python_programmer(self): return self.python_programmer
     def set_python_programmer(self, python_programmer): self.python_programmer = python_programmer
     def add_python_programmer(self, value): self.python_programmer.append(value)
-    def insert_python_programmer(self, index, value): self.python_programmer[index] = value
+    def insert_python_programmer_at(self, index, value): self.python_programmer.insert(index, value)
+    def replace_python_programmer_at(self, index, value): self.python_programmer[index] = value
     def get_java_programmer(self): return self.java_programmer
     def set_java_programmer(self, java_programmer): self.java_programmer = java_programmer
     def add_java_programmer(self, value): self.java_programmer.append(value)
-    def insert_java_programmer(self, index, value): self.java_programmer[index] = value
+    def insert_java_programmer_at(self, index, value): self.java_programmer.insert(index, value)
+    def replace_java_programmer_at(self, index, value): self.java_programmer[index] = value
     def hasContent_(self):
         if (
             self.comments or
@@ -681,13 +744,15 @@ class people(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='people')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='people', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -784,6 +849,7 @@ class people(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -791,24 +857,29 @@ class people(GeneratedsSuper):
             obj_ = comments.factory()
             obj_.build(child_)
             self.comments.append(obj_)
+            obj_.original_tagname_ = 'comments'
         elif nodeName_ == 'person':
             class_obj_ = self.get_class_obj_(child_, person)
             obj_ = class_obj_.factory()
             obj_.build(child_)
             self.person.append(obj_)
+            obj_.original_tagname_ = 'person'
         elif nodeName_ == 'programmer':
             class_obj_ = self.get_class_obj_(child_, programmer)
             obj_ = class_obj_.factory()
             obj_.build(child_)
             self.programmer.append(obj_)
+            obj_.original_tagname_ = 'programmer'
         elif nodeName_ == 'python-programmer':
             obj_ = python_programmer.factory()
             obj_.build(child_)
             self.python_programmer.append(obj_)
+            obj_.original_tagname_ = 'python-programmer'
         elif nodeName_ == 'java-programmer':
             obj_ = java_programmer.factory()
             obj_.build(child_)
             self.java_programmer.append(obj_)
+            obj_.original_tagname_ = 'java-programmer'
     def walk_and_update(self):
         members = people._member_data_items
         for member in members:
@@ -871,6 +942,7 @@ class comments(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, emp=None, valueOf_=None, mixedclass_=None, content_=None):
+        self.original_tagname_ = None
         if emp is None:
             self.emp = []
         else:
@@ -886,6 +958,11 @@ class comments(GeneratedsSuper):
             self.content_ = content_
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, comments)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if comments.subclass:
             return comments.subclass(*args_, **kwargs_)
         else:
@@ -894,13 +971,14 @@ class comments(GeneratedsSuper):
     def get_emp(self): return self.emp
     def set_emp(self, emp): self.emp = emp
     def add_emp(self, value): self.emp.append(value)
-    def insert_emp(self, index, value): self.emp[index] = value
+    def insert_emp_at(self, index, value): self.emp.insert(index, value)
+    def replace_emp_at(self, index, value): self.emp[index] = value
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
             self.emp or
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -910,13 +988,15 @@ class comments(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='comments')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='comments', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -956,6 +1036,7 @@ class comments(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -1019,11 +1100,11 @@ class comments(GeneratedsSuper):
 
 class person(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('vegetable', 'xs:string', 0),
-        MemberSpec_('fruit', 'xs:string', 0),
-        MemberSpec_('ratio', 'xs:float', 0),
-        MemberSpec_('id', 'xs:integer', 0),
         MemberSpec_('value', 'xs:string', 0),
+        MemberSpec_('id', 'xs:integer', 0),
+        MemberSpec_('ratio', 'xs:float', 0),
+        MemberSpec_('fruit', 'xs:string', 0),
+        MemberSpec_('vegetable', 'xs:string', 0),
         MemberSpec_('name', 'xs:string', 0),
         MemberSpec_('interest', 'xs:string', 1),
         MemberSpec_('category', 'xs:integer', 0),
@@ -1033,12 +1114,13 @@ class person(GeneratedsSuper):
     ]
     subclass = None
     superclass = None
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, extensiontype_=None):
-        self.vegetable = _cast(None, vegetable)
-        self.fruit = _cast(None, fruit)
-        self.ratio = _cast(float, ratio)
-        self.id = _cast(int, id)
+    def __init__(self, value=None, id=None, ratio=None, fruit=None, vegetable=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, extensiontype_=None):
+        self.original_tagname_ = None
         self.value = _cast(None, value)
+        self.id = _cast(int, id)
+        self.ratio = _cast(float, ratio)
+        self.fruit = _cast(None, fruit)
+        self.vegetable = _cast(None, vegetable)
         self.name = name
         if interest is None:
             self.interest = []
@@ -1056,6 +1138,11 @@ class person(GeneratedsSuper):
         self.description = description
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, person)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if person.subclass:
             return person.subclass(*args_, **kwargs_)
         else:
@@ -1066,29 +1153,32 @@ class person(GeneratedsSuper):
     def get_interest(self): return self.interest
     def set_interest(self, interest): self.interest = interest
     def add_interest(self, value): self.interest.append(value)
-    def insert_interest(self, index, value): self.interest[index] = value
+    def insert_interest_at(self, index, value): self.interest.insert(index, value)
+    def replace_interest_at(self, index, value): self.interest[index] = value
     def get_category(self): return self.category
     def set_category(self, category): self.category = category
     def get_agent(self): return self.agent
     def set_agent(self, agent): self.agent = agent
     def add_agent(self, value): self.agent.append(value)
-    def insert_agent(self, index, value): self.agent[index] = value
+    def insert_agent_at(self, index, value): self.agent.insert(index, value)
+    def replace_agent_at(self, index, value): self.agent[index] = value
     def get_promoter(self): return self.promoter
     def set_promoter(self, promoter): self.promoter = promoter
     def add_promoter(self, value): self.promoter.append(value)
-    def insert_promoter(self, index, value): self.promoter[index] = value
+    def insert_promoter_at(self, index, value): self.promoter.insert(index, value)
+    def replace_promoter_at(self, index, value): self.promoter[index] = value
     def get_description(self): return self.description
     def set_description(self, description): self.description = description
-    def get_vegetable(self): return self.vegetable
-    def set_vegetable(self, vegetable): self.vegetable = vegetable
-    def get_fruit(self): return self.fruit
-    def set_fruit(self, fruit): self.fruit = fruit
-    def get_ratio(self): return self.ratio
-    def set_ratio(self, ratio): self.ratio = ratio
-    def get_id(self): return self.id
-    def set_id(self, id): self.id = id
     def get_value(self): return self.value
     def set_value(self, value): self.value = value
+    def get_id(self): return self.id
+    def set_id(self, id): self.id = id
+    def get_ratio(self): return self.ratio
+    def set_ratio(self, ratio): self.ratio = ratio
+    def get_fruit(self): return self.fruit
+    def set_fruit(self, fruit): self.fruit = fruit
+    def get_vegetable(self): return self.vegetable
+    def set_vegetable(self, vegetable): self.vegetable = vegetable
     def get_extensiontype_(self): return self.extensiontype_
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def hasContent_(self):
@@ -1108,33 +1198,35 @@ class person(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='person')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='person', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='person'):
-        if self.vegetable is not None and 'vegetable' not in already_processed:
-            already_processed.add('vegetable')
-            outfile.write(' vegetable=%s' % (self.gds_format_string(quote_attrib(self.vegetable).encode(ExternalEncoding), input_name='vegetable'), ))
-        if self.fruit is not None and 'fruit' not in already_processed:
-            already_processed.add('fruit')
-            outfile.write(' fruit=%s' % (self.gds_format_string(quote_attrib(self.fruit).encode(ExternalEncoding), input_name='fruit'), ))
-        if self.ratio is not None and 'ratio' not in already_processed:
-            already_processed.add('ratio')
-            outfile.write(' ratio="%s"' % self.gds_format_float(self.ratio, input_name='ratio'))
+        if self.value is not None and 'value' not in already_processed:
+            already_processed.add('value')
+            outfile.write(' value=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.value), input_name='value')), ))
         if self.id is not None and 'id' not in already_processed:
             already_processed.add('id')
             outfile.write(' id="%s"' % self.gds_format_integer(self.id, input_name='id'))
-        if self.value is not None and 'value' not in already_processed:
-            already_processed.add('value')
-            outfile.write(' value=%s' % (self.gds_format_string(quote_attrib(self.value).encode(ExternalEncoding), input_name='value'), ))
+        if self.ratio is not None and 'ratio' not in already_processed:
+            already_processed.add('ratio')
+            outfile.write(' ratio="%s"' % self.gds_format_float(self.ratio, input_name='ratio'))
+        if self.fruit is not None and 'fruit' not in already_processed:
+            already_processed.add('fruit')
+            outfile.write(' fruit=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.fruit), input_name='fruit')), ))
+        if self.vegetable is not None and 'vegetable' not in already_processed:
+            already_processed.add('vegetable')
+            outfile.write(' vegetable=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.vegetable), input_name='vegetable')), ))
         if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
             already_processed.add('xsi:type')
             outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
@@ -1146,10 +1238,10 @@ class person(GeneratedsSuper):
             eol_ = ''
         if self.name is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sname>%s</%sname>%s' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_, eol_))
+            outfile.write('<%sname>%s</%sname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.name), input_name='name')), namespace_, eol_))
         for interest_ in self.interest:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sinterest>%s</%sinterest>%s' % (namespace_, self.gds_format_string(quote_xml(interest_).encode(ExternalEncoding), input_name='interest'), namespace_, eol_))
+            outfile.write('<%sinterest>%s</%sinterest>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(interest_), input_name='interest')), namespace_, eol_))
         if self.category is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%scategory>%s</%scategory>%s' % (namespace_, self.gds_format_integer(self.category, input_name='category'), namespace_, eol_))
@@ -1159,7 +1251,7 @@ class person(GeneratedsSuper):
             promoter_.export(outfile, level, namespace_, name_='promoter', pretty_print=pretty_print)
         if self.description is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdescription>%s</%sdescription>%s' % (namespace_, self.gds_format_string(quote_xml(self.description).encode(ExternalEncoding), input_name='description'), namespace_, eol_))
+            outfile.write('<%sdescription>%s</%sdescription>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.description), input_name='description')), namespace_, eol_))
     def exportLiteral(self, outfile, level, name_='person'):
         level += 1
         already_processed = set()
@@ -1167,36 +1259,36 @@ class person(GeneratedsSuper):
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.vegetable is not None and 'vegetable' not in already_processed:
-            already_processed.add('vegetable')
-            showIndent(outfile, level)
-            outfile.write('vegetable="%s",\n' % (self.vegetable,))
-        if self.fruit is not None and 'fruit' not in already_processed:
-            already_processed.add('fruit')
-            showIndent(outfile, level)
-            outfile.write('fruit="%s",\n' % (self.fruit,))
-        if self.ratio is not None and 'ratio' not in already_processed:
-            already_processed.add('ratio')
-            showIndent(outfile, level)
-            outfile.write('ratio=%f,\n' % (self.ratio,))
-        if self.id is not None and 'id' not in already_processed:
-            already_processed.add('id')
-            showIndent(outfile, level)
-            outfile.write('id=%d,\n' % (self.id,))
         if self.value is not None and 'value' not in already_processed:
             already_processed.add('value')
             showIndent(outfile, level)
             outfile.write('value="%s",\n' % (self.value,))
+        if self.id is not None and 'id' not in already_processed:
+            already_processed.add('id')
+            showIndent(outfile, level)
+            outfile.write('id=%d,\n' % (self.id,))
+        if self.ratio is not None and 'ratio' not in already_processed:
+            already_processed.add('ratio')
+            showIndent(outfile, level)
+            outfile.write('ratio=%f,\n' % (self.ratio,))
+        if self.fruit is not None and 'fruit' not in already_processed:
+            already_processed.add('fruit')
+            showIndent(outfile, level)
+            outfile.write('fruit="%s",\n' % (self.fruit,))
+        if self.vegetable is not None and 'vegetable' not in already_processed:
+            already_processed.add('vegetable')
+            showIndent(outfile, level)
+            outfile.write('vegetable="%s",\n' % (self.vegetable,))
     def exportLiteralChildren(self, outfile, level, name_):
         if self.name is not None:
             showIndent(outfile, level)
-            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
+            outfile.write('name=%s,\n' % self.gds_encode(quote_python(self.name)))
         showIndent(outfile, level)
         outfile.write('interest=[\n')
         level += 1
         for interest_ in self.interest:
             showIndent(outfile, level)
-            outfile.write('%s,\n' % quote_python(interest_).encode(ExternalEncoding))
+            outfile.write('%s,\n' % self.gds_encode(quote_python(interest_)))
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
@@ -1229,40 +1321,41 @@ class person(GeneratedsSuper):
         outfile.write('],\n')
         if self.description is not None:
             showIndent(outfile, level)
-            outfile.write('description=%s,\n' % quote_python(self.description).encode(ExternalEncoding))
+            outfile.write('description=%s,\n' % self.gds_encode(quote_python(self.description)))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('vegetable', node)
-        if value is not None and 'vegetable' not in already_processed:
-            already_processed.add('vegetable')
-            self.vegetable = value
-        value = find_attr_value_('fruit', node)
-        if value is not None and 'fruit' not in already_processed:
-            already_processed.add('fruit')
-            self.fruit = value
-        value = find_attr_value_('ratio', node)
-        if value is not None and 'ratio' not in already_processed:
-            already_processed.add('ratio')
-            try:
-                self.ratio = float(value)
-            except ValueError, exp:
-                raise ValueError('Bad float/double attribute (ratio): %s' % exp)
+        value = find_attr_value_('value', node)
+        if value is not None and 'value' not in already_processed:
+            already_processed.add('value')
+            self.value = value
         value = find_attr_value_('id', node)
         if value is not None and 'id' not in already_processed:
             already_processed.add('id')
             try:
                 self.id = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('value', node)
-        if value is not None and 'value' not in already_processed:
-            already_processed.add('value')
-            self.value = value
+        value = find_attr_value_('ratio', node)
+        if value is not None and 'ratio' not in already_processed:
+            already_processed.add('ratio')
+            try:
+                self.ratio = float(value)
+            except ValueError as exp:
+                raise ValueError('Bad float/double attribute (ratio): %s' % exp)
+        value = find_attr_value_('fruit', node)
+        if value is not None and 'fruit' not in already_processed:
+            already_processed.add('fruit')
+            self.fruit = value
+        value = find_attr_value_('vegetable', node)
+        if value is not None and 'vegetable' not in already_processed:
+            already_processed.add('vegetable')
+            self.vegetable = value
         value = find_attr_value_('xsi:type', node)
         if value is not None and 'xsi:type' not in already_processed:
             already_processed.add('xsi:type')
@@ -1280,7 +1373,7 @@ class person(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'category')
             self.category = ival_
@@ -1288,10 +1381,12 @@ class person(GeneratedsSuper):
             obj_ = agent.factory()
             obj_.build(child_)
             self.agent.append(obj_)
+            obj_.original_tagname_ = 'agent'
         elif nodeName_ == 'promoter':
             obj_ = booster.factory()
             obj_.build(child_)
             self.promoter.append(obj_)
+            obj_.original_tagname_ = 'promoter'
         elif nodeName_ == 'description':
             description_ = child_.text
             description_ = self.gds_validate_string(description_, node, 'description')
@@ -1349,10 +1444,10 @@ class programmer(person):
     member_data_items_ = [
         MemberSpec_('language', 'xs:string', 0),
         MemberSpec_('area', 'xs:string', 0),
-        MemberSpec_('attrnegint', 'xs:negativeInteger', 0),
         MemberSpec_('attrposint', 'xs:positiveInteger', 0),
-        MemberSpec_('attrnonnegint', 'xs:nonNegativeInteger', 0),
         MemberSpec_('attrnonposint', 'xs:nonPositiveInteger', 0),
+        MemberSpec_('attrnegint', 'xs:negativeInteger', 0),
+        MemberSpec_('attrnonnegint', 'xs:nonNegativeInteger', 0),
         MemberSpec_('email', 'xs:string', 0),
         MemberSpec_('elposint', 'xs:positiveInteger', 0),
         MemberSpec_('elnonposint', 'xs:nonPositiveInteger', 0),
@@ -1368,25 +1463,26 @@ class programmer(person):
     ]
     subclass = None
     superclass = person
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, extensiontype_=None):
-        super(programmer, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, agent, promoter, description, extensiontype_, )
+    def __init__(self, value=None, id=None, ratio=None, fruit=None, vegetable=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, language=None, area=None, attrposint=None, attrnonposint=None, attrnegint=None, attrnonnegint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, extensiontype_=None):
+        self.original_tagname_ = None
+        super(programmer, self).__init__(value, id, ratio, fruit, vegetable, name, interest, category, agent, promoter, description, extensiontype_, )
         self.language = _cast(None, language)
         self.area = _cast(None, area)
-        self.attrnegint = _cast(int, attrnegint)
         self.attrposint = _cast(int, attrposint)
-        self.attrnonnegint = _cast(int, attrnonnegint)
         self.attrnonposint = _cast(int, attrnonposint)
+        self.attrnegint = _cast(int, attrnegint)
+        self.attrnonnegint = _cast(int, attrnonnegint)
         self.email = email
         self.elposint = elposint
         self.elnonposint = elnonposint
         self.elnegint = elnegint
         self.elnonnegint = elnonnegint
-        if isinstance(eldate, basestring):
+        if isinstance(eldate, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(eldate, '%Y-%m-%d').date()
         else:
             initvalue_ = eldate
         self.eldate = initvalue_
-        if isinstance(eldatetime, basestring):
+        if isinstance(eldatetime, BaseStrType_):
             initvalue_ = datetime_.datetime.strptime(eldatetime, '%Y-%m-%dT%H:%M:%S')
         else:
             initvalue_ = eldatetime
@@ -1396,8 +1492,14 @@ class programmer(person):
         self.ellong = ellong
         self.elparam = elparam
         self.elarraytypes = elarraytypes
+        self.validate_ArrayTypes(self.elarraytypes)
         self.extensiontype_ = extensiontype_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, programmer)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if programmer.subclass:
             return programmer.subclass(*args_, **kwargs_)
         else:
@@ -1431,19 +1533,28 @@ class programmer(person):
     def set_language(self, language): self.language = language
     def get_area(self): return self.area
     def set_area(self, area): self.area = area
-    def get_attrnegint(self): return self.attrnegint
-    def set_attrnegint(self, attrnegint): self.attrnegint = attrnegint
     def get_attrposint(self): return self.attrposint
     def set_attrposint(self, attrposint): self.attrposint = attrposint
-    def get_attrnonnegint(self): return self.attrnonnegint
-    def set_attrnonnegint(self, attrnonnegint): self.attrnonnegint = attrnonnegint
     def get_attrnonposint(self): return self.attrnonposint
     def set_attrnonposint(self, attrnonposint): self.attrnonposint = attrnonposint
+    def get_attrnegint(self): return self.attrnegint
+    def set_attrnegint(self, attrnegint): self.attrnegint = attrnegint
+    def get_attrnonnegint(self): return self.attrnonnegint
+    def set_attrnonnegint(self, attrnonnegint): self.attrnonnegint = attrnonnegint
     def get_extensiontype_(self): return self.extensiontype_
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def validate_ArrayTypes(self, value):
         # Validate type ArrayTypes, a restriction on xs:NMTOKEN.
-        pass
+        if value is not None and Validate_simpletypes_:
+            value = str(value)
+            enumerations = ['float', 'int', 'Name', 'token']
+            enumeration_respectee = False
+            for enum in enumerations:
+                if value == enum:
+                    enumeration_respectee = True
+                    break
+            if not enumeration_respectee:
+                warnings_.warn('Value "%(value)s" does not match xsd enumeration restriction on ArrayTypes' % {"value" : value.encode("utf-8")} )
     def hasContent_(self):
         if (
             self.email is not None or
@@ -1468,13 +1579,15 @@ class programmer(person):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='programmer')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='programmer', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -1483,22 +1596,22 @@ class programmer(person):
         super(programmer, self).exportAttributes(outfile, level, already_processed, namespace_, name_='programmer')
         if self.language is not None and 'language' not in already_processed:
             already_processed.add('language')
-            outfile.write(' language=%s' % (self.gds_format_string(quote_attrib(self.language).encode(ExternalEncoding), input_name='language'), ))
+            outfile.write(' language=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.language), input_name='language')), ))
         if self.area is not None and 'area' not in already_processed:
             already_processed.add('area')
-            outfile.write(' area=%s' % (self.gds_format_string(quote_attrib(self.area).encode(ExternalEncoding), input_name='area'), ))
-        if self.attrnegint is not None and 'attrnegint' not in already_processed:
-            already_processed.add('attrnegint')
-            outfile.write(' attrnegint="%s"' % self.gds_format_integer(self.attrnegint, input_name='attrnegint'))
+            outfile.write(' area=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.area), input_name='area')), ))
         if self.attrposint is not None and 'attrposint' not in already_processed:
             already_processed.add('attrposint')
             outfile.write(' attrposint="%s"' % self.gds_format_integer(self.attrposint, input_name='attrposint'))
-        if self.attrnonnegint is not None and 'attrnonnegint' not in already_processed:
-            already_processed.add('attrnonnegint')
-            outfile.write(' attrnonnegint="%s"' % self.gds_format_integer(self.attrnonnegint, input_name='attrnonnegint'))
         if self.attrnonposint is not None and 'attrnonposint' not in already_processed:
             already_processed.add('attrnonposint')
             outfile.write(' attrnonposint="%s"' % self.gds_format_integer(self.attrnonposint, input_name='attrnonposint'))
+        if self.attrnegint is not None and 'attrnegint' not in already_processed:
+            already_processed.add('attrnegint')
+            outfile.write(' attrnegint="%s"' % self.gds_format_integer(self.attrnegint, input_name='attrnegint'))
+        if self.attrnonnegint is not None and 'attrnonnegint' not in already_processed:
+            already_processed.add('attrnonnegint')
+            outfile.write(' attrnonnegint="%s"' % self.gds_format_integer(self.attrnonnegint, input_name='attrnonnegint'))
         if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
             already_processed.add('xsi:type')
             outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
@@ -1511,7 +1624,7 @@ class programmer(person):
             eol_ = ''
         if self.email is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%semail>%s</%semail>%s' % (namespace_, self.gds_format_string(quote_xml(self.email).encode(ExternalEncoding), input_name='email'), namespace_, eol_))
+            outfile.write('<%semail>%s</%semail>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.email), input_name='email')), namespace_, eol_))
         if self.elposint is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%selposint>%s</%selposint>%s' % (namespace_, self.gds_format_integer(self.elposint, input_name='elposint'), namespace_, eol_))
@@ -1532,7 +1645,7 @@ class programmer(person):
             outfile.write('<%seldatetime>%s</%seldatetime>%s' % (namespace_, self.gds_format_datetime(self.eldatetime, input_name='eldatetime'), namespace_, eol_))
         if self.eltoken is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%seltoken>%s</%seltoken>%s' % (namespace_, self.gds_format_string(quote_xml(self.eltoken).encode(ExternalEncoding), input_name='eltoken'), namespace_, eol_))
+            outfile.write('<%seltoken>%s</%seltoken>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.eltoken), input_name='eltoken')), namespace_, eol_))
         if self.elshort is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%selshort>%s</%selshort>%s' % (namespace_, self.gds_format_integer(self.elshort, input_name='elshort'), namespace_, eol_))
@@ -1543,7 +1656,7 @@ class programmer(person):
             self.elparam.export(outfile, level, namespace_, name_='elparam', pretty_print=pretty_print)
         if self.elarraytypes is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%selarraytypes>%s</%selarraytypes>%s' % (namespace_, self.gds_format_string(quote_xml(self.elarraytypes).encode(ExternalEncoding), input_name='elarraytypes'), namespace_, eol_))
+            outfile.write('<%selarraytypes>%s</%selarraytypes>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.elarraytypes), input_name='elarraytypes')), namespace_, eol_))
     def exportLiteral(self, outfile, level, name_='programmer'):
         level += 1
         already_processed = set()
@@ -1559,28 +1672,28 @@ class programmer(person):
             already_processed.add('area')
             showIndent(outfile, level)
             outfile.write('area="%s",\n' % (self.area,))
-        if self.attrnegint is not None and 'attrnegint' not in already_processed:
-            already_processed.add('attrnegint')
-            showIndent(outfile, level)
-            outfile.write('attrnegint=%d,\n' % (self.attrnegint,))
         if self.attrposint is not None and 'attrposint' not in already_processed:
             already_processed.add('attrposint')
             showIndent(outfile, level)
             outfile.write('attrposint=%d,\n' % (self.attrposint,))
-        if self.attrnonnegint is not None and 'attrnonnegint' not in already_processed:
-            already_processed.add('attrnonnegint')
-            showIndent(outfile, level)
-            outfile.write('attrnonnegint=%d,\n' % (self.attrnonnegint,))
         if self.attrnonposint is not None and 'attrnonposint' not in already_processed:
             already_processed.add('attrnonposint')
             showIndent(outfile, level)
             outfile.write('attrnonposint=%d,\n' % (self.attrnonposint,))
+        if self.attrnegint is not None and 'attrnegint' not in already_processed:
+            already_processed.add('attrnegint')
+            showIndent(outfile, level)
+            outfile.write('attrnegint=%d,\n' % (self.attrnegint,))
+        if self.attrnonnegint is not None and 'attrnonnegint' not in already_processed:
+            already_processed.add('attrnonnegint')
+            showIndent(outfile, level)
+            outfile.write('attrnonnegint=%d,\n' % (self.attrnonnegint,))
         super(programmer, self).exportLiteralAttributes(outfile, level, already_processed, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(programmer, self).exportLiteralChildren(outfile, level, name_)
         if self.email is not None:
             showIndent(outfile, level)
-            outfile.write('email=%s,\n' % quote_python(self.email).encode(ExternalEncoding))
+            outfile.write('email=%s,\n' % self.gds_encode(quote_python(self.email)))
         if self.elposint is not None:
             showIndent(outfile, level)
             outfile.write('elposint=%d,\n' % self.elposint)
@@ -1601,7 +1714,7 @@ class programmer(person):
             outfile.write('eldatetime=model_.GeneratedsSuper.gds_parse_datetime("%s"),\n' % self.gds_format_datetime(self.eldatetime, input_name='eldatetime'))
         if self.eltoken is not None:
             showIndent(outfile, level)
-            outfile.write('eltoken=%s,\n' % quote_python(self.eltoken).encode(ExternalEncoding))
+            outfile.write('eltoken=%s,\n' % self.gds_encode(quote_python(self.eltoken)))
         if self.elshort is not None:
             showIndent(outfile, level)
             outfile.write('elshort=%d,\n' % self.elshort)
@@ -1616,13 +1729,14 @@ class programmer(person):
             outfile.write('),\n')
         if self.elarraytypes is not None:
             showIndent(outfile, level)
-            outfile.write('elarraytypes=%s,\n' % quote_python(self.elarraytypes).encode(ExternalEncoding))
+            outfile.write('elarraytypes=%s,\n' % self.gds_encode(quote_python(self.elarraytypes)))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('language', node)
         if value is not None and 'language' not in already_processed:
@@ -1632,42 +1746,42 @@ class programmer(person):
         if value is not None and 'area' not in already_processed:
             already_processed.add('area')
             self.area = value
-        value = find_attr_value_('attrnegint', node)
-        if value is not None and 'attrnegint' not in already_processed:
-            already_processed.add('attrnegint')
-            try:
-                self.attrnegint = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-            if self.attrnegint >= 0:
-                raise_parse_error(node, 'Invalid NegativeInteger')
         value = find_attr_value_('attrposint', node)
         if value is not None and 'attrposint' not in already_processed:
             already_processed.add('attrposint')
             try:
                 self.attrposint = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.attrposint <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
-        value = find_attr_value_('attrnonnegint', node)
-        if value is not None and 'attrnonnegint' not in already_processed:
-            already_processed.add('attrnonnegint')
-            try:
-                self.attrnonnegint = int(value)
-            except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-            if self.attrnonnegint < 0:
-                raise_parse_error(node, 'Invalid NonNegativeInteger')
         value = find_attr_value_('attrnonposint', node)
         if value is not None and 'attrnonposint' not in already_processed:
             already_processed.add('attrnonposint')
             try:
                 self.attrnonposint = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
             if self.attrnonposint > 0:
                 raise_parse_error(node, 'Invalid NonPositiveInteger')
+        value = find_attr_value_('attrnegint', node)
+        if value is not None and 'attrnegint' not in already_processed:
+            already_processed.add('attrnegint')
+            try:
+                self.attrnegint = int(value)
+            except ValueError as exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+            if self.attrnegint >= 0:
+                raise_parse_error(node, 'Invalid NegativeInteger')
+        value = find_attr_value_('attrnonnegint', node)
+        if value is not None and 'attrnonnegint' not in already_processed:
+            already_processed.add('attrnonnegint')
+            try:
+                self.attrnonnegint = int(value)
+            except ValueError as exp:
+                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+            if self.attrnonnegint < 0:
+                raise_parse_error(node, 'Invalid NonNegativeInteger')
         value = find_attr_value_('xsi:type', node)
         if value is not None and 'xsi:type' not in already_processed:
             already_processed.add('xsi:type')
@@ -1682,7 +1796,7 @@ class programmer(person):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             if ival_ <= 0:
                 raise_parse_error(child_, 'requires positiveInteger')
@@ -1692,7 +1806,7 @@ class programmer(person):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             if ival_ > 0:
                 raise_parse_error(child_, 'requires nonPositiveInteger')
@@ -1702,7 +1816,7 @@ class programmer(person):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             if ival_ >= 0:
                 raise_parse_error(child_, 'requires negativeInteger')
@@ -1712,7 +1826,7 @@ class programmer(person):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             if ival_ < 0:
                 raise_parse_error(child_, 'requires nonNegativeInteger')
@@ -1728,14 +1842,17 @@ class programmer(person):
             self.eldatetime = dval_
         elif nodeName_ == 'eltoken':
             eltoken_ = child_.text
-            eltoken_ = re_.sub(String_cleanup_pat_, " ", eltoken_).strip()
+            if eltoken_:
+                eltoken_ = re_.sub(String_cleanup_pat_, " ", eltoken_).strip()
+            else:
+                eltoken_ = ""
             eltoken_ = self.gds_validate_string(eltoken_, node, 'eltoken')
             self.eltoken = eltoken_
         elif nodeName_ == 'elshort':
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'elshort')
             self.elshort = ival_
@@ -1743,7 +1860,7 @@ class programmer(person):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'ellong')
             self.ellong = ival_
@@ -1751,11 +1868,13 @@ class programmer(person):
             obj_ = param.factory()
             obj_.build(child_)
             self.elparam = obj_
+            obj_.original_tagname_ = 'elparam'
         elif nodeName_ == 'elarraytypes':
             elarraytypes_ = child_.text
             elarraytypes_ = self.gds_validate_string(elarraytypes_, node, 'elarraytypes')
             self.elarraytypes = elarraytypes_
-            self.validate_ArrayTypes(self.elarraytypes)    # validate type ArrayTypes
+            # validate type ArrayTypes
+            self.validate_ArrayTypes(self.elarraytypes)
         super(programmer, self).buildChildren(child_, node, nodeName_, True)
     def walk_and_update(self):
         members = programmer._member_data_items
@@ -1810,47 +1929,53 @@ class param(GeneratedsSuper):
     """Finding flow attribute unneccesary in practice. A unnamed parameter
     is unbound/skipped."""
     member_data_items_ = [
-        MemberSpec_('semantic', 'xs:token', 0),
-        MemberSpec_('name', 'xs:NCName', 0),
-        MemberSpec_('flow', 'FlowType', 0),
-        MemberSpec_('sid', 'xs:NCName', 0),
-        MemberSpec_('type', 'xs:NMTOKEN', 0),
         MemberSpec_('id', 'xs:string', 0),
+        MemberSpec_('name', 'xs:NCName', 0),
+        MemberSpec_('sid', 'xs:NCName', 0),
+        MemberSpec_('flow', 'FlowType', 0),
+        MemberSpec_('semantic', 'xs:token', 0),
+        MemberSpec_('type', 'xs:NMTOKEN', 0),
         MemberSpec_('valueOf_', 'xs:string', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, semantic=None, name=None, flow=None, sid=None, type_=None, id=None, valueOf_=None):
-        self.semantic = _cast(None, semantic)
-        self.name = _cast(None, name)
-        self.flow = _cast(None, flow)
-        self.sid = _cast(None, sid)
-        self.type_ = _cast(None, type_)
+    def __init__(self, id=None, name=None, sid=None, flow=None, semantic=None, type_=None, valueOf_=None):
+        self.original_tagname_ = None
         self.id = _cast(None, id)
+        self.name = _cast(None, name)
+        self.sid = _cast(None, sid)
+        self.flow = _cast(None, flow)
+        self.semantic = _cast(None, semantic)
+        self.type_ = _cast(None, type_)
         self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, param)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if param.subclass:
             return param.subclass(*args_, **kwargs_)
         else:
             return param(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_semantic(self): return self.semantic
-    def set_semantic(self, semantic): self.semantic = semantic
-    def get_name(self): return self.name
-    def set_name(self, name): self.name = name
-    def get_flow(self): return self.flow
-    def set_flow(self, flow): self.flow = flow
-    def get_sid(self): return self.sid
-    def set_sid(self, sid): self.sid = sid
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
     def get_id(self): return self.id
     def set_id(self, id): self.id = id
+    def get_name(self): return self.name
+    def set_name(self, name): self.name = name
+    def get_sid(self): return self.sid
+    def set_sid(self, sid): self.sid = sid
+    def get_flow(self): return self.flow
+    def set_flow(self, flow): self.flow = flow
+    def get_semantic(self): return self.semantic
+    def set_semantic(self, semantic): self.semantic = semantic
+    def get_type(self): return self.type_
+    def set_type(self, type_): self.type_ = type_
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            self.valueOf_
+            1 if type(self.valueOf_) in [int,float] else self.valueOf_
         ):
             return True
         else:
@@ -1860,36 +1985,38 @@ class param(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='param')
         if self.hasContent_():
             outfile.write('>')
-            outfile.write(str(self.valueOf_).encode(ExternalEncoding))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            outfile.write(self.convert_unicode(self.valueOf_))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='param', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='param'):
-        if self.semantic is not None and 'semantic' not in already_processed:
-            already_processed.add('semantic')
-            outfile.write(' semantic=%s' % (self.gds_format_string(quote_attrib(self.semantic).encode(ExternalEncoding), input_name='semantic'), ))
+        if self.id is not None and 'id' not in already_processed:
+            already_processed.add('id')
+            outfile.write(' id=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.id), input_name='id')), ))
         if self.name is not None and 'name' not in already_processed:
             already_processed.add('name')
             outfile.write(' name=%s' % (quote_attrib(self.name), ))
-        if self.flow is not None and 'flow' not in already_processed:
-            already_processed.add('flow')
-            outfile.write(' flow=%s' % (quote_attrib(self.flow), ))
         if self.sid is not None and 'sid' not in already_processed:
             already_processed.add('sid')
             outfile.write(' sid=%s' % (quote_attrib(self.sid), ))
+        if self.flow is not None and 'flow' not in already_processed:
+            already_processed.add('flow')
+            outfile.write(' flow=%s' % (quote_attrib(self.flow), ))
+        if self.semantic is not None and 'semantic' not in already_processed:
+            already_processed.add('semantic')
+            outfile.write(' semantic=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.semantic), input_name='semantic')), ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.add('type_')
-            outfile.write(' type=%s' % (self.gds_format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
-        if self.id is not None and 'id' not in already_processed:
-            already_processed.add('id')
-            outfile.write(' id=%s' % (self.gds_format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
+            outfile.write(' type=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.type_), input_name='type')), ))
     def exportChildren(self, outfile, level, namespace_='', name_='param', fromsubclass_=False, pretty_print=True):
         pass
     def exportLiteral(self, outfile, level, name_='param'):
@@ -1901,30 +2028,30 @@ class param(GeneratedsSuper):
         showIndent(outfile, level)
         outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.semantic is not None and 'semantic' not in already_processed:
-            already_processed.add('semantic')
-            showIndent(outfile, level)
-            outfile.write('semantic="%s",\n' % (self.semantic,))
-        if self.name is not None and 'name' not in already_processed:
-            already_processed.add('name')
-            showIndent(outfile, level)
-            outfile.write('name="%s",\n' % (self.name,))
-        if self.flow is not None and 'flow' not in already_processed:
-            already_processed.add('flow')
-            showIndent(outfile, level)
-            outfile.write('flow=%s,\n' % (self.flow,))
-        if self.sid is not None and 'sid' not in already_processed:
-            already_processed.add('sid')
-            showIndent(outfile, level)
-            outfile.write('sid="%s",\n' % (self.sid,))
-        if self.type_ is not None and 'type_' not in already_processed:
-            already_processed.add('type_')
-            showIndent(outfile, level)
-            outfile.write('type_="%s",\n' % (self.type_,))
         if self.id is not None and 'id' not in already_processed:
             already_processed.add('id')
             showIndent(outfile, level)
             outfile.write('id="%s",\n' % (self.id,))
+        if self.name is not None and 'name' not in already_processed:
+            already_processed.add('name')
+            showIndent(outfile, level)
+            outfile.write('name="%s",\n' % (self.name,))
+        if self.sid is not None and 'sid' not in already_processed:
+            already_processed.add('sid')
+            showIndent(outfile, level)
+            outfile.write('sid="%s",\n' % (self.sid,))
+        if self.flow is not None and 'flow' not in already_processed:
+            already_processed.add('flow')
+            showIndent(outfile, level)
+            outfile.write('flow=%s,\n' % (self.flow,))
+        if self.semantic is not None and 'semantic' not in already_processed:
+            already_processed.add('semantic')
+            showIndent(outfile, level)
+            outfile.write('semantic="%s",\n' % (self.semantic,))
+        if self.type_ is not None and 'type_' not in already_processed:
+            already_processed.add('type_')
+            showIndent(outfile, level)
+            outfile.write('type_="%s",\n' % (self.type_,))
     def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
@@ -1934,32 +2061,33 @@ class param(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value_('id', node)
+        if value is not None and 'id' not in already_processed:
+            already_processed.add('id')
+            self.id = value
+        value = find_attr_value_('name', node)
+        if value is not None and 'name' not in already_processed:
+            already_processed.add('name')
+            self.name = value
+        value = find_attr_value_('sid', node)
+        if value is not None and 'sid' not in already_processed:
+            already_processed.add('sid')
+            self.sid = value
+        value = find_attr_value_('flow', node)
+        if value is not None and 'flow' not in already_processed:
+            already_processed.add('flow')
+            self.flow = value
         value = find_attr_value_('semantic', node)
         if value is not None and 'semantic' not in already_processed:
             already_processed.add('semantic')
             self.semantic = value
             self.semantic = ' '.join(self.semantic.split())
-        value = find_attr_value_('name', node)
-        if value is not None and 'name' not in already_processed:
-            already_processed.add('name')
-            self.name = value
-        value = find_attr_value_('flow', node)
-        if value is not None and 'flow' not in already_processed:
-            already_processed.add('flow')
-            self.flow = value
-        value = find_attr_value_('sid', node)
-        if value is not None and 'sid' not in already_processed:
-            already_processed.add('sid')
-            self.sid = value
         value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.add('type')
             self.type_ = value
-        value = find_attr_value_('id', node)
-        if value is not None and 'id' not in already_processed:
-            already_processed.add('id')
-            self.id = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
     def walk_and_update(self):
@@ -2018,11 +2146,17 @@ class python_programmer(programmer):
     ]
     subclass = None
     superclass = programmer
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, nick_name=None, favorite_editor=None):
-        super(python_programmer, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, agent, promoter, description, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eltoken, elshort, ellong, elparam, elarraytypes, )
+    def __init__(self, value=None, id=None, ratio=None, fruit=None, vegetable=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, language=None, area=None, attrposint=None, attrnonposint=None, attrnegint=None, attrnonnegint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, nick_name=None, favorite_editor=None):
+        self.original_tagname_ = None
+        super(python_programmer, self).__init__(value, id, ratio, fruit, vegetable, name, interest, category, agent, promoter, description, language, area, attrposint, attrnonposint, attrnegint, attrnonnegint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eltoken, elshort, ellong, elparam, elarraytypes, )
         self.nick_name = _cast(None, nick_name)
         self.favorite_editor = favorite_editor
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, python_programmer)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if python_programmer.subclass:
             return python_programmer.subclass(*args_, **kwargs_)
         else:
@@ -2045,13 +2179,15 @@ class python_programmer(programmer):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='python-programmer')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='python-programmer', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -2060,7 +2196,7 @@ class python_programmer(programmer):
         super(python_programmer, self).exportAttributes(outfile, level, already_processed, namespace_, name_='python-programmer')
         if self.nick_name is not None and 'nick_name' not in already_processed:
             already_processed.add('nick_name')
-            outfile.write(' nick-name=%s' % (self.gds_format_string(quote_attrib(self.nick_name).encode(ExternalEncoding), input_name='nick-name'), ))
+            outfile.write(' nick-name=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.nick_name), input_name='nick-name')), ))
     def exportChildren(self, outfile, level, namespace_='', name_='python-programmer', fromsubclass_=False, pretty_print=True):
         super(python_programmer, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
         if pretty_print:
@@ -2069,7 +2205,7 @@ class python_programmer(programmer):
             eol_ = ''
         if self.favorite_editor is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfavorite-editor>%s</%sfavorite-editor>%s' % (namespace_, self.gds_format_string(quote_xml(self.favorite_editor).encode(ExternalEncoding), input_name='favorite-editor'), namespace_, eol_))
+            outfile.write('<%sfavorite-editor>%s</%sfavorite-editor>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.favorite_editor), input_name='favorite-editor')), namespace_, eol_))
     def exportLiteral(self, outfile, level, name_='python-programmer'):
         level += 1
         already_processed = set()
@@ -2086,13 +2222,14 @@ class python_programmer(programmer):
         super(python_programmer, self).exportLiteralChildren(outfile, level, name_)
         if self.favorite_editor is not None:
             showIndent(outfile, level)
-            outfile.write('favorite_editor=%s,\n' % quote_python(self.favorite_editor).encode(ExternalEncoding))
+            outfile.write('favorite_editor=%s,\n' % self.gds_encode(quote_python(self.favorite_editor)))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         value = find_attr_value_('nick-name', node)
         if value is not None and 'nick-name' not in already_processed:
@@ -2156,18 +2293,24 @@ class python_programmer(programmer):
 
 class java_programmer(programmer):
     member_data_items_ = [
-        MemberSpec_('status', 'xs:string', 0),
         MemberSpec_('nick-name', 'xs:string', 0),
+        MemberSpec_('status', 'xs:string', 0),
         MemberSpec_('favorite_editor', 'xs:string', 0),
     ]
     subclass = None
     superclass = programmer
-    def __init__(self, vegetable=None, fruit=None, ratio=None, id=None, value=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, language=None, area=None, attrnegint=None, attrposint=None, attrnonnegint=None, attrnonposint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, status=None, nick_name=None, favorite_editor=None):
-        super(java_programmer, self).__init__(vegetable, fruit, ratio, id, value, name, interest, category, agent, promoter, description, language, area, attrnegint, attrposint, attrnonnegint, attrnonposint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eltoken, elshort, ellong, elparam, elarraytypes, )
-        self.status = _cast(None, status)
+    def __init__(self, value=None, id=None, ratio=None, fruit=None, vegetable=None, name=None, interest=None, category=None, agent=None, promoter=None, description=None, language=None, area=None, attrposint=None, attrnonposint=None, attrnegint=None, attrnonnegint=None, email=None, elposint=None, elnonposint=None, elnegint=None, elnonnegint=None, eldate=None, eldatetime=None, eltoken=None, elshort=None, ellong=None, elparam=None, elarraytypes=None, nick_name=None, status=None, favorite_editor=None):
+        self.original_tagname_ = None
+        super(java_programmer, self).__init__(value, id, ratio, fruit, vegetable, name, interest, category, agent, promoter, description, language, area, attrposint, attrnonposint, attrnegint, attrnonnegint, email, elposint, elnonposint, elnegint, elnonnegint, eldate, eldatetime, eltoken, elshort, ellong, elparam, elarraytypes, )
         self.nick_name = _cast(None, nick_name)
+        self.status = _cast(None, status)
         self.favorite_editor = favorite_editor
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, java_programmer)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if java_programmer.subclass:
             return java_programmer.subclass(*args_, **kwargs_)
         else:
@@ -2175,10 +2318,10 @@ class java_programmer(programmer):
     factory = staticmethod(factory)
     def get_favorite_editor(self): return self.favorite_editor
     def set_favorite_editor(self, favorite_editor): self.favorite_editor = favorite_editor
-    def get_status(self): return self.status
-    def set_status(self, status): self.status = status
     def get_nick_name(self): return self.nick_name
     def set_nick_name(self, nick_name): self.nick_name = nick_name
+    def get_status(self): return self.status
+    def set_status(self, status): self.status = status
     def hasContent_(self):
         if (
             self.favorite_editor is not None or
@@ -2192,25 +2335,27 @@ class java_programmer(programmer):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='java-programmer')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='java-programmer', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='java-programmer'):
         super(java_programmer, self).exportAttributes(outfile, level, already_processed, namespace_, name_='java-programmer')
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.add('status')
-            outfile.write(' status=%s' % (self.gds_format_string(quote_attrib(self.status).encode(ExternalEncoding), input_name='status'), ))
         if self.nick_name is not None and 'nick_name' not in already_processed:
             already_processed.add('nick_name')
-            outfile.write(' nick-name=%s' % (self.gds_format_string(quote_attrib(self.nick_name).encode(ExternalEncoding), input_name='nick-name'), ))
+            outfile.write(' nick-name=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.nick_name), input_name='nick-name')), ))
+        if self.status is not None and 'status' not in already_processed:
+            already_processed.add('status')
+            outfile.write(' status=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.status), input_name='status')), ))
     def exportChildren(self, outfile, level, namespace_='', name_='java-programmer', fromsubclass_=False, pretty_print=True):
         super(java_programmer, self).exportChildren(outfile, level, namespace_, name_, True, pretty_print=pretty_print)
         if pretty_print:
@@ -2219,7 +2364,7 @@ class java_programmer(programmer):
             eol_ = ''
         if self.favorite_editor is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfavorite-editor>%s</%sfavorite-editor>%s' % (namespace_, self.gds_format_string(quote_xml(self.favorite_editor).encode(ExternalEncoding), input_name='favorite-editor'), namespace_, eol_))
+            outfile.write('<%sfavorite-editor>%s</%sfavorite-editor>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.favorite_editor), input_name='favorite-editor')), namespace_, eol_))
     def exportLiteral(self, outfile, level, name_='java-programmer'):
         level += 1
         already_processed = set()
@@ -2227,35 +2372,36 @@ class java_programmer(programmer):
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.status is not None and 'status' not in already_processed:
-            already_processed.add('status')
-            showIndent(outfile, level)
-            outfile.write('status="%s",\n' % (self.status,))
         if self.nick_name is not None and 'nick_name' not in already_processed:
             already_processed.add('nick_name')
             showIndent(outfile, level)
             outfile.write('nick_name="%s",\n' % (self.nick_name,))
+        if self.status is not None and 'status' not in already_processed:
+            already_processed.add('status')
+            showIndent(outfile, level)
+            outfile.write('status="%s",\n' % (self.status,))
         super(java_programmer, self).exportLiteralAttributes(outfile, level, already_processed, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(java_programmer, self).exportLiteralChildren(outfile, level, name_)
         if self.favorite_editor is not None:
             showIndent(outfile, level)
-            outfile.write('favorite_editor=%s,\n' % quote_python(self.favorite_editor).encode(ExternalEncoding))
+            outfile.write('favorite_editor=%s,\n' % self.gds_encode(quote_python(self.favorite_editor)))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('status', node)
-        if value is not None and 'status' not in already_processed:
-            already_processed.add('status')
-            self.status = value
         value = find_attr_value_('nick-name', node)
         if value is not None and 'nick-name' not in already_processed:
             already_processed.add('nick-name')
             self.nick_name = value
+        value = find_attr_value_('status', node)
+        if value is not None and 'status' not in already_processed:
+            already_processed.add('status')
+            self.status = value
         super(java_programmer, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'favorite-editor':
@@ -2322,11 +2468,17 @@ class agent(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, firstname=None, lastname=None, priority=None, info=None):
+        self.original_tagname_ = None
         self.firstname = firstname
         self.lastname = lastname
         self.priority = priority
         self.info = info
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, agent)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if agent.subclass:
             return agent.subclass(*args_, **kwargs_)
         else:
@@ -2355,13 +2507,15 @@ class agent(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='agent')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='agent', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -2375,10 +2529,10 @@ class agent(GeneratedsSuper):
             eol_ = ''
         if self.firstname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_format_string(quote_xml(self.firstname).encode(ExternalEncoding), input_name='firstname'), namespace_, eol_))
+            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.firstname), input_name='firstname')), namespace_, eol_))
         if self.lastname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_format_string(quote_xml(self.lastname).encode(ExternalEncoding), input_name='lastname'), namespace_, eol_))
+            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.lastname), input_name='lastname')), namespace_, eol_))
         if self.priority is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%spriority>%s</%spriority>%s' % (namespace_, self.gds_format_float(self.priority, input_name='priority'), namespace_, eol_))
@@ -2395,10 +2549,10 @@ class agent(GeneratedsSuper):
     def exportLiteralChildren(self, outfile, level, name_):
         if self.firstname is not None:
             showIndent(outfile, level)
-            outfile.write('firstname=%s,\n' % quote_python(self.firstname).encode(ExternalEncoding))
+            outfile.write('firstname=%s,\n' % self.gds_encode(quote_python(self.firstname)))
         if self.lastname is not None:
             showIndent(outfile, level)
-            outfile.write('lastname=%s,\n' % quote_python(self.lastname).encode(ExternalEncoding))
+            outfile.write('lastname=%s,\n' % self.gds_encode(quote_python(self.lastname)))
         if self.priority is not None:
             showIndent(outfile, level)
             outfile.write('priority=%f,\n' % self.priority)
@@ -2414,6 +2568,7 @@ class agent(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -2429,7 +2584,7 @@ class agent(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'priority')
             self.priority = fval_
@@ -2437,6 +2592,7 @@ class agent(GeneratedsSuper):
             obj_ = info.factory()
             obj_.build(child_)
             self.info = obj_
+            obj_.original_tagname_ = 'info'
     def walk_and_update(self):
         members = agent._member_data_items
         for member in members:
@@ -2496,11 +2652,17 @@ class special_agent(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, firstname=None, lastname=None, priority=None, info=None):
+        self.original_tagname_ = None
         self.firstname = firstname
         self.lastname = lastname
         self.priority = priority
         self.info = info
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, special_agent)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if special_agent.subclass:
             return special_agent.subclass(*args_, **kwargs_)
         else:
@@ -2529,13 +2691,15 @@ class special_agent(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='special-agent')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='special-agent', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -2549,10 +2713,10 @@ class special_agent(GeneratedsSuper):
             eol_ = ''
         if self.firstname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_format_string(quote_xml(self.firstname).encode(ExternalEncoding), input_name='firstname'), namespace_, eol_))
+            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.firstname), input_name='firstname')), namespace_, eol_))
         if self.lastname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_format_string(quote_xml(self.lastname).encode(ExternalEncoding), input_name='lastname'), namespace_, eol_))
+            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.lastname), input_name='lastname')), namespace_, eol_))
         if self.priority is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%spriority>%s</%spriority>%s' % (namespace_, self.gds_format_float(self.priority, input_name='priority'), namespace_, eol_))
@@ -2569,10 +2733,10 @@ class special_agent(GeneratedsSuper):
     def exportLiteralChildren(self, outfile, level, name_):
         if self.firstname is not None:
             showIndent(outfile, level)
-            outfile.write('firstname=%s,\n' % quote_python(self.firstname).encode(ExternalEncoding))
+            outfile.write('firstname=%s,\n' % self.gds_encode(quote_python(self.firstname)))
         if self.lastname is not None:
             showIndent(outfile, level)
-            outfile.write('lastname=%s,\n' % quote_python(self.lastname).encode(ExternalEncoding))
+            outfile.write('lastname=%s,\n' % self.gds_encode(quote_python(self.lastname)))
         if self.priority is not None:
             showIndent(outfile, level)
             outfile.write('priority=%f,\n' % self.priority)
@@ -2588,6 +2752,7 @@ class special_agent(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -2603,7 +2768,7 @@ class special_agent(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'priority')
             self.priority = fval_
@@ -2611,6 +2776,7 @@ class special_agent(GeneratedsSuper):
             obj_ = info.factory()
             obj_.build(child_)
             self.info = obj_
+            obj_.original_tagname_ = 'info'
     def walk_and_update(self):
         members = special_agent._member_data_items
         for member in members:
@@ -2673,6 +2839,7 @@ class booster(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, firstname=None, lastname=None, other_name=None, class_=None, other_value=None, type_=None, client_handler=None):
+        self.original_tagname_ = None
         self.firstname = firstname
         self.lastname = lastname
         self.other_name = other_name
@@ -2690,6 +2857,11 @@ class booster(GeneratedsSuper):
         else:
             self.client_handler = client_handler
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, booster)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if booster.subclass:
             return booster.subclass(*args_, **kwargs_)
         else:
@@ -2706,15 +2878,18 @@ class booster(GeneratedsSuper):
     def get_other_value(self): return self.other_value
     def set_other_value(self, other_value): self.other_value = other_value
     def add_other_value(self, value): self.other_value.append(value)
-    def insert_other_value(self, index, value): self.other_value[index] = value
+    def insert_other_value_at(self, index, value): self.other_value.insert(index, value)
+    def replace_other_value_at(self, index, value): self.other_value[index] = value
     def get_type(self): return self.type_
     def set_type(self, type_): self.type_ = type_
     def add_type(self, value): self.type_.append(value)
-    def insert_type(self, index, value): self.type_[index] = value
+    def insert_type_at(self, index, value): self.type_.insert(index, value)
+    def replace_type_at(self, index, value): self.type_[index] = value
     def get_client_handler(self): return self.client_handler
     def set_client_handler(self, client_handler): self.client_handler = client_handler
     def add_client_handler(self, value): self.client_handler.append(value)
-    def insert_client_handler(self, index, value): self.client_handler[index] = value
+    def insert_client_handler_at(self, index, value): self.client_handler.insert(index, value)
+    def replace_client_handler_at(self, index, value): self.client_handler[index] = value
     def hasContent_(self):
         if (
             self.firstname is not None or
@@ -2733,13 +2908,15 @@ class booster(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='booster')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='booster', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -2753,10 +2930,10 @@ class booster(GeneratedsSuper):
             eol_ = ''
         if self.firstname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_format_string(quote_xml(self.firstname).encode(ExternalEncoding), input_name='firstname'), namespace_, eol_))
+            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.firstname), input_name='firstname')), namespace_, eol_))
         if self.lastname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_format_string(quote_xml(self.lastname).encode(ExternalEncoding), input_name='lastname'), namespace_, eol_))
+            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.lastname), input_name='lastname')), namespace_, eol_))
         if self.other_name is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sother-name>%s</%sother-name>%s' % (namespace_, self.gds_format_float(self.other_name, input_name='other-name'), namespace_, eol_))
@@ -2782,10 +2959,10 @@ class booster(GeneratedsSuper):
     def exportLiteralChildren(self, outfile, level, name_):
         if self.firstname is not None:
             showIndent(outfile, level)
-            outfile.write('firstname=%s,\n' % quote_python(self.firstname).encode(ExternalEncoding))
+            outfile.write('firstname=%s,\n' % self.gds_encode(quote_python(self.firstname)))
         if self.lastname is not None:
             showIndent(outfile, level)
-            outfile.write('lastname=%s,\n' % quote_python(self.lastname).encode(ExternalEncoding))
+            outfile.write('lastname=%s,\n' % self.gds_encode(quote_python(self.lastname)))
         if self.other_name is not None:
             showIndent(outfile, level)
             outfile.write('other_name=%f,\n' % self.other_name)
@@ -2828,6 +3005,7 @@ class booster(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -2843,7 +3021,7 @@ class booster(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'other_name')
             self.other_name = fval_
@@ -2851,7 +3029,7 @@ class booster(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'class')
             self.class_ = fval_
@@ -2859,7 +3037,7 @@ class booster(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'other_value')
             self.other_value.append(fval_)
@@ -2867,7 +3045,7 @@ class booster(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             fval_ = self.gds_validate_float(fval_, node, 'type')
             self.type_.append(fval_)
@@ -2875,6 +3053,7 @@ class booster(GeneratedsSuper):
             obj_ = client_handlerType.factory()
             obj_.build(child_)
             self.client_handler.append(obj_)
+            obj_.original_tagname_ = 'client-handler'
     def walk_and_update(self):
         members = booster._member_data_items
         for member in members:
@@ -2926,29 +3105,34 @@ class booster(GeneratedsSuper):
 
 class info(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('rating', 'xs:float', 0),
-        MemberSpec_('type', 'xs:integer', 0),
         MemberSpec_('name', 'xs:string', 0),
+        MemberSpec_('type', 'xs:integer', 0),
+        MemberSpec_('rating', 'xs:float', 0),
     ]
     subclass = None
     superclass = None
-    def __init__(self, rating=None, type_=None, name=None):
-        self.rating = _cast(float, rating)
-        self.type_ = _cast(int, type_)
+    def __init__(self, name=None, type_=None, rating=None):
+        self.original_tagname_ = None
         self.name = _cast(None, name)
-        pass
+        self.type_ = _cast(int, type_)
+        self.rating = _cast(float, rating)
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, info)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if info.subclass:
             return info.subclass(*args_, **kwargs_)
         else:
             return info(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_rating(self): return self.rating
-    def set_rating(self, rating): self.rating = rating
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
+    def get_type(self): return self.type_
+    def set_type(self, type_): self.type_ = type_
+    def get_rating(self): return self.rating
+    def set_rating(self, rating): self.rating = rating
     def hasContent_(self):
         if (
 
@@ -2961,26 +3145,28 @@ class info(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='info')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='info', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='info'):
-        if self.rating is not None and 'rating' not in already_processed:
-            already_processed.add('rating')
-            outfile.write(' rating="%s"' % self.gds_format_float(self.rating, input_name='rating'))
+        if self.name is not None and 'name' not in already_processed:
+            already_processed.add('name')
+            outfile.write(' name=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.name), input_name='name')), ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.add('type_')
             outfile.write(' type="%s"' % self.gds_format_integer(self.type_, input_name='type'))
-        if self.name is not None and 'name' not in already_processed:
-            already_processed.add('name')
-            outfile.write(' name=%s' % (self.gds_format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
+        if self.rating is not None and 'rating' not in already_processed:
+            already_processed.add('rating')
+            outfile.write(' rating="%s"' % self.gds_format_float(self.rating, input_name='rating'))
     def exportChildren(self, outfile, level, namespace_='', name_='info', fromsubclass_=False, pretty_print=True):
         pass
     def exportLiteral(self, outfile, level, name_='info'):
@@ -2990,18 +3176,18 @@ class info(GeneratedsSuper):
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.rating is not None and 'rating' not in already_processed:
-            already_processed.add('rating')
-            showIndent(outfile, level)
-            outfile.write('rating=%f,\n' % (self.rating,))
-        if self.type_ is not None and 'type_' not in already_processed:
-            already_processed.add('type_')
-            showIndent(outfile, level)
-            outfile.write('type_=%d,\n' % (self.type_,))
         if self.name is not None and 'name' not in already_processed:
             already_processed.add('name')
             showIndent(outfile, level)
             outfile.write('name="%s",\n' % (self.name,))
+        if self.type_ is not None and 'type_' not in already_processed:
+            already_processed.add('type_')
+            showIndent(outfile, level)
+            outfile.write('type_=%d,\n' % (self.type_,))
+        if self.rating is not None and 'rating' not in already_processed:
+            already_processed.add('rating')
+            showIndent(outfile, level)
+            outfile.write('rating=%f,\n' % (self.rating,))
     def exportLiteralChildren(self, outfile, level, name_):
         pass
     def build(self, node):
@@ -3010,25 +3196,26 @@ class info(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('rating', node)
-        if value is not None and 'rating' not in already_processed:
-            already_processed.add('rating')
-            try:
-                self.rating = float(value)
-            except ValueError, exp:
-                raise ValueError('Bad float/double attribute (rating): %s' % exp)
+        value = find_attr_value_('name', node)
+        if value is not None and 'name' not in already_processed:
+            already_processed.add('name')
+            self.name = value
         value = find_attr_value_('type', node)
         if value is not None and 'type' not in already_processed:
             already_processed.add('type')
             try:
                 self.type_ = int(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-        value = find_attr_value_('name', node)
-        if value is not None and 'name' not in already_processed:
-            already_processed.add('name')
-            self.name = value
+        value = find_attr_value_('rating', node)
+        if value is not None and 'rating' not in already_processed:
+            already_processed.add('rating')
+            try:
+                self.rating = float(value)
+            except ValueError as exp:
+                raise ValueError('Bad float/double attribute (rating): %s' % exp)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
     def walk_and_update(self):
@@ -3088,9 +3275,15 @@ class client_handlerType(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, fullname=None, refid=None):
+        self.original_tagname_ = None
         self.fullname = fullname
         self.refid = refid
     def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, client_handlerType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
         if client_handlerType.subclass:
             return client_handlerType.subclass(*args_, **kwargs_)
         else:
@@ -3113,13 +3306,15 @@ class client_handlerType(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
         self.exportAttributes(outfile, level, already_processed, namespace_, name_='client-handlerType')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_, name_, pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='client-handlerType', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
@@ -3133,7 +3328,7 @@ class client_handlerType(GeneratedsSuper):
             eol_ = ''
         if self.fullname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfullname>%s</%sfullname>%s' % (namespace_, self.gds_format_string(quote_xml(self.fullname).encode(ExternalEncoding), input_name='fullname'), namespace_, eol_))
+            outfile.write('<%sfullname>%s</%sfullname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.fullname), input_name='fullname')), namespace_, eol_))
         if self.refid is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<%srefid>%s</%srefid>%s' % (namespace_, self.gds_format_integer(self.refid, input_name='refid'), namespace_, eol_))
@@ -3148,7 +3343,7 @@ class client_handlerType(GeneratedsSuper):
     def exportLiteralChildren(self, outfile, level, name_):
         if self.fullname is not None:
             showIndent(outfile, level)
-            outfile.write('fullname=%s,\n' % quote_python(self.fullname).encode(ExternalEncoding))
+            outfile.write('fullname=%s,\n' % self.gds_encode(quote_python(self.fullname)))
         if self.refid is not None:
             showIndent(outfile, level)
             outfile.write('refid=%d,\n' % self.refid)
@@ -3158,6 +3353,7 @@ class client_handlerType(GeneratedsSuper):
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
+        return self
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
@@ -3169,7 +3365,7 @@ class client_handlerType(GeneratedsSuper):
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
             ival_ = self.gds_validate_integer(ival_, node, 'refid')
             self.refid = ival_
@@ -3235,7 +3431,7 @@ Usage: python <Parser>.py [ -s ] <in_xml_file>
 
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 
@@ -3248,7 +3444,8 @@ def get_root_tag(node):
 
 
 def parse(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -3268,7 +3465,8 @@ def parse(inFileName, silence=False):
 
 
 def parseEtree(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -3291,12 +3489,16 @@ def parseEtree(inFileName, silence=False):
 
 
 def parseString(inString, silence=False):
-    from StringIO import StringIO
-    doc = parsexml_(StringIO(inString))
+    if sys.version_info.major == 2:
+        from StringIO import StringIO as IOBuffer
+    else:
+        from io import BytesIO as IOBuffer
+    parser = None
+    doc = parsexml_(IOBuffer(inString), parser)
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'people'
         rootClass = people
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -3305,13 +3507,14 @@ def parseString(inString, silence=False):
     if not silence:
         sys.stdout.write('<?xml version="1.0" ?>\n')
         rootObj.export(
-            sys.stdout, 0, name_="people",
+            sys.stdout, 0, name_=rootTag,
             namespacedef_='')
     return rootObj
 
 
 def parseLiteral(inFileName, silence=False):
-    doc = parsexml_(inFileName)
+    parser = None
+    doc = parsexml_(inFileName, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
@@ -3324,7 +3527,7 @@ def parseLiteral(inFileName, silence=False):
     if not silence:
         sys.stdout.write('#from out2_sup import *\n\n')
         sys.stdout.write('import out2_sup as model_\n\n')
-        sys.stdout.write('rootObj = model_.rootTag(\n')
+        sys.stdout.write('rootObj = model_.rootClass(\n')
         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
         sys.stdout.write(')\n')
     return rootObj

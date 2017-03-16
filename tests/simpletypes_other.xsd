@@ -8,12 +8,14 @@
     </xs:element>
     <xs:complexType name="simpleTypeTestsType">
         <xs:sequence>
-            <xs:element name="simpleTypeTest" maxOccurs="unbounded" type="simpleTypeTestType"/>
+            <xs:element
+                name="simpleTypeTest"
+                maxOccurs="unbounded"
+                type="simpleTypeTestDefs"/>
         </xs:sequence>
     </xs:complexType>
 
-    <xs:element name="simpleTypeTest" type="simpleTypeTestType"/>
-    <xs:complexType mixed="0" name="simpleTypeTest">
+    <xs:complexType mixed="0" name="simpleTypeTestDefs">
         <xs:complexContent>
             <xs:sequence>
                 <xs:element name="datetime1" type="xs:gYear"/>

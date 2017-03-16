@@ -13,13 +13,13 @@ Options:
 """
 
 
+from __future__ import print_function
 import sys
 import os
 import getopt
 import importlib
 
 #import nexmllib as supermod
-
 
 
 #
@@ -32,9 +32,11 @@ supermod = None
 # Classes
 #
 
+
 class ProgramOptions(object):
     def get_force_(self):
         return self.force_
+
     def set_force_(self, force):
         self.force_ = force
     force = property(get_force_, set_force_)
@@ -46,14 +48,17 @@ class Writer(object):
         self.outfile = open(outfilename, 'w')
         self.stdout_also = stdout_also
         self.line_count = 0
+
     def get_count(self):
         return self.line_count
+
     def write(self, content):
         self.outfile.write(content)
         if self.stdout_also:
             sys.stdout.write(content)
         count = content.count('\n')
         self.line_count += count
+
     def close(self):
         self.outfile.close()
 
@@ -68,14 +73,17 @@ def generate_model(options, module_name):
     models_file_name = 'models.py'
     forms_file_name = 'forms.py'
     admin_file_name = 'admin.py'
-    if (    (os.path.exists(models_file_name) or 
-            os.path.exists(forms_file_name) or
-            os.path.exists(admin_file_name)
-            )
-        and not options.force):
-        sys.stderr.write('\nmodels.py or forms.py or admin.py exists.  Use -f/--force to overwrite.\n\n')
+    if (
+            (
+                os.path.exists(models_file_name) or
+                os.path.exists(forms_file_name) or
+                os.path.exists(admin_file_name)
+            ) and
+            not options.force):
+        sys.stderr.write(
+            '\nmodels.py or forms.py or admin.py exists.  '
+            'Use -f/--force to overwrite.\n\n')
         sys.exit(1)
-    globals_dict = globals()
     models_writer = Writer(models_file_name)
     forms_writer = Writer(forms_file_name)
     admin_writer = Writer(admin_file_name)
@@ -106,24 +114,26 @@ def generate_model(options, module_name):
     models_writer.close()
     forms_writer.close()
     admin_writer.close()
-    print 'Wrote %d lines to models.py' % (models_writer.get_count(), )
-    print 'Wrote %d lines to forms.py' % (forms_writer.get_count(), )
-    print 'Wrote %d lines to admin.py' % (admin_writer.get_count(), )
-
+    print('Wrote %d lines to models.py' % (models_writer.get_count(), ))
+    print('Wrote %d lines to forms.py' % (forms_writer.get_count(), ))
+    print('Wrote %d lines to admin.py' % (admin_writer.get_count(), ))
 
 
 USAGE_TEXT = __doc__
 
+
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 
 def main():
     args = sys.argv[1:]
     try:
-        opts, args = getopt.getopt(args, 'hfs:', ['help', 'force',
-            'suffix=', ])
+        opts, args = getopt.getopt(
+            args, 'hfs:', [
+                'help', 'force',
+                'suffix=', ])
     except:
         usage()
     options = ProgramOptions()
@@ -142,5 +152,3 @@ def main():
 if __name__ == '__main__':
     #import pdb; pdb.set_trace()
     main()
-
-

@@ -3,7 +3,7 @@ generateDS -- Generate Data Structures from XML Schema
 ======================================================
 
 :author: Dave Kuhlman
-:contact: dkuhlman@pacbell.net
+:contact: dkuhlman (at) davekuhlman (dot) org
 :address:
     http://www.davekuhlman.org
 
@@ -12,7 +12,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.11b
+:revision: 2.24b
 
 .. version
 
@@ -100,6 +100,10 @@ and extend multiple subclass files which use a single, common
 superclass file, thus implementing a number of different processes
 on the same XML document type.
 
+``generateDS.py`` can be run under either Python 2 or Python 3.  The
+generated Python code (both superclass and subclass modules) can be
+run under either Python 2 or Python 3.
+
 This document explains (1) how to use ``generateDS.py``; (2) how
 to use the Python code and data structures that it generates; and
 (3) how to modify the generated code for special purposes.
@@ -149,9 +153,21 @@ http://www.davekuhlman.org/generateds_tutorial.html
 How to build and install it
 ===========================
 
-Newer versions of Python have XML support in the Python standard
-library. For older versions of Python, install PyXML. You can find
-it at: http://pyxml.sourceforge.net/
+Requirements
+--------------
+
+``Lxml`` is used both by ``generateDS.py`` and by the code it
+generates.  ``Lxml`` is available at the Python Package Index
+https://pypi.python.org/pypi/lxml/ and at the ``Lxml`` project home
+site http://lxml.de/.
+
+Older versions of Python XML support can sometimes cause problems.
+If you receive a traceback that includes "_xmlplus", then you will
+need to remove that ``_xmlplus`` package.
+
+
+Installation
+--------------
 
 De-compress the ``generateDS`` distribution file. Use something
 like the following::
@@ -184,8 +200,8 @@ librarytemplate_howto.html
 
 And the package building support itself is here:
 `LibraryTemplate --
-http://www.rexx.com/~dkuhlman/librarytemplate0-1.0a.zip
-<http://www.rexx.com/~dkuhlman/librarytemplate0-1.0a.zip>`_.
+http://www.davekuhlman.org/librarytemplate-1.0a.zip
+<http://www.davekuhlman.org/librarytemplate-1.0a.zip>`_.
 It is also included in the generateDS distribution package.
 
 
@@ -205,8 +221,9 @@ it will write subclass stubs to the file peoplesubs.py::
 
 Here is the usage message displayed by ``generateDS.py``::
 
+
     Synopsis:
-        Generate Python classes from XML Schema definition.
+        Generate Python classes from XML schema definition.
         Input is read from in_xsd_file or, if "-" (dash) arg, from stdin.
         Output is written to files named in "-o" and "-s" options.
     Usage:
@@ -223,16 +240,28 @@ Here is the usage message displayed by ``generateDS.py``::
         -b <behaviorfilename>    Input file name for behaviors added to subclasses
         -m                       Generate properties for member variables
         -c <xmlcatalogfilename>  Input file name to load an XML catalog
+        --one-file-per-xsd       Create a python module for each XSD processed.
+        --output-directory="XXX" Used in conjunction with --one-file-per-xsd.
+                                 The directory where the modules will be created.
+        --module-suffix="XXX"    To be used in conjunction with --one-file-per-xsd.
+                                 Append XXX to the end of each file created.
         --subclass-suffix="XXX"  Append XXX to the generated subclass names.
                                  Default="Sub".
-        --root-element="XXX"     Assume XXX is root element of instance docs.
-                                 Default is first element defined in schema.
-                                 Also see section "Recognizing the top level
+        --root-element="XX"      When parsing, assume XX is root element of
+        --root-element="XX|YY"   instance docs.  Default is first element defined
+                                 in schema.  If YY is added, then YY is used as the
+                                 top level class; if YY omitted XX is the default.
+                                 class. Also see section "Recognizing the top level
                                  element" in the documentation.
-        --super="XXX"            Super module name in generated in subclass
+        --super="XXX"            Super module name in generated subclass
                                  module. Default="???"
         --validator-bodies=path  Path to a directory containing files that provide
                                  bodies (implementations) of validator methods.
+        --use-old-simpletype-validators
+                                 Use the old style simpleType validator functions
+                                 stored in a specified directory, instead of the
+                                 new style validators generated directly from the
+                                 XML schema.  See option --validator-bodies.
         --use-getter-setter      Generate getter and setter methods.  Values:
                                  "old" - Name getters/setters getVar()/setVar().
                                  "new" - Name getters/setters get_var()/set_var().
@@ -249,10 +278,10 @@ Here is the usage message displayed by ``generateDS.py``::
                                  generated files. This is useful if you want
                                  to minimize the amount of (no-operation)
                                  changes to the generated python code.
-        --no-process-includes    Do not process included XML Schema files.  By
+        --no-process-includes    Do not process included XML schema files.  By
                                  default, generateDS.py will insert content
                                  from files referenced by <include ... />
-                                 elements into the XML Schema to be processed.
+                                 elements into the XML schema to be processed.
         --silence                Normally, the code generated with generateDS
                                  echoes the information being parsed. To prevent
                                  the echo from occurring, use the --silence switch.
@@ -284,8 +313,16 @@ Here is the usage message displayed by ``generateDS.py``::
                                          to XML)
                                  Example: "write etree"
                                  Default: "write"
+        --preserve-cdata-tags    Preserve CDATA tags.  Default: False
+        --cleanup-name-list=<replacement-map>
+                                 Specifies list of 2-tuples used for cleaning
+                                 names.  First element is a regular expression
+                                 search pattern and second is a replacement.
+                                 Example: "[('[-:.]', '_'), ('^__', 'Special')]"
+                                 Default: "[('[-:.]', '_')]"
         -q, --no-questions       Do not ask questions, for example,
                                  force overwrite.
+        --no-warnings            Do not print warning messages.
         --session=mysession.session
                                  Load and use options from session file. You can
                                  create session file in generateds_gui.py.  Or,
@@ -308,7 +345,11 @@ Here is the usage message displayed by ``generateDS.py``::
     also generates member specifications in each class (in a dictionary).
 
 
-The following command line flags are recognized by ``generateDS.py``:
+
+Command line options
+----------------------
+
+The following command line options are recognized by ``generateDS.py``:
 
 o <filename>
     Write the data representation classes to file filename.
@@ -360,9 +401,23 @@ m
 c <xmlcatalogfilename>
     Specify the file to be used as an XML catalog.  This file will
     be used by process_includes.py if needed to resolve references
-    in <import> and <include> elements in the XML Schema.  For more
-    information on XML catalogs, see:
+    in <xs:import> and <xs:include> elements in the XML Schema.  For
+    more information on XML catalogs, see:
     http://en.wikipedia.org/wiki/XML_Catalog
+
+one-file-per-xsd
+    Create a separate Python module for each XML Schema document
+    processed (for example, using <xs:include> or <xs:import>).  For
+    help with using this option, see `"One Per" -- generating
+    separate files from imported/included schemas`_.
+
+output-directory <directory>
+    When used with ``one-file-per-xsd``, create generated output
+    files in path ``<directory>``.
+
+module-suffix <suffix>
+    When used with ``one-file-per-xsd``, append ``<suffix>`` to the
+    end of each module name.
 
 subclass-suffix=<suffix>
     Append suffix to the name of classes generated in the subclass
@@ -377,11 +432,16 @@ subclass-suffix=<suffix>
 
         generateDS.py --subclass-suffix="" -s actions.py mydef.xsd
 
-root-element=<element_name>
-    Make element_name the assumed root of instance documents.  The
-    default is the name of the element whose definition is first
-    in the XML Schema document.  This flag effects the parsing
-    functions (for example, parse(), parseString()).
+root-element=<element_name> -OR- <element_name>|<class_name>
+    Make ``element_name`` the assumed root of instance documents.
+    The default is the name of the element whose definition is first
+    in the XML Schema document.  If ``class_name`` is also present
+    (after a vertical bar), then ``class_name`` is assumed to be the
+    name of the class to be created from the root (top level)
+    element when parsing an XML instance document.  If
+    ``class_name`` is omitted, the default class name is the same as
+    ``element_name``.  This flag effects the parsing functions (for
+    example, parse(), parseString(), etc).
 
 super=<module_name>
     Make module_name the name of the superclass module imported
@@ -402,6 +462,22 @@ validator-bodies=<path>
     given type, an empty body (``pass``) is generated.  In these
     files, lines with "##" in the first two columns are ignored
     and are not inserted.
+
+use-old-simpletype-validators
+    ``generateDS.py`` is capable of generating validator bodies --
+    the code that validates data content in an XML instance
+    docuement and writes out warning messages if that data does not
+    satisfy the facets in the ``xs:restriction`` in the
+    ``xs:simpleType`` defintion in the XML schema.  Use this option
+    if you want to use your own validation bodies/code defined in a
+    specified directory .  See option ``--validator-bodies`` for
+    information on that.  *Without* this option
+    (``--use-old-simpletype-validators``), the validator code will
+    be generated directly from the XML schema, which is the default.
+
+    This option can also be used to generate code that does *no*
+    validation.  See `simpleType and validators`_ and `Turning off
+    validation of simpleType data`_ for more information.
 
 use-getter-setter
     ``generateDS.py`` now generates getter and setter methods (for
@@ -438,7 +514,12 @@ no-process-includes
     Do not process included XML Schema files.  By default,
     generateDS.py will insert content from files referenced by
     ``<include ... />`` elements into the XML Schema to be processed.
-    See section `Include file processing`_.
+    See section `Include file processing`_.  Note that include
+    processing, which is performed in ``process_includes.py`` is
+    required for generating validator bodies from the XML schema,
+    because the Lxml ElementTree produced in ``process_includes.py``
+    is needed to generate the validator code.  So, using this option
+    also turns off automatic generation of validator code.
 
 silence
     Normally, the code generated with generateDS echoes the
@@ -500,12 +581,43 @@ export
     For example: ``--export="write etree"`` and ``--export="write"``.  The
     default is: ``--export="write literal"``.
 
+preserve-cdata-tags
+    Preserve CDATA tags.  Normally, CDATA tags ("<![CDATA[ ... ]]>")
+    are dropped while parsing an XML instance document.  If this
+    option is included, the generated code will preserve those tags
+    and will write them out during export.  The default is False.
+
+cleanup-name-list=<replacement-map>
+    Specifies replacement pairs to be used when cleaning up names.
+    Must be a string representation of a Python list of 2-tuples.
+    The values of each pair (2-tuple) must be strings.  The first
+    item of each pair is a pattern and must be a valid Python
+    regular expression (see
+    https://docs.python.org/2/library/re.html#module-re) The second
+    item of each pair is a string that will replace anything matched
+    by the pattern.  Also see `Cleaning up names with special characters etc.`_
+    
+    The intension is to enable us to replace
+    special characters in names that would cause the generation of
+    invalid Python names, for example the names of generated
+    classes.  However, since a string replacement is
+    performed, you can replace any single character or sequence of
+    characters by any other single character or sequence of
+    characters.  Example:
+    ``[(':', 'colon'), ('-', 'dash'), ('.', 'dot')]``.
+    
+    The default when omitted is ``[('[-:.]', '_')]``.
+
 q, no-questions
     Do not ask questions.  For example, if the "-f" command line
     option is omitted and the ouput file exists, then generateDS.py
     will not ask whether the file should be overwritten.  (In this
     case, when "-q" is used, the "-f" must be used to force the
     output file to be written.
+
+no-warnings
+    While running generateDS.py, do not print warning messages that
+    would be written to stderr.
 
 session=mysession.session
     Load and use options from session file. You can create a
@@ -514,24 +626,29 @@ session=mysession.session
     used to override options in the session file.  A session file
     is an XML document, so you can modify it with a text editor.
 
-fix-type-names="oldname1:newname1;oldname2:newname2;..."
-    Fix up (replace) complex type names.  Using this option will
-    replace the following: (1) the 'name' attribute of a
-    complexType; (2) the 'type' attribute of each element that
-    refers to the type; and (3) the 'base' attribute of each
-    extension that refers to the type.  These fixups happen before
-    information is collected from the schema for code generation.
-    Therefore, using this option is effectively equivalent to
-    copying your schema, then editing it with your text editor, then
-    generating code from the modified schema.
+fix-type-names="oldname1:newname1;oldname2:newname2;..." Fix up
+    (replace) complex type names.  Using this option will replace
+    the following: (1) the 'name' attribute of a complexType; (2)
+    the 'type' attribute of each element that refers to the type;
+    and (3) the 'base' attribute of each extension that refers to
+    the type.  These fixups happen before information is collected
+    from the schema for code generation. Therefore, using this
+    option is effectively equivalent to copying your schema, then
+    editing it with your text editor, then generating code from the
+    modified schema.  If a new name is not specified, the default is
+    to replace the old name with the old name plus an added "xx"
+    suffix.  Examples::
+
+        $ generateDS.py --fix-type-names="type1:type1Aux"
+        $ generateDS.py --fix-type-names="type1;type2:type2Repl"
 
 version
-    Print out the current version of generateDS.py and immediately
-    exit.
+    Print out the current version of ``generateDS.py`` and
+    immediately exit.
 
 
-Name conflicts
---------------
+Name conflicts etc.
+---------------------
 
 Conflicts with Python keywords
 ..............................
@@ -582,8 +699,54 @@ generateDS.py modifies the name of the attribute by adding "_attr"
 to its name.
 
 
+Cleaning up names with special characters etc.
+................................................
+
+``generateDS.py`` attempts to clean up names that contain special
+characters.  For example, a complexType whose name contains a dash
+would generate a Python class with an invalid name.  But, you can
+use this facility to make other changes to names as well.
+
+The command line option ``--cleanup-name-list`` specifies
+replacement pairs to be used when cleaning up (and modifying) names.
+The value of this option must be a string representation of a Python
+list of 2-tuples.  The values of each pair (2-tuple) must be
+strings.  The first item of each pair is a pattern and must be a
+valid Python regular expression (see
+https://docs.python.org/2/library/re.html#module-re) The second item
+of each pair is a string that will replace anything matched by the
+pattern.  The intension is to enable us to replace special
+characters in names that would cause the generation of invalid
+Python names, for example the names of generated classes.  However,
+since a string replacement is performed, you can replace any single
+character or sequence of characters by any other single character or
+sequence of characters.
+
+For example, the following option, in addition to performing the
+default replacements of "-", ":", and "." by an underscore, would
+also replace the string "Type" when it occurs at the end of a name,
+by "Class"::
+
+    --cleanup-name-list="[('[-:.]', '_'), ('Type$', 'Class')]"
+
+This would cause the name "big-data-Type" to become "big_data_Class".
+
+The default when this option is omitted is ``[('[-:.]', '_')]``.
+
+The order of replacements performed is the same as the order of the
+tuples in the list.  So, replacements performed by pattern
+replacement pairs (2-tuples) later in the list (to the right) will
+be performed after those earlier (to the left), and may overwrite
+earlier replacements.
+
+See the notes on the command line option ``--cleanup-name-list`` for
+more on this.  Or, run ``$ generateDS.py --help``.
+
+
 The graphical user interface -- How to use it
 ==============================================================
+
+**Note:** The graphical user interface is no longer supported.
 
 Here are a few notes on how to use the GUI front-end.
 
@@ -670,6 +833,63 @@ you will need to use the "-a" command line option when you run
 ``generateDS.py``.  Here is an example::
 
     generateDS.py -a "xsd:" --super=mylib -o mylib.py -s myapp.py someschema.xsd
+
+
+Using multiple subclass modules with the same superclass module
+-----------------------------------------------------------------
+
+Suppose that from a single XML schema, you have generated a
+superclass module and a subclass module (using the "-o" and "-s"
+command line options).  Now you make a copy of the subclass module.
+Next you add special and different code to each of the subclass
+modules.  You can run these two subclass modules separately and
+(after a bit of debugging) each works fine.  And, you can import
+each subclass module in separate applications, and things are still
+good.  However, if you import both subclass modules into a single
+application, you find that one of them is "ignored" by the
+superclass module when it parses XML instance documents and builds
+classes.  Effectively, each subclass module, when it is imported,
+sets a class variable (``subclass``) in each superclass to the
+subclass to be used by the superclass, and the last subclass
+imported module wins.
+
+There are two alternative solutions to this problem:
+
+1. Use the script/function provided by the distribution in file
+   ``fix_subclass_refs.py``.  The doc string in that module explains
+   how to use it and gives an example of its use.
+
+2. Each generated superclass module (starting with ``generateDS.py``
+   version 2-19a) contains a global variable
+   ``CurrentSubclassModule_``.  The value of this variable, if it is
+   not None, overrides the value of the class variable ``subclass``
+   in each generated superclass.  You can change the value of this
+   variable before parsing an XML document and building instances of
+   the generated classes to determine which subclass module is to be
+   used during the "build" phase.  
+
+   Here is an example of the use of this feature::
+
+       #!/usr/bin/env python
+
+       import lib01suba
+       import lib01subb
+
+       def test():
+           lib01suba.supermod.CurrentSubclassModule_ = lib01suba
+           roota = lib01suba.parse('test01.xml', silence=True)
+           lib01subb.supermod.CurrentSubclassModule_ = lib01subb
+           rootb = lib01subb.parse('test01.xml', silence=True)
+           roota.show()
+           print '-' * 50
+           rootb.show()
+
+       test()
+
+The second alternative (above) is likely to be a more convenient
+solution in most cases.  But, there are possibly use cases where the
+use of ``fix_subclass_refs.py`` or a modified version of it will be
+helpful.
 
 
 Supported features of XML Schema
@@ -896,8 +1116,63 @@ that element has a (non-None) value.
 simpleType and validators
 -------------------------
 
-Here are a few notes that should help you use validator methods to
-enforce restrictions.
+Generating validator bodies from XML schema
+.............................................
+
+If you do *not* use the ``--use-old-simpletype-validators`` command line
+option, then ``generateDS.py`` will generate validation code
+directly from the restrictions specified inside the ``simpleType``
+definitions in your XML schema.
+
+Here is a bit of explanation of what that generated code will do.
+
+- The generated validation code checks the global variable
+  ``Validate_simpletypes_``.  Set that variable to ``False`` to turn
+  off validation.
+
+- In the case of some XML schema built-in simple types, the
+  generated validation code calls ``gds_validate_xxx``, where "xxx"
+  is a base, simple type.  In some cases, you will be able to add
+  additional code to that method to perform custom checking.  See
+  section `Overridable methods`_ for information on how to use and
+  override that class.
+
+- When validation finds data that fails to validate, it generates a
+  warning (using the ``warnings`` module from the Python standard
+  library), not an exception, so that processing continues.
+
+- The validation code is generated in a separate method named
+  ``validate_xxx``, where "xxx" is the name of the data element.
+  This method is called in the ``build`` method as the input data is
+  parsed and instances of the generated classes are created to hold
+  it.  Your own code can also call this method whenever you'd like
+  to perform on the data in that element/field.
+
+- There are rules for how checking should be performed when (1)
+  there are multiple restrictions in a single ``simpleType`` and
+  when there are restrictions in a ``simpleType`` and it base simple
+  types.  ``generateds.py`` attempts to follow those rules in
+  generating validation code.  For information about that, see:
+  http://www.w3.org/TR/xmlschema-2/#rf-facets.  Pattern facets are
+  especially tricky, because pattern restrictions at the same level
+  are OR-ed together, while pattern restrictions at different levels
+  are AND-ed together.  See:
+  http://www.w3.org/TR/xmlschema-2/#rf-pattern.
+
+- The validation method also performs type conversion for some
+  simple types, for example, string to int for integers, string to
+  float for floats, etc.
+
+
+User written validator bodies
+...............................
+
+This is the older, more manual method.  In order to generate code
+that uses this method, use command line option
+``--use-old-simpletype-validators``.
+
+Here are a few notes that should help you *write your own* validator
+methods to enforce restrictions.
 
 - Default behavior -- The generated code, by default, treats the
   value of a member whose type is a ``simpleType`` as if it were
@@ -1007,6 +1282,34 @@ following limitations (among others, I'm sure):
 - Attributes defined as a simple type are not supported.
 
 
+Turning off validation of ``simpleType`` data
+...............................................
+
+If you do not want validation performed on ``simpleType`` data, you
+have these options:
+
+1. When generating your code, use the
+   ``--use-old-simpletype-validators`` command line option but do
+   *not* use the ``--validator-bodies`` command line option.  This
+   will result in validator methods that have empty bodies (only a
+   ``pass`` statement).
+
+2. Or, when you run your generated code, set the variable
+   ``Validate_simpletypes_`` to ``False``.  This global variable is
+   near the top of your generated module.  It can be set to ``True``
+   or ``False`` before and during processing to turn validation on
+   and off.
+
+
+Additional notes on ``simpleType`` validation
+...............................................
+
+Don't forget that ``xmllint`` can also be used to perform
+validation against the XML scheme.  This validation includes
+checking against ``simpleType`` restrictions.  See
+http://xmlsoft.org/ for more information on ``xmllint``.
+
+
 Include file processing
 -----------------------
 
@@ -1019,13 +1322,6 @@ command line option.
 inserted in the XML Schema by importing and using
 ``process_includes.py``, which is included in the ``generateDS.py``
 distribution.
-
-``process_includes.py`` will use either ``lxml`` or ``ElementTree``,
-but its preference is ``lxml`` because ``lxml`` attempts to preserve
-namespace prefixes.  So if your XML Schemas have ``<include ... />``
-elements in them, you might want to consider installing ``lxml``, even
-though ``ElementTree`` is in the Python standard library for Python
-versions >= 2.5.
 
 The include file processing is capable of retrieve included files
 via FTP and HTTP internet protocols as well as from the local file
@@ -1622,7 +1918,69 @@ convenience method ``gds_reverse_node_mapping`` from superclass
 ``GeneratedsSuper``.  Again, see the code above for an example.
 
 
-How-to Use the generated source code
+Specifying names for anonymous nested type definitions
+--------------------------------------------------------
+
+``generateDS.py`` automatically assigns names for types (and the
+classes generated from them), when that type definition (for
+example, ``xs:complexType``) does not have a name and it is nested
+inside another type definition.  However, these assigned names, in
+part because of the need to make them unique, can be difficult to
+predict.
+
+Therefore, ``generateDS.py`` provides a way to specify the names of
+the Python classes generated from these anonymous, nested types.  To
+do so, follow these steps:
+
+1. Create a module named ``gds_inner_name_map``
+   (``gds_inner_name_map.py``).
+   
+2. Place that module where Python can import it when you run
+   ``generateDS.py``.  You can do this either by adding an
+   additional directory to the environment variable ``PYTHONPATH``
+   or by placing ``gds_inner_name_map.py`` in a directory that is
+   already on Python's search path for modules.  You can check this
+   by running the following Python code snippet::
+
+       import sys
+       print sys.path
+
+   Also see: https://docs.python.org/2/library/sys.html#sys.path
+
+3. In module ``gds_inner_name_map``, define a global variable
+   ``Inner_name_map``.  The value of this variable should be a
+   dictionary that maps 2-tuples containing (a) the name of the
+   grandparent type and (b) the name of the parent type onto the new
+   name.
+
+If ``generateDS.py`` cannot import ``Inner_name_map`` from
+``gds_inner_name_map``, then it will, by default, generate unique
+names.  In particular, it automatically generates names for
+anonymous, nested types when the following Python statement fails::
+
+    from gds_inner_name_map import Inner_name_map
+
+Here is an example of module ``gds_inner_name_map.py``::
+
+    Inner_name_map = {
+        ("classAType", "inner"): "inner_001",
+        ("classBType", "inner"): "inner_002",
+    }
+
+Usage hints:
+
+- When ``generateDS.py`` succeeds in importing ``Inner_name_map``
+  from ``gds_inner_name_map``, but *cannot* find one of the required
+  mappings in that dictionary, it will throw an exception and print
+  out the missing mapping.  You can copy this line; paste it into
+  your ``gds_inner_name_map.py``; and edit it so as to specify the
+  class name of your choice.
+
+- Make sure that the names you specify are unique within your XML
+  schema.
+
+
+How to use the generated source code
 =======================================
 
 The parsing functions
@@ -2255,9 +2613,10 @@ default methods in the following places:
 - In a class named ``GeneratedsSuper`` in a separate module named
   ``generatedssuper``.  Since this class would replace the
   default implementations, you should provide implementations of
-  all the default methods listed above in that class.  The
-  distribution contains a ``generatedssuper.py`` which you can
-  modify for your specific needs.
+  all the default methods listed above in that class.  To create
+  your own version, copy and paste the default implementation of
+  class ``GeneratedsSuper`` from your generated module into a file
+  named ``generatedssuper.py``, then modify that.
 
 - In individual generated (super) classes (the ones generated with
   the "-o" command line option) using the `User Methods`_ feature.
@@ -2333,6 +2692,61 @@ element/complexType names to the names of the class generated for
 that complexType definition.  This dictionary is named
 ``GDSClassesMapping``.  You will find it in the module generated
 with the "-o" option.
+
+
+"One Per" -- generating separate files from imported/included schemas
+=======================================================================
+
+The ``--one-file-per-xsd`` command line option enables you to
+generate a separate Python module for each XML schema that is
+imported or included (using ``<xs:import>`` or ``<xs:include>``) by
+a "master" schema.  Then, in your Python application, these modules
+can then be imported separately.  Alternatively, these modules can
+be placed in a Python package (a directory containing a file named
+"__init__.py").  See
+http://docs.python.org/2/tutorial/modules.html#packages for more on
+Python packages.
+
+Here is a sample use::
+
+    $ ../generateDS.py --one-file-per-xsd --output-directory="OnePer" --module-suffix="One" one_per.xsd
+
+The above command does the following:
+
+- It generates one Python module for each XML schema that is
+  included/imported by ``one_per.xsd``.
+
+- It places the generated output files in the directory ``OnePer``.
+
+- It adds "One" as a suffix to the name of each generated module.
+
+Here are a few hints, guidelines, and suggestions:
+
+- At least one element definition in an included/imported module
+  must be a root element definition in order to cause a
+  module to be generated for that schema.  In other words, the
+  module must contain an element definition of the form::
+
+      <xs:element name="Sample" type="sampleType" />
+
+- You may want to write a separate "master" schema that includes
+  each of the schemas for which you want to generate a separate
+  Python module.
+
+- Use the ``--output-directory=<directory>`` command line option to
+  tell ``generateDS.py`` to generate the Python modules in a
+  specific directory.  The directory must already exist.
+
+- Use the ``--module-suffix=<suffix>`` command line option to add a
+  specifc suffix to each module name (the part immediately before
+  the extension).  For example, the option ``--module-suffix=Abc``
+  causes ``generateDS.py`` to generate a file named "schema1Abc.py"
+  instead of "schema1.py".
+
+- If you want to import files from the output directory and it is
+  not in ``sys.path``, add a file named "__init__.py" to that
+  directory.  The existence of the file ``__init__.py`` turns the
+  directory into a Python package.
 
 
 How to modify the generated code
@@ -2415,8 +2829,8 @@ Suggested uses:
   documents. The following paper discusses and compares this
   technique with the use of XSLT: `XSLT and generateDS --
   Analysis, Comparison, and Evaluation --
-  http://www.rexx.com/~dkuhlman/xsltvsgenerateds.html
-  <http://www.rexx.com/~dkuhlman/xsltvsgenerateds.html>`_.
+  http://www.davekuhlman.org/xsltvsgenerateds.html
+  <http://www.davekuhlman.org/xsltvsgenerateds.html>`_.
 
 - Anything that requires a *customized* tree walk of the XML
   document. Because you can add methods to the generated classes
@@ -2431,8 +2845,23 @@ Django -- Generating Models and Forms
 ``generateDS.py`` can be used to generate Django models and Django
 forms that represent the data structures defined in an XML Schema.
 
+**Note:** In order to use this capability, you must obtain the
+"source" distribution of ``generateDS.py``.  You can do this either
+(1) by downloading ``generateDS-x.xxy.tar.gz`` from the Python
+Package Index or (2) by downloading the distribution from Bitbucket
+at https://bitbucket.org/dkuhlman/generateds.  In particular,
+installing ``generateDS.py`` using ``pip`` does not give you all the
+files you need in order to use this capability.
+
+*Note:* You only need to obtain the source distribution (so that you
+can copy the files in the ``django/`` directory, for example); you
+do not necessarily need to install from it.  If you have already
+installed ``generateDS.py`` using ``pip`` or ``easy_install``, you
+do not need to re-install from the source tree.
+
 There are support files in the ``django`` directory in the
-distribution.
+source distribution (but *not* in the version install using ``pip``
+or ``easy_install``).
 
 Here is an overview of the process:
 
@@ -2445,6 +2874,12 @@ Here is an overview of the process:
   ``gends_generate_django.py``.
 
 The script ``gends_run_gen_django.py`` performs these three steps.
+
+In order to use the script ``gends_run_gen_django.py``, you may need
+to tell it where the ``generateDS.py`` script is located.  If so,
+use the "-p" command line option.  For more information, do::
+
+    python gends_run_gen_django.py --help
 
 
 How to generate Django models and forms
@@ -2474,8 +2909,9 @@ Now, follow these steps:
        $ mkdir WorkDir
        $ cd WorkDir
 
-2. Copy the files in from the sub directory ``django/`` in the
-   distribution to the current directory::
+2. Copy the files in from the sub directory ``django/`` in the of
+   the source distribution of ``generateDS.py`` to the current
+   directory::
 
        $ cp /my_sources/generateDS-n.nn/django/* .
 
@@ -2487,6 +2923,10 @@ Now, follow these steps:
 4. Run the following::
 
        $ ./gends_run_gen_django.py myschema.xsd
+
+   There are additional command line options for
+   ``gends_run_gen_django.py``.  For help, run
+   ``$ python gends_run_gen_django.py --help``.
 
 5. Copy the generated files  ``models.py`` and ``forms.py`` to your
    Django application.
@@ -2654,15 +3094,6 @@ script scans your XML Schema document and, recursively, documents
 that are included looking for ``include`` elements; it inserts all
 content into a single document, which it writes out.
 
-Since ``process_includes.py`` uses the ElementTree API, in order
-to use ``process_includes.py`` you will need one of the following:
-
-- Python 2.5 or newer -- ElementTree is in the Python-2.5 distribution.  Or,
-
-- `ElementTree`_.  Or,
-
-- `lxml`_ -- another implementation of the ElementTree API.
-
 Here are samples of how you might use ``process_includes.py``, if
 your schema contains ``include`` elements.
 
@@ -2708,16 +3139,10 @@ See also
 
 `Dave's Page`_: My home page, which contains more Python stuff.
 
-.. _`Dave's Page`: http://www.rexx.com/~dkuhlman
-
-
-
+.. _`Dave's Page`: http://www.davekuhlman.org
 
 .. _`ElementTree`: http://effbot.org/zone/element-index.htm
 
-.. _`lxml`: http://codespeak.net/lxml/
+.. _`lxml`: http://lxml.de/index.html
 
-
-
-
-
+.. vim:ft=rst:

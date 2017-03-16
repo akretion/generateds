@@ -3,64 +3,36 @@
 #
 # Generated  by generateDS.py.
 #
+# Command line options:
+#   ('--no-dates', '')
+#   ('--no-versions', '')
+#   ('--member-specs', 'list')
+#   ('-f', '')
+#   ('-o', 'tests/ipo2_sup.py')
+#   ('-s', 'tests/ipo2_sub.py')
+#   ('--super', 'ipo2_sup')
+#
+# Command line arguments:
+#   tests/ipo.xsd
+#
+# Command line:
+#   generateDS.py --no-dates --no-versions --member-specs="list" -f -o "tests/ipo2_sup.py" -s "tests/ipo2_sub.py" --super="ipo2_sup" tests/ipo.xsd
+#
+# Current working directory (os.getcwd()):
+#   generateds
+#
 
 import sys
+from lxml import etree as etree_
 
 import ipo2_sup as supermod
 
-etree_ = None
-Verbose_import_ = False
-(
-    XMLParser_import_none, XMLParser_import_lxml,
-    XMLParser_import_elementtree
-) = range(3)
-XMLParser_import_library = None
-try:
-    # lxml
-    from lxml import etree as etree_
-    XMLParser_import_library = XMLParser_import_lxml
-    if Verbose_import_:
-        print("running with lxml.etree")
-except ImportError:
-    try:
-        # cElementTree from Python 2.5+
-        import xml.etree.cElementTree as etree_
-        XMLParser_import_library = XMLParser_import_elementtree
-        if Verbose_import_:
-            print("running with cElementTree on Python 2.5+")
-    except ImportError:
-        try:
-            # ElementTree from Python 2.5+
-            import xml.etree.ElementTree as etree_
-            XMLParser_import_library = XMLParser_import_elementtree
-            if Verbose_import_:
-                print("running with ElementTree on Python 2.5+")
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree_
-                XMLParser_import_library = XMLParser_import_elementtree
-                if Verbose_import_:
-                    print("running with cElementTree")
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree_
-                    XMLParser_import_library = XMLParser_import_elementtree
-                    if Verbose_import_:
-                        print("running with ElementTree")
-                except ImportError:
-                    raise ImportError(
-                        "Failed to import ElementTree from any known place")
-
-
-def parsexml_(*args, **kwargs):
-    if (XMLParser_import_library == XMLParser_import_lxml and
-            'parser' not in kwargs):
+def parsexml_(infile, parser=None, **kwargs):
+    if parser is None:
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
-        kwargs['parser'] = etree_.ETCompatXMLParser()
-    doc = etree_.parse(*args, **kwargs)
+        parser = etree_.ETCompatXMLParser()
+    doc = etree_.parse(infile, parser=parser, **kwargs)
     return doc
 
 #
@@ -88,6 +60,13 @@ supermod.Items.subclass = ItemsSub
 # end class ItemsSub
 
 
+class itemSub(supermod.item):
+    def __init__(self, partNum=None, productName=None, quantity=None, USPrice=None, comment=None, shipDate=None):
+        super(itemSub, self).__init__(partNum, productName, quantity, USPrice, comment, shipDate, )
+supermod.item.subclass = itemSub
+# end class itemSub
+
+
 class AddressSub(supermod.Address):
     def __init__(self, name=None, street=None, city=None, extensiontype_=None):
         super(AddressSub, self).__init__(name, street, city, extensiontype_, )
@@ -103,17 +82,10 @@ supermod.USAddress.subclass = USAddressSub
 
 
 class UKAddressSub(supermod.UKAddress):
-    def __init__(self, name=None, street=None, city=None, category_attr=None, exportCode=None, postcode=None, category=None):
-        super(UKAddressSub, self).__init__(name, street, city, category_attr, exportCode, postcode, category, )
+    def __init__(self, name=None, street=None, city=None, exportCode=None, postcode=None):
+        super(UKAddressSub, self).__init__(name, street, city, exportCode, postcode, )
 supermod.UKAddress.subclass = UKAddressSub
 # end class UKAddressSub
-
-
-class itemTypeSub(supermod.itemType):
-    def __init__(self, partNum=None, productName=None, quantity=None, USPrice=None, comment=None, shipDate=None):
-        super(itemTypeSub, self).__init__(partNum, productName, quantity, USPrice, comment, shipDate, )
-supermod.itemType.subclass = itemTypeSub
-# end class itemTypeSub
 
 
 def get_root_tag(node):
@@ -126,11 +98,12 @@ def get_root_tag(node):
 
 
 def parse(inFilename, silence=False):
-    doc = parsexml_(inFilename)
+    parser = None
+    doc = parsexml_(inFilename, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'purchaseOrder'
+        rootTag = 'PurchaseOrderType'
         rootClass = supermod.PurchaseOrderType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -146,11 +119,12 @@ def parse(inFilename, silence=False):
 
 
 def parseEtree(inFilename, silence=False):
-    doc = parsexml_(inFilename)
+    parser = None
+    doc = parsexml_(inFilename, parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'purchaseOrder'
+        rootTag = 'PurchaseOrderType'
         rootClass = supermod.PurchaseOrderType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -170,11 +144,12 @@ def parseEtree(inFilename, silence=False):
 
 def parseString(inString, silence=False):
     from StringIO import StringIO
-    doc = parsexml_(StringIO(inString))
+    parser = None
+    doc = parsexml_(StringIO(inString), parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'purchaseOrder'
+        rootTag = 'PurchaseOrderType'
         rootClass = supermod.PurchaseOrderType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -189,11 +164,12 @@ def parseString(inString, silence=False):
 
 
 def parseLiteral(inFilename, silence=False):
-    doc = parsexml_(inFilename)
+    parser = None
+    doc = parsexml_(inFilename, parser)
     rootNode = doc.getroot()
-    roots = get_root_tag(rootNode)
-    rootClass = roots[1]
+    rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
+        rootTag = 'PurchaseOrderType'
         rootClass = supermod.PurchaseOrderType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
@@ -202,8 +178,8 @@ def parseLiteral(inFilename, silence=False):
     if not silence:
         sys.stdout.write('#from ipo2_sup import *\n\n')
         sys.stdout.write('import ipo2_sup as model_\n\n')
-        sys.stdout.write('rootObj = model_.purchaseOrder(\n')
-        rootObj.exportLiteral(sys.stdout, 0, name_="purchaseOrder")
+        sys.stdout.write('rootObj = model_.rootClass(\n')
+        rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
         sys.stdout.write(')\n')
     return rootObj
 
@@ -214,7 +190,7 @@ Usage: python ???.py <infilename>
 
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 
