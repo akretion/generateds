@@ -172,7 +172,10 @@ class GeneratedsSuper(object):
                 name += 'x'
             data_type = cleanupName(data_type)
             if data_type in Simple_type_table:
-                options = 'blank=True'
+                if is_optional:
+                    options = 'blank=True, null=True'
+                else:
+                    options = ''
                 if data_type in Integer_type_table:
                     wrtmodels('    %s = models.IntegerField(%s)\n' % (
                         name, options, ))
@@ -218,8 +221,8 @@ class GeneratedsSuper(object):
                     '    %s = models.ForeignKey(\n        "%s_model",\n' % (
                         name, data_type, ))
                 wrtmodels(
-                    '        related_name="{}_{}",\n'.format(
-                        name, data_type, ))
+                    '        related_name="{}_{}_{}",\n'.format(
+                        class_name, name, data_type, ))
                 if is_optional:
                     wrtmodels(
                         '        blank=True, null=True,\n')

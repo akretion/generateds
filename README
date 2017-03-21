@@ -141,6 +141,28 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.25a (03/21/2017)
+
+- Fixes to the Django support for Python 3.  Thanks to Shane Rigby
+  for all his help with all of these changes to the Django code.
+- Added `optional` to the MemberSpec so that when command line
+  option "--member-specs" is "dict" or "list", the generated code
+  specifies whether the member is optional or not.
+- In the Django support, `django/gends_run_gen_django.py` now has
+  new option "-s" ("--script") that can be used to write out the
+  command lines used internally by `django/gends_run_gen_django.py`.
+  This new flag can be used to generate a shell script that can be
+  run instead of `django/gends_run_gen_django.py`.  (Note: The
+  script might require a minor edit or two.)
+- In the Django support, there is now some attempt to treat optional
+  members specially and to generate "blank=True, null=True," in the
+  `models.py` file.
+- Fix to Django support so that we generate *unique* names for
+  `related_name`.
+- Added several date/time types for Django support: 'gYear',
+  'gYearMonth', 'gMonth', 'gMonthDay', 'gDay',
+
+
 Version 2.24b (01/02/2017)
 
 - Added several fixes to generateDS.py and process_includes.py that

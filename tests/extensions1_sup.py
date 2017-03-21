@@ -630,10 +630,11 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0):
+    def __init__(self, name='', data_type='', container=0, optional=0):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -648,6 +649,8 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_optional(self, optional): self.optional = optional
+    def get_optional(self): return self.optional
 
 
 def _cast(typ, value):
@@ -662,7 +665,7 @@ def _cast(typ, value):
 
 class SpecialDate(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('SpecialProperty', 'xs:string', 0),
+        MemberSpec_('SpecialProperty', 'xs:string', 0, 1),
         MemberSpec_('valueOf_', 'xs:date', 0),
     ]
     subclass = None
@@ -737,7 +740,7 @@ class SpecialDate(GeneratedsSuper):
 
 class ExtremeDate(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('ExtremeProperty', 'xs:string', 0),
+        MemberSpec_('ExtremeProperty', 'xs:string', 0, 1),
         MemberSpec_('valueOf_', ['RelationType', 'RelationType2', 'RelationType3', 'xs:string'], 0),
     ]
     subclass = None
@@ -812,7 +815,7 @@ class ExtremeDate(GeneratedsSuper):
 
 class singleExtremeDate(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('ExtremeProperty', 'xs:string', 0),
+        MemberSpec_('ExtremeProperty', 'xs:string', 0, 1),
         MemberSpec_('valueOf_', 'xs:string', 0),
     ]
     subclass = None
@@ -887,8 +890,8 @@ class singleExtremeDate(GeneratedsSuper):
 
 class containerType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('simplefactoid', 'simpleFactoidType', 1),
-        MemberSpec_('mixedfactoid', 'mixedFactoidType', 0),
+        MemberSpec_('simplefactoid', 'simpleFactoidType', 1, 0),
+        MemberSpec_('mixedfactoid', 'mixedFactoidType', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -979,7 +982,7 @@ class containerType(GeneratedsSuper):
 
 class simpleFactoidType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('relation', ['RelationType', 'RelationType2', 'RelationType3', 'xs:string'], 0),
+        MemberSpec_('relation', ['RelationType', 'RelationType2', 'RelationType3', 'xs:string'], 0, 0),
     ]
     subclass = None
     superclass = None
@@ -1086,7 +1089,7 @@ class simpleFactoidType(GeneratedsSuper):
 
 class mixedFactoidType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('relation', ['RelationType', 'RelationType2', 'RelationType3', 'xs:string'], 0),
+        MemberSpec_('relation', ['RelationType', 'RelationType2', 'RelationType3', 'xs:string'], 0, 0),
         MemberSpec_('valueOf_', [], 0),
     ]
     subclass = None
@@ -1211,8 +1214,8 @@ class mixedFactoidType(GeneratedsSuper):
 
 class BaseType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('BaseProperty1', 'xs:string', 0),
-        MemberSpec_('BaseProperty2', 'xs:string', 0),
+        MemberSpec_('BaseProperty1', 'xs:string', 0, 1),
+        MemberSpec_('BaseProperty2', 'xs:string', 0, 1),
         MemberSpec_('valueOf_', 'xs:string', 0),
     ]
     subclass = None
@@ -1308,8 +1311,8 @@ class BaseType(GeneratedsSuper):
 
 class DerivedType(BaseType):
     member_data_items_ = [
-        MemberSpec_('DerivedProperty1', 'xs:string', 0),
-        MemberSpec_('DerivedProperty2', 'xs:string', 0),
+        MemberSpec_('DerivedProperty1', 'xs:string', 0, 1),
+        MemberSpec_('DerivedProperty2', 'xs:string', 0, 1),
         MemberSpec_('valueOf_', 'BaseType', 0),
     ]
     subclass = None
@@ -1399,7 +1402,7 @@ class DerivedType(BaseType):
 
 class MyInteger(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('MyAttr', 'xs:string', 0),
+        MemberSpec_('MyAttr', 'xs:string', 0, 1),
         MemberSpec_('valueOf_', 'xs:integer', 0),
     ]
     subclass = None
@@ -1474,7 +1477,7 @@ class MyInteger(GeneratedsSuper):
 
 class MyBoolean(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('MyAttr', 'xs:string', 0),
+        MemberSpec_('MyAttr', 'xs:string', 0, 1),
         MemberSpec_('valueOf_', 'xs:boolean', 0),
     ]
     subclass = None
@@ -1549,7 +1552,7 @@ class MyBoolean(GeneratedsSuper):
 
 class MyFloat(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('MyAttr', 'xs:string', 0),
+        MemberSpec_('MyAttr', 'xs:string', 0, 1),
         MemberSpec_('valueOf_', 'xs:float', 0),
     ]
     subclass = None
@@ -1624,7 +1627,7 @@ class MyFloat(GeneratedsSuper):
 
 class MyDouble(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('MyAttr', 'xs:string', 0),
+        MemberSpec_('MyAttr', 'xs:string', 0, 1),
         MemberSpec_('valueOf_', 'xs:double', 0),
     ]
     subclass = None

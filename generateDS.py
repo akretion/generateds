@@ -204,7 +204,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.24c'
+VERSION = '2.25a'
 ##VERSION##
 
 if sys.version_info.major == 2:
@@ -4748,12 +4748,13 @@ def generateMemberSpec(wrt, element):
         item1 = attrName
         item2 = attrDef.getType()
         item3 = 0
+        item4 = 1 if attrDef.getUse() == 'optional' else 0
         if generateDict:
-            item = "        '%s': MemberSpec_('%s', '%s', %d)," % (
-                item1, item1, item2, item3, )
+            item = "        '%s': MemberSpec_('%s', '%s', %d, %d)," % (
+                item1, item1, item2, item3, item4, )
         else:
-            item = "        MemberSpec_('%s', '%s', %d)," % (
-                item1, item2, item3, )
+            item = "        MemberSpec_('%s', '%s', %d, %d)," % (
+                item1, item2, item3, item4, )
         add(item)
     for child in element.getChildren():
         name = cleanupName(child.getCleanName())

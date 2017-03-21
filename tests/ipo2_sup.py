@@ -629,10 +629,11 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0):
+    def __init__(self, name='', data_type='', container=0, optional=0):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -647,6 +648,8 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_optional(self, optional): self.optional = optional
+    def get_optional(self): return self.optional
 
 
 def _cast(typ, value):
@@ -661,11 +664,11 @@ def _cast(typ, value):
 
 class PurchaseOrderType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('orderDate', 'date', 0),
-        MemberSpec_('shipTo', 'Address', 0),
-        MemberSpec_('billTo', 'Address', 0),
-        MemberSpec_('comment', 'string', 0),
-        MemberSpec_('items', 'Items', 0),
+        MemberSpec_('orderDate', 'date', 0, 1),
+        MemberSpec_('shipTo', 'Address', 0, 0),
+        MemberSpec_('billTo', 'Address', 0, 0),
+        MemberSpec_('comment', 'string', 0, 1),
+        MemberSpec_('items', 'Items', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -789,7 +792,7 @@ class PurchaseOrderType(GeneratedsSuper):
 
 class Items(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('item', 'item', 1),
+        MemberSpec_('item', 'item', 1, 1),
     ]
     subclass = None
     superclass = None
@@ -869,12 +872,12 @@ class Items(GeneratedsSuper):
 
 class item(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('partNum', 'ipo:SKU', 0),
-        MemberSpec_('productName', 'string', 0),
-        MemberSpec_('quantity', ['quantity', 'positiveInteger'], 0),
-        MemberSpec_('USPrice', 'decimal', 0),
-        MemberSpec_('comment', 'string', 0),
-        MemberSpec_('shipDate', 'date', 0),
+        MemberSpec_('partNum', 'ipo:SKU', 0, 0),
+        MemberSpec_('productName', 'string', 0, 0),
+        MemberSpec_('quantity', ['quantity', 'positiveInteger'], 0, 0),
+        MemberSpec_('USPrice', 'decimal', 0, 0),
+        MemberSpec_('comment', 'string', 0, 1),
+        MemberSpec_('shipDate', 'date', 0, 1),
     ]
     subclass = None
     superclass = None
@@ -1075,9 +1078,9 @@ class quantity(GeneratedsSuper):
 
 class Address(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('name', 'string', 0),
-        MemberSpec_('street', 'string', 0),
-        MemberSpec_('city', 'string', 0),
+        MemberSpec_('name', 'string', 0, 0),
+        MemberSpec_('street', 'string', 0, 0),
+        MemberSpec_('city', 'string', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -1183,8 +1186,8 @@ class Address(GeneratedsSuper):
 
 class USAddress(Address):
     member_data_items_ = [
-        MemberSpec_('state', ['USState', 'string'], 0),
-        MemberSpec_('zip', 'positiveInteger', 0),
+        MemberSpec_('state', ['USState', 'string'], 0, 0),
+        MemberSpec_('zip', 'positiveInteger', 0, 0),
     ]
     subclass = None
     superclass = Address
@@ -1294,8 +1297,8 @@ class USAddress(Address):
 
 class UKAddress(Address):
     member_data_items_ = [
-        MemberSpec_('exportCode', 'positiveInteger', 0),
-        MemberSpec_('postcode', 'string', 0),
+        MemberSpec_('exportCode', 'positiveInteger', 0, 1),
+        MemberSpec_('postcode', 'string', 0, 0),
     ]
     subclass = None
     superclass = Address

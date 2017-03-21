@@ -630,10 +630,11 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0):
+    def __init__(self, name='', data_type='', container=0, optional=0):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -648,6 +649,8 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_optional(self, optional): self.optional = optional
+    def get_optional(self): return self.optional
 
 
 def _cast(typ, value):
@@ -662,10 +665,10 @@ def _cast(typ, value):
 
 class complex_type01(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('string_value01', 'xs:string', 0),
-        MemberSpec_('integer_value01', 'xs:integer', 1),
-        MemberSpec_('float_value01', 'xs:float', 0),
-        MemberSpec_('field01', 'complex-type02', 0),
+        MemberSpec_('string_value01', 'xs:string', 0, 0),
+        MemberSpec_('integer_value01', 'xs:integer', 1, 1),
+        MemberSpec_('float_value01', 'xs:float', 0, 0),
+        MemberSpec_('field01', 'complex-type02', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -786,9 +789,9 @@ class complex_type01(GeneratedsSuper):
 
 class complex_type02(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('string_value02', 'xs:string', 0),
-        MemberSpec_('integer_value02', 'xs:integer', 1),
-        MemberSpec_('float_value02', 'xs:float', 0),
+        MemberSpec_('string_value02', 'xs:string', 0, 0),
+        MemberSpec_('integer_value02', 'xs:integer', 1, 1),
+        MemberSpec_('float_value02', 'xs:float', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -908,9 +911,9 @@ class complex_type02(GeneratedsSuper):
 
 class complex_type03(complex_type02):
     member_data_items_ = [
-        MemberSpec_('string_value03', 'xs:string', 0),
-        MemberSpec_('integer_value03', 'xs:integer', 1),
-        MemberSpec_('float_value03', 'xs:float', 0),
+        MemberSpec_('string_value03', 'xs:string', 0, 0),
+        MemberSpec_('integer_value03', 'xs:integer', 1, 1),
+        MemberSpec_('float_value03', 'xs:float', 0, 0),
     ]
     subclass = None
     superclass = complex_type02
@@ -1024,9 +1027,9 @@ class complex_type03(complex_type02):
 
 class type_(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('string_value02', 'xs:string', 0),
-        MemberSpec_('integer_value02', 'xs:integer', 1),
-        MemberSpec_('float_value02', 'xs:float', 0),
+        MemberSpec_('string_value02', 'xs:string', 0, 0),
+        MemberSpec_('integer_value02', 'xs:integer', 1, 1),
+        MemberSpec_('float_value02', 'xs:float', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -1146,9 +1149,9 @@ class type_(GeneratedsSuper):
 
 class complex_type04(type_):
     member_data_items_ = [
-        MemberSpec_('string_value03', 'xs:string', 0),
-        MemberSpec_('integer_value03', 'xs:integer', 1),
-        MemberSpec_('float_value03', 'xs:float', 0),
+        MemberSpec_('string_value03', 'xs:string', 0, 0),
+        MemberSpec_('integer_value03', 'xs:integer', 1, 1),
+        MemberSpec_('float_value03', 'xs:float', 0, 0),
     ]
     subclass = None
     superclass = type_
@@ -1262,9 +1265,9 @@ class complex_type04(type_):
 
 class build_(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('string_value02', 'xs:string', 0),
-        MemberSpec_('integer_value02', 'xs:integer', 1),
-        MemberSpec_('float_value02', 'xs:float', 0),
+        MemberSpec_('string_value02', 'xs:string', 0, 0),
+        MemberSpec_('integer_value02', 'xs:integer', 1, 1),
+        MemberSpec_('float_value02', 'xs:float', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -1384,9 +1387,9 @@ class build_(GeneratedsSuper):
 
 class complex_type05(build_):
     member_data_items_ = [
-        MemberSpec_('string_value03', 'xs:string', 0),
-        MemberSpec_('integer_value03', 'xs:integer', 1),
-        MemberSpec_('float_value03', 'xs:float', 0),
+        MemberSpec_('string_value03', 'xs:string', 0, 0),
+        MemberSpec_('integer_value03', 'xs:integer', 1, 1),
+        MemberSpec_('float_value03', 'xs:float', 0, 0),
     ]
     subclass = None
     superclass = build_
