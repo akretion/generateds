@@ -630,10 +630,11 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0):
+    def __init__(self, name='', data_type='', container=0, optional=0):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -648,6 +649,8 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_optional(self, optional): self.optional = optional
+    def get_optional(self): return self.optional
 
 
 def _cast(typ, value):
@@ -662,8 +665,8 @@ def _cast(typ, value):
 
 class DefaultTypes(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('default1', 'DefaultType1', 0),
-        MemberSpec_('default2', 'DefaultType2', 0),
+        MemberSpec_('default1', 'DefaultType1', 0, 0),
+        MemberSpec_('default2', 'DefaultType2', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -748,23 +751,23 @@ class DefaultTypes(GeneratedsSuper):
 
 class DefaultType1(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('default01', 'xs:integer', 0),
-        MemberSpec_('normal01', 'xs:integer', 0),
-        MemberSpec_('default02', 'xs:string', 0),
-        MemberSpec_('normal02', 'xs:string', 0),
-        MemberSpec_('default03', 'xs:float', 0),
-        MemberSpec_('normal03', 'xs:float', 0),
-        MemberSpec_('default04', 'xs:double', 0),
-        MemberSpec_('normal04', 'xs:double', 0),
-        MemberSpec_('default05a', 'xs:boolean', 0),
-        MemberSpec_('default05b', 'xs:boolean', 0),
-        MemberSpec_('normal05', 'xs:boolean', 0),
-        MemberSpec_('default06', 'xs:date', 0),
-        MemberSpec_('normal06', 'xs:date', 0),
-        MemberSpec_('default07', 'xs:time', 0),
-        MemberSpec_('normal07', 'xs:date', 0),
-        MemberSpec_('default08', 'xs:dateTime', 0),
-        MemberSpec_('normal08', 'xs:dateTime', 0),
+        MemberSpec_('default01', 'xs:integer', 0, 1),
+        MemberSpec_('normal01', 'xs:integer', 0, 1),
+        MemberSpec_('default02', 'xs:string', 0, 1),
+        MemberSpec_('normal02', 'xs:string', 0, 1),
+        MemberSpec_('default03', 'xs:float', 0, 1),
+        MemberSpec_('normal03', 'xs:float', 0, 1),
+        MemberSpec_('default04', 'xs:double', 0, 1),
+        MemberSpec_('normal04', 'xs:double', 0, 1),
+        MemberSpec_('default05a', 'xs:boolean', 0, 1),
+        MemberSpec_('default05b', 'xs:boolean', 0, 1),
+        MemberSpec_('normal05', 'xs:boolean', 0, 1),
+        MemberSpec_('default06', 'xs:date', 0, 1),
+        MemberSpec_('normal06', 'xs:date', 0, 1),
+        MemberSpec_('default07', 'xs:time', 0, 1),
+        MemberSpec_('normal07', 'xs:date', 0, 1),
+        MemberSpec_('default08', 'xs:dateTime', 0, 1),
+        MemberSpec_('normal08', 'xs:dateTime', 0, 1),
     ]
     subclass = None
     superclass = None
@@ -1080,23 +1083,23 @@ class DefaultType1(GeneratedsSuper):
 
 class DefaultType2(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('default01', 'xs:integer', 0),
-        MemberSpec_('normal01', 'xs:integer', 0),
-        MemberSpec_('default02', 'xs:string', 0),
-        MemberSpec_('normal02', 'xs:string', 0),
-        MemberSpec_('default03', 'xs:float', 0),
-        MemberSpec_('normal03', 'xs:float', 0),
-        MemberSpec_('default04', 'xs:double', 0),
-        MemberSpec_('normal04', 'xs:double', 0),
-        MemberSpec_('default05a', 'xs:boolean', 0),
-        MemberSpec_('default05b', 'xs:boolean', 0),
-        MemberSpec_('normal05', 'xs:boolean', 0),
-        MemberSpec_('default06', 'xs:date', 0),
-        MemberSpec_('normal06', 'xs:date', 0),
-        MemberSpec_('default07', 'xs:time', 0),
-        MemberSpec_('normal07', 'xs:date', 0),
-        MemberSpec_('default08', 'xs:dateTime', 0),
-        MemberSpec_('normal08', 'xs:dateTime', 0),
+        MemberSpec_('default01', 'xs:integer', 0, 0),
+        MemberSpec_('normal01', 'xs:integer', 0, 0),
+        MemberSpec_('default02', 'xs:string', 0, 0),
+        MemberSpec_('normal02', 'xs:string', 0, 0),
+        MemberSpec_('default03', 'xs:float', 0, 0),
+        MemberSpec_('normal03', 'xs:float', 0, 0),
+        MemberSpec_('default04', 'xs:double', 0, 0),
+        MemberSpec_('normal04', 'xs:double', 0, 0),
+        MemberSpec_('default05a', 'xs:boolean', 0, 0),
+        MemberSpec_('default05b', 'xs:boolean', 0, 0),
+        MemberSpec_('normal05', 'xs:boolean', 0, 0),
+        MemberSpec_('default06', 'xs:date', 0, 0),
+        MemberSpec_('normal06', 'xs:date', 0, 0),
+        MemberSpec_('default07', 'xs:time', 0, 0),
+        MemberSpec_('normal07', 'xs:date', 0, 0),
+        MemberSpec_('default08', 'xs:dateTime', 0, 0),
+        MemberSpec_('normal08', 'xs:dateTime', 0, 0),
     ]
     subclass = None
     superclass = None

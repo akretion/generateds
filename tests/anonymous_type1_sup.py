@@ -630,10 +630,11 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0):
+    def __init__(self, name='', data_type='', container=0, optional=0):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -648,6 +649,8 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_optional(self, optional): self.optional = optional
+    def get_optional(self): return self.optional
 
 
 def _cast(typ, value):
@@ -662,9 +665,9 @@ def _cast(typ, value):
 
 class FooList(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('Foo', 'FooType1', 0),
-        MemberSpec_('Bar', 'BarType2', 0),
-        MemberSpec_('Baz', 'BazType3', 0),
+        MemberSpec_('Foo', 'FooType1', 0, 0),
+        MemberSpec_('Bar', 'BarType2', 0, 0),
+        MemberSpec_('Baz', 'BazType3', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -760,7 +763,7 @@ class FooList(GeneratedsSuper):
 
 class FooType1(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('FooType', ['FooTypeType', 'xs:string'], 0),
+        MemberSpec_('FooType', ['FooTypeType', 'xs:string'], 0, 0),
     ]
     subclass = None
     superclass = None
@@ -844,7 +847,7 @@ class FooType1(GeneratedsSuper):
 
 class BarType2(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('BarType', ['BarTypeType', 'xs:string'], 0),
+        MemberSpec_('BarType', ['BarTypeType', 'xs:string'], 0, 0),
     ]
     subclass = None
     superclass = None
@@ -928,7 +931,7 @@ class BarType2(GeneratedsSuper):
 
 class BazType3(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('BazType', ['BazTypeType', 'xs:string'], 0),
+        MemberSpec_('BazType', ['BazTypeType', 'xs:string'], 0, 0),
     ]
     subclass = None
     superclass = None

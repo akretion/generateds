@@ -630,10 +630,11 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0):
+    def __init__(self, name='', data_type='', container=0, optional=0):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -648,6 +649,8 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_optional(self, optional): self.optional = optional
+    def get_optional(self): return self.optional
 
 
 def _cast(typ, value):
@@ -662,11 +665,11 @@ def _cast(typ, value):
 
 class tomato_people(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('comments', 'comments', 1),
-        MemberSpec_('person', 'person', 1),
-        MemberSpec_('programmer', 'programmer', 1),
-        MemberSpec_('python_programmer', 'python-programmer', 1),
-        MemberSpec_('java_programmer', 'java-programmer', 1),
+        MemberSpec_('comments', 'comments', 1, 0),
+        MemberSpec_('person', 'person', 1, 0),
+        MemberSpec_('programmer', 'programmer', 1, 0),
+        MemberSpec_('python_programmer', 'python-programmer', 1, 0),
+        MemberSpec_('java_programmer', 'java-programmer', 1, 0),
     ]
     subclass = None
     superclass = None
@@ -816,7 +819,7 @@ class tomato_people(GeneratedsSuper):
 
 class tomato_comments(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('emp', 'xs:string', 1),
+        MemberSpec_('emp', 'xs:string', 1, 0),
         MemberSpec_('valueOf_', [], 0),
     ]
     subclass = None
@@ -916,17 +919,17 @@ class tomato_comments(GeneratedsSuper):
 
 class tomato_person(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('value', 'xs:string', 0),
-        MemberSpec_('id', 'xs:integer', 0),
-        MemberSpec_('ratio', 'xs:float', 0),
-        MemberSpec_('fruit', 'xs:string', 0),
-        MemberSpec_('vegetable', 'xs:string', 0),
-        MemberSpec_('name', 'xs:string', 0),
-        MemberSpec_('interest', 'xs:string', 1),
-        MemberSpec_('category', 'xs:integer', 0),
-        MemberSpec_('agent', 'agent', 1),
-        MemberSpec_('promoter', 'booster', 1),
-        MemberSpec_('description', 'xs:string', 0),
+        MemberSpec_('value', 'xs:string', 0, 1),
+        MemberSpec_('id', 'xs:integer', 0, 1),
+        MemberSpec_('ratio', 'xs:float', 0, 1),
+        MemberSpec_('fruit', 'xs:string', 0, 1),
+        MemberSpec_('vegetable', 'xs:string', 0, 1),
+        MemberSpec_('name', 'xs:string', 0, 0),
+        MemberSpec_('interest', 'xs:string', 1, 0),
+        MemberSpec_('category', 'xs:integer', 0, 0),
+        MemberSpec_('agent', 'agent', 1, 0),
+        MemberSpec_('promoter', 'booster', 1, 0),
+        MemberSpec_('description', 'xs:string', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -1142,24 +1145,24 @@ class tomato_person(GeneratedsSuper):
 
 class tomato_programmer(tomato_person):
     member_data_items_ = [
-        MemberSpec_('language', 'xs:string', 0),
-        MemberSpec_('area', 'xs:string', 0),
-        MemberSpec_('attrposint', 'xs:positiveInteger', 0),
-        MemberSpec_('attrnonposint', 'xs:nonPositiveInteger', 0),
-        MemberSpec_('attrnegint', 'xs:negativeInteger', 0),
-        MemberSpec_('attrnonnegint', 'xs:nonNegativeInteger', 0),
-        MemberSpec_('email', 'xs:string', 0),
-        MemberSpec_('elposint', 'xs:positiveInteger', 0),
-        MemberSpec_('elnonposint', 'xs:nonPositiveInteger', 0),
-        MemberSpec_('elnegint', 'xs:negativeInteger', 0),
-        MemberSpec_('elnonnegint', 'xs:nonNegativeInteger', 0),
-        MemberSpec_('eldate', 'xs:date', 0),
-        MemberSpec_('eldatetime', 'xs:dateTime', 0),
-        MemberSpec_('eltoken', 'xs:token', 0),
-        MemberSpec_('elshort', 'xs:short', 0),
-        MemberSpec_('ellong', 'xs:long', 0),
-        MemberSpec_('elparam', 'param', 0),
-        MemberSpec_('elarraytypes', ['ArrayTypes', 'xs:NMTOKEN'], 0),
+        MemberSpec_('language', 'xs:string', 0, 1),
+        MemberSpec_('area', 'xs:string', 0, 1),
+        MemberSpec_('attrposint', 'xs:positiveInteger', 0, 1),
+        MemberSpec_('attrnonposint', 'xs:nonPositiveInteger', 0, 1),
+        MemberSpec_('attrnegint', 'xs:negativeInteger', 0, 1),
+        MemberSpec_('attrnonnegint', 'xs:nonNegativeInteger', 0, 1),
+        MemberSpec_('email', 'xs:string', 0, 0),
+        MemberSpec_('elposint', 'xs:positiveInteger', 0, 0),
+        MemberSpec_('elnonposint', 'xs:nonPositiveInteger', 0, 0),
+        MemberSpec_('elnegint', 'xs:negativeInteger', 0, 0),
+        MemberSpec_('elnonnegint', 'xs:nonNegativeInteger', 0, 0),
+        MemberSpec_('eldate', 'xs:date', 0, 0),
+        MemberSpec_('eldatetime', 'xs:dateTime', 0, 0),
+        MemberSpec_('eltoken', 'xs:token', 0, 0),
+        MemberSpec_('elshort', 'xs:short', 0, 0),
+        MemberSpec_('ellong', 'xs:long', 0, 0),
+        MemberSpec_('elparam', 'param', 0, 0),
+        MemberSpec_('elarraytypes', ['ArrayTypes', 'xs:NMTOKEN'], 0, 0),
     ]
     subclass = None
     superclass = tomato_person
@@ -1510,12 +1513,12 @@ class tomato_param(GeneratedsSuper):
     """Finding flow attribute unneccesary in practice. A unnamed parameter
     is unbound/skipped."""
     member_data_items_ = [
-        MemberSpec_('id', 'xs:string', 0),
-        MemberSpec_('name', 'xs:NCName', 0),
-        MemberSpec_('sid', 'xs:NCName', 0),
-        MemberSpec_('flow', 'FlowType', 0),
-        MemberSpec_('semantic', 'xs:token', 0),
-        MemberSpec_('type', 'xs:NMTOKEN', 0),
+        MemberSpec_('id', 'xs:string', 0, 1),
+        MemberSpec_('name', 'xs:NCName', 0, 1),
+        MemberSpec_('sid', 'xs:NCName', 0, 1),
+        MemberSpec_('flow', 'FlowType', 0, 1),
+        MemberSpec_('semantic', 'xs:token', 0, 1),
+        MemberSpec_('type', 'xs:NMTOKEN', 0, 0),
         MemberSpec_('valueOf_', 'xs:string', 0),
     ]
     subclass = None
@@ -1641,8 +1644,8 @@ class tomato_param(GeneratedsSuper):
 
 class tomato_python_programmer(tomato_programmer):
     member_data_items_ = [
-        MemberSpec_('nick-name', 'xs:string', 0),
-        MemberSpec_('favorite_editor', 'xs:string', 0),
+        MemberSpec_('nick-name', 'xs:string', 0, 1),
+        MemberSpec_('favorite_editor', 'xs:string', 0, 0),
     ]
     subclass = None
     superclass = tomato_programmer
@@ -1730,9 +1733,9 @@ class tomato_python_programmer(tomato_programmer):
 
 class tomato_java_programmer(tomato_programmer):
     member_data_items_ = [
-        MemberSpec_('nick-name', 'xs:string', 0),
-        MemberSpec_('status', 'xs:string', 0),
-        MemberSpec_('favorite_editor', 'xs:string', 0),
+        MemberSpec_('nick-name', 'xs:string', 0, 1),
+        MemberSpec_('status', 'xs:string', 0, 1),
+        MemberSpec_('favorite_editor', 'xs:string', 0, 0),
     ]
     subclass = None
     superclass = tomato_programmer
@@ -1830,10 +1833,10 @@ class tomato_java_programmer(tomato_programmer):
 
 class tomato_agent(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('firstname', 'xs:string', 0),
-        MemberSpec_('lastname', 'xs:string', 0),
-        MemberSpec_('priority', 'xs:float', 0),
-        MemberSpec_('info', 'info', 0),
+        MemberSpec_('firstname', 'xs:string', 0, 0),
+        MemberSpec_('lastname', 'xs:string', 0, 0),
+        MemberSpec_('priority', 'xs:float', 0, 0),
+        MemberSpec_('info', 'info', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -1944,10 +1947,10 @@ class tomato_agent(GeneratedsSuper):
 
 class tomato_special_agent(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('firstname', 'xs:string', 0),
-        MemberSpec_('lastname', 'xs:string', 0),
-        MemberSpec_('priority', 'xs:float', 0),
-        MemberSpec_('info', 'info', 0),
+        MemberSpec_('firstname', 'xs:string', 0, 0),
+        MemberSpec_('lastname', 'xs:string', 0, 0),
+        MemberSpec_('priority', 'xs:float', 0, 0),
+        MemberSpec_('info', 'info', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -2058,13 +2061,13 @@ class tomato_special_agent(GeneratedsSuper):
 
 class tomato_booster(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('firstname', 'xs:string', 0),
-        MemberSpec_('lastname', 'xs:string', 0),
-        MemberSpec_('other_name', 'xs:float', 0),
-        MemberSpec_('class_', 'xs:float', 0),
-        MemberSpec_('other_value', 'xs:float', 1),
-        MemberSpec_('type_', 'xs:float', 1),
-        MemberSpec_('client_handler', 'client-handlerType', 1),
+        MemberSpec_('firstname', 'xs:string', 0, 0),
+        MemberSpec_('lastname', 'xs:string', 0, 0),
+        MemberSpec_('other_name', 'xs:float', 0, 0),
+        MemberSpec_('class_', 'xs:float', 0, 0),
+        MemberSpec_('other_value', 'xs:float', 1, 0),
+        MemberSpec_('type_', 'xs:float', 1, 0),
+        MemberSpec_('client_handler', 'client-handlerType', 1, 0),
     ]
     subclass = None
     superclass = None
@@ -2238,9 +2241,9 @@ class tomato_booster(GeneratedsSuper):
 
 class tomato_info(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('name', 'xs:string', 0),
-        MemberSpec_('type', 'xs:integer', 0),
-        MemberSpec_('rating', 'xs:float', 0),
+        MemberSpec_('name', 'xs:string', 0, 1),
+        MemberSpec_('type', 'xs:integer', 0, 1),
+        MemberSpec_('rating', 'xs:float', 0, 1),
     ]
     subclass = None
     superclass = None
@@ -2335,8 +2338,8 @@ class tomato_info(GeneratedsSuper):
 
 class tomato_client_handlerType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('fullname', 'xs:string', 0),
-        MemberSpec_('refid', 'xs:integer', 0),
+        MemberSpec_('fullname', 'xs:string', 0, 0),
+        MemberSpec_('refid', 'xs:integer', 0, 0),
     ]
     subclass = None
     superclass = None

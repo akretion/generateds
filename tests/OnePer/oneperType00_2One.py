@@ -631,10 +631,11 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0):
+    def __init__(self, name='', data_type='', container=0, optional=0):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -649,6 +650,8 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_optional(self, optional): self.optional = optional
+    def get_optional(self): return self.optional
 
 
 def _cast(typ, value):
@@ -663,8 +666,8 @@ def _cast(typ, value):
 
 class oneperType00_1(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('inner01', 'oneperType01_1', 0),
-        MemberSpec_('inner02', 'oneperType01_2', 0),
+        MemberSpec_('inner01', 'oneperType01_1', 0, 0),
+        MemberSpec_('inner02', 'oneperType01_2', 0, 0),
     ]
     subclass = None
     superclass = None

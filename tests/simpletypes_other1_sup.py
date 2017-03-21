@@ -630,10 +630,11 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0):
+    def __init__(self, name='', data_type='', container=0, optional=0):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -648,6 +649,8 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_optional(self, optional): self.optional = optional
+    def get_optional(self): return self.optional
 
 
 def _cast(typ, value):
@@ -662,7 +665,7 @@ def _cast(typ, value):
 
 class simpleTypeTestsType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('simpleTypeTest', 'simpleTypeTestDefs', 1),
+        MemberSpec_('simpleTypeTest', 'simpleTypeTestDefs', 1, 0),
     ]
     subclass = None
     superclass = None
@@ -742,27 +745,27 @@ class simpleTypeTestsType(GeneratedsSuper):
 
 class simpleTypeTestDefs(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('datetime1', 'xs:gYear', 0),
-        MemberSpec_('datetime2', 'xs:gYearMonth', 0),
-        MemberSpec_('datetime3', 'xs:gMonth', 0),
-        MemberSpec_('datetime4', 'xs:gMonthDay', 0),
-        MemberSpec_('datetime5', 'xs:gDay', 0),
-        MemberSpec_('integerVal1', 'xs:integer', 0),
-        MemberSpec_('integerVal2', 'xs:integer', 1),
-        MemberSpec_('stringVal1', 'xs:string', 0),
-        MemberSpec_('stringVal2', 'xs:string', 1),
-        MemberSpec_('booleanVal1', 'xs:boolean', 0),
-        MemberSpec_('booleanVal2', 'xs:boolean', 1),
-        MemberSpec_('decimalVal1', 'xs:decimal', 0),
-        MemberSpec_('decimalVal2', 'xs:decimal', 1),
-        MemberSpec_('doubleVal1', 'xs:double', 0),
-        MemberSpec_('doubleVal2', 'xs:double', 1),
-        MemberSpec_('floatVal1', 'xs:float', 0),
-        MemberSpec_('floatVal2', 'xs:float', 1),
-        MemberSpec_('dateVal1', 'xs:date', 0),
-        MemberSpec_('dateVal2', 'xs:date', 1),
-        MemberSpec_('dateTimeVal1', 'xs:dateTime', 0),
-        MemberSpec_('dateTimeVal2', 'xs:dateTime', 1),
+        MemberSpec_('datetime1', 'xs:gYear', 0, 0),
+        MemberSpec_('datetime2', 'xs:gYearMonth', 0, 0),
+        MemberSpec_('datetime3', 'xs:gMonth', 0, 0),
+        MemberSpec_('datetime4', 'xs:gMonthDay', 0, 0),
+        MemberSpec_('datetime5', 'xs:gDay', 0, 0),
+        MemberSpec_('integerVal1', 'xs:integer', 0, 0),
+        MemberSpec_('integerVal2', 'xs:integer', 1, 1),
+        MemberSpec_('stringVal1', 'xs:string', 0, 0),
+        MemberSpec_('stringVal2', 'xs:string', 1, 1),
+        MemberSpec_('booleanVal1', 'xs:boolean', 0, 0),
+        MemberSpec_('booleanVal2', 'xs:boolean', 1, 1),
+        MemberSpec_('decimalVal1', 'xs:decimal', 0, 0),
+        MemberSpec_('decimalVal2', 'xs:decimal', 1, 1),
+        MemberSpec_('doubleVal1', 'xs:double', 0, 0),
+        MemberSpec_('doubleVal2', 'xs:double', 1, 1),
+        MemberSpec_('floatVal1', 'xs:float', 0, 0),
+        MemberSpec_('floatVal2', 'xs:float', 1, 1),
+        MemberSpec_('dateVal1', 'xs:date', 0, 0),
+        MemberSpec_('dateVal2', 'xs:date', 1, 1),
+        MemberSpec_('dateTimeVal1', 'xs:dateTime', 0, 0),
+        MemberSpec_('dateTimeVal2', 'xs:dateTime', 1, 1),
     ]
     subclass = None
     superclass = None

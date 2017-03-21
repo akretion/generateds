@@ -65,6 +65,10 @@ $commands = [
   "diff -u cleanupname1_sup.py cleanupname2_sup.py",
   "diff -u rem_dup_elems1_sub.py rem_dup_elems2_sub.py",
   "diff -u rem_dup_elems1_sup.py rem_dup_elems2_sup.py",
+  "diff -u nested_def1_sub.py nested_def2_sub.py",
+  "diff -u nested_def1_sup.py nested_def2_sup.py",
+  "diff -u catalogtest1_sub.py catalogtest2_sub.py",
+  "diff -u catalogtest1_sup.py catalogtest2_sup.py",
 ]
 
 def check

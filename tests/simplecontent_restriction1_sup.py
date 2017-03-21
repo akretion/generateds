@@ -630,10 +630,11 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0):
+    def __init__(self, name='', data_type='', container=0, optional=0):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -648,6 +649,8 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_optional(self, optional): self.optional = optional
+    def get_optional(self): return self.optional
 
 
 def _cast(typ, value):
@@ -662,13 +665,13 @@ def _cast(typ, value):
 
 class IdentifierType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('schemeID', 'xsd:normalizedString', 0),
-        MemberSpec_('schemeName', 'xsd:string', 0),
-        MemberSpec_('schemeAgencyID', 'xsd:normalizedString', 0),
-        MemberSpec_('schemeAgencyName', 'xsd:string', 0),
-        MemberSpec_('schemeVersionID', 'xsd:normalizedString', 0),
-        MemberSpec_('schemeDataURI', 'xsd:anyURI', 0),
-        MemberSpec_('schemeURI', 'xsd:anyURI', 0),
+        MemberSpec_('schemeID', 'xsd:normalizedString', 0, 1),
+        MemberSpec_('schemeName', 'xsd:string', 0, 1),
+        MemberSpec_('schemeAgencyID', 'xsd:normalizedString', 0, 1),
+        MemberSpec_('schemeAgencyName', 'xsd:string', 0, 1),
+        MemberSpec_('schemeVersionID', 'xsd:normalizedString', 0, 1),
+        MemberSpec_('schemeDataURI', 'xsd:anyURI', 0, 1),
+        MemberSpec_('schemeURI', 'xsd:anyURI', 0, 1),
         MemberSpec_('valueOf_', 'xsd:normalizedString', 0),
     ]
     subclass = None

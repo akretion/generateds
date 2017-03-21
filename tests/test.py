@@ -62,7 +62,7 @@ class GenTest(unittest.TestCase):
         self.compareFiles('out1_sup.py', 'out2_sup.py', ignore=())
         self.compareFiles('out1_sub.py', 'out2_sub.py')
         # cleanup generated files
-        #self.remove('out2_sup.py')
+        self.remove('out2_sup.py')
         self.remove('out2_sub.py')
 
     def test_003_element_groups(self):
@@ -276,7 +276,7 @@ class GenTest(unittest.TestCase):
         self.failUnlessEqual(content1, content2)
         # cleanup generated files
         self.remove('literal2.py')
-        #self.remove('out2_sup.py')
+        self.remove('out2_sup.py')
         self.remove('out2_sub.py')
 
     def test_010_simplecontent_restriction(self):
@@ -834,7 +834,8 @@ class GenTest(unittest.TestCase):
             self.fail("Files differed:\n{}".format(diffs))
 
     def remove(self, filename):
-        os.remove(filename)
+        if False:
+            os.remove(filename)
 
 
 # Make the test suite.

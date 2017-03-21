@@ -630,10 +630,11 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0):
+    def __init__(self, name='', data_type='', container=0, optional=0):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -648,6 +649,8 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_optional(self, optional): self.optional = optional
+    def get_optional(self): return self.optional
 
 
 def _cast(typ, value):
@@ -662,9 +665,9 @@ def _cast(typ, value):
 
 class PlantType_single(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('name', 'xs:string', 0),
-        MemberSpec_('', 'xs:string', 0),
-        MemberSpec_('description', 'DescriptionType', 0),
+        MemberSpec_('name', 'xs:string', 0, 0),
+        MemberSpec_('', 'xs:string', 0, 0),
+        MemberSpec_('description', 'DescriptionType', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -759,9 +762,9 @@ class PlantType_single(GeneratedsSuper):
 
 class PlantType_multiple(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('name', 'xs:string', 0),
-        MemberSpec_('', 'xs:string', 1),
-        MemberSpec_('description', 'DescriptionType', 0),
+        MemberSpec_('name', 'xs:string', 0, 0),
+        MemberSpec_('', 'xs:string', 1, 0),
+        MemberSpec_('description', 'DescriptionType', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -862,8 +865,8 @@ class PlantType_multiple(GeneratedsSuper):
 class DescriptionType(GeneratedsSuper):
     """A standard complexType."""
     member_data_items_ = [
-        MemberSpec_('name', 'xs:string', 0),
-        MemberSpec_('size', 'xs:string', 0),
+        MemberSpec_('name', 'xs:string', 0, 0),
+        MemberSpec_('size', 'xs:string', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -949,8 +952,8 @@ class DescriptionType(GeneratedsSuper):
 class CatalogType(GeneratedsSuper):
     """A standard complexType."""
     member_data_items_ = [
-        MemberSpec_('name', 'xs:string', 0),
-        MemberSpec_('catagory', 'xs:integer', 0),
+        MemberSpec_('name', 'xs:string', 0, 0),
+        MemberSpec_('catagory', 'xs:integer', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -1039,7 +1042,7 @@ class CatalogType(GeneratedsSuper):
 
 class PlantType_single_nochild(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('', 'xs:string', 0),
+        MemberSpec_('', 'xs:string', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -1111,7 +1114,7 @@ class PlantType_single_nochild(GeneratedsSuper):
 
 class PlantType_multiple_nochild(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('', 'xs:string', 1),
+        MemberSpec_('', 'xs:string', 1, 0),
     ]
     subclass = None
     superclass = None
