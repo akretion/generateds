@@ -56,10 +56,19 @@ Options:
                              generated files. This is useful if you want
                              to minimize the amount of (no-operation)
                              changes to the generated python code.
-    --no-process-includes    Do not process included XML schema files.  By
-                             default, generateDS.py will insert content
-                             from files referenced by <include ... />
-                             elements into the XML schema to be processed.
+    --no-process-includes    Do not use process_includes.py to pre-process
+                             included XML schema files.  By default,
+                             generateDS.py will insert content from files
+                             referenced by xs:include and xs:import elements
+                             into the XML schema to be processed and perform
+                             several other pre-procesing tasks.  You likely do
+                             not want to use this option; its use has been
+                             reported to result in errors in generated modules.
+                             Consider using --no-collect-includes and/or
+                             --no-redefine-groups instead.
+    --no-collect-includes    Do not (recursively) collect and insert schemas
+                             referenced by xs:include and xs:import elements.
+    --no-redefine-groups     Do not pre-process and redefine group definitions.
     --silence                Normally, the code generated with generateDS
                              echoes the information being parsed. To prevent
                              the echo from occurring, use the --silence switch.
@@ -204,7 +213,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.25a'
+VERSION = '2.26a'
 ##VERSION##
 
 if sys.version_info.major == 2:
@@ -507,6 +516,7 @@ def set_type_constants(nameSpace):
 #
 # For debugging.
 #
+
 
 # Print only if DEBUG is true.
 DEBUG = 0
@@ -6681,9 +6691,18 @@ def is_builtin_simple_type(type_val):
 
 
 def parseAndGenerate(
-        outfileName, subclassFilename, prefix,
-        xschemaFileName, behaviorFilename, catalogFilename,
-        processIncludes, options, args, superModule='???'):
+        outfileName,
+        subclassFilename,
+        prefix,
+        xschemaFileName,
+        behaviorFilename,
+        catalogFilename,
+        processIncludes,
+        options,
+        noCollectIncludes,
+        noRedefineGroups,
+        args,
+        superModule='???'):
     global DelayedElements, DelayedElements_subclass, \
         AlreadyGenerated, SaxDelayedElements, \
         AlreadyGenerated_subclass, UserMethodsPath, UserMethodsModule, \
@@ -6718,7 +6737,10 @@ def parseAndGenerate(
                 infile, outfile,
                 inpath=xschemaFileName,
                 catalogpath=catalogFilename,
-                fixtypenames=FixTypeNames)
+                fixtypenames=FixTypeNames,
+                no_collect_includes=noCollectIncludes,
+                no_redefine_groups=noRedefineGroups,
+            )
             outfile.seek(0)
             infile = outfile
             SchemaLxmlTree = doc.getroot()
@@ -6963,6 +6985,7 @@ def main():
                 'module-suffix=', 'use-old-simpletype-validators',
                 'preserve-cdata-tags', 'cleanup-name-list=',
                 'no-warnings',
+                'no-collect-includes', 'no-redefine-groups',
             ])
     except getopt.GetoptError:
         usage()
@@ -6981,6 +7004,8 @@ def main():
     showVersion = False
     xschemaFileName = None
     catalogFilename = None
+    noCollectIncludes = False
+    noRedefineGroups = False
     for option in options:
         if option[0] == '--session':
             sessionFilename = option[1]
@@ -7149,6 +7174,10 @@ def main():
             CleanupNameList = capture_cleanup_name_list(option[1])
         elif option[0] == '--no-warnings':
             NoWarnings = True
+        elif option[0] == '--no-collect-includes':
+            noCollectIncludes = True
+        elif option[0] == '--no-redefine-groups':
+            noRedefineGroups = True
     if showVersion:
         print('generateDS.py version %s' % VERSION)
         sys.exit(0)
@@ -7169,9 +7198,18 @@ def main():
     TEMPLATE_SUBCLASS_FOOTER = fixSilence(TEMPLATE_SUBCLASS_FOOTER, silent)
     load_config()
     parseAndGenerate(
-        outFilename, subclassFilename, prefix,
-        xschemaFileName, behaviorFilename, catalogFilename,
-        processIncludes, options, args, superModule=superModule)
+        outFilename,
+        subclassFilename,
+        prefix,
+        xschemaFileName,
+        behaviorFilename,
+        catalogFilename,
+        processIncludes,
+        options,
+        noCollectIncludes,
+        noRedefineGroups,
+        args,
+        superModule=superModule)
 
 
 if __name__ == '__main__':

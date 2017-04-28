@@ -141,6 +141,17 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.26a (05/01/2017)
+
+- Added command line options --no-collect-includes and
+  --no-redefine-groups.  These options selectively turn off tasks
+  performed in process_includes.py.  These options were added
+  because the use of --no-process-includes (which omits all
+  processing done in process_includes.py) was reported to cause
+  errors.  See the documentation and the usage message (run
+  `generateDS.py --help`) for more information.  Thanks to
+  Florian Wilmshoever for reporting and working with me on this.
+
 Version 2.25a (03/21/2017)
 
 - Fixes to the Django support for Python 3.  Thanks to Shane Rigby
