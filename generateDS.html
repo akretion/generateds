@@ -220,7 +220,7 @@ They are used by updateversion.py. -->
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">revision:</th><td class="field-body">2.25a</td>
+<tr class="field"><th class="field-name">revision:</th><td class="field-body">2.26a</td>
 </tr>
 </tbody>
 </table>
@@ -229,7 +229,7 @@ They are used by updateversion.py. -->
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">date:</th><td class="field-body">March 21, 2017</td>
+<tr class="field"><th class="field-name">date:</th><td class="field-body">April 28, 2017</td>
 </tr>
 </tbody>
 </table>
@@ -380,12 +380,12 @@ to process the contents of an XML document.</td>
 </li>
 <li><a class="reference internal" href="#limitations-of-generateds" id="id92">17&nbsp;&nbsp;&nbsp;Limitations of generateDS</a><ul class="auto-toc">
 <li><a class="reference internal" href="#xml-schema-limitations" id="id93">17.1&nbsp;&nbsp;&nbsp;XML Schema limitations</a></li>
-<li><a class="reference internal" href="#large-documents" id="id94">17.2&nbsp;&nbsp;&nbsp;Large documents</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#includes-the-xml-schema-include-element" id="id95">18&nbsp;&nbsp;&nbsp;Includes -- The XML schema include element</a></li>
-<li><a class="reference internal" href="#acknowledgments" id="id96">19&nbsp;&nbsp;&nbsp;Acknowledgments</a></li>
-<li><a class="reference internal" href="#see-also" id="id97">20&nbsp;&nbsp;&nbsp;See also</a></li>
+<li><a class="reference internal" href="#includes-the-xml-schema-xs-include-and-xs-import-elements" id="id94">18&nbsp;&nbsp;&nbsp;Includes -- The XML schema xs:include and xs:import elements</a></li>
+<li><a class="reference internal" href="#processing-relaxng-schemas" id="id95">19&nbsp;&nbsp;&nbsp;Processing RelaxNG schemas</a></li>
+<li><a class="reference internal" href="#acknowledgments" id="id96">20&nbsp;&nbsp;&nbsp;Acknowledgments</a></li>
+<li><a class="reference internal" href="#see-also" id="id97">21&nbsp;&nbsp;&nbsp;See also</a></li>
 </ul>
 </div>
 <div class="section" id="introduction">
@@ -586,10 +586,19 @@ Options:
                              generated files. This is useful if you want
                              to minimize the amount of (no-operation)
                              changes to the generated python code.
-    --no-process-includes    Do not process included XML schema files.  By
-                             default, generateDS.py will insert content
-                             from files referenced by &lt;include ... /&gt;
-                             elements into the XML schema to be processed.
+    --no-process-includes    Do not use process_includes.py to pre-process
+                             included XML schema files.  By default,
+                             generateDS.py will insert content from files
+                             referenced by xs:include and xs:import elements
+                             into the XML schema to be processed and perform
+                             several other pre-procesing tasks.  You likely do
+                             not want to use this option; its use has been
+                             reported to result in errors in generated modules.
+                             Consider using --no-collect-includes and/or
+                             --no-redefine-groups instead.
+    --no-collect-includes    Do not (recursively) collect and insert schemas
+                             referenced by xs:include and xs:import elements.
+    --no-redefine-groups     Do not pre-process and redefine group definitions.
     --silence                Normally, the code generated with generateDS
                              echoes the information being parsed. To prevent
                              the echo from occurring, use the --silence switch.
@@ -802,15 +811,30 @@ changes to the generated python code.</dd>
 useful if you want to minimize the amount of (no-operation)
 changes to the generated python code.</dd>
 <dt>no-process-includes</dt>
-<dd>Do not process included XML Schema files.  By default,
-generateDS.py will insert content from files referenced by
-<tt class="docutils literal">&lt;include ... /&gt;</tt> elements into the XML Schema to be processed.
-See section <a class="reference internal" href="#include-file-processing">Include file processing</a>.  Note that include
-processing, which is performed in <tt class="docutils literal">process_includes.py</tt> is
-required for generating validator bodies from the XML schema,
-because the Lxml ElementTree produced in <tt class="docutils literal">process_includes.py</tt>
-is needed to generate the validator code.  So, using this option
-also turns off automatic generation of validator code.</dd>
+<dd>Do not use <tt class="docutils literal">process_includes.py</tt> to pre-process included XML
+Schema files.  By default, generateDS.py will insert content
+from files referenced by <tt class="docutils literal">xs:include</tt> and <tt class="docutils literal">xs:import</tt>
+elements into the XML Schema to be processed.  See section
+<a class="reference internal" href="#include-file-processing">Include file processing</a>.  Note that include processing, which
+is performed in <tt class="docutils literal">process_includes.py</tt> is required for
+generating validator bodies from the XML schema, because the
+Lxml ElementTree produced in <tt class="docutils literal">process_includes.py</tt> is needed
+to generate the validator code.  So, using this option also
+turns off automatic generation of validator code.  Also note
+that process_includes(.py) performs additional tasks; it also
+(1) assigns names to each anonymous complexType, (2) processes
+(replaces) group definitions, and (3) possibly fixes complexType
+names (see command line option --fix-type-names).  You likely do
+not want to use this option; its use has been reported to result
+in errors in generated modules.  Consider using
+--no-collect-includes and/or --no-redefine-groups instead.</dd>
+<dt>no-collect-includes</dt>
+<dd>Do not (recursively) collect and insert schemas referenced by
+<tt class="docutils literal">xs:include</tt> and <tt class="docutils literal">xs:import</tt> elements.  This task is
+performed in <tt class="docutils literal">process_includes.py</tt>.</dd>
+<dt>no-redefine-groups</dt>
+<dd>Do not pre-process and redefine group definitions.  This task is
+performed in <tt class="docutils literal">process_includes.py</tt>.</dd>
 <dt>silence</dt>
 <dd>Normally, the code generated with generateDS echoes the
 information being parsed. To prevent the echo from occurring,
@@ -3111,41 +3135,24 @@ people.xml for examples.</p>
 <p>And, then, try it on your XML Schema, and let me know about what
 does not work.</p>
 </div>
-<div class="section" id="large-documents">
-<h2><a class="toc-backref" href="#id94">17.2&nbsp;&nbsp;&nbsp;Large documents</a></h2>
-<p><strong>Warning</strong> -- This section describes an optional generated SAX
-parser which, I believe, is currently broken for all but the
-simplest schemas.  Generation of a SAX parser has not been updated
-for the latest changes to <tt class="docutils literal">generateDS.py</tt>.  In particular, when
-names of elements are reused (in different parent elements), the
-SAX parser becomes confused. Until I've been able to figure out
-how to fix this, you are advised not to use the SAX parser.</p>
-<p><tt class="docutils literal">generateDS.py</tt> generates two kinds of parsers: one kind is
-based on SAX and the other is build on minidom. See the generated
-functions saxParse, parse(), and parseString(). Using the SAX
-parser instead of the minidom parser should reduce memory
-requirements for large documents, since the minidom parser, but
-not the SAX parser, constructs a DOM tree for the entire document
-in memory.</p>
-<p>However, both styles of parsers construct instances of the data
-structures generated by <tt class="docutils literal">generateDS.py</tt>. This means that, even
-when the SAX parser is used, <tt class="docutils literal">generateDS.py</tt> may not be
-well-suited for applications that read large XML documents,
-although what &quot;large&quot; means depends on your hardware. Notice that
-the minidom parsing functions (parse() and parseString())
-over-write the variable doc so as to enable Python to reclaim the
-space occupied by the DOM tree, which may help alleviate the
-memory problem to some extent when the minidom parser is used.</p>
 </div>
-</div>
-<div class="section" id="includes-the-xml-schema-include-element">
-<h1><a class="toc-backref" href="#id95">18&nbsp;&nbsp;&nbsp;Includes -- The XML schema include element</a></h1>
+<div class="section" id="includes-the-xml-schema-xs-include-and-xs-import-elements">
+<h1><a class="toc-backref" href="#id94">18&nbsp;&nbsp;&nbsp;Includes -- The XML schema xs:include and xs:import elements</a></h1>
 <p>While <tt class="docutils literal">generateDS.py</tt> itself does not process XML Schema
 <tt class="docutils literal">include</tt> elements, the distribution provides a script
-<tt class="docutils literal">process_includes.py</tt> that can be used as a preprocessor.  This
-script scans your XML Schema document and, recursively, documents
-that are included looking for <tt class="docutils literal">include</tt> elements; it inserts all
-content into a single document, which it writes out.</p>
+<tt class="docutils literal">process_includes.py</tt> that can be used as a preprocessor.
+<tt class="docutils literal">process_includes.py</tt> is called automatically and by default by
+<tt class="docutils literal">generateDS.py</tt>.  This behavior can be turned off with the
+<tt class="docutils literal"><span class="pre">--no-process-includes</span></tt> command line option.  <strong>However</strong>, doing
+so is not advised, because unexpected and undesirable behavior has
+been detected this is done.  Instead consider using the
+<tt class="docutils literal"><span class="pre">--no-collect-includes</span></tt> and <tt class="docutils literal"><span class="pre">--no-redefine-groups</span></tt> command line
+options to selectively turn of specific processing done in
+<tt class="docutils literal">process_includes.py</tt>.</p>
+<p>The <tt class="docutils literal">process_includes.py</tt> script scans your XML Schema document
+and, recursively, documents that are included looking for
+<tt class="docutils literal">include</tt> elements; it inserts all content into a single document,
+which it writes out.</p>
 <p>Here are samples of how you might use <tt class="docutils literal">process_includes.py</tt>, if
 your schema contains <tt class="docutils literal">include</tt> elements.</p>
 <p>Example 1:</p>
@@ -3163,8 +3170,49 @@ $ python generateDS.py -f --super=task1sup -o task1sup.py -s task1sub.py tmp.xsd
 $ python process_includes.py --help
 </pre>
 </div>
+<div class="section" id="processing-relaxng-schemas">
+<h1><a class="toc-backref" href="#id95">19&nbsp;&nbsp;&nbsp;Processing RelaxNG schemas</a></h1>
+<p>RelaxNG is a schema definition language and is an alternative to XML
+Schema.  For more information on RelaxNG, see: <a class="reference external" href="http://relaxng.org/">http://relaxng.org/</a>.</p>
+<p><tt class="docutils literal">generateDS.py</tt> does not understand or process RelaxNG schemas.
+However, the <tt class="docutils literal">trang</tt> application is able to convert RelaxNG into
+XML Schemas.  I've tried it, and was able to convert a relatively
+small RelaxNG schema into an XML Schema, and then use
+<tt class="docutils literal">generateDS.py</tt> to generate a bindings module from that.  I have
+not done any serious testing to determine how complete or accurate
+this conversion is.  <tt class="docutils literal">trang</tt> is written in Java, so you will need
+Java and the JDK installed in order to compile and use it.  For what
+it's worth, here are the steps I followed in order to use <tt class="docutils literal">trang</tt>:</p>
+<ol class="arabic">
+<li><p class="first">Clone trang from <a class="reference external" href="https://github.com/relaxng/jing-trang.git">https://github.com/relaxng/jing-trang.git</a>,
+and, then built it with:</p>
+<pre class="literal-block">
+$ git clone https://github.com/relaxng/jing-trang.git
+$ cd jing-trang
+# set JAVA_HOME to location of JDK
+$ export JAVA_HOME=/usr/lib/jvm/jdk-8-oracle-arm32-vfp-hflt
+$ ./ant
+</pre>
+</li>
+<li><p class="first">Run <tt class="docutils literal">trang</tt> with the following:</p>
+<pre class="literal-block">
+$ cd jing-trang/build
+$ java -jar trang.jar -I rng -O xsd test01.rng test01.xsd
+</pre>
+<p>The above command produced test01.xsd.</p>
+</li>
+<li><p class="first">Run the resulting XML Schema (<tt class="docutils literal">test01.xsd</tt>, in the above case)
+through <tt class="docutils literal">generateDS.py</tt>:</p>
+<blockquote>
+<p>$ generateDS.py -o test01sup.py -s test01sub.py test01.xsd</p>
+</blockquote>
+</li>
+</ol>
+<p>You can learn more about <tt class="docutils literal">trang</tt> at the RelaxNG web site and here:
+<a class="reference external" href="https://github.com/relaxng/jing-trang">https://github.com/relaxng/jing-trang</a></p>
+</div>
 <div class="section" id="acknowledgments">
-<h1><a class="toc-backref" href="#id96">19&nbsp;&nbsp;&nbsp;Acknowledgments</a></h1>
+<h1><a class="toc-backref" href="#id96">20&nbsp;&nbsp;&nbsp;Acknowledgments</a></h1>
 <p>Many thanks to those who have used <tt class="docutils literal">generateDS.py</tt> and have
 contributed their comments and suggestions.  These comments have
 been valuable both in teaching me about things I needed to know in
@@ -3178,7 +3226,7 @@ following among others:</p>
 </ul>
 </div>
 <div class="section" id="see-also">
-<h1><a class="toc-backref" href="#id97">20&nbsp;&nbsp;&nbsp;See also</a></h1>
+<h1><a class="toc-backref" href="#id97">21&nbsp;&nbsp;&nbsp;See also</a></h1>
 <p><a class="reference external" href="http://www.python.org">Python</a>: The Python home page.</p>
 <p><a class="reference external" href="http://www.davekuhlman.org">Dave's Page</a>: My home page, which contains more Python stuff.</p>
 <!-- vim:ft=rst: -->
@@ -3187,7 +3235,7 @@ following among others:</p>
 <div class="footer">
 <hr class="footer" />
 <a class="reference external" href="generateDS.txt">View document source</a>.
-Generated on: 2017-03-21 19:50 UTC.
+Generated on: 2017-04-28 21:54 UTC.
 Generated by <a class="reference external" href="http://docutils.sourceforge.net/">Docutils</a> from <a class="reference external" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> source.
 
 </div>
