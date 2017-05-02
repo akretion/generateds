@@ -151,6 +151,9 @@ Version 2.26a (05/01/2017)
   errors.  See the documentation and the usage message (run
   `generateDS.py --help`) for more information.  Thanks to
   Florian Wilmshoever for reporting and working with me on this.
+- Moved README to README.rst so that hopefully Bitbucket will
+  render it as reStructuredText (with Docutils).  Also, fixed a
+  number of reST/Docutils errors in README.rst
 
 Version 2.25a (03/21/2017)
 
@@ -188,7 +191,7 @@ Version 2.24b (01/02/2017)
   this.
 - Modified the Django support (in ./django/) so that it will run
   under Python 3.  Thanks to Shane Rigby for reporting this problem.
-- Fixed an error in encoding unicode valueOf_ for  <xs:complexType 
+- Fixed an error in encoding unicode ``valueOf_`` for  <xs:complexType 
   <xs:simpleContent> <xs:extension base="xs:string">.  Thanks to
   Andrii Iudin for catching this.
 
@@ -333,7 +336,7 @@ Version 2.19a (02/08/2016)
   However, there may be tasks that can be performed with that script
   or a modified version of it that cannot be done with this approach
   using a global variable.  Here is a sample script that uses this
-  option:
+  option::
 
       import tmp01suba
       import tmp01subb
@@ -822,7 +825,7 @@ Version 2.6b (10/13/2011)
     those methods in the common superclass.
   * Fix to django/generatedssuper.py -- Regularized and fixed the
     names generated in models and forms files.
-  * Fix to the code that generates the member_data_item_/MemberSpec_
+  * Fix to the code that generates the ``member_data_item_/MemberSpec_``
     list/dict.  If the type of a child element is defined by a
     reference (ref="") to an element rather than, e.g.  a
     complexType, it was using the child's name not it's type.
@@ -858,7 +861,7 @@ Version 2.6a (07/28/2011)
     problem and bringing it to my attention.
   * Fix for generation of export method that exports xs:anyAttribute
     when there is an xsi:type attribute.
-  * Fix for use of valueOf_ -- Should only be used when element is
+  * Fix for use of ``valueOf_`` -- Should only be used when element is
     defined either with (1) mixed content or (2) simpleContent.
   * Question: The xsi:type attribute is being exported for any
     derived type.  Perhaps it's harmless, but it seems excessive.
@@ -922,7 +925,7 @@ Version 2.4c (03/21/2011)
     this was not handled correctly, in particular, the generation of
     arguments and paramenters for ctors (__init__) was inconsistent
     and caused errors.
-  * Regularized the handling of fromsubclass_ and added this
+  * Regularized the handling of ``fromsubclass_`` and added this
     handling to the exportChildren methods.  This is used to tell a
     superclass, during build and export, that the subclass has
     already performed certain operations.
@@ -1075,7 +1078,7 @@ Version 2.2a (9/14/2010)
   * Instead of using the lower() function from the string module,
     added a function to the GeneratedsSuper class and used the string
     method.  Prepares for Python 3.0
-  * Added "gds_" prefix to all methods in class GeneratedsSuper to
+  * Added ``gds_`` prefix to all methods in class GeneratedsSuper to
     make possible name clashes less likely.
   * Fixes to exporting elements with mixed="true" -- Reduced extra
     whitespace.
@@ -1089,7 +1092,7 @@ Version 2.1d (8/23/2010)
     type checking of NonNegativeIntegerType.
   * Fix to generation parameters in call to superclass constructor. 
     Count of children was incorrect, triggering generation of
-    valueOf_.
+    ``valueOf_``.
   * Known issue -- If type B extends type A, and type A declares
     anyAttribute, then duplicate attributes with the same name may
     be produced during export.
@@ -1133,7 +1136,7 @@ Version 2.1a (7/8/2010)
 
 Version 2.0b (6/24/2010)
 
-  * Fix to generation of export method so that valueOf_ is exported
+  * Fix to generation of export method so that ``valueOf_`` is exported
     when childCount == 0 and not isMixed.
 
 Version 2.0a (6/21/2010)
@@ -1145,7 +1148,7 @@ Version 2.0a (6/21/2010)
     and parseLiteral() so that they automatically recognize the
     root element of an instance XML document and call the build
     method of the appropriate class.
-  * Fix to hasContent_ method so that in elements defined
+  * Fix to ``hasContent_`` method so that in elements defined
     with extension-base, the superclass is checked also.
   * For classes that must call an overridden method m in the
     superclass, switched to use "super(superclassname, self).m(...)"
@@ -1168,8 +1171,8 @@ Version 1.20f (5/3/2010)
   * Fix so that we do a better job of determining whether a
     reference to a type is a simple, builtin type in generation of
     constructor.
-  * Fix to generation of constructors so that (1) valueOf_ is
-    intialized in subclass modules and (2) valueOf_ is initialized
+  * Fix to generation of constructors so that (1) ``valueOf_`` is
+    intialized in subclass modules and (2) ``valueOf_`` is initialized
     to None (rather than '').
   * To do: Extend the --root-element flag so that we can specify both
     the tag name and the element/type name.  Sometimes they are
@@ -1250,23 +1253,23 @@ Version 1.19a (10/21/2009)
     when the --member-specs=list|dict command line option is used. 
     For a complexType defined as a simpleType, we now generate a
     list of the simpleType and the simpleTypes it is based on using
-    name "valueOf_".  Thanks to Ryan Leslie for much help and
+    name ``valueOf_``.  Thanks to Ryan Leslie for much help and
     guidance with these changes.
-    Example:
+    Example::
 
         'valueOf_': MemberSpec_('valueOf_', [u'RelationType', 
             u'RelationType2', u'xs:string'], 0),
 
     Note the following incompatible changes:
 
-      - _MemberSpec changed to MemberSpec_ -- We want avoid posible
+      - _MemberSpec changed to ``MemberSpec_`` -- We want avoid posible
         name conflicts, not make it "weakly hidden".  See the Python
         style guide for more on this
-      - _member_data_items changed to member_data_items_ -- Same
+      - _member_data_items changed to ``member_data_items_`` -- Same
         reason.
-      - Method MemberSpec_.get_data_type() now returns the last item
+      - Method ``MemberSpec_``.get_data_type() now returns the last item
         if the types is a list and the single type if not a list.
-      - Method MemberSpec_.get_data_type_chain() is a new method that
+      - Method ``MemberSpec_``.get_data_type_chain() is a new method that
         returns the entire list of data types.
 
     The new tutorial (see tutorial/tutorial.html in the
@@ -1335,7 +1338,7 @@ Version 1.18c (8/11/2009)
   * Small changes related to check for mixed content.
   * Enhancement to generation of hasContent_() method to check for items
     with maxOccurs > 1.
-  * Fix for generation of test for valueOf_ in hasContent() method.
+  * Fix for generation of test for ``valueOf_`` in hasContent() method.
   * Fix for generation of initializers in ctor -- children were being
     skipped when the element is mixed.
 
@@ -1437,8 +1440,8 @@ Version 1.16d (3/25/2009)
 
     which will insert the namespace prefix definition in the
     exported root element.
-  * Added new command line option --namespacedef= to specify
-    the namespacedef_ to be passed in by the generated
+  * Added new command line option ``--namespacedef=`` to specify
+    the ``namespacedef_`` to be passed in by the generated
     parse() and parseString() functions.  Example use:
 
         generateDS.py --namespacedef='xmlns:abc="http://www.abc.com/"'
@@ -1619,7 +1622,7 @@ Version 1.9a (11/27/2006, again)
 
 Version 1.9a (10/22/2006, again)
   * Fix to capture text content of nodes defined with attributes
-    but with no nested elements into member varialbe valueOf_.
+    but with no nested elements into member varialbe ``valueOf_``.
 
 Version 1.9a (10/10/2006)
   * Added minimal support for simpleType.
@@ -1789,9 +1792,9 @@ Version 1.6b (8/18/04)
 
   * Added ability to access the text content of elements that are
     defined but have *no* nested elements.  The member variable is
-    "valueOf_" (note underscore which will hopefully avoid name
-    conflicts) and the getter and setter methods are "getValueOf_"
-    and "setValueOf_".
+    ``valueOf_`` (note underscore which will hopefully avoid name
+    conflicts) and the getter and setter methods are ``getValueOf_``
+    and ``setValueOf_``.
   * Fixes to generation of exportLiteral methods.  Formerly,
     export of attributes was omitted.
   * Removed un-used function that contained "yield" statement,
@@ -1909,7 +1912,7 @@ The following enhancements and fixes remain to be done:
 
 - The <sequence> element can have "minOccurs" and "maxOccurs"
   attributes.  I'm guessing, but am not sure that this specifies
-  repeated groups.  For example, the following:
+  repeated groups.  For example, the following::
 
       <xs:sequence minOccurs="0" maxOccurs="unbounded">
           <xs:element name="description" type="xs:string"/>

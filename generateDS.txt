@@ -2584,7 +2584,7 @@ Suggestion -- How to begin:
 6. Repeat as necessary.
 
 
-.. _`gends_user_methods.py`: gends_user_methods.py
+.. _`gends_user_methods.py`: https://bitbucket.org/dkuhlman/generateds/src
 
 
 Overridable methods
