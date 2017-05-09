@@ -141,7 +141,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
-Version 2.26a (05/01/2017)
+Version 2.26a (05/09/2017)
 
 - Added command line options --no-collect-includes and
   --no-redefine-groups.  These options selectively turn off tasks
@@ -153,7 +153,12 @@ Version 2.26a (05/01/2017)
   Florian Wilmshoever for reporting and working with me on this.
 - Moved README to README.rst so that hopefully Bitbucket will
   render it as reStructuredText (with Docutils).  Also, fixed a
-  number of reST/Docutils errors in README.rst
+  number of reST/Docutils errors in README.rst.
+- Another fix for unicode encoding in process_includes.py.
+- A bug was uncovered when the "-o" command line option is omitted
+  and the Python version is 3.  Added a check that forces the use of
+  the "-o" option unless the one-per option is included.  Thanks to
+  Oskari Petas for reporting this.
 
 Version 2.25a (03/21/2017)
 

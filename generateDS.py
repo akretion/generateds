@@ -6546,8 +6546,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     MappingTypes.clear()
     AlreadyGenerated = set()
     outfile = None
-    if outfileName:
-        outfile = makeFile(outfileName)
+    outfile = makeFile(outfileName)
     if not outfile:
         outfile = os.tmpfile()
     wrt = outfile.write
@@ -6574,6 +6573,8 @@ def generate(outfileName, subclassFilename, behaviorFilename,
         if not isNewState():
             sys.stderr.write('\n*** maxLoops exceeded.  Something is '
                              'wrong with --one-file-per-xsd.\n\n')
+            sys.stderr.write('*** Failed to process the following element '
+                'definitions:\n    %s\n' % (PostponedExtensions))
             break
         element = PostponedExtensions.pop()
         parentName, parent = getParentName(element)
@@ -7197,6 +7198,8 @@ def main():
     TEMPLATE_MAIN = fixSilence(TEMPLATE_MAIN, silent)
     TEMPLATE_SUBCLASS_FOOTER = fixSilence(TEMPLATE_SUBCLASS_FOOTER, silent)
     load_config()
+    if outFilename is None and SingleFileOutput:
+        sys.exit('\nMissing required option "-o" (output module name)\n')
     parseAndGenerate(
         outFilename,
         subclassFilename,
