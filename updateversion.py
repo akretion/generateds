@@ -16,6 +16,7 @@ Example:
 #
 # Imports
 
+from __future__ import print_function
 import sys
 import getopt
 import re
@@ -71,7 +72,7 @@ def updateversion(version):
     for spec in REPL_SPEC:
         targetfilename = spec['filename']
         if VERBOSE:
-            print 'updating: "%s"' % (targetfilename, )
+            print('updating: "%s"' % (targetfilename, ))
         targetfile = open(targetfilename, 'r')
         content = targetfile.read()
         targetfile.close()
@@ -100,7 +101,7 @@ def update1file(targetfilename, content):
 def replfuncmaker(version):
     def replfunc(matchobj):
         if VERBOSE:
-            print '(replfunc) matchobj.groups()', matchobj.groups()
+            print('(replfunc) matchobj.groups()', matchobj.groups())
         return matchobj.group(1) + version + matchobj.group(3)
     return replfunc
 
@@ -109,7 +110,7 @@ USAGE_TEXT = __doc__
 
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 

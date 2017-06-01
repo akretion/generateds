@@ -32,6 +32,7 @@ import sys
 import getopt
 import os
 from subprocess import Popen, PIPE
+from glob import glob
 
 
 #
@@ -61,7 +62,16 @@ def generate(options, schema_file_name):
     admin_file_name = 'admin.py'
     dbg_msg(options, 'schema_name_stem: %s\n' % (schema_name_stem, ))
     dbg_msg(options, 'bindings_file_name: %s\n' % (bindings_file_name, ))
-    if not options['force']:
+    if options['force']:
+        file_names = (
+            glob(bindings_file_name) +
+            glob('%s.pyc' % bindings_file_stem) +
+            glob('__pycache__/%s.*.pyc' % bindings_file_stem)
+        )
+        for file_name in file_names:
+            dbg_msg(options, 'removing: %s\n' % file_name)
+            os.remove(file_name)
+    else:
         flag1 = exists(bindings_file_name)
         flag2 = exists(model_file_name)
         flag3 = exists(form_file_name)
@@ -101,14 +111,12 @@ def run_cmd(options, args):
     content2 = process.stdout.read()
     if content1:
         sys.stderr.write('*** error ***\n')
-        sys.stderr.write(content1)
+        sys.stderr.write(content1.decode('utf-8'))
         sys.stderr.write('*** error ***\n')
-        return False
     if content2:
         dbg_msg(options, '*** message ***\n')
-        dbg_msg(options, content2)
+        dbg_msg(options, content2.decode('utf-8'))
         dbg_msg(options, '*** message ***\n')
-        return True
     return True
 
 

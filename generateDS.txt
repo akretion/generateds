@@ -12,7 +12,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.26a
+:revision: 2.27a
 
 .. version
 
@@ -302,6 +302,10 @@ Here is the usage message displayed by ``generateDS.py``::
                                  the export() method by the generated
                                  parse() and parseString() functions.
                                  Default=''.
+        --no-namespace-defs      Do not pass namespace definitions as the value
+                                 for the namespacedef_ parameter of the export
+                                 method, even if it can be extraced from the
+                                 schema.
         --external-encoding=<encoding>
                                  Encode output written by the generated export
                                  methods using this encoding.  Default, if omitted,
@@ -564,6 +568,15 @@ namespacedef="<http://...>"
     element.  (Actually, you can insert any attribute.) The default
     is an empty string.
 
+no-namespace-defs
+    Do not pass namespace definitions as the value for the
+    ``namespacedef_`` parameter of the export method, even if it can
+    be extraced from the schema.  The default is off.  You might
+    want to consider using this in combination with the ability to
+    attach namespace prefix definitions to specific element types
+    during export, as described here: `Adding custom exported
+    attributes and namespace prefix definitions`_.
+
 external-encoding=<encoding>
     If an XML instance document contains character data or
     attribute values that are not in the ASCII character set, then
@@ -605,7 +618,7 @@ export
       and use any of lxml's other capabilities.
 
     For example: ``--export="write etree"`` and ``--export="write"``.  The
-    default is: ``--export="write literal"``.
+    default is: ``--export="write"``.
 
 preserve-cdata-tags
     Preserve CDATA tags.  Normally, CDATA tags ("<![CDATA[ ... ]]>")
@@ -1160,8 +1173,8 @@ Here is a bit of explanation of what that generated code will do.
   generated validation code calls ``gds_validate_xxx``, where "xxx"
   is a base, simple type.  In some cases, you will be able to add
   additional code to that method to perform custom checking.  See
-  section `Overridable methods`_ for information on how to use and
-  override that class.
+  section `Overridable methods -- generatedssuper.py`_ for
+  information on how to use and override that class.
 
 - When validation finds data that fails to validate, it generates a
   warning (using the ``warnings`` module from the Python standard
@@ -1879,8 +1892,8 @@ in the ``GeneratedsSuper`` class.  This method has a default
 implementation in the generated code.  If your XML schema uses
 ``xs:any``, you may need to add some code to that default
 implementation of ``gds_build_any``.  See section `Overridable
-methods`_ for guidance on how to provide an implementation of that
-method.
+methods -- generatedssuper.py`_ for guidance on how to provide an
+implementation of that method.
 
 For more help with this, look at the code generated from an XML
 schema that uses ``xs:any``.  In particular, look at the code
@@ -2587,8 +2600,8 @@ Suggestion -- How to begin:
 .. _`gends_user_methods.py`: https://bitbucket.org/dkuhlman/generateds/src
 
 
-Overridable methods
-----------------------------
+Overridable methods -- generatedssuper.py
+-------------------------------------------
 
 ``generateDS.py`` generates calls to several methods that each have
 a default implementation in a superclass.  The default superclass
@@ -2723,8 +2736,63 @@ that complexType definition.  This dictionary is named
 with the "-o" option.
 
 
+Adding custom exported attributes and namespace prefix definitions
+--------------------------------------------------------------------
+
+You can add additional attributes to exported XML content by (1)
+providing a module named ``generatedsnamespaces.py``; (2) placing
+that module somewhere so that it can be imported when you "run" your
+generated module; and (3) including in ``generatedsnamespaces.py`` a
+global variable named ``GenerateDSNamespaceDefs`` whose value is a
+Python dictionary.  The keys in this dictionary should be element
+type names in the generated module.  And the values should be text
+strings that are attributes to be added to exported elements of that
+type.
+
+Here is an example::
+
+    # file: generatedsnamespaces.py
+
+    GenerateDSNamespaceDefs = {
+        "A1ElementType": 'xmlns:abc="http://www.abc.com/namespace_a1"',
+        "A2ElementType": 'xmlns:abc="http://www.abc.com/namespace_a2"',
+    }
+
+Notes:
+
+- While the original intension of this facility was to enable the
+  user to add XML namespace prefix definitions to the XML content in
+  exported files, you can use it to add other attribute definitions
+  as well.
+
+- If you find that ``generateDS.py`` is adding a specific namespace
+  prefix definition to many exported XML elements and you want to
+  suppress this behavior, take a look at the ``--no-namespace-defs``
+  command line option.  In particular, this command line option may
+  be useful when used together with the capability described in this
+  section (``generatedsnamespaces.py``).
+
+
 "One Per" -- generating separate files from imported/included schemas
 =======================================================================
+
+The ``generateDS.py`` project provides support for two approaches to
+this task:
+
+- The first (`Approach 1 -- Command line option
+  --one-file-per-xsd`_, below) is likely to be easier to use, but if
+  it does not work for you as is, it is very difficult to customize.
+
+- The second method (`Approach 2 -- Extraction and generation
+  utilities`_, below) may require a little more work and
+  understanding, but offers more options and customization, and,
+  since the scripts that implement it are short and rather simple,
+  may be easier to customize or even re-write for your specific
+  needs.
+
+
+Approach 1 -- Command line option --one-file-per-xsd
+----------------------------------------------------------
 
 The ``--one-file-per-xsd`` command line option enables you to
 generate a separate Python module for each XML schema that is
@@ -2776,6 +2844,52 @@ Here are a few hints, guidelines, and suggestions:
   not in ``sys.path``, add a file named "__init__.py" to that
   directory.  The existence of the file ``__init__.py`` turns the
   directory into a Python package.
+
+
+Approach 2 -- Extraction and generation utilities
+---------------------------------------------------
+
+The ``generateds/utils`` subdirectory contains two utility scripts
+that may help with this task.  The procedure is as follows:
+
+1. First, use ``utils/collect_schema_locations.py`` to collect a set
+   of directives, one for each (included) schema and each module to
+   be generated.  This utility writes out a JSON file that contains
+   the directives to be used in the next step.
+
+2. Next, use ``utils/batch_generate.py`` to generate one module (or
+   perhaps two modules, see below) for each directive in that JSON
+   file.
+
+Each of these modules gives a reasonable amount of usage information
+in response to the ``--help`` command line option.
+
+A few hints and suggestions:
+
+- After generating the JSON directives file you can modify it with
+  your text editor.  For example, (1) you can add the name of
+  sub-class modules to be generated by ``generateDS.py``; (2) you
+  can specify command line options to be used by ``generateDS.py``
+  when generating specific modules; and (3) you can add new
+  directives to generate additional modules.
+
+- If you find yourself typing the same command line options to
+  ``utils/batch_generate.py`` over and over, there is a facility to
+  put command line options that have long names (i.e., not one
+  character names) into a configuration file.  The usage information
+  produced by ``utils/batch_generate.py --help`` shows an example.
+  Then use ``utils/batch_generate.py --config=myoptins.config ...``
+  to feed this configuration file to ``utils/batch_generate.py``.
+  The options in this configuration file can be overridden by those
+  entered on the command line.
+
+- The JSON directives file can contain comments, even though this is
+  not part of the JSON standard.  A comment is any line that begins
+  with "//" where the "//" is proceeded only by white space
+  characters.  ``utils/batch_generate.py`` strips these lines out
+  before parsing the JSON file.  However, if you plan to process
+  this JSON file with other processes, you will likely either not
+  want to add comments or plan to pre-process them in some way.
 
 
 How to modify the generated code

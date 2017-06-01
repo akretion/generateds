@@ -274,9 +274,16 @@ def resolve_1_simple_type(descriptor, resolved, unresolved):
         resolved[descriptor.name] = descriptor
         return type_obj
     else:
-        #import pdb; pdb.set_trace()
+        type_name = descriptor.type_name
+        if type_name not in unresolved:
+            # If we can't find it, try after stripping off namespace prefix.
+            type_name = type_name.split(':')[-1]
+            if type_name not in unresolved:
+                raise XmlSchemaError(
+                    "Can't find simple type (%s) in unresolved types." % (
+                        type_name))
         type_obj = resolve_1_simple_type(
-            unresolved[descriptor.type_name],
+            unresolved[type_name],
             resolved, unresolved)
         descriptor.type_obj = type_obj
         resolved[descriptor.name] = descriptor

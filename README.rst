@@ -141,6 +141,40 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.27a (06/01/2017)
+
+- Fixed bug in gends_extract_simple_types.py that caused an
+  exception when the simpleType name has a namespace prefix.
+  Thanks to Rémy Gibault for reporting this.
+- Added two utilities that can be used to replace the capability
+  invoked by the --one-file-per-xsd command line option.
+  utils/collect_schema_locations.py can be used to collect and write
+  out the top level schema locations.  batch_generate.py can be used
+  to (read the output from collect_schema_locations.py and generate
+  modules.  Use --help to obtain more information from each of
+  these.  For instructions on this, see the docs and also the README
+  in the utils/ subdirectory.
+- Various fixes for the generation of namespace prefix definitions
+  when the generated export functions are called.  Thanks to Eugene
+  Petkevich for reporting and working with me on this.
+- Added command line option --no-namespace-defs to force export
+  functions to not added namespace prefix defintions.
+- Added ability for generated modules to import a module
+  (generatedsnamespaces.py) containing a dictionary
+  (GenerateDSNamespaceDefs) that maps element type names to the
+  namespace prefix definitions (or any XML attributes, actually)
+  that are to be added to specific elements during export.  See the
+  docs and also notes near where generatedsnamespaces.py is imported
+  in a generated module.
+- Fixed an error in gends_run_gen_django.py which caused it to fail
+  when generateDS.py produced a warning message.  Thanks to Rémy
+  Gibault for catching and reporting this.
+- Added a utility to help with analyzing complex schemas.
+  utils/show_schema_hierarchy.py can by used to show an indented
+  hierarchy of schemas that are pulled in by xs:include and
+  xs:import elements.  Type `utils/show_schema_hierarchy.py --help`
+  for more info.  Also see the docs.
+
 Version 2.26a (05/09/2017)
 
 - Added command line options --no-collect-includes and

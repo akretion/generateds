@@ -220,7 +220,7 @@ They are used by updateversion.py. -->
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">revision:</th><td class="field-body">2.26a</td>
+<tr class="field"><th class="field-name">revision:</th><td class="field-body">2.27a</td>
 </tr>
 </tbody>
 </table>
@@ -229,7 +229,7 @@ They are used by updateversion.py. -->
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">date:</th><td class="field-body">May 09, 2017</td>
+<tr class="field"><th class="field-name">date:</th><td class="field-body">June 01, 2017</td>
 </tr>
 </tbody>
 </table>
@@ -357,35 +357,40 @@ to process the contents of an XML document.</td>
 <li><a class="reference internal" href="#id4" id="id78">12.7&nbsp;&nbsp;&nbsp;Mixed content</a></li>
 <li><a class="reference internal" href="#id6" id="id79">12.8&nbsp;&nbsp;&nbsp;anyAttribute</a></li>
 <li><a class="reference internal" href="#user-methods" id="id80">12.9&nbsp;&nbsp;&nbsp;User Methods</a></li>
-<li><a class="reference internal" href="#overridable-methods" id="id81">12.10&nbsp;&nbsp;&nbsp;Overridable methods</a></li>
+<li><a class="reference internal" href="#overridable-methods-generatedssuper-py" id="id81">12.10&nbsp;&nbsp;&nbsp;Overridable methods -- generatedssuper.py</a></li>
 <li><a class="reference internal" href="#the-element-name-to-class-name-dictionary" id="id82">12.11&nbsp;&nbsp;&nbsp;The element name to class name dictionary</a></li>
+<li><a class="reference internal" href="#adding-custom-exported-attributes-and-namespace-prefix-definitions" id="id83">12.12&nbsp;&nbsp;&nbsp;Adding custom exported attributes and namespace prefix definitions</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#one-per-generating-separate-files-from-imported-included-schemas" id="id83">13&nbsp;&nbsp;&nbsp;&quot;One Per&quot; -- generating separate files from imported/included schemas</a></li>
-<li><a class="reference internal" href="#how-to-modify-the-generated-code" id="id84">14&nbsp;&nbsp;&nbsp;How to modify the generated code</a><ul class="auto-toc">
-<li><a class="reference internal" href="#adding-features-to-class-definitions" id="id85">14.1&nbsp;&nbsp;&nbsp;Adding features to class definitions</a></li>
+<li><a class="reference internal" href="#one-per-generating-separate-files-from-imported-included-schemas" id="id84">13&nbsp;&nbsp;&nbsp;&quot;One Per&quot; -- generating separate files from imported/included schemas</a><ul class="auto-toc">
+<li><a class="reference internal" href="#approach-1-command-line-option-one-file-per-xsd" id="id85">13.1&nbsp;&nbsp;&nbsp;Approach 1 -- Command line option --one-file-per-xsd</a></li>
+<li><a class="reference internal" href="#approach-2-extraction-and-generation-utilities" id="id86">13.2&nbsp;&nbsp;&nbsp;Approach 2 -- Extraction and generation utilities</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#examples-and-demonstrations" id="id86">15&nbsp;&nbsp;&nbsp;Examples and demonstrations</a><ul class="auto-toc">
-<li><a class="reference internal" href="#django-generating-models-and-forms" id="id87">15.1&nbsp;&nbsp;&nbsp;Django -- Generating Models and Forms</a><ul class="auto-toc">
-<li><a class="reference internal" href="#how-to-generate-django-models-and-forms" id="id88">15.1.1&nbsp;&nbsp;&nbsp;How to generate Django models and forms</a></li>
-<li><a class="reference internal" href="#how-it-works" id="id89">15.1.2&nbsp;&nbsp;&nbsp;How it works</a></li>
+<li><a class="reference internal" href="#how-to-modify-the-generated-code" id="id87">14&nbsp;&nbsp;&nbsp;How to modify the generated code</a><ul class="auto-toc">
+<li><a class="reference internal" href="#adding-features-to-class-definitions" id="id88">14.1&nbsp;&nbsp;&nbsp;Adding features to class definitions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#examples-and-demonstrations" id="id89">15&nbsp;&nbsp;&nbsp;Examples and demonstrations</a><ul class="auto-toc">
+<li><a class="reference internal" href="#django-generating-models-and-forms" id="id90">15.1&nbsp;&nbsp;&nbsp;Django -- Generating Models and Forms</a><ul class="auto-toc">
+<li><a class="reference internal" href="#how-to-generate-django-models-and-forms" id="id91">15.1.1&nbsp;&nbsp;&nbsp;How to generate Django models and forms</a></li>
+<li><a class="reference internal" href="#how-it-works" id="id92">15.1.2&nbsp;&nbsp;&nbsp;How it works</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#sample-code-and-extensions" id="id90">16&nbsp;&nbsp;&nbsp;Sample code and extensions</a><ul class="auto-toc">
-<li><a class="reference internal" href="#capturing-xs-date-elements-as-dates" id="id91">16.1&nbsp;&nbsp;&nbsp;Capturing xs:date elements as dates</a></li>
+<li><a class="reference internal" href="#sample-code-and-extensions" id="id93">16&nbsp;&nbsp;&nbsp;Sample code and extensions</a><ul class="auto-toc">
+<li><a class="reference internal" href="#capturing-xs-date-elements-as-dates" id="id94">16.1&nbsp;&nbsp;&nbsp;Capturing xs:date elements as dates</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#limitations-of-generateds" id="id92">17&nbsp;&nbsp;&nbsp;Limitations of generateDS</a><ul class="auto-toc">
-<li><a class="reference internal" href="#xml-schema-limitations" id="id93">17.1&nbsp;&nbsp;&nbsp;XML Schema limitations</a></li>
+<li><a class="reference internal" href="#limitations-of-generateds" id="id95">17&nbsp;&nbsp;&nbsp;Limitations of generateDS</a><ul class="auto-toc">
+<li><a class="reference internal" href="#xml-schema-limitations" id="id96">17.1&nbsp;&nbsp;&nbsp;XML Schema limitations</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#includes-the-xml-schema-xs-include-and-xs-import-elements" id="id94">18&nbsp;&nbsp;&nbsp;Includes -- The XML schema xs:include and xs:import elements</a></li>
-<li><a class="reference internal" href="#processing-relaxng-schemas" id="id95">19&nbsp;&nbsp;&nbsp;Processing RelaxNG schemas</a></li>
-<li><a class="reference internal" href="#acknowledgments" id="id96">20&nbsp;&nbsp;&nbsp;Acknowledgments</a></li>
-<li><a class="reference internal" href="#see-also" id="id97">21&nbsp;&nbsp;&nbsp;See also</a></li>
+<li><a class="reference internal" href="#includes-the-xml-schema-xs-include-and-xs-import-elements" id="id97">18&nbsp;&nbsp;&nbsp;Includes -- The XML schema xs:include and xs:import elements</a></li>
+<li><a class="reference internal" href="#processing-relaxng-schemas" id="id98">19&nbsp;&nbsp;&nbsp;Processing RelaxNG schemas</a></li>
+<li><a class="reference internal" href="#acknowledgments" id="id99">20&nbsp;&nbsp;&nbsp;Acknowledgments</a></li>
+<li><a class="reference internal" href="#see-also" id="id100">21&nbsp;&nbsp;&nbsp;See also</a></li>
 </ul>
 </div>
 <div class="section" id="introduction">
@@ -610,6 +615,10 @@ Options:
                              the export() method by the generated
                              parse() and parseString() functions.
                              Default=''.
+    --no-namespace-defs      Do not pass namespace definitions as the value
+                             for the namespacedef_ parameter of the export
+                             method, even if it can be extraced from the
+                             schema.
     --external-encoding=&lt;encoding&gt;
                              Encode output written by the generated export
                              methods using this encoding.  Default, if omitted,
@@ -850,6 +859,14 @@ specified, then the export function will insert a namespace
 prefix definition attribute in the top-most (outer-most)
 element.  (Actually, you can insert any attribute.) The default
 is an empty string.</dd>
+<dt>no-namespace-defs</dt>
+<dd>Do not pass namespace definitions as the value for the
+<tt class="docutils literal">namespacedef_</tt> parameter of the export method, even if it can
+be extraced from the schema.  The default is off.  You might
+want to consider using this in combination with the ability to
+attach namespace prefix definitions to specific element types
+during export, as described here: <a class="reference internal" href="#adding-custom-exported-attributes-and-namespace-prefix-definitions">Adding custom exported
+attributes and namespace prefix definitions</a>.</dd>
 <dt>external-encoding=&lt;encoding&gt;</dt>
 <dd>If an XML instance document contains character data or
 attribute values that are not in the ASCII character set, then
@@ -887,7 +904,7 @@ tree with the node's <tt class="docutils literal">getiterator</tt>, <tt class="d
 and use any of lxml's other capabilities.</li>
 </ul>
 <p class="last">For example: <tt class="docutils literal"><span class="pre">--export=&quot;write</span> etree&quot;</tt> and <tt class="docutils literal"><span class="pre">--export=&quot;write&quot;</span></tt>.  The
-default is: <tt class="docutils literal"><span class="pre">--export=&quot;write</span> literal&quot;</tt>.</p>
+default is: <tt class="docutils literal"><span class="pre">--export=&quot;write&quot;</span></tt>.</p>
 </dd>
 <dt>preserve-cdata-tags</dt>
 <dd>Preserve CDATA tags.  Normally, CDATA tags (&quot;&lt;![CDATA[ ... ]]&gt;&quot;)
@@ -1387,8 +1404,8 @@ off validation.</li>
 generated validation code calls <tt class="docutils literal">gds_validate_xxx</tt>, where &quot;xxx&quot;
 is a base, simple type.  In some cases, you will be able to add
 additional code to that method to perform custom checking.  See
-section <a class="reference internal" href="#overridable-methods">Overridable methods</a> for information on how to use and
-override that class.</li>
+section <a class="reference internal" href="#overridable-methods-generatedssuper-py">Overridable methods -- generatedssuper.py</a> for
+information on how to use and override that class.</li>
 <li>When validation finds data that fails to validate, it generates a
 warning (using the <tt class="docutils literal">warnings</tt> module from the Python standard
 library), not an exception, so that processing continues.</li>
@@ -2050,9 +2067,9 @@ instance document, it generates a call to a method <tt class="docutils literal">
 in the <tt class="docutils literal">GeneratedsSuper</tt> class.  This method has a default
 implementation in the generated code.  If your XML schema uses
 <tt class="docutils literal">xs:any</tt>, you may need to add some code to that default
-implementation of <tt class="docutils literal">gds_build_any</tt>.  See section <a class="reference internal" href="#overridable-methods">Overridable
-methods</a> for guidance on how to provide an implementation of that
-method.</p>
+implementation of <tt class="docutils literal">gds_build_any</tt>.  See section <a class="reference internal" href="#overridable-methods-generatedssuper-py">Overridable
+methods -- generatedssuper.py</a> for guidance on how to provide an
+implementation of that method.</p>
 <p>For more help with this, look at the code generated from an XML
 schema that uses <tt class="docutils literal">xs:any</tt>.  In particular, look at the code
 generated in the Python class corresponding to the
@@ -2688,8 +2705,8 @@ source code and the class_name pattern in each specification.</li>
 <li>Repeat as necessary.</li>
 </ol>
 </div>
-<div class="section" id="overridable-methods">
-<h2><a class="toc-backref" href="#id81">12.10&nbsp;&nbsp;&nbsp;Overridable methods</a></h2>
+<div class="section" id="overridable-methods-generatedssuper-py">
+<h2><a class="toc-backref" href="#id81">12.10&nbsp;&nbsp;&nbsp;Overridable methods -- generatedssuper.py</a></h2>
 <p><tt class="docutils literal">generateDS.py</tt> generates calls to several methods that each have
 a default implementation in a superclass.  The default superclass
 with default implementations is included in the generated code.
@@ -2815,9 +2832,58 @@ that complexType definition.  This dictionary is named
 <tt class="docutils literal">GDSClassesMapping</tt>.  You will find it in the module generated
 with the &quot;-o&quot; option.</p>
 </div>
+<div class="section" id="adding-custom-exported-attributes-and-namespace-prefix-definitions">
+<h2><a class="toc-backref" href="#id83">12.12&nbsp;&nbsp;&nbsp;Adding custom exported attributes and namespace prefix definitions</a></h2>
+<p>You can add additional attributes to exported XML content by (1)
+providing a module named <tt class="docutils literal">generatedsnamespaces.py</tt>; (2) placing
+that module somewhere so that it can be imported when you &quot;run&quot; your
+generated module; and (3) including in <tt class="docutils literal">generatedsnamespaces.py</tt> a
+global variable named <tt class="docutils literal">GenerateDSNamespaceDefs</tt> whose value is a
+Python dictionary.  The keys in this dictionary should be element
+type names in the generated module.  And the values should be text
+strings that are attributes to be added to exported elements of that
+type.</p>
+<p>Here is an example:</p>
+<pre class="literal-block">
+# file: generatedsnamespaces.py
+
+GenerateDSNamespaceDefs = {
+    &quot;A1ElementType&quot;: 'xmlns:abc=&quot;http://www.abc.com/namespace_a1&quot;',
+    &quot;A2ElementType&quot;: 'xmlns:abc=&quot;http://www.abc.com/namespace_a2&quot;',
+}
+</pre>
+<p>Notes:</p>
+<ul class="simple">
+<li>While the original intension of this facility was to enable the
+user to add XML namespace prefix definitions to the XML content in
+exported files, you can use it to add other attribute definitions
+as well.</li>
+<li>If you find that <tt class="docutils literal">generateDS.py</tt> is adding a specific namespace
+prefix definition to many exported XML elements and you want to
+suppress this behavior, take a look at the <tt class="docutils literal"><span class="pre">--no-namespace-defs</span></tt>
+command line option.  In particular, this command line option may
+be useful when used together with the capability described in this
+section (<tt class="docutils literal">generatedsnamespaces.py</tt>).</li>
+</ul>
+</div>
 </div>
 <div class="section" id="one-per-generating-separate-files-from-imported-included-schemas">
-<h1><a class="toc-backref" href="#id83">13&nbsp;&nbsp;&nbsp;&quot;One Per&quot; -- generating separate files from imported/included schemas</a></h1>
+<h1><a class="toc-backref" href="#id84">13&nbsp;&nbsp;&nbsp;&quot;One Per&quot; -- generating separate files from imported/included schemas</a></h1>
+<p>The <tt class="docutils literal">generateDS.py</tt> project provides support for two approaches to
+this task:</p>
+<ul class="simple">
+<li>The first (<a class="reference internal" href="#approach-1-command-line-option-one-file-per-xsd">Approach 1 -- Command line option
+--one-file-per-xsd</a>, below) is likely to be easier to use, but if
+it does not work for you as is, it is very difficult to customize.</li>
+<li>The second method (<a class="reference internal" href="#approach-2-extraction-and-generation-utilities">Approach 2 -- Extraction and generation
+utilities</a>, below) may require a little more work and
+understanding, but offers more options and customization, and,
+since the scripts that implement it are short and rather simple,
+may be easier to customize or even re-write for your specific
+needs.</li>
+</ul>
+<div class="section" id="approach-1-command-line-option-one-file-per-xsd">
+<h2><a class="toc-backref" href="#id85">13.1&nbsp;&nbsp;&nbsp;Approach 1 -- Command line option --one-file-per-xsd</a></h2>
 <p>The <tt class="docutils literal"><span class="pre">--one-file-per-xsd</span></tt> command line option enables you to
 generate a separate Python module for each XML schema that is
 imported or included (using <tt class="docutils literal">&lt;xs:import&gt;</tt> or <tt class="docutils literal">&lt;xs:include&gt;</tt>) by
@@ -2869,12 +2935,54 @@ directory into a Python package.</p>
 </li>
 </ul>
 </div>
+<div class="section" id="approach-2-extraction-and-generation-utilities">
+<h2><a class="toc-backref" href="#id86">13.2&nbsp;&nbsp;&nbsp;Approach 2 -- Extraction and generation utilities</a></h2>
+<p>The <tt class="docutils literal">generateds/utils</tt> subdirectory contains two utility scripts
+that may help with this task.  The procedure is as follows:</p>
+<ol class="arabic simple">
+<li>First, use <tt class="docutils literal">utils/collect_schema_locations.py</tt> to collect a set
+of directives, one for each (included) schema and each module to
+be generated.  This utility writes out a JSON file that contains
+the directives to be used in the next step.</li>
+<li>Next, use <tt class="docutils literal">utils/batch_generate.py</tt> to generate one module (or
+perhaps two modules, see below) for each directive in that JSON
+file.</li>
+</ol>
+<p>Each of these modules gives a reasonable amount of usage information
+in response to the <tt class="docutils literal"><span class="pre">--help</span></tt> command line option.</p>
+<p>A few hints and suggestions:</p>
+<ul class="simple">
+<li>After generating the JSON directives file you can modify it with
+your text editor.  For example, (1) you can add the name of
+sub-class modules to be generated by <tt class="docutils literal">generateDS.py</tt>; (2) you
+can specify command line options to be used by <tt class="docutils literal">generateDS.py</tt>
+when generating specific modules; and (3) you can add new
+directives to generate additional modules.</li>
+<li>If you find yourself typing the same command line options to
+<tt class="docutils literal">utils/batch_generate.py</tt> over and over, there is a facility to
+put command line options that have long names (i.e., not one
+character names) into a configuration file.  The usage information
+produced by <tt class="docutils literal">utils/batch_generate.py <span class="pre">--help</span></tt> shows an example.
+Then use <tt class="docutils literal">utils/batch_generate.py <span class="pre">--config=myoptins.config</span> ...</tt>
+to feed this configuration file to <tt class="docutils literal">utils/batch_generate.py</tt>.
+The options in this configuration file can be overridden by those
+entered on the command line.</li>
+<li>The JSON directives file can contain comments, even though this is
+not part of the JSON standard.  A comment is any line that begins
+with &quot;//&quot; where the &quot;//&quot; is proceeded only by white space
+characters.  <tt class="docutils literal">utils/batch_generate.py</tt> strips these lines out
+before parsing the JSON file.  However, if you plan to process
+this JSON file with other processes, you will likely either not
+want to add comments or plan to pre-process them in some way.</li>
+</ul>
+</div>
+</div>
 <div class="section" id="how-to-modify-the-generated-code">
-<h1><a class="toc-backref" href="#id84">14&nbsp;&nbsp;&nbsp;How to modify the generated code</a></h1>
+<h1><a class="toc-backref" href="#id87">14&nbsp;&nbsp;&nbsp;How to modify the generated code</a></h1>
 <p>This section attempts to explain how to modify and add features to
 the generated code.</p>
 <div class="section" id="adding-features-to-class-definitions">
-<h2><a class="toc-backref" href="#id85">14.1&nbsp;&nbsp;&nbsp;Adding features to class definitions</a></h2>
+<h2><a class="toc-backref" href="#id88">14.1&nbsp;&nbsp;&nbsp;Adding features to class definitions</a></h2>
 <p>You can add new member definitions to a generated class. Look at
 the 'export' and 'exportLiteral' member functions for examples of
 how to access member variables and how to walk nested
@@ -2919,7 +3027,7 @@ parser, for example, since generating the file.</li>
 </div>
 </div>
 <div class="section" id="examples-and-demonstrations">
-<h1><a class="toc-backref" href="#id86">15&nbsp;&nbsp;&nbsp;Examples and demonstrations</a></h1>
+<h1><a class="toc-backref" href="#id89">15&nbsp;&nbsp;&nbsp;Examples and demonstrations</a></h1>
 <p>Under the directory Demos are several examples:</p>
 <ul class="simple">
 <li>Demos/People provides a simple demonstration of generating
@@ -2945,7 +3053,7 @@ containing explicit control logic, the order in which nodes of
 the parsed XML document are visited is under your control.</li>
 </ul>
 <div class="section" id="django-generating-models-and-forms">
-<h2><a class="toc-backref" href="#id87">15.1&nbsp;&nbsp;&nbsp;Django -- Generating Models and Forms</a></h2>
+<h2><a class="toc-backref" href="#id90">15.1&nbsp;&nbsp;&nbsp;Django -- Generating Models and Forms</a></h2>
 <p><tt class="docutils literal">generateDS.py</tt> can be used to generate Django models and Django
 forms that represent the data structures defined in an XML Schema.</p>
 <p><strong>Note:</strong> In order to use this capability, you must obtain the
@@ -2979,7 +3087,7 @@ use the &quot;-p&quot; command line option.  For more information, do:</p>
 python gends_run_gen_django.py --help
 </pre>
 <div class="section" id="how-to-generate-django-models-and-forms">
-<h3><a class="toc-backref" href="#id88">15.1.1&nbsp;&nbsp;&nbsp;How to generate Django models and forms</a></h3>
+<h3><a class="toc-backref" href="#id91">15.1.1&nbsp;&nbsp;&nbsp;How to generate Django models and forms</a></h3>
 <p><strong>Warning:</strong> Running this script attempts to over-write the
 following files in the current directory:</p>
 <ul class="simple">
@@ -3027,7 +3135,7 @@ Django application.</p>
 </ol>
 </div>
 <div class="section" id="how-it-works">
-<h3><a class="toc-backref" href="#id89">15.1.2&nbsp;&nbsp;&nbsp;How it works</a></h3>
+<h3><a class="toc-backref" href="#id92">15.1.2&nbsp;&nbsp;&nbsp;How it works</a></h3>
 <p>Here are a few notes that might be helpful if and when you need to
 do some debugging or extend the current capabilities or write a new
 &quot;meta-app&quot; that uses the same approach but does something new and
@@ -3054,9 +3162,9 @@ root super class of all generated data representation classes.</p>
 </div>
 </div>
 <div class="section" id="sample-code-and-extensions">
-<h1><a class="toc-backref" href="#id90">16&nbsp;&nbsp;&nbsp;Sample code and extensions</a></h1>
+<h1><a class="toc-backref" href="#id93">16&nbsp;&nbsp;&nbsp;Sample code and extensions</a></h1>
 <div class="section" id="capturing-xs-date-elements-as-dates">
-<h2><a class="toc-backref" href="#id91">16.1&nbsp;&nbsp;&nbsp;Capturing xs:date elements as dates</a></h2>
+<h2><a class="toc-backref" href="#id94">16.1&nbsp;&nbsp;&nbsp;Capturing xs:date elements as dates</a></h2>
 <p>The following extension employs a user method (see <a class="reference internal" href="#user-methods">User
 Methods</a>) in order to capture elements defined as xs:date as date
 objects.</p>
@@ -3125,9 +3233,9 @@ import types
 </div>
 </div>
 <div class="section" id="limitations-of-generateds">
-<h1><a class="toc-backref" href="#id92">17&nbsp;&nbsp;&nbsp;Limitations of generateDS</a></h1>
+<h1><a class="toc-backref" href="#id95">17&nbsp;&nbsp;&nbsp;Limitations of generateDS</a></h1>
 <div class="section" id="xml-schema-limitations">
-<h2><a class="toc-backref" href="#id93">17.1&nbsp;&nbsp;&nbsp;XML Schema limitations</a></h2>
+<h2><a class="toc-backref" href="#id96">17.1&nbsp;&nbsp;&nbsp;XML Schema limitations</a></h2>
 <p>There are things in Xschema that are not supported. You will have
 to use a restricted sub-set of Xschema to define your data
 structures. See above for supported features. See people.xsd and
@@ -3137,7 +3245,7 @@ does not work.</p>
 </div>
 </div>
 <div class="section" id="includes-the-xml-schema-xs-include-and-xs-import-elements">
-<h1><a class="toc-backref" href="#id94">18&nbsp;&nbsp;&nbsp;Includes -- The XML schema xs:include and xs:import elements</a></h1>
+<h1><a class="toc-backref" href="#id97">18&nbsp;&nbsp;&nbsp;Includes -- The XML schema xs:include and xs:import elements</a></h1>
 <p>While <tt class="docutils literal">generateDS.py</tt> itself does not process XML Schema
 <tt class="docutils literal">include</tt> elements, the distribution provides a script
 <tt class="docutils literal">process_includes.py</tt> that can be used as a preprocessor.
@@ -3171,7 +3279,7 @@ $ python process_includes.py --help
 </pre>
 </div>
 <div class="section" id="processing-relaxng-schemas">
-<h1><a class="toc-backref" href="#id95">19&nbsp;&nbsp;&nbsp;Processing RelaxNG schemas</a></h1>
+<h1><a class="toc-backref" href="#id98">19&nbsp;&nbsp;&nbsp;Processing RelaxNG schemas</a></h1>
 <p>RelaxNG is a schema definition language and is an alternative to XML
 Schema.  For more information on RelaxNG, see: <a class="reference external" href="http://relaxng.org/">http://relaxng.org/</a>.</p>
 <p><tt class="docutils literal">generateDS.py</tt> does not understand or process RelaxNG schemas.
@@ -3212,7 +3320,7 @@ through <tt class="docutils literal">generateDS.py</tt>:</p>
 <a class="reference external" href="https://github.com/relaxng/jing-trang">https://github.com/relaxng/jing-trang</a></p>
 </div>
 <div class="section" id="acknowledgments">
-<h1><a class="toc-backref" href="#id96">20&nbsp;&nbsp;&nbsp;Acknowledgments</a></h1>
+<h1><a class="toc-backref" href="#id99">20&nbsp;&nbsp;&nbsp;Acknowledgments</a></h1>
 <p>Many thanks to those who have used <tt class="docutils literal">generateDS.py</tt> and have
 contributed their comments and suggestions.  These comments have
 been valuable both in teaching me about things I needed to know in
@@ -3226,7 +3334,7 @@ following among others:</p>
 </ul>
 </div>
 <div class="section" id="see-also">
-<h1><a class="toc-backref" href="#id97">21&nbsp;&nbsp;&nbsp;See also</a></h1>
+<h1><a class="toc-backref" href="#id100">21&nbsp;&nbsp;&nbsp;See also</a></h1>
 <p><a class="reference external" href="http://www.python.org">Python</a>: The Python home page.</p>
 <p><a class="reference external" href="http://www.davekuhlman.org">Dave's Page</a>: My home page, which contains more Python stuff.</p>
 <!-- vim:ft=rst: -->
@@ -3235,7 +3343,7 @@ following among others:</p>
 <div class="footer">
 <hr class="footer" />
 <a class="reference external" href="generateDS.txt">View document source</a>.
-Generated on: 2017-05-09 21:57 UTC.
+Generated on: 2017-06-01 16:00 UTC.
 Generated by <a class="reference external" href="http://docutils.sourceforge.net/">Docutils</a> from <a class="reference external" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> source.
 
 </div>

@@ -40,7 +40,7 @@ except ImportError:
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.26a'
+VERSION = '2.27a'
 ##VERSION##
 
 CatalogDict = {}
@@ -89,16 +89,19 @@ def process_include_files(
     return doc
 
 
-def get_all_root_file_paths(infile, inpath='', catalogpath=None):
+def get_all_root_file_paths(
+        infile,
+        inpath='',
+        catalogpath=None,
+        shallow=False):
     load_catalog(catalogpath)
-
     doc1 = etree.parse(infile)
     root1 = doc1.getroot()
     rootPaths = []
     params = Params()
     params.parent_url = infile
     params.base_url = os.path.split(inpath)[0]
-    get_root_file_paths(root1, params, rootPaths)
+    get_root_file_paths(root1, params, rootPaths, shallow)
     rootPaths.append(inpath)
     return rootPaths
 
@@ -266,26 +269,24 @@ def collect_inserts_aux(child, params, inserts, options):
     return roots
 
 
-def get_root_file_paths(node, params, rootPaths):
-
+def get_root_file_paths(node, params, rootPaths, shallow):
     namespace = node.nsmap[node.prefix]
     child_iter1 = node.iterfind('{%s}include' % (namespace, ))
     child_iter2 = node.iterfind('{%s}import' % (namespace, ))
     for child in itertools.chain(child_iter1, child_iter2):
-        get_root_file_paths_aux(child, params, rootPaths)
+        get_root_file_paths_aux(child, params, rootPaths, shallow)
 
 
-def get_root_file_paths_aux(child, params, rootPaths):
+def get_root_file_paths_aux(child, params, rootPaths, shallow):
     save_base_url = params.base_url
     path, _ = get_ref_info(child, params)
     string_content = resolve_ref(child, params, None)
     if string_content is not None:
-        root = etree.fromstring(string_content, base_url=params.base_url)
-        get_root_file_paths(root, params, rootPaths)
-
+        if not shallow:
+            root = etree.fromstring(string_content, base_url=params.base_url)
+            get_root_file_paths(root, params, rootPaths, shallow)
     if path is not None and path not in rootPaths:
         rootPaths.append(path)
-
     params.base_url = save_base_url
 
 
