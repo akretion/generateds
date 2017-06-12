@@ -141,6 +141,27 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.27b (06/09/2017)
+
+- Fixed a bug that occurred when an element definition contains a
+  child defined as xs:any.  The member spec (``MemberSpec_``) was not
+  generated with the correct name.  Also in the django support,
+  added a temporary fix for xs:any child elements.  Thanks to Rémy
+  Gibault for reporting this.
+- Django support -- Models in django are case insensitive.  That
+  means that if a schema defines multiple element types that differ
+  only in case, and we generate two models that differ only in case,
+  django says it's an error.  So, implemented a facility which,
+  when multiple names differ only in case, adds a suffix so that
+  those names will be unique even when case is ignored.  Again,
+  thanks to Rémy for finding and reporting this.
+- Django support: (1) Added a test and more explanatory error
+  message for the case where gends_generate_django.py was failing to
+  import the correct version of module generatedssuper.py.  (2)
+  Created a mapping so that all generated model and form names are
+  unique even when case is ignored.  (3) Added a name mapping to
+  avoid clashes with Python keywords.
+
 Version 2.27a (06/01/2017)
 
 - Fixed bug in gends_extract_simple_types.py that caused an

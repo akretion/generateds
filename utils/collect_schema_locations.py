@@ -40,7 +40,7 @@ from lxml import etree
 
 def dbg_msg(options, msg):
     """Print a message if verbose is on."""
-    if options.verbose:
+    if options['verbose']:
         print(msg)
 
 
@@ -48,7 +48,7 @@ def extract_locations(infile, options):
     doc = etree.parse(infile)
     root = doc.getroot()
     elements = root.xpath(
-        './/xs:include',
+        './/xs:include | .//xs:import',
         namespaces=root.nsmap,
     )
     locations = []
@@ -76,7 +76,7 @@ def generate(locations, outfile, options):
 
 
 def make_output_file(outfilename, options):
-    if os.path.exists(outfilename) and not options.force:
+    if os.path.exists(outfilename) and not options['force']:
         sys.exit("\noutput file exists.  Use -f/--force to over-write.\n")
     outfile = open(outfilename, 'w')
     return outfile
@@ -85,8 +85,10 @@ def make_output_file(outfilename, options):
 #
 # Exported functions
 
-def extract_and_generate(infile, outfile, options):
+def extract_and_generate(infile, outfile, extract_locations_fn, options):
     locations = extract_locations(infile, options)
+    if extract_locations_fn is None:
+        extract_locations_fn = extract_locations
     directives = generate(locations, outfile, options)
     specification = {
         'directives': directives,
@@ -138,14 +140,17 @@ notes:
         help="print messages during actions.",
     )
     options = parser.parse_args()
-    infile = open(options.infilename, 'r')
-    if options.outfilename:
-        outfile = make_output_file(options.outfilename, options)
+    # Convert options to a dictionary so external programs a call us.
+    options = vars(options)
+    infile = open(options['infilename'], 'r')
+    if options['outfilename']:
+        outfile = make_output_file(options['outfilename'], options)
     else:
         outfile = sys.stdout
-    extract_and_generate(infile, outfile, options)
+    extract_locations_fn = extract_locations
+    extract_and_generate(infile, outfile, extract_locations_fn, options)
     infile.close()
-    if options.outfilename:
+    if options['outfilename']:
         outfile.close()
 
 

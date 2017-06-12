@@ -31,6 +31,7 @@ examples:
 # imports
 from __future__ import print_function
 #import sys
+import os
 import argparse
 from lxml import etree
 
@@ -53,33 +54,45 @@ def dbg_msg(options, msg):
 
 
 def show_hierarchy(inschema, path, indent, namespaces, previous, options):
-    if not inschema.startswith('http') and path:
-        inschemaloc = '{}/{}'.format(path, inschema)
+    if inschema.startswith('http:'):
+        location = inschema
+        rellocation = location
+        abslocation = location
+    elif inschema.startswith('/'):
+        location = os.path.join(path, inschema)
+        rellocation = os.path.relpath(location)
+        abslocation = os.path.abspath(location)
     else:
-        inschemaloc = inschema
-    if inschema in previous:
+        location = os.path.join(path, inschema)
+        rellocation = os.path.relpath(location)
+        abslocation = os.path.abspath(location)
+    if abslocation in previous:
         if options.show_loop_references:
-            print('{}*loop* -- {}'.format(indent, inschemaloc))
+            print('{}*loop* -- {}'.format(indent, location))
         #print('{} *previous* -- {}'.format(indent, previous))
         return
-    previous.add(inschema)
-    print('{}{} -- {}'.format(indent, inschema, inschemaloc))
-    doc = etree.parse(inschemaloc)
+    previous.add(abslocation)
+    desc = os.path.split(rellocation)
+    print('{}{} -- {}'.format(indent, desc[1], desc[0], ))
+    doc = etree.parse(location)
     root = doc.getroot()
-    elements = root.xpath('./xs:include', namespaces=namespaces)
-    elements += root.xpath('./xs:import', namespaces=namespaces)
     indent1 = indent + options.indent
-    if inschema.startswith('http'):
-        stem = inschema.split('/')[-1]
-        ln = 0 - (len(stem) + 1)
-        path = inschema[:ln]
+    if location.startswith('http:'):
+        path = os.path.split(location)[0]
+    elif inschema.startswith('/'):
+        path = os.path.split(location)[0]
+    else:
+        path = os.path.split(location)[0]
+    elements = root.xpath(
+        './xs:include | ./xs:import',
+        namespaces=namespaces)
     for element in elements:
         location = element.get('schemaLocation')
-        if options.eliminate_branch_dups:
-            previous1 = previous
-        else:
-            previous1 = previous.copy()
-        show_hierarchy(location, path, indent1, namespaces, previous1, options)
+##        if options.eliminate_branch_dups:
+##            previous1 = previous
+##        else:
+##            previous1 = previous.copy()
+        show_hierarchy(location, path, indent1, namespaces, previous, options)
 
 
 def main():
