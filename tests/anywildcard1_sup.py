@@ -692,7 +692,7 @@ def _cast(typ, value):
 class PlantType_single(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('name', 'xs:string', 0, 0),
-        MemberSpec_('', 'xs:string', 0, 0),
+        MemberSpec_('__ANY__', '__ANY__', 0, 0),
         MemberSpec_('description', 'DescriptionType', 0, 0),
     ]
     subclass = None
@@ -792,7 +792,7 @@ class PlantType_single(GeneratedsSuper):
 class PlantType_multiple(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('name', 'xs:string', 0, 0),
-        MemberSpec_('', 'xs:string', 1, 0),
+        MemberSpec_('__ANY__', '__ANY__', 1, 0),
         MemberSpec_('description', 'DescriptionType', 0, 0),
     ]
     subclass = None
@@ -1080,7 +1080,7 @@ class CatalogType(GeneratedsSuper):
 
 class PlantType_single_nochild(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('', 'xs:string', 0, 0),
+        MemberSpec_('__ANY__', '__ANY__', 0, 0),
     ]
     subclass = None
     superclass = None
@@ -1155,7 +1155,7 @@ class PlantType_single_nochild(GeneratedsSuper):
 
 class PlantType_multiple_nochild(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('', 'xs:string', 1, 0),
+        MemberSpec_('__ANY__', '__ANY__', 1, 0),
     ]
     subclass = None
     superclass = None

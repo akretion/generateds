@@ -4777,9 +4777,14 @@ def generateMemberSpec(wrt, element):
         add(item)
     for child in element.getChildren():
         name = cleanupName(child.getCleanName())
-        item1 = name
+        if not name and child.type == AnyTypeIdentifier:
+            item1 = AnyTypeIdentifier
+        else:
+            item1 = name
         simplebase = child.getSimpleBase()
-        if simplebase:
+        if item1 == AnyTypeIdentifier:
+            item2 = "'%s'" % AnyTypeIdentifier
+        elif simplebase:
             if len(simplebase) == 1:
                 item2 = "'%s'" % (simplebase[0], )
             else:
