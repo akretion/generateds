@@ -90,7 +90,7 @@ except ImportError:
 try:
     from generatedssuper import GeneratedsSuper
 except ImportError as exp:
-
+    
     class GeneratedsSuper(object):
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
         class _FixedOffsetTZ(datetime_.tzinfo):
@@ -404,7 +404,13 @@ except ImportError as exp:
             else:
                 result = GeneratedsSuper.gds_encode(str(instring))
             return result
-
+        def __eq__(self, other):
+            if type(self) != type(other):
+                return False
+            return self.__dict__ == other.__dict__
+        def __ne__(self, other):
+            return not self.__eq__(other)
+    
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
         name = class_.__name__ + 'Sub'
@@ -656,10 +662,12 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0, optional=0):
+    def __init__(self, name='', data_type='', container=0, optional=0, child_attrs=None, choice=None):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.child_attrs = child_attrs
+        self.choice = choice
         self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
@@ -675,6 +683,10 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_child_attrs(self, child_attrs): self.child_attrs = child_attrs
+    def get_child_attrs(self): return self.child_attrs
+    def set_choice(self, choice): self.choice = choice
+    def get_choice(self): return self.choice
     def set_optional(self, optional): self.optional = optional
     def get_optional(self): return self.optional
 
@@ -691,9 +703,9 @@ def _cast(typ, value):
 
 class FooList(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('Foo', 'FooType1', 0, 0),
-        MemberSpec_('Bar', 'BarType2', 0, 0),
-        MemberSpec_('Baz', 'BazType3', 0, 0),
+        MemberSpec_('Foo', 'FooType1', 0, 0, {u'type': u'FooType1', u'name': u'Foo'}, None),
+        MemberSpec_('Bar', 'BarType2', 0, 0, {u'type': u'BarType2', u'name': u'Bar'}, None),
+        MemberSpec_('Baz', 'BazType3', 0, 0, {u'type': u'BazType3', u'name': u'Baz'}, None),
     ]
     subclass = None
     superclass = None
@@ -792,7 +804,7 @@ class FooList(GeneratedsSuper):
 
 class FooType1(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('FooType', ['FooTypeType', 'xs:string'], 0, 0),
+        MemberSpec_('FooType', ['FooTypeType', 'xs:string'], 0, 0, {u'type': u'xs:string', u'name': u'FooType'}, None),
     ]
     subclass = None
     superclass = None
@@ -879,7 +891,7 @@ class FooType1(GeneratedsSuper):
 
 class BarType2(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('BarType', ['BarTypeType', 'xs:string'], 0, 0),
+        MemberSpec_('BarType', ['BarTypeType', 'xs:string'], 0, 0, {u'type': u'xs:string', u'name': u'BarType'}, None),
     ]
     subclass = None
     superclass = None
@@ -966,7 +978,7 @@ class BarType2(GeneratedsSuper):
 
 class BazType3(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('BazType', ['BazTypeType', 'xs:string'], 0, 0),
+        MemberSpec_('BazType', ['BazTypeType', 'xs:string'], 0, 0, {u'type': u'xs:string', u'name': u'BazType'}, None),
     ]
     subclass = None
     superclass = None

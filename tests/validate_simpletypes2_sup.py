@@ -89,7 +89,7 @@ except ImportError:
 try:
     from generatedssuper import GeneratedsSuper
 except ImportError as exp:
-
+    
     class GeneratedsSuper(object):
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
         class _FixedOffsetTZ(datetime_.tzinfo):
@@ -403,7 +403,13 @@ except ImportError as exp:
             else:
                 result = GeneratedsSuper.gds_encode(str(instring))
             return result
-
+        def __eq__(self, other):
+            if type(self) != type(other):
+                return False
+            return self.__dict__ == other.__dict__
+        def __ne__(self, other):
+            return not self.__eq__(other)
+    
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
         name = class_.__name__ + 'Sub'
@@ -655,10 +661,12 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0, optional=0):
+    def __init__(self, name='', data_type='', container=0, optional=0, child_attrs=None, choice=None):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.child_attrs = child_attrs
+        self.choice = choice
         self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
@@ -674,6 +682,10 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_child_attrs(self, child_attrs): self.child_attrs = child_attrs
+    def get_child_attrs(self): return self.child_attrs
+    def set_choice(self, choice): self.choice = choice
+    def get_choice(self): return self.choice
     def set_optional(self, optional): self.optional = optional
     def get_optional(self): return self.optional
 
@@ -690,11 +702,11 @@ def _cast(typ, value):
 
 class containerType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('sample1', 'simpleOneType', 1, 0),
-        MemberSpec_('sample2_bad', 'simpleOneType', 1, 0),
-        MemberSpec_('sample3_bad', 'simpleOneType', 1, 0),
-        MemberSpec_('sample4_bad', 'simpleOneType', 1, 0),
-        MemberSpec_('sample2', 'simpleTwoType', 1, 0),
+        MemberSpec_('sample1', 'simpleOneType', 1, 0, {u'maxOccurs': u'unbounded', u'type': u'simpleOneType', u'name': u'sample1'}, None),
+        MemberSpec_('sample2_bad', 'simpleOneType', 1, 0, {u'maxOccurs': u'unbounded', u'type': u'simpleOneType', u'name': u'sample2_bad'}, None),
+        MemberSpec_('sample3_bad', 'simpleOneType', 1, 0, {u'maxOccurs': u'unbounded', u'type': u'simpleOneType', u'name': u'sample3_bad'}, None),
+        MemberSpec_('sample4_bad', 'simpleOneType', 1, 0, {u'maxOccurs': u'unbounded', u'type': u'simpleOneType', u'name': u'sample4_bad'}, None),
+        MemberSpec_('sample2', 'simpleTwoType', 1, 0, {u'maxOccurs': u'unbounded', u'type': u'simpleTwoType', u'name': u'sample2'}, None),
     ]
     subclass = None
     superclass = None
@@ -845,30 +857,30 @@ class containerType(GeneratedsSuper):
 
 class simpleOneType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('integer_range_1_value', ['integer_range_1_st', 'integer_range_2_st', 'xs:integer'], 0, 0),
-        MemberSpec_('pattern_value', ['pattern_st', 'pattern_1_st', 'min_length_st', 'xs:string'], 0, 0),
-        MemberSpec_('token_enum_value', ['token_enum_st', 'xs:NMTOKEN'], 0, 0),
-        MemberSpec_('integer_range_incl_value', ['integer_range_incl_st', 'xs:integer'], 0, 0),
-        MemberSpec_('integer_range_excl_value', ['integer_range_excl_st', 'xs:integer'], 0, 0),
-        MemberSpec_('min_max_length_value', ['min_max_length_st', 'xs:string'], 0, 0),
-        MemberSpec_('length_value', ['length_st', 'xs:string'], 0, 0),
-        MemberSpec_('totalDigits_value', ['totalDigits_st', 'xs:decimal'], 0, 0),
-        MemberSpec_('date_minincl_value', ['date_minincl_st', 'xs:date'], 0, 0),
-        MemberSpec_('date_maxincl_value', ['date_maxincl_st', 'xs:date'], 0, 0),
-        MemberSpec_('date_minexcl_value', ['date_minexcl_st', 'xs:date'], 0, 0),
-        MemberSpec_('date_maxexcl_value', ['date_maxexcl_st', 'xs:date'], 0, 0),
-        MemberSpec_('time_minincl_value', ['time_minincl_st', 'xs:time'], 0, 0),
-        MemberSpec_('time_maxincl_value', ['time_maxincl_st', 'xs:time'], 0, 0),
-        MemberSpec_('time_minexcl_value', ['time_minexcl_st', 'xs:time'], 0, 0),
-        MemberSpec_('time_maxexcl_value', ['time_maxexcl_st', 'xs:time'], 0, 0),
-        MemberSpec_('datetime_minincl_value', ['datetime_minincl_st', 'xs:dateTime'], 0, 0),
-        MemberSpec_('datetime_maxincl_value', ['datetime_maxincl_st', 'xs:dateTime'], 0, 0),
-        MemberSpec_('datetime_minexcl_value', ['datetime_minexcl_st', 'xs:dateTime'], 0, 0),
-        MemberSpec_('datetime_maxexcl_value', ['datetime_maxexcl_st', 'xs:dateTime'], 0, 0),
-        MemberSpec_('vbar_pattern_value', ['vbar_pattern_st', 'xs:string'], 0, 0),
-        MemberSpec_('anonymous_float_value', ['anonymous_float_valueType', 'xs:float'], 0, 0),
-        MemberSpec_('primative_integer', 'xs:integer', 0, 0),
-        MemberSpec_('primative_float', 'xs:float', 0, 0),
+        MemberSpec_('integer_range_1_value', ['integer_range_1_st', 'integer_range_2_st', 'xs:integer'], 0, 0, {u'type': u'xs:integer', u'name': u'integer_range_1_value'}, None),
+        MemberSpec_('pattern_value', ['pattern_st', 'pattern_1_st', 'min_length_st', 'xs:string'], 0, 0, {u'type': u'xs:string', u'name': u'pattern_value'}, None),
+        MemberSpec_('token_enum_value', ['token_enum_st', 'xs:NMTOKEN'], 0, 0, {u'type': u'xs:NMTOKEN', u'name': u'token_enum_value'}, None),
+        MemberSpec_('integer_range_incl_value', ['integer_range_incl_st', 'xs:integer'], 0, 0, {u'type': u'xs:integer', u'name': u'integer_range_incl_value'}, None),
+        MemberSpec_('integer_range_excl_value', ['integer_range_excl_st', 'xs:integer'], 0, 0, {u'type': u'xs:integer', u'name': u'integer_range_excl_value'}, None),
+        MemberSpec_('min_max_length_value', ['min_max_length_st', 'xs:string'], 0, 0, {u'type': u'xs:string', u'name': u'min_max_length_value'}, None),
+        MemberSpec_('length_value', ['length_st', 'xs:string'], 0, 0, {u'type': u'xs:string', u'name': u'length_value'}, None),
+        MemberSpec_('totalDigits_value', ['totalDigits_st', 'xs:decimal'], 0, 0, {u'type': u'xs:decimal', u'name': u'totalDigits_value'}, None),
+        MemberSpec_('date_minincl_value', ['date_minincl_st', 'xs:date'], 0, 0, {u'type': u'xs:date', u'name': u'date_minincl_value'}, None),
+        MemberSpec_('date_maxincl_value', ['date_maxincl_st', 'xs:date'], 0, 0, {u'type': u'xs:date', u'name': u'date_maxincl_value'}, None),
+        MemberSpec_('date_minexcl_value', ['date_minexcl_st', 'xs:date'], 0, 0, {u'type': u'xs:date', u'name': u'date_minexcl_value'}, None),
+        MemberSpec_('date_maxexcl_value', ['date_maxexcl_st', 'xs:date'], 0, 0, {u'type': u'xs:date', u'name': u'date_maxexcl_value'}, None),
+        MemberSpec_('time_minincl_value', ['time_minincl_st', 'xs:time'], 0, 0, {u'type': u'xs:time', u'name': u'time_minincl_value'}, None),
+        MemberSpec_('time_maxincl_value', ['time_maxincl_st', 'xs:time'], 0, 0, {u'type': u'xs:time', u'name': u'time_maxincl_value'}, None),
+        MemberSpec_('time_minexcl_value', ['time_minexcl_st', 'xs:time'], 0, 0, {u'type': u'xs:time', u'name': u'time_minexcl_value'}, None),
+        MemberSpec_('time_maxexcl_value', ['time_maxexcl_st', 'xs:time'], 0, 0, {u'type': u'xs:time', u'name': u'time_maxexcl_value'}, None),
+        MemberSpec_('datetime_minincl_value', ['datetime_minincl_st', 'xs:dateTime'], 0, 0, {u'type': u'xs:dateTime', u'name': u'datetime_minincl_value'}, None),
+        MemberSpec_('datetime_maxincl_value', ['datetime_maxincl_st', 'xs:dateTime'], 0, 0, {u'type': u'xs:dateTime', u'name': u'datetime_maxincl_value'}, None),
+        MemberSpec_('datetime_minexcl_value', ['datetime_minexcl_st', 'xs:dateTime'], 0, 0, {u'type': u'xs:dateTime', u'name': u'datetime_minexcl_value'}, None),
+        MemberSpec_('datetime_maxexcl_value', ['datetime_maxexcl_st', 'xs:dateTime'], 0, 0, {u'type': u'xs:dateTime', u'name': u'datetime_maxexcl_value'}, None),
+        MemberSpec_('vbar_pattern_value', ['vbar_pattern_st', 'xs:string'], 0, 0, {u'type': u'xs:string', u'name': u'vbar_pattern_value'}, None),
+        MemberSpec_('anonymous_float_value', ['anonymous_float_valueType', 'xs:float'], 0, 0, {u'type': u'xs:float', u'name': u'anonymous_float_value'}, None),
+        MemberSpec_('primative_integer', 'xs:integer', 0, 0, {u'type': u'xs:integer', u'name': u'primative_integer'}, None),
+        MemberSpec_('primative_float', 'xs:float', 0, 0, {u'type': u'xs:float', u'name': u'primative_float'}, None),
     ]
     subclass = None
     superclass = None
@@ -1461,7 +1473,7 @@ class simpleOneType(GeneratedsSuper):
 
 class simpleTwoType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('simpleTwoElementOne', 'simpleTwoElementOneType', 0, 0),
+        MemberSpec_('simpleTwoElementOne', 'simpleTwoElementOneType', 0, 0, {u'type': u'simpleTwoElementOneType', u'name': u'simpleTwoElementOne'}, None),
     ]
     subclass = None
     superclass = None
@@ -1538,7 +1550,7 @@ class simpleTwoType(GeneratedsSuper):
 
 class simpleTwoElementOneType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('simpleTwoElementTwo', ['simpleTwoElementTwoType', 'xs:string'], 0, 0),
+        MemberSpec_('simpleTwoElementTwo', ['simpleTwoElementTwoType', 'xs:string'], 0, 0, {u'type': u'xs:string', u'name': u'simpleTwoElementTwo'}, None),
     ]
     subclass = None
     superclass = None

@@ -291,6 +291,7 @@ ExportLiteral = False
 XmlDisabled = False
 FixTypeNames = None
 SingleFileOutput = True
+UseSourceFileAsModuleName = False
 OutputDirectory = None
 ModuleSuffix = ""
 PreserveCdataTags = False
@@ -716,6 +717,7 @@ class XschemaElement(XschemaElementBase):
         self.values = list()
         # The parent choice for the current element.
         self.choice = None
+        self.choiceGroup = None
         self.listType = 0
         self.simpleBase = []
         self.documentation = ''
@@ -763,6 +765,12 @@ class XschemaElement(XschemaElementBase):
 
     def setAttrs(self, attrs):
         self.attrs = attrs
+
+    def getChoiceGroup(self):
+        return self.choiceGroup
+
+    def setChoiceGroup(self, groupId):
+        self.choiceGroup = groupId
 
     def getMinOccurs(self):
         return self.minOccurs
@@ -1567,6 +1575,7 @@ class XschemaHandler(handler.ContentHandler):
         self.topLevelSimpleTypes = list()
         # The current choice type we're in
         self.currentChoice = None
+        self.currentChoiceId = 0
         self.firstElement = True
 
     def getRoot(self):
@@ -1668,6 +1677,8 @@ class XschemaHandler(handler.ContentHandler):
                 [attrs.get('minOccurs'), attrs.get('maxOccurs')])
         elif name == ChoiceType:
             self.currentChoice = XschemaElement(attrs)
+            self.currentChoiceId += 1
+            self.currentChoice.setChoiceGroup(self.currentChoiceId)
             self.inChoice = 1
         elif name == AttributeType:
             self.inAttribute = 1
@@ -4810,12 +4821,12 @@ def generateMemberSpec(wrt, element):
         if generateDict:
             item = "        '%s': MemberSpec_('%s', %s, %d, %d, %s, %s)," % (
                 item1, item1, item2, item3, item4, repr(child.getAttrs()),
-                id(child.choice) if child.choice else None)
+                child.choice.getChoiceGroup() if child.choice else None)
         else:
             #item = "        ('%s', '%s', %d)," % (item1, item2, item3, )
             item = "        MemberSpec_('%s', %s, %d, %d, %s, %s)," % (
                 item1, item2, item3, item4, repr(child.getAttrs()),
-                id(child.choice) if child.choice else None)
+                child.choice.getChoiceGroup() if child.choice else None)
         add(item)
     simplebase = element.getSimpleBase()
     if element.getSimpleContent() or element.isMixed():
@@ -6793,7 +6804,7 @@ def parseAndGenerate(
     global DelayedElements, DelayedElements_subclass, \
         AlreadyGenerated, SaxDelayedElements, \
         AlreadyGenerated_subclass, UserMethodsPath, UserMethodsModule, \
-        SchemaLxmlTree, ModuleSuffix
+        SchemaLxmlTree, ModuleSuffix, UseSourceFileAsModuleName
     DelayedElements = set()
     DelayedElements_subclass = set()
     AlreadyGenerated = set()
@@ -6899,17 +6910,41 @@ def parseAndGenerate(
             root.annotate()
             moduleName = os.path.splitext(os.path.basename(rootPath))[0]
             modulePath = None
-            # use the first root element to set
-            # up the module name and path
+            # register fully qualified names for all types defined in this XSD
             for child in root.getChildren():
+                typeName = child.getType()
+                if typeName.startswith("xs:"):
+                    # no need to create a module for
+                    # xs: types
+                    continue
                 fqnToModuleNameMap[child.getFullyQualifiedType()] = \
                     moduleName
                 fqnToModuleNameMap[child.getFullyQualifiedName()] = \
                     moduleName
-            # use the root file name as module name
-            modulePath = os.path.join(
-                OutputDirectory,
-                moduleName + ModuleSuffix + ".py")
+            if UseSourceFileAsModuleName:
+                # use the root file name as module name
+                modulePath = os.path.join(
+                    OutputDirectory,
+                    moduleName + ModuleSuffix + ".py")
+            else:
+                # use the first root element to set
+                # up the module name and path
+                for child in root.getChildren():
+                    if child.isRootElement():
+                        typeName = child.getType()
+                        if typeName.startswith("xs:"):
+                            # no need to create a module for
+                            # xs: types
+                            continue
+                        # convert to lower camel case if needed.
+                        if "-" in typeName:
+                            tokens = typeName.split("-")
+                            typeName = ''.join([t.title() for t in tokens])
+                        moduleName = typeName[0].lower() + typeName[1:]
+                        modulePath = (
+                            OutputDirectory +
+                            os.sep + moduleName +
+                            ModuleSuffix + ".py")
             rootInfos.append((root, modulePath))
         for root, modulePath in rootInfos:
             if modulePath:
@@ -7061,7 +7096,7 @@ def main():
         ExportWrite, ExportEtree, ExportLiteral, XmlDisabled, \
         FixTypeNames, SingleFileOutput, OutputDirectory, \
         ModuleSuffix, UseOldSimpleTypeValidators, \
-        UseGeneratedssuperLookup, \
+        UseGeneratedssuperLookup, UseSourceFileAsModuleName, \
         PreserveCdataTags, CleanupNameList, \
         NoWarnings
     outputText = True
@@ -7082,6 +7117,7 @@ def main():
                 'module-suffix=', 'use-old-simpletype-validators',
                 'preserve-cdata-tags', 'cleanup-name-list=',
                 'disable-generatedssuper-lookup',
+                'use-source-file-as-module-name',
                 'no-warnings',
                 'no-collect-includes', 'no-redefine-groups',
             ])
@@ -7267,6 +7303,8 @@ def main():
             XmlDisabled = True
         elif option[0] == '--disable-generatedssuper-lookup':
             UseGeneratedssuperLookup = False
+        elif option[0] == '--use-source-file-as-module-name':
+            UseSourceFileAsModuleName = True
         elif option[0] == '--one-file-per-xsd':
             SingleFileOutput = False
         elif option[0] == "--output-directory":

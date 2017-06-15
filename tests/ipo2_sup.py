@@ -89,7 +89,7 @@ except ImportError:
 try:
     from generatedssuper import GeneratedsSuper
 except ImportError as exp:
-
+    
     class GeneratedsSuper(object):
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
         class _FixedOffsetTZ(datetime_.tzinfo):
@@ -403,7 +403,13 @@ except ImportError as exp:
             else:
                 result = GeneratedsSuper.gds_encode(str(instring))
             return result
-
+        def __eq__(self, other):
+            if type(self) != type(other):
+                return False
+            return self.__dict__ == other.__dict__
+        def __ne__(self, other):
+            return not self.__eq__(other)
+    
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
         name = class_.__name__ + 'Sub'
@@ -655,10 +661,12 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0, optional=0):
+    def __init__(self, name='', data_type='', container=0, optional=0, child_attrs=None, choice=None):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.child_attrs = child_attrs
+        self.choice = choice
         self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
@@ -674,6 +682,10 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_child_attrs(self, child_attrs): self.child_attrs = child_attrs
+    def get_child_attrs(self): return self.child_attrs
+    def set_choice(self, choice): self.choice = choice
+    def get_choice(self): return self.choice
     def set_optional(self, optional): self.optional = optional
     def get_optional(self): return self.optional
 
@@ -690,11 +702,11 @@ def _cast(typ, value):
 
 class PurchaseOrderType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('orderDate', 'date', 0, 1),
-        MemberSpec_('shipTo', 'Address', 0, 0),
-        MemberSpec_('billTo', 'Address', 0, 0),
-        MemberSpec_('comment', 'string', 0, 1),
-        MemberSpec_('items', 'Items', 0, 0),
+        MemberSpec_('orderDate', 'date', 0, 1, {'use': 'optional'}),
+        MemberSpec_('shipTo', 'Address', 0, 0, {u'type': u'Address', u'name': u'shipTo'}, None),
+        MemberSpec_('billTo', 'Address', 0, 0, {u'type': u'Address', u'name': u'billTo'}, None),
+        MemberSpec_('comment', 'string', 0, 1, {'type': u'string', u'ref': u'comment', 'name': u'comment', u'minOccurs': u'0'}, None),
+        MemberSpec_('items', 'Items', 0, 0, {u'type': u'Items', u'name': u'items'}, None),
     ]
     subclass = None
     superclass = None
@@ -821,7 +833,7 @@ class PurchaseOrderType(GeneratedsSuper):
 
 class Items(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('item', 'item', 1, 1),
+        MemberSpec_('item', 'item', 1, 1, {u'maxOccurs': u'unbounded', 'type': u'item', u'name': u'item', u'minOccurs': u'0'}, None),
     ]
     subclass = None
     superclass = None
@@ -904,12 +916,12 @@ class Items(GeneratedsSuper):
 
 class item(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('partNum', 'ipo:SKU', 0, 0),
-        MemberSpec_('productName', 'string', 0, 0),
-        MemberSpec_('quantity', ['quantity', 'positiveInteger'], 0, 0),
-        MemberSpec_('USPrice', 'decimal', 0, 0),
-        MemberSpec_('comment', 'string', 0, 1),
-        MemberSpec_('shipDate', 'date', 0, 1),
+        MemberSpec_('partNum', 'ipo:SKU', 0, 0, {'use': u'required'}),
+        MemberSpec_('productName', 'string', 0, 0, {u'type': u'string', u'name': u'productName'}, None),
+        MemberSpec_('quantity', ['quantity', 'positiveInteger'], 0, 0, {'type': u'positiveInteger', u'name': u'quantity'}, None),
+        MemberSpec_('USPrice', 'decimal', 0, 0, {u'type': u'decimal', u'name': u'USPrice'}, None),
+        MemberSpec_('comment', 'string', 0, 1, {'type': u'string', u'ref': u'comment', 'name': u'comment', u'minOccurs': u'0'}, None),
+        MemberSpec_('shipDate', 'date', 0, 1, {u'type': u'date', u'name': u'shipDate', u'minOccurs': u'0'}, None),
     ]
     subclass = None
     superclass = None
@@ -1116,9 +1128,9 @@ class quantity(GeneratedsSuper):
 
 class Address(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('name', 'string', 0, 0),
-        MemberSpec_('street', 'string', 0, 0),
-        MemberSpec_('city', 'string', 0, 0),
+        MemberSpec_('name', 'string', 0, 0, {u'type': u'string', u'name': u'name'}, None),
+        MemberSpec_('street', 'string', 0, 0, {u'type': u'string', u'name': u'street'}, None),
+        MemberSpec_('city', 'string', 0, 0, {u'type': u'string', u'name': u'city'}, None),
     ]
     subclass = None
     superclass = None
@@ -1227,8 +1239,8 @@ class Address(GeneratedsSuper):
 
 class USAddress(Address):
     member_data_items_ = [
-        MemberSpec_('state', ['USState', 'string'], 0, 0),
-        MemberSpec_('zip', 'positiveInteger', 0, 0),
+        MemberSpec_('state', ['USState', 'string'], 0, 0, {u'type': u'string', u'name': u'state'}, None),
+        MemberSpec_('zip', 'positiveInteger', 0, 0, {u'type': u'positiveInteger', u'name': u'zip'}, None),
     ]
     subclass = None
     superclass = Address
@@ -1341,8 +1353,8 @@ class USAddress(Address):
 
 class UKAddress(Address):
     member_data_items_ = [
-        MemberSpec_('exportCode', 'positiveInteger', 0, 1),
-        MemberSpec_('postcode', 'string', 0, 0),
+        MemberSpec_('exportCode', 'positiveInteger', 0, 1, {'use': 'optional'}),
+        MemberSpec_('postcode', 'string', 0, 0, {u'type': 'string', u'name': u'postcode'}, None),
     ]
     subclass = None
     superclass = Address
