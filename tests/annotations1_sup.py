@@ -90,7 +90,7 @@ except ImportError:
 try:
     from generatedssuper import GeneratedsSuper
 except ImportError as exp:
-
+    
     class GeneratedsSuper(object):
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
         class _FixedOffsetTZ(datetime_.tzinfo):
@@ -404,7 +404,13 @@ except ImportError as exp:
             else:
                 result = GeneratedsSuper.gds_encode(str(instring))
             return result
-
+        def __eq__(self, other):
+            if type(self) != type(other):
+                return False
+            return self.__dict__ == other.__dict__
+        def __ne__(self, other):
+            return not self.__eq__(other)
+    
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
         name = class_.__name__ + 'Sub'
@@ -656,10 +662,12 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0, optional=0):
+    def __init__(self, name='', data_type='', container=0, optional=0, child_attrs=None, choice=None):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.child_attrs = child_attrs
+        self.choice = choice
         self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
@@ -675,6 +683,10 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_child_attrs(self, child_attrs): self.child_attrs = child_attrs
+    def get_child_attrs(self): return self.child_attrs
+    def set_choice(self, choice): self.choice = choice
+    def get_choice(self): return self.choice
     def set_optional(self, optional): self.optional = optional
     def get_optional(self): return self.optional
 
@@ -694,8 +706,8 @@ class document1Type(GeneratedsSuper):
     test purposes. It should make a somewhat uninteresting
     docstring."""
     member_data_items_ = [
-        MemberSpec_('comments', 'xs:string', 0, 0),
-        MemberSpec_('otherdoc', 'document2Type', 0, 0),
+        MemberSpec_('comments', 'xs:string', 0, 0, {u'type': u'xs:string', u'name': u'comments'}, None),
+        MemberSpec_('otherdoc', 'document2Type', 0, 0, {u'type': u'document2Type', u'name': u'otherdoc'}, None),
     ]
     subclass = None
     superclass = None
@@ -786,9 +798,9 @@ class document2Type(GeneratedsSuper):
     test purposes. It should make a somewhat uninteresting
     docstring."""
     member_data_items_ = [
-        MemberSpec_('comments', 'xs:string', 0, 0),
-        MemberSpec_('rating', 'xs:integer', 0, 0),
-        MemberSpec_('anotherdoc', 'document3Type', 0, 0),
+        MemberSpec_('comments', 'xs:string', 0, 0, {u'type': u'xs:string', u'name': u'comments'}, None),
+        MemberSpec_('rating', 'xs:integer', 0, 0, {u'type': u'xs:integer', u'name': u'rating'}, None),
+        MemberSpec_('anotherdoc', 'document3Type', 0, 0, {u'type': u'document3Type', u'name': u'anotherdoc'}, None),
     ]
     subclass = None
     superclass = None
@@ -892,8 +904,8 @@ class document2Type(GeneratedsSuper):
 class document3Type(GeneratedsSuper):
     """This is a element of Type 3. It is short."""
     member_data_items_ = [
-        MemberSpec_('comments', 'xs:string', 0, 0),
-        MemberSpec_('rating', 'xs:integer', 0, 0),
+        MemberSpec_('comments', 'xs:string', 0, 0, {u'type': u'xs:string', u'name': u'comments'}, None),
+        MemberSpec_('rating', 'xs:integer', 0, 0, {u'type': u'xs:integer', u'name': u'rating'}, None),
     ]
     subclass = None
     superclass = None
