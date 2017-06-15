@@ -104,6 +104,8 @@ Options:
                                      to XML)
                              Example: "write etree"
                              Default: "write"
+    --disable-xml            Disables generation of all XML build/export
+                             methods and command line interface
     --preserve-cdata-tags    Preserve CDATA tags.  Default: False
     --cleanup-name-list=<replacement-map>
                              Specifies list of 2-tuples used for cleaning
@@ -228,6 +230,7 @@ else:
 GenerateProperties = 0
 UseGetterSetter = 'new'
 UseOldSimpleTypeValidators = False
+UseGeneratedssuperLookup = True
 SchemaLxmlTree = None
 XsdFileName = []
 MemberSpecs = None
@@ -285,6 +288,7 @@ AnyTypeIdentifier = '__ANY__'
 ExportWrite = True
 ExportEtree = False
 ExportLiteral = False
+XmlDisabled = False
 FixTypeNames = None
 SingleFileOutput = True
 OutputDirectory = None
@@ -1781,6 +1785,7 @@ class XschemaHandler(handler.ContentHandler):
                     self.stack[-1].setSimpleType(1)
                 element = SimpleTypeElement(stName)
                 SimpleTypeDict[stName] = element
+                SimpleTypeDict[Targetnamespace+":"+stName] = element
                 self.stack.append(element)
             self.inSimpleType += 1
         elif name == RestrictionType:
@@ -4540,6 +4545,8 @@ def processValidatorBodyRestrictions(
         # Recurse into base simpleType, if it exists.
         base1 = restriction.get('base')
         if base1 is not None:
+            if ":" in base1:
+                base1 = base1.split(":")[1]
             st1 = find_simple_type_def(tree, base1, None, None, ns, base)
             if st1 is not None:
                 restrictions1 = st1.xpath(
@@ -4764,16 +4771,16 @@ def generateMemberSpec(wrt, element):
     attrDefs = element.getAttributeDefs()
     for attrName in element.getAttributeDefsList():
         attrDef = attrDefs[attrName]
-        item1 = attrName
+        item1 = mapName(attrName)
         item2 = attrDef.getType()
         item3 = 0
         item4 = 1 if attrDef.getUse() == 'optional' else 0
         if generateDict:
-            item = "        '%s': MemberSpec_('%s', '%s', %d, %d)," % (
-                item1, item1, item2, item3, item4, )
+            item = "        '%s': MemberSpec_('%s', '%s', %d, %d, %s)," % (
+                item1, item1, item2, item3, item4, repr({'use':attrDef.getUse()}))
         else:
-            item = "        MemberSpec_('%s', '%s', %d, %d)," % (
-                item1, item2, item3, item4, )
+            item = "        MemberSpec_('%s', '%s', %d, %d, %s)," % (
+                item1, item2, item3, item4, repr({'use':attrDef.getUse()}))
         add(item)
     for child in element.getChildren():
         name = cleanupName(child.getCleanName())
@@ -4801,12 +4808,14 @@ def generateMemberSpec(wrt, element):
             item3 = 0
         item4 = 1 if child.getOptional() else 0
         if generateDict:
-            item = "        '%s': MemberSpec_('%s', %s, %d, %d)," % (
-                item1, item1, item2, item3, item4, )
+            item = "        '%s': MemberSpec_('%s', %s, %d, %d, %s, %s)," % (
+                item1, item1, item2, item3, item4, repr(child.getAttrs()),
+                id(child.choice) if child.choice else None)
         else:
             #item = "        ('%s', '%s', %d)," % (item1, item2, item3, )
-            item = "        MemberSpec_('%s', %s, %d, %d)," % (
-                item1, item2, item3, item4, )
+            item = "        MemberSpec_('%s', %s, %d, %d, %s, %s)," % (
+                item1, item2, item3, item4, repr(child.getAttrs()),
+                id(child.choice) if child.choice else None)
         add(item)
     simplebase = element.getSimpleBase()
     if element.getSimpleContent() or element.isMixed():
@@ -4980,13 +4989,14 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     else:
         namespace = ''
     generateHascontentMethod(wrt, prefix, element)
-    if ExportWrite:
-        generateExportFn(wrt, prefix, element, namespace, nameSpacesDef)
-    if ExportEtree:
-        generateToEtree(wrt, element, Targetnamespace)
-    if ExportLiteral:
-        generateExportLiteralFn(wrt, prefix, element)
-    generateBuildFn(wrt, prefix, element, delayed)
+    if not XmlDisabled:
+        if ExportWrite:
+            generateExportFn(wrt, prefix, element, namespace, nameSpacesDef)
+        if ExportEtree:
+            generateToEtree(wrt, element, Targetnamespace)
+        if ExportLiteral:
+            generateExportLiteralFn(wrt, prefix, element)
+        generateBuildFn(wrt, prefix, element, delayed)
     generateUserMethods(wrt, element)
     wrt('# end class %s%s\n' % (prefix, name, ))
     wrt('\n\n')
@@ -4994,7 +5004,7 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
 
 
 TEMPLATE_HEADER = """\
-#!/usr/bin/env python
+#xmldisable##!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #
@@ -5018,10 +5028,10 @@ import re as re_
 import base64
 import datetime as datetime_
 import warnings as warnings_
-try:
-    from lxml import etree as etree_
-except ImportError:
-    from xml.etree import ElementTree as etree_
+#xmldisable#try:
+#xmldisable#    from lxml import etree as etree_
+#xmldisable#except ImportError:
+#xmldisable#    from xml.etree import ElementTree as etree_
 
 
 Validate_simpletypes_ = True
@@ -5031,17 +5041,17 @@ else:
     BaseStrType_ = str
 
 
-def parsexml_(infile, parser=None, **kwargs):
-    if parser is None:
-        # Use the lxml ElementTree compatible parser so that, e.g.,
-        #   we ignore comments.
-        try:
-            parser = etree_.ETCompatXMLParser()
-        except AttributeError:
-            # fallback to xml.etree
-            parser = etree_.XMLParser()
-    doc = etree_.parse(infile, parser=parser, **kwargs)
-    return doc
+#xmldisable#def parsexml_(infile, parser=None, **kwargs):
+#xmldisable#    if parser is None:
+#xmldisable#        # Use the lxml ElementTree compatible parser so that, e.g.,
+#xmldisable#        #   we ignore comments.
+#xmldisable#        try:
+#xmldisable#            parser = etree_.ETCompatXMLParser()
+#xmldisable#        except AttributeError:
+#xmldisable#            # fallback to xml.etree
+#xmldisable#            parser = etree_.XMLParser()
+#xmldisable#    doc = etree_.parse(infile, parser=parser, **kwargs)
+#xmldisable#    return doc
 
 #
 # Namespace prefix definition table (and other attributes, too)
@@ -5077,332 +5087,7 @@ except ImportError:
 # You can replace these methods by re-implementing the following class
 #   in a module named generatedssuper.py.
 
-try:
-    from generatedssuper import GeneratedsSuper
-except ImportError as exp:
-
-    class GeneratedsSuper(object):
-        tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
-        class _FixedOffsetTZ(datetime_.tzinfo):
-            def __init__(self, offset, name):
-                self.__offset = datetime_.timedelta(minutes=offset)
-                self.__name = name
-            def utcoffset(self, dt):
-                return self.__offset
-            def tzname(self, dt):
-                return self.__name
-            def dst(self, dt):
-                return None
-        def gds_format_string(self, input_data, input_name=''):
-            return input_data
-        def gds_validate_string(self, input_data, node=None, input_name=''):
-            if not input_data:
-                return ''
-            else:
-                return input_data
-        def gds_format_base64(self, input_data, input_name=''):
-            return base64.b64encode(input_data)
-        def gds_validate_base64(self, input_data, node=None, input_name=''):
-            return input_data
-        def gds_format_integer(self, input_data, input_name=''):
-            return '%d' % input_data
-        def gds_validate_integer(self, input_data, node=None, input_name=''):
-            return input_data
-        def gds_format_integer_list(self, input_data, input_name=''):
-            return '%s' % ' '.join(input_data)
-        def gds_validate_integer_list(
-                self, input_data, node=None, input_name=''):
-            values = input_data.split()
-            for value in values:
-                try:
-                    int(value)
-                except (TypeError, ValueError):
-                    raise_parse_error(node, 'Requires sequence of integers')
-            return values
-        def gds_format_float(self, input_data, input_name=''):
-            return ('%.15f' % input_data).rstrip('0')
-        def gds_validate_float(self, input_data, node=None, input_name=''):
-            return input_data
-        def gds_format_float_list(self, input_data, input_name=''):
-            return '%s' % ' '.join(input_data)
-        def gds_validate_float_list(
-                self, input_data, node=None, input_name=''):
-            values = input_data.split()
-            for value in values:
-                try:
-                    float(value)
-                except (TypeError, ValueError):
-                    raise_parse_error(node, 'Requires sequence of floats')
-            return values
-        def gds_format_double(self, input_data, input_name=''):
-            return '%e' % input_data
-        def gds_validate_double(self, input_data, node=None, input_name=''):
-            return input_data
-        def gds_format_double_list(self, input_data, input_name=''):
-            return '%s' % ' '.join(input_data)
-        def gds_validate_double_list(
-                self, input_data, node=None, input_name=''):
-            values = input_data.split()
-            for value in values:
-                try:
-                    float(value)
-                except (TypeError, ValueError):
-                    raise_parse_error(node, 'Requires sequence of doubles')
-            return values
-        def gds_format_boolean(self, input_data, input_name=''):
-            return ('%s' % input_data).lower()
-        def gds_validate_boolean(self, input_data, node=None, input_name=''):
-            return input_data
-        def gds_format_boolean_list(self, input_data, input_name=''):
-            return '%s' % ' '.join(input_data)
-        def gds_validate_boolean_list(
-                self, input_data, node=None, input_name=''):
-            values = input_data.split()
-            for value in values:
-                if value not in ('true', '1', 'false', '0', ):
-                    raise_parse_error(
-                        node,
-                        'Requires sequence of booleans '
-                        '("true", "1", "false", "0")')
-            return values
-        def gds_validate_datetime(self, input_data, node=None, input_name=''):
-            return input_data
-        def gds_format_datetime(self, input_data, input_name=''):
-            if input_data.microsecond == 0:
-                _svalue = '%04d-%02d-%02dT%02d:%02d:%02d' % (
-                    input_data.year,
-                    input_data.month,
-                    input_data.day,
-                    input_data.hour,
-                    input_data.minute,
-                    input_data.second,
-                )
-            else:
-                _svalue = '%04d-%02d-%02dT%02d:%02d:%02d.%s' % (
-                    input_data.year,
-                    input_data.month,
-                    input_data.day,
-                    input_data.hour,
-                    input_data.minute,
-                    input_data.second,
-                    ('%f' % (float(input_data.microsecond) / 1000000))[2:],
-                )
-            if input_data.tzinfo is not None:
-                tzoff = input_data.tzinfo.utcoffset(input_data)
-                if tzoff is not None:
-                    total_seconds = tzoff.seconds + (86400 * tzoff.days)
-                    if total_seconds == 0:
-                        _svalue += 'Z'
-                    else:
-                        if total_seconds < 0:
-                            _svalue += '-'
-                            total_seconds *= -1
-                        else:
-                            _svalue += '+'
-                        hours = total_seconds // 3600
-                        minutes = (total_seconds - (hours * 3600)) // 60
-                        _svalue += '{{0:02d}}:{{1:02d}}'.format(hours, minutes)
-            return _svalue
-        @classmethod
-        def gds_parse_datetime(cls, input_data):
-            tz = None
-            if input_data[-1] == 'Z':
-                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
-                input_data = input_data[:-1]
-            else:
-                results = GeneratedsSuper.tzoff_pattern.search(input_data)
-                if results is not None:
-                    tzoff_parts = results.group(2).split(':')
-                    tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
-                    if results.group(1) == '-':
-                        tzoff *= -1
-                    tz = GeneratedsSuper._FixedOffsetTZ(
-                        tzoff, results.group(0))
-                    input_data = input_data[:-6]
-            time_parts = input_data.split('.')
-            if len(time_parts) > 1:
-                micro_seconds = int(float('0.' + time_parts[1]) * 1000000)
-                input_data = '%s.%s' % (time_parts[0], micro_seconds, )
-                dt = datetime_.datetime.strptime(
-                    input_data, '%Y-%m-%dT%H:%M:%S.%f')
-            else:
-                dt = datetime_.datetime.strptime(
-                    input_data, '%Y-%m-%dT%H:%M:%S')
-            dt = dt.replace(tzinfo=tz)
-            return dt
-        def gds_validate_date(self, input_data, node=None, input_name=''):
-            return input_data
-        def gds_format_date(self, input_data, input_name=''):
-            _svalue = '%04d-%02d-%02d' % (
-                input_data.year,
-                input_data.month,
-                input_data.day,
-            )
-            try:
-                if input_data.tzinfo is not None:
-                    tzoff = input_data.tzinfo.utcoffset(input_data)
-                    if tzoff is not None:
-                        total_seconds = tzoff.seconds + (86400 * tzoff.days)
-                        if total_seconds == 0:
-                            _svalue += 'Z'
-                        else:
-                            if total_seconds < 0:
-                                _svalue += '-'
-                                total_seconds *= -1
-                            else:
-                                _svalue += '+'
-                            hours = total_seconds // 3600
-                            minutes = (total_seconds - (hours * 3600)) // 60
-                            _svalue += '{{0:02d}}:{{1:02d}}'.format(
-                                hours, minutes)
-            except AttributeError:
-                pass
-            return _svalue
-        @classmethod
-        def gds_parse_date(cls, input_data):
-            tz = None
-            if input_data[-1] == 'Z':
-                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
-                input_data = input_data[:-1]
-            else:
-                results = GeneratedsSuper.tzoff_pattern.search(input_data)
-                if results is not None:
-                    tzoff_parts = results.group(2).split(':')
-                    tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
-                    if results.group(1) == '-':
-                        tzoff *= -1
-                    tz = GeneratedsSuper._FixedOffsetTZ(
-                        tzoff, results.group(0))
-                    input_data = input_data[:-6]
-            dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
-            dt = dt.replace(tzinfo=tz)
-            return dt.date()
-        def gds_validate_time(self, input_data, node=None, input_name=''):
-            return input_data
-        def gds_format_time(self, input_data, input_name=''):
-            if input_data.microsecond == 0:
-                _svalue = '%02d:%02d:%02d' % (
-                    input_data.hour,
-                    input_data.minute,
-                    input_data.second,
-                )
-            else:
-                _svalue = '%02d:%02d:%02d.%s' % (
-                    input_data.hour,
-                    input_data.minute,
-                    input_data.second,
-                    ('%f' % (float(input_data.microsecond) / 1000000))[2:],
-                )
-            if input_data.tzinfo is not None:
-                tzoff = input_data.tzinfo.utcoffset(input_data)
-                if tzoff is not None:
-                    total_seconds = tzoff.seconds + (86400 * tzoff.days)
-                    if total_seconds == 0:
-                        _svalue += 'Z'
-                    else:
-                        if total_seconds < 0:
-                            _svalue += '-'
-                            total_seconds *= -1
-                        else:
-                            _svalue += '+'
-                        hours = total_seconds // 3600
-                        minutes = (total_seconds - (hours * 3600)) // 60
-                        _svalue += '{{0:02d}}:{{1:02d}}'.format(hours, minutes)
-            return _svalue
-        def gds_validate_simple_patterns(self, patterns, target):
-            # pat is a list of lists of strings/patterns.  We should:
-            # - AND the outer elements
-            # - OR the inner elements
-            found1 = True
-            for patterns1 in patterns:
-                found2 = False
-                for patterns2 in patterns1:
-                    if re_.search(patterns2, target) is not None:
-                        found2 = True
-                        break
-                if not found2:
-                    found1 = False
-                    break
-            return found1
-        @classmethod
-        def gds_parse_time(cls, input_data):
-            tz = None
-            if input_data[-1] == 'Z':
-                tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
-                input_data = input_data[:-1]
-            else:
-                results = GeneratedsSuper.tzoff_pattern.search(input_data)
-                if results is not None:
-                    tzoff_parts = results.group(2).split(':')
-                    tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
-                    if results.group(1) == '-':
-                        tzoff *= -1
-                    tz = GeneratedsSuper._FixedOffsetTZ(
-                        tzoff, results.group(0))
-                    input_data = input_data[:-6]
-            if len(input_data.split('.')) > 1:
-                dt = datetime_.datetime.strptime(input_data, '%H:%M:%S.%f')
-            else:
-                dt = datetime_.datetime.strptime(input_data, '%H:%M:%S')
-            dt = dt.replace(tzinfo=tz)
-            return dt.time()
-        def gds_str_lower(self, instring):
-            return instring.lower()
-        def get_path_(self, node):
-            path_list = []
-            self.get_path_list_(node, path_list)
-            path_list.reverse()
-            path = '/'.join(path_list)
-            return path
-        Tag_strip_pattern_ = re_.compile(r'\{{.*\}}')
-        def get_path_list_(self, node, path_list):
-            if node is None:
-                return
-            tag = GeneratedsSuper.Tag_strip_pattern_.sub('', node.tag)
-            if tag:
-                path_list.append(tag)
-            self.get_path_list_(node.getparent(), path_list)
-        def get_class_obj_(self, node, default_class=None):
-            class_obj1 = default_class
-            if 'xsi' in node.nsmap:
-                classname = node.get('{{%s}}type' % node.nsmap['xsi'])
-                if classname is not None:
-                    names = classname.split(':')
-                    if len(names) == 2:
-                        classname = names[1]
-                    class_obj2 = globals().get(classname)
-                    if class_obj2 is not None:
-                        class_obj1 = class_obj2
-            return class_obj1
-        def gds_build_any(self, node, type_name=None):
-            return None
-        @classmethod
-        def gds_reverse_node_mapping(cls, mapping):
-            {gds_reverse_node_mapping_text}
-        @staticmethod
-        def gds_encode(instring):
-            if sys.version_info.major == 2:
-                return instring.encode(ExternalEncoding)
-            else:
-                return instring
-        @staticmethod
-        def convert_unicode(instring):
-            if isinstance(instring, str):
-                result = quote_xml(instring)
-            elif sys.version_info.major == 2 and isinstance(instring, unicode):
-                result = quote_xml(instring).encode('utf8')
-            else:
-                result = GeneratedsSuper.gds_encode(str(instring))
-            return result
-
-    def getSubclassFromModule_(module, class_):
-        '''Get the subclass of a class from a specific module.'''
-        name = class_.__name__ + 'Sub'
-        if hasattr(module, name):
-            return getattr(module, name)
-        else:
-            return None
-
+{generatedssuper_import}
 
 #
 # If you have installed IPython you can uncomment and use the following.
@@ -5554,93 +5239,95 @@ class MixedContainer:
         return self.value
     def getName(self):
         return self.name
-    def export(self, outfile, level, name, namespace, pretty_print=True):
-        if self.category == MixedContainer.CategoryText:
-            # Prevent exporting empty content as empty lines.
-            if self.value.strip():
-                outfile.write(self.value)
-        elif self.category == MixedContainer.CategorySimple:
-            self.exportSimple(outfile, level, name)
-        else:    # category == MixedContainer.CategoryComplex
-            self.value.export(
-                outfile, level, namespace, name, pretty_print=pretty_print)
-    def exportSimple(self, outfile, level, name):
-        if self.content_type == MixedContainer.TypeString:
-            outfile.write('<%s>%s</%s>' % (
-                self.name, self.value, self.name))
-        elif self.content_type == MixedContainer.TypeInteger or \\
-                self.content_type == MixedContainer.TypeBoolean:
-            outfile.write('<%s>%d</%s>' % (
-                self.name, self.value, self.name))
-        elif self.content_type == MixedContainer.TypeFloat or \\
-                self.content_type == MixedContainer.TypeDecimal:
-            outfile.write('<%s>%f</%s>' % (
-                self.name, self.value, self.name))
-        elif self.content_type == MixedContainer.TypeDouble:
-            outfile.write('<%s>%g</%s>' % (
-                self.name, self.value, self.name))
-        elif self.content_type == MixedContainer.TypeBase64:
-            outfile.write('<%s>%s</%s>' % (
-                self.name, base64.b64encode(self.value), self.name))
-    def to_etree(self, element):
-        if self.category == MixedContainer.CategoryText:
-            # Prevent exporting empty content as empty lines.
-            if self.value.strip():
-                if len(element) > 0:
-                    if element[-1].tail is None:
-                        element[-1].tail = self.value
-                    else:
-                        element[-1].tail += self.value
-                else:
-                    if element.text is None:
-                        element.text = self.value
-                    else:
-                        element.text += self.value
-        elif self.category == MixedContainer.CategorySimple:
-            subelement = etree_.SubElement(element, '%s' % self.name)
-            subelement.text = self.to_etree_simple()
-        else:    # category == MixedContainer.CategoryComplex
-            self.value.to_etree(element)
-    def to_etree_simple(self):
-        if self.content_type == MixedContainer.TypeString:
-            text = self.value
-        elif (self.content_type == MixedContainer.TypeInteger or
-                self.content_type == MixedContainer.TypeBoolean):
-            text = '%d' % self.value
-        elif (self.content_type == MixedContainer.TypeFloat or
-                self.content_type == MixedContainer.TypeDecimal):
-            text = '%f' % self.value
-        elif self.content_type == MixedContainer.TypeDouble:
-            text = '%g' % self.value
-        elif self.content_type == MixedContainer.TypeBase64:
-            text = '%s' % base64.b64encode(self.value)
-        return text
-    def exportLiteral(self, outfile, level, name):
-        if self.category == MixedContainer.CategoryText:
-            showIndent(outfile, level)
-            outfile.write(
-                'model_.MixedContainer(%d, %d, "%s", "%s"),\\n' % (
-                    self.category, self.content_type, self.name, self.value))
-        elif self.category == MixedContainer.CategorySimple:
-            showIndent(outfile, level)
-            outfile.write(
-                'model_.MixedContainer(%d, %d, "%s", "%s"),\\n' % (
-                    self.category, self.content_type, self.name, self.value))
-        else:    # category == MixedContainer.CategoryComplex
-            showIndent(outfile, level)
-            outfile.write(
-                'model_.MixedContainer(%d, %d, "%s",\\n' % (
-                    self.category, self.content_type, self.name,))
-            self.value.exportLiteral(outfile, level + 1)
-            showIndent(outfile, level)
-            outfile.write(')\\n')
+#xmldisable#    def export(self, outfile, level, name, namespace, pretty_print=True):
+#xmldisable#        if self.category == MixedContainer.CategoryText:
+#xmldisable#            # Prevent exporting empty content as empty lines.
+#xmldisable#            if self.value.strip():
+#xmldisable#                outfile.write(self.value)
+#xmldisable#        elif self.category == MixedContainer.CategorySimple:
+#xmldisable#            self.exportSimple(outfile, level, name)
+#xmldisable#        else:    # category == MixedContainer.CategoryComplex
+#xmldisable#            self.value.export(
+#xmldisable#                outfile, level, namespace, name, pretty_print=pretty_print)
+#xmldisable#    def exportSimple(self, outfile, level, name):
+#xmldisable#        if self.content_type == MixedContainer.TypeString:
+#xmldisable#            outfile.write('<%s>%s</%s>' % (
+#xmldisable#                self.name, self.value, self.name))
+#xmldisable#        elif self.content_type == MixedContainer.TypeInteger or \\
+#xmldisable#                self.content_type == MixedContainer.TypeBoolean:
+#xmldisable#            outfile.write('<%s>%d</%s>' % (
+#xmldisable#                self.name, self.value, self.name))
+#xmldisable#        elif self.content_type == MixedContainer.TypeFloat or \\
+#xmldisable#                self.content_type == MixedContainer.TypeDecimal:
+#xmldisable#            outfile.write('<%s>%f</%s>' % (
+#xmldisable#                self.name, self.value, self.name))
+#xmldisable#        elif self.content_type == MixedContainer.TypeDouble:
+#xmldisable#            outfile.write('<%s>%g</%s>' % (
+#xmldisable#                self.name, self.value, self.name))
+#xmldisable#        elif self.content_type == MixedContainer.TypeBase64:
+#xmldisable#            outfile.write('<%s>%s</%s>' % (
+#xmldisable#                self.name, base64.b64encode(self.value), self.name))
+#xmldisable#    def to_etree(self, element):
+#xmldisable#        if self.category == MixedContainer.CategoryText:
+#xmldisable#            # Prevent exporting empty content as empty lines.
+#xmldisable#            if self.value.strip():
+#xmldisable#                if len(element) > 0:
+#xmldisable#                    if element[-1].tail is None:
+#xmldisable#                        element[-1].tail = self.value
+#xmldisable#                    else:
+#xmldisable#                        element[-1].tail += self.value
+#xmldisable#                else:
+#xmldisable#                    if element.text is None:
+#xmldisable#                        element.text = self.value
+#xmldisable#                    else:
+#xmldisable#                        element.text += self.value
+#xmldisable#        elif self.category == MixedContainer.CategorySimple:
+#xmldisable#            subelement = etree_.SubElement(element, '%s' % self.name)
+#xmldisable#            subelement.text = self.to_etree_simple()
+#xmldisable#        else:    # category == MixedContainer.CategoryComplex
+#xmldisable#            self.value.to_etree(element)
+#xmldisable#    def to_etree_simple(self):
+#xmldisable#        if self.content_type == MixedContainer.TypeString:
+#xmldisable#            text = self.value
+#xmldisable#        elif (self.content_type == MixedContainer.TypeInteger or
+#xmldisable#                self.content_type == MixedContainer.TypeBoolean):
+#xmldisable#            text = '%d' % self.value
+#xmldisable#        elif (self.content_type == MixedContainer.TypeFloat or
+#xmldisable#                self.content_type == MixedContainer.TypeDecimal):
+#xmldisable#            text = '%f' % self.value
+#xmldisable#        elif self.content_type == MixedContainer.TypeDouble:
+#xmldisable#            text = '%g' % self.value
+#xmldisable#        elif self.content_type == MixedContainer.TypeBase64:
+#xmldisable#            text = '%s' % base64.b64encode(self.value)
+#xmldisable#        return text
+#xmldisable#    def exportLiteral(self, outfile, level, name):
+#xmldisable#        if self.category == MixedContainer.CategoryText:
+#xmldisable#            showIndent(outfile, level)
+#xmldisable#            outfile.write(
+#xmldisable#                'model_.MixedContainer(%d, %d, "%s", "%s"),\\n' % (
+#xmldisable#                    self.category, self.content_type, self.name, self.value))
+#xmldisable#        elif self.category == MixedContainer.CategorySimple:
+#xmldisable#            showIndent(outfile, level)
+#xmldisable#            outfile.write(
+#xmldisable#                'model_.MixedContainer(%d, %d, "%s", "%s"),\\n' % (
+#xmldisable#                    self.category, self.content_type, self.name, self.value))
+#xmldisable#        else:    # category == MixedContainer.CategoryComplex
+#xmldisable#            showIndent(outfile, level)
+#xmldisable#            outfile.write(
+#xmldisable#                'model_.MixedContainer(%d, %d, "%s",\\n' % (
+#xmldisable#                    self.category, self.content_type, self.name,))
+#xmldisable#            self.value.exportLiteral(outfile, level + 1)
+#xmldisable#            showIndent(outfile, level)
+#xmldisable#            outfile.write(')\\n')
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0, optional=0):
+    def __init__(self, name='', data_type='', container=0, optional=0, child_attrs=None, choice=None):
         self.name = name
         self.data_type = data_type
         self.container = container
+        self.child_attrs = child_attrs
+        self.choice = choice
         self.optional = optional
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
@@ -5656,6 +5343,10 @@ class MemberSpec_(object):
             return self.data_type
     def set_container(self, container): self.container = container
     def get_container(self): return self.container
+    def set_child_attrs(self, child_attrs): self.child_attrs = child_attrs
+    def get_child_attrs(self): return self.child_attrs
+    def set_choice(self, choice): self.choice = choice
+    def get_choice(self): return self.choice
     def set_optional(self, optional): self.optional = optional
     def get_optional(self): return self.optional
 
@@ -5669,6 +5360,337 @@ def _cast(typ, value):
 # Data representation classes.
 #
 
+"""
+
+
+TEMPLATE_GENERATEDS_SUPER = """
+class GeneratedsSuper(object):
+    tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
+    class _FixedOffsetTZ(datetime_.tzinfo):
+        def __init__(self, offset, name):
+            self.__offset = datetime_.timedelta(minutes=offset)
+            self.__name = name
+        def utcoffset(self, dt):
+            return self.__offset
+        def tzname(self, dt):
+            return self.__name
+        def dst(self, dt):
+            return None
+    def gds_format_string(self, input_data, input_name=''):
+        return input_data
+    def gds_validate_string(self, input_data, node=None, input_name=''):
+        if not input_data:
+            return ''
+        else:
+            return input_data
+    def gds_format_base64(self, input_data, input_name=''):
+        return base64.b64encode(input_data)
+    def gds_validate_base64(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_integer(self, input_data, input_name=''):
+        return '%d' % input_data
+    def gds_validate_integer(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_integer_list(self, input_data, input_name=''):
+        return '%s' % ' '.join(input_data)
+    def gds_validate_integer_list(
+            self, input_data, node=None, input_name=''):
+        values = input_data.split()
+        for value in values:
+            try:
+                int(value)
+            except (TypeError, ValueError):
+                raise_parse_error(node, 'Requires sequence of integers')
+        return values
+    def gds_format_float(self, input_data, input_name=''):
+        return ('%.15f' % input_data).rstrip('0')
+    def gds_validate_float(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_float_list(self, input_data, input_name=''):
+        return '%s' % ' '.join(input_data)
+    def gds_validate_float_list(
+            self, input_data, node=None, input_name=''):
+        values = input_data.split()
+        for value in values:
+            try:
+                float(value)
+            except (TypeError, ValueError):
+                raise_parse_error(node, 'Requires sequence of floats')
+        return values
+    def gds_format_double(self, input_data, input_name=''):
+        return '%e' % input_data
+    def gds_validate_double(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_double_list(self, input_data, input_name=''):
+        return '%s' % ' '.join(input_data)
+    def gds_validate_double_list(
+            self, input_data, node=None, input_name=''):
+        values = input_data.split()
+        for value in values:
+            try:
+                float(value)
+            except (TypeError, ValueError):
+                raise_parse_error(node, 'Requires sequence of doubles')
+        return values
+    def gds_format_boolean(self, input_data, input_name=''):
+        return ('%s' % input_data).lower()
+    def gds_validate_boolean(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_boolean_list(self, input_data, input_name=''):
+        return '%s' % ' '.join(input_data)
+    def gds_validate_boolean_list(
+            self, input_data, node=None, input_name=''):
+        values = input_data.split()
+        for value in values:
+            if value not in ('true', '1', 'false', '0', ):
+                raise_parse_error(
+                    node,
+                    'Requires sequence of booleans '
+                    '("true", "1", "false", "0")')
+        return values
+    def gds_validate_datetime(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_datetime(self, input_data, input_name=''):
+        if input_data.microsecond == 0:
+            _svalue = '%04d-%02d-%02dT%02d:%02d:%02d' % (
+                input_data.year,
+                input_data.month,
+                input_data.day,
+                input_data.hour,
+                input_data.minute,
+                input_data.second,
+            )
+        else:
+            _svalue = '%04d-%02d-%02dT%02d:%02d:%02d.%s' % (
+                input_data.year,
+                input_data.month,
+                input_data.day,
+                input_data.hour,
+                input_data.minute,
+                input_data.second,
+                ('%f' % (float(input_data.microsecond) / 1000000))[2:],
+            )
+        if input_data.tzinfo is not None:
+            tzoff = input_data.tzinfo.utcoffset(input_data)
+            if tzoff is not None:
+                total_seconds = tzoff.seconds + (86400 * tzoff.days)
+                if total_seconds == 0:
+                    _svalue += 'Z'
+                else:
+                    if total_seconds < 0:
+                        _svalue += '-'
+                        total_seconds *= -1
+                    else:
+                        _svalue += '+'
+                    hours = total_seconds // 3600
+                    minutes = (total_seconds - (hours * 3600)) // 60
+                    _svalue += '{{0:02d}}:{{1:02d}}'.format(hours, minutes)
+        return _svalue
+    @classmethod
+    def gds_parse_datetime(cls, input_data):
+        tz = None
+        if input_data[-1] == 'Z':
+            tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
+            input_data = input_data[:-1]
+        else:
+            results = GeneratedsSuper.tzoff_pattern.search(input_data)
+            if results is not None:
+                tzoff_parts = results.group(2).split(':')
+                tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
+                if results.group(1) == '-':
+                    tzoff *= -1
+                tz = GeneratedsSuper._FixedOffsetTZ(
+                    tzoff, results.group(0))
+                input_data = input_data[:-6]
+        time_parts = input_data.split('.')
+        if len(time_parts) > 1:
+            micro_seconds = int(float('0.' + time_parts[1]) * 1000000)
+            input_data = '%s.%s' % (time_parts[0], micro_seconds, )
+            dt = datetime_.datetime.strptime(
+                input_data, '%Y-%m-%dT%H:%M:%S.%f')
+        else:
+            dt = datetime_.datetime.strptime(
+                input_data, '%Y-%m-%dT%H:%M:%S')
+        dt = dt.replace(tzinfo=tz)
+        return dt
+    def gds_validate_date(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_date(self, input_data, input_name=''):
+        _svalue = '%04d-%02d-%02d' % (
+            input_data.year,
+            input_data.month,
+            input_data.day,
+        )
+        try:
+            if input_data.tzinfo is not None:
+                tzoff = input_data.tzinfo.utcoffset(input_data)
+                if tzoff is not None:
+                    total_seconds = tzoff.seconds + (86400 * tzoff.days)
+                    if total_seconds == 0:
+                        _svalue += 'Z'
+                    else:
+                        if total_seconds < 0:
+                            _svalue += '-'
+                            total_seconds *= -1
+                        else:
+                            _svalue += '+'
+                        hours = total_seconds // 3600
+                        minutes = (total_seconds - (hours * 3600)) // 60
+                        _svalue += '{{0:02d}}:{{1:02d}}'.format(
+                            hours, minutes)
+        except AttributeError:
+            pass
+        return _svalue
+    @classmethod
+    def gds_parse_date(cls, input_data):
+        tz = None
+        if input_data[-1] == 'Z':
+            tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
+            input_data = input_data[:-1]
+        else:
+            results = GeneratedsSuper.tzoff_pattern.search(input_data)
+            if results is not None:
+                tzoff_parts = results.group(2).split(':')
+                tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
+                if results.group(1) == '-':
+                    tzoff *= -1
+                tz = GeneratedsSuper._FixedOffsetTZ(
+                    tzoff, results.group(0))
+                input_data = input_data[:-6]
+        dt = datetime_.datetime.strptime(input_data, '%Y-%m-%d')
+        dt = dt.replace(tzinfo=tz)
+        return dt.date()
+    def gds_validate_time(self, input_data, node=None, input_name=''):
+        return input_data
+    def gds_format_time(self, input_data, input_name=''):
+        if input_data.microsecond == 0:
+            _svalue = '%02d:%02d:%02d' % (
+                input_data.hour,
+                input_data.minute,
+                input_data.second,
+            )
+        else:
+            _svalue = '%02d:%02d:%02d.%s' % (
+                input_data.hour,
+                input_data.minute,
+                input_data.second,
+                ('%f' % (float(input_data.microsecond) / 1000000))[2:],
+            )
+        if input_data.tzinfo is not None:
+            tzoff = input_data.tzinfo.utcoffset(input_data)
+            if tzoff is not None:
+                total_seconds = tzoff.seconds + (86400 * tzoff.days)
+                if total_seconds == 0:
+                    _svalue += 'Z'
+                else:
+                    if total_seconds < 0:
+                        _svalue += '-'
+                        total_seconds *= -1
+                    else:
+                        _svalue += '+'
+                    hours = total_seconds // 3600
+                    minutes = (total_seconds - (hours * 3600)) // 60
+                    _svalue += '{{0:02d}}:{{1:02d}}'.format(hours, minutes)
+        return _svalue
+    def gds_validate_simple_patterns(self, patterns, target):
+        # pat is a list of lists of strings/patterns.  We should:
+        # - AND the outer elements
+        # - OR the inner elements
+        found1 = True
+        for patterns1 in patterns:
+            found2 = False
+            for patterns2 in patterns1:
+                if re_.search(patterns2, target) is not None:
+                    found2 = True
+                    break
+            if not found2:
+                found1 = False
+                break
+        return found1
+    @classmethod
+    def gds_parse_time(cls, input_data):
+        tz = None
+        if input_data[-1] == 'Z':
+            tz = GeneratedsSuper._FixedOffsetTZ(0, 'UTC')
+            input_data = input_data[:-1]
+        else:
+            results = GeneratedsSuper.tzoff_pattern.search(input_data)
+            if results is not None:
+                tzoff_parts = results.group(2).split(':')
+                tzoff = int(tzoff_parts[0]) * 60 + int(tzoff_parts[1])
+                if results.group(1) == '-':
+                    tzoff *= -1
+                tz = GeneratedsSuper._FixedOffsetTZ(
+                    tzoff, results.group(0))
+                input_data = input_data[:-6]
+        if len(input_data.split('.')) > 1:
+            dt = datetime_.datetime.strptime(input_data, '%H:%M:%S.%f')
+        else:
+            dt = datetime_.datetime.strptime(input_data, '%H:%M:%S')
+        dt = dt.replace(tzinfo=tz)
+        return dt.time()
+    def gds_str_lower(self, instring):
+        return instring.lower()
+    def get_path_(self, node):
+        path_list = []
+        self.get_path_list_(node, path_list)
+        path_list.reverse()
+        path = '/'.join(path_list)
+        return path
+    Tag_strip_pattern_ = re_.compile(r'\{{.*\}}')
+    def get_path_list_(self, node, path_list):
+        if node is None:
+            return
+        tag = GeneratedsSuper.Tag_strip_pattern_.sub('', node.tag)
+        if tag:
+            path_list.append(tag)
+        self.get_path_list_(node.getparent(), path_list)
+    def get_class_obj_(self, node, default_class=None):
+        class_obj1 = default_class
+        if 'xsi' in node.nsmap:
+            classname = node.get('{{%s}}type' % node.nsmap['xsi'])
+            if classname is not None:
+                names = classname.split(':')
+                if len(names) == 2:
+                    classname = names[1]
+                class_obj2 = globals().get(classname)
+                if class_obj2 is not None:
+                    class_obj1 = class_obj2
+        return class_obj1
+    def gds_build_any(self, node, type_name=None):
+        return None
+    @classmethod
+    def gds_reverse_node_mapping(cls, mapping):
+        {gds_reverse_node_mapping_text}
+    @staticmethod
+    def gds_encode(instring):
+        if sys.version_info.major == 2:
+            return instring.encode(ExternalEncoding)
+        else:
+            return instring
+    @staticmethod
+    def convert_unicode(instring):
+        if isinstance(instring, str):
+            result = quote_xml(instring)
+        elif sys.version_info.major == 2 and isinstance(instring, unicode):
+            result = quote_xml(instring).encode('utf8')
+        else:
+            result = GeneratedsSuper.gds_encode(str(instring))
+        return result
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+def getSubclassFromModule_(module, class_):
+    '''Get the subclass of a class from a specific module.'''
+    name = class_.__name__ + 'Sub'
+    if hasattr(module, name):
+        return getattr(module, name)
+    else:
+        return None
 """
 
 # Fool (and straighten out) the syntax highlighting.
@@ -5729,6 +5751,7 @@ def get_all_text_(node):
 
 
 def generateHeader(wrt, prefix, options, args, externalImports):
+    global TEMPLATE_HEADER
     tstamp = (not NoDates and time.ctime()) or ''
     if NoVersion:
         version = ''
@@ -5736,7 +5759,7 @@ def generateHeader(wrt, prefix, options, args, externalImports):
         version = ' version %s' % VERSION
     options1, args1, command_line = format_options_args(options, args)
     current_working_directory = os.path.split(os.getcwd())[1]
-    if PreserveCdataTags:
+    if PreserveCdataTags and not XmlDisabled:
         preserve_cdata_tags_pat = \
             "PRESERVE_CDATA_TAGS_PAT = re_.compile(r'^<.+?>(.*)<.+>$')\n\n"
         preserve_cdata_get_text = Preserve_cdata_get_all_text1
@@ -5749,6 +5772,18 @@ def generateHeader(wrt, prefix, options, args, externalImports):
         "s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)"
     quote_attrib_text = \
         "s1 = (isinstance(inStr, BaseStrType_) and inStr or '%s' % inStr)"
+
+    import_string = TEMPLATE_GENERATEDS_SUPER.format(
+        gds_reverse_node_mapping_text=gds_reverse_node_mapping_text)
+    if UseGeneratedssuperLookup:
+        s0 = """try:
+    from generatedssuper import GeneratedsSuper
+except ImportError as exp:
+"""
+        for line in StringIO.StringIO(import_string).readlines():
+            s0 += "    "+line
+        import_string = s0
+
     s1 = TEMPLATE_HEADER.format(
         tstamp=tstamp,
         version=version,
@@ -5759,7 +5794,7 @@ def generateHeader(wrt, prefix, options, args, externalImports):
         ExternalEncoding=ExternalEncoding,
         preserve_cdata_tags_pat=preserve_cdata_tags_pat,
         preserve_cdata_get_text=preserve_cdata_get_text,
-        gds_reverse_node_mapping_text=gds_reverse_node_mapping_text,
+        generatedssuper_import=import_string,
         quote_xml_text=quote_xml_text,
         quote_attrib_text=quote_attrib_text,
     )
@@ -5905,6 +5940,8 @@ def generateMain(outfile, prefix, root):
     exportDictLine = "GDSClassesMapping = {{\n{}}}\n\n\n".format(
         ''.join(lines))
     outfile.write(exportDictLine)
+    if XmlDisabled:
+        return
     children = root.getChildren()
     rootClass = None
     if children:
@@ -6196,17 +6233,17 @@ TEMPLATE_SUBCLASS_HEADER = """\
 #
 
 import sys
-from lxml import etree as etree_
+#xmldisable#from lxml import etree as etree_
 
 import %s as supermod
 
-def parsexml_(infile, parser=None, **kwargs):
-    if parser is None:
-        # Use the lxml ElementTree compatible parser so that, e.g.,
-        #   we ignore comments.
-        parser = etree_.ETCompatXMLParser()
-    doc = etree_.parse(infile, parser=parser, **kwargs)
-    return doc
+#xmldisable#def parsexml_(infile, parser=None, **kwargs):
+#xmldisable#    if parser is None:
+#xmldisable#        # Use the lxml ElementTree compatible parser so that, e.g.,
+#xmldisable#        #   we ignore comments.
+#xmldisable#        parser = etree_.ETCompatXMLParser()
+#xmldisable#    doc = etree_.parse(infile, parser=parser, **kwargs)
+#xmldisable#    return doc
 
 #
 # Globals
@@ -6442,6 +6479,8 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
         for element in ElementsForSubclasses:
             generateSubclass(
                 wrt, element, prefix, xmlbehavior, behaviors, baseUrl)
+        if XmlDisabled:
+            return
         children = root.getChildren()
         rootClass = None
         if children:
@@ -6544,7 +6583,7 @@ def getImportsForExternalXsds(root):
     If we are creating a file per xsd, then
     we need to import any external classes we use
     '''
-    externalImports = []
+    externalImports = set()
     if not SingleFileOutput:
         childStack = list(root.getChildren())
         while len(childStack) > 0:
@@ -6557,9 +6596,21 @@ def getImportsForExternalXsds(root):
                     type = schemaElement.getType()
                     if type == "xs:string":
                         type = schemaElement.getName()
-                    externalImports.append("from %s%s import %s" %
+                    externalImports.add("from %s%s import %s" %
                                            (moduleName, ModuleSuffix,
                                             type))
+            if child.getBase():
+                parentName, parentObj = getParentName(child)
+                if parentObj.targetNamespace and \
+                        parentObj.targetNamespace != root.targetNamespace:
+                    fqn = parentObj.getFullyQualifiedName()
+                    moduleName = fqnToModuleNameMap.get(fqn)
+                    if moduleName is not None:
+                        type = parentObj.getType()
+                        if type == "xs:string":
+                            type = parentObj.getName()
+                        externalImports.add("from %s%s import %s" % (
+                            moduleName, ModuleSuffix, type))
             for subChild in child.getChildren():
                 childStack.append(subChild)
     return externalImports
@@ -6588,7 +6639,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     #   because it produces data structures needed during generation of
     #   subclasses.
     MappingTypes.clear()
-    AlreadyGenerated = set()
+    #AlreadyGenerated = set()
     outfile = None
     outfile = makeFile(outfileName)
     if not outfile:
@@ -6620,7 +6671,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
             sys.stderr.write(
                 '*** Failed to process the following element '
                 'definitions:\n    %s\n' % (PostponedExtensions))
-            break
+            sys.exit(1)
         element = PostponedExtensions.pop()
         parentName, parent = getParentName(element)
         if parentName:
@@ -6629,17 +6680,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
                 generateClasses(wrt, prefix, element, 1)
             else:
                 PostponedExtensions.insert(0, element)
-##     while 1:
-##         if len(PostponedExtensions) <= 0:
-##             break
-##         element = PostponedExtensions.pop()
-##         parentName, parent = getParentName(element)
-##         if parentName:
-##             if (parentName in AlreadyGenerated or
-##                     parentName in SimpleTypeDict):
-##                 generateClasses(wrt, prefix, element, 1)
-##             else:
-##                 PostponedExtensions.insert(0, element)
+
     #
     # Disable the generation of SAX handler/parser.
     # It failed when we stopped putting simple types into ElementDict.
@@ -6752,7 +6793,7 @@ def parseAndGenerate(
     global DelayedElements, DelayedElements_subclass, \
         AlreadyGenerated, SaxDelayedElements, \
         AlreadyGenerated_subclass, UserMethodsPath, UserMethodsModule, \
-        SchemaLxmlTree
+        SchemaLxmlTree, ModuleSuffix
     DelayedElements = set()
     DelayedElements_subclass = set()
     AlreadyGenerated = set()
@@ -6811,6 +6852,20 @@ def parseAndGenerate(
             outfile.close()
     else:    # not SingleFileOutput
         import process_includes
+        if 1:
+            if sys.version_info.major == 2:
+                outfile = StringIO.StringIO()
+            else:
+                outfile = io.StringIO()
+            doc = process_includes.process_include_files(
+                infile, outfile,
+                inpath=xschemaFileName,
+                catalogpath=catalogFilename,
+                fixtypenames=FixTypeNames)
+            outfile.close()
+            outfile = None
+            SchemaLxmlTree = doc.getroot()
+        infile.seek(0)
         rootPaths = process_includes.get_all_root_file_paths(
             infile, inpath=xschemaFileName,
             catalogpath=catalogFilename)
@@ -6840,33 +6895,21 @@ def parseAndGenerate(
             root = dh.getRoot()
             roots.append(root)
             rootFile.close()
-        for root in roots:
+        for root, rootPath in zip(roots, rootPaths):
             root.annotate()
-            moduleName = None
+            moduleName = os.path.splitext(os.path.basename(rootPath))[0]
             modulePath = None
             # use the first root element to set
             # up the module name and path
             for child in root.getChildren():
-                if child.isRootElement():
-                    typeName = child.getType()
-                    if typeName.startswith("xs:"):
-                        # no need to create a module for
-                        # xs: types
-                        continue
-                    # convert to lower camel case if needed.
-                    if "-" in typeName:
-                        tokens = typeName.split("-")
-                        typeName = ''.join([t.title() for t in tokens])
-                    moduleName = typeName[0].lower() + typeName[1:]
-                    modulePath = (
-                        OutputDirectory +
-                        os.sep + moduleName +
-                        ModuleSuffix + ".py")
-                    fqnToModuleNameMap[child.getFullyQualifiedType()] = \
-                        moduleName
-                    fqnToModuleNameMap[child.getFullyQualifiedName()] = \
-                        moduleName
-                    break
+                fqnToModuleNameMap[child.getFullyQualifiedType()] = \
+                    moduleName
+                fqnToModuleNameMap[child.getFullyQualifiedName()] = \
+                    moduleName
+            # use the root file name as module name
+            modulePath = os.path.join(
+                OutputDirectory,
+                moduleName + ModuleSuffix + ".py")
             rootInfos.append((root, modulePath))
         for root, modulePath in rootInfos:
             if modulePath:
@@ -6946,6 +6989,13 @@ def fixSilence(txt, silent):
     return txt
 
 
+def fixXmlDisable(txt, disabled):
+    if disabled:
+        txt = txt.replace('#xmldisable#', '## ')
+    else:
+        txt = txt.replace('#xmldisable#', '')
+    return txt
+
 def capture_cleanup_name_list(option):
     cleanupNameList = []
     if not option:
@@ -7005,12 +7055,13 @@ def main():
     global Force, GenerateProperties, SubclassSuffix, RootElement, \
         ValidatorBodiesBasePath, UseGetterSetter, \
         UserMethodsPath, XsdNameSpace, \
-        Namespacedef, NoNameSpaceDefs, NoDates, NoVersion, \
-        TEMPLATE_MAIN, TEMPLATE_SUBCLASS_FOOTER, Dirpath, \
-        ExternalEncoding, MemberSpecs, NoQuestions, \
-        ExportWrite, ExportEtree, ExportLiteral, \
+        Namespacedef, NoNameSpaceDefs, NoDates, NoVersion, TEMPLATE_HEADER, \
+        TEMPLATE_MAIN, TEMPLATE_SUBCLASS_FOOTER, TEMPLATE_SUBCLASS_HEADER,\
+        Dirpath, ExternalEncoding, MemberSpecs, NoQuestions, \
+        ExportWrite, ExportEtree, ExportLiteral, XmlDisabled, \
         FixTypeNames, SingleFileOutput, OutputDirectory, \
         ModuleSuffix, UseOldSimpleTypeValidators, \
+        UseGeneratedssuperLookup, \
         PreserveCdataTags, CleanupNameList, \
         NoWarnings
     outputText = True
@@ -7026,10 +7077,11 @@ def main():
                 'namespacedef=', 'no-namespace-defs', 'external-encoding=',
                 'member-specs=', 'no-dates', 'no-versions',
                 'no-questions', 'session=', 'fix-type-names=',
-                'version', 'export=',
+                'version', 'export=', 'disable-xml',
                 'one-file-per-xsd', 'output-directory=',
                 'module-suffix=', 'use-old-simpletype-validators',
                 'preserve-cdata-tags', 'cleanup-name-list=',
+                'disable-generatedssuper-lookup',
                 'no-warnings',
                 'no-collect-includes', 'no-redefine-groups',
             ])
@@ -7211,6 +7263,10 @@ def main():
                 ExportEtree = True
             if 'literal' in tmpoptions:
                 ExportLiteral = True
+        elif option[0] == '--disable-xml':
+            XmlDisabled = True
+        elif option[0] == '--disable-generatedssuper-lookup':
+            UseGeneratedssuperLookup = False
         elif option[0] == '--one-file-per-xsd':
             SingleFileOutput = False
         elif option[0] == "--output-directory":
@@ -7243,8 +7299,12 @@ def main():
             xschemaFileName = args[0]
             XsdFileName.append(xschemaFileName)
     silent = not outputText
+    TEMPLATE_HEADER = fixXmlDisable(TEMPLATE_HEADER, XmlDisabled)
     TEMPLATE_MAIN = fixSilence(TEMPLATE_MAIN, silent)
+    TEMPLATE_SUBCLASS_HEADER = fixXmlDisable(
+        TEMPLATE_SUBCLASS_HEADER, XmlDisabled)
     TEMPLATE_SUBCLASS_FOOTER = fixSilence(TEMPLATE_SUBCLASS_FOOTER, silent)
+
     load_config()
     if outFilename is None and SingleFileOutput:
         sys.exit('\nMissing required option "-o" (output module name)\n')
