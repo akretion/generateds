@@ -4166,7 +4166,7 @@ def generateCtor(wrt, prefix, element):
     wrt('        self.original_tagname_ = None\n')
     parentName, parent = getParentName(element)
     if parentName:
-        if parentName in AlreadyGenerated:
+        if parent.getFullyQualifiedName() in AlreadyGenerated:
             args = buildCtorParams(element, parent, childCount)
             s2 = ''.join(args)
             if len(args) > 254:
@@ -4936,7 +4936,7 @@ FactoryMethodTemplate = """\
 
 def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     logging.debug("Generating class for: %s" % element)
-    mappedName = element.getCleanName()
+    mappedName = element.getFullyQualifiedName()
     parentName, base = getParentName(element)
     logging.debug("Element base: %s" % base)
     if not element.isExplicitDefine():
@@ -4947,7 +4947,8 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     # If this element is an extension (has a base) and the base has
     #   not been generated, then postpone it.
     if parentName:
-        if parentName not in AlreadyGenerated:
+        parentFQN = base.getFullyQualifiedName()
+        if parentFQN not in AlreadyGenerated:
             PostponedExtensions.append(element)
             return
     if mappedName in AlreadyGenerated:
@@ -4982,7 +4983,7 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     wrt('    subclass = None\n')
     parentName, parent = getParentName(element)
     superclass_name = 'None'
-    if parentName and parentName in AlreadyGenerated:
+    if parentName and parent.getFullyQualifiedName() in AlreadyGenerated:
         superclass_name = prefix + parentName
     wrt('    superclass = %s\n' % (superclass_name, ))
     generateCtor(wrt, prefix, element)
@@ -5940,11 +5941,11 @@ if __name__ == '__main__':
 # DUMMY = '''
 
 
-def generateMain(outfile, prefix, root):
+def generateMain(outfile, prefix, root, generatedClasses):
     lines = []
     for classType in MappingTypes:
         mappedName = mapName(cleanupName(MappingTypes[classType]))
-        if mappedName in AlreadyGenerated:
+        if mappedName in generatedClasses:
             lines.append("    '%s': %s%s,\n" % (
                 classType, prefix, mappedName, ))
     lines.sort()
@@ -6650,7 +6651,7 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     #   because it produces data structures needed during generation of
     #   subclasses.
     MappingTypes.clear()
-    #AlreadyGenerated = set()
+    generatedClasses = set()
     outfile = None
     outfile = makeFile(outfileName)
     if not outfile:
@@ -6664,6 +6665,9 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     DelayedElements_subclass = set()
     elements = root.getChildren()
     generateFromTree(wrt, prefix, elements, processed)
+    for element in elements:
+        if element.getFullyQualifiedName() in AlreadyGenerated:
+            generatedClasses.add(element.getCleanName())
     while 1:
         if len(DelayedElements) <= 0:
             break
@@ -6672,6 +6676,8 @@ def generate(outfileName, subclassFilename, behaviorFilename,
         if name not in processed:
             processed.append(name)
             generateClasses(wrt, prefix, element, 1)
+            if element.getFullyQualifiedName() in AlreadyGenerated:
+                generatedClasses.add(element.getCleanName())
     #
     # Generate the elements that were postponed because we had not
     #   yet generated their base class.
@@ -6686,9 +6692,10 @@ def generate(outfileName, subclassFilename, behaviorFilename,
         element = PostponedExtensions.pop()
         parentName, parent = getParentName(element)
         if parentName:
-            if (parentName in AlreadyGenerated or
+            if (parent.getFullyQualifiedName() in AlreadyGenerated or
                     parentName in SimpleTypeDict):
                 generateClasses(wrt, prefix, element, 1)
+                generatedClasses.add(element.getCleanName())
             else:
                 PostponedExtensions.insert(0, element)
 
@@ -6697,12 +6704,13 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     # It failed when we stopped putting simple types into ElementDict.
     # When there are duplicate names, the SAX parser probably does
     #   not work anyway.
-    generateMain(outfile, prefix, root)
+    generateMain(outfile, prefix, root, generatedClasses)
     outfile.close()
     if subclassFilename:
         generateSubclasses(
             root, subclassFilename, behaviorFilename,
             prefix, options, args, superModule)
+    return generatedClasses
 # end generate
 
 
@@ -6845,7 +6853,7 @@ def parseAndGenerate(
         parser.parse(infile)
         root = dh.getRoot()
         root.annotate()
-        generate(
+        generatedClasses = generate(
             outfileName, subclassFilename, behaviorFilename,
             prefix, root, options, args, superModule)
         # Generate __all__.  When using the parser as a module it is useful
@@ -6854,7 +6862,7 @@ def parseAndGenerate(
         if outfileName:
             exportableClassList = [
                 '"%s%s"' % (prefix, name, )
-                for name in AlreadyGenerated]
+                for name in generatedClasses]
             exportableClassList.sort()
             exportableClassNames = ',\n    '.join(exportableClassList)
             exportLine = "\n__all__ = [\n    %s\n]\n" % exportableClassNames
@@ -6863,7 +6871,7 @@ def parseAndGenerate(
             outfile.close()
     else:    # not SingleFileOutput
         import process_includes
-        if 1:
+        if processIncludes:
             if sys.version_info.major == 2:
                 outfile = StringIO.StringIO()
             else:
@@ -6948,7 +6956,7 @@ def parseAndGenerate(
             rootInfos.append((root, modulePath))
         for root, modulePath in rootInfos:
             if modulePath:
-                generate(
+                generatedClasses = generate(
                     modulePath, subclassFilename, behaviorFilename,
                     prefix, root, options, args, superModule)
                 # Generate __all__.  When using the parser as a module
@@ -6957,7 +6965,7 @@ def parseAndGenerate(
                 # can do a reasonably safe "from parser import *"
                 exportableClassList = [
                     '"%s%s"' % (prefix, name, )
-                    for name in AlreadyGenerated]
+                    for name in generatedClasses]
                 exportableClassList.sort()
                 exportableClassNames = ',\n    '.join(exportableClassList)
                 exportLine = "\n__all__ = [\n    %s\n]\n" % (
