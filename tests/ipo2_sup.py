@@ -1582,7 +1582,5 @@ __all__ = [
     "Items",
     "PurchaseOrderType",
     "UKAddress",
-    "USAddress",
-    "item",
-    "quantity"
+    "USAddress"
 ]

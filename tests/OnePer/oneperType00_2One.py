@@ -792,8 +792,6 @@ class oneperType00_1(GeneratedsSuper):
 
 
 GDSClassesMapping = {
-    'inner01': oneperType01_1,
-    'inner02': oneperType01_2,
     'root00': oneperType00_1,
 }
 
@@ -920,11 +918,5 @@ if __name__ == '__main__':
 
 
 __all__ = [
-    "oneperType00_1",
-    "oneperType01_1",
-    "oneperType01_2",
-    "oneperType02_1",
-    "oneperType02_2",
-    "oneperType03_1",
-    "oneperType03_2"
+    "oneperType00_1"
 ]

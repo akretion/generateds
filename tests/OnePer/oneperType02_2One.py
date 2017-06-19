@@ -996,8 +996,6 @@ if __name__ == '__main__':
 
 
 __all__ = [
-    "oneperType01_1",
-    "oneperType01_2",
     "oneperType02_1",
     "oneperType02_2"
 ]
