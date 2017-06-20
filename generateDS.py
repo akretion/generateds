@@ -45,6 +45,10 @@ Options:
                              "new" - Name getters/setters get_var()/set_var().
                              "none" - Do not generate getter/setter methods.
                              Default is "new".
+    --use-source-file-as-module-name
+                             Used in conjunction with --one-file-per-xsd to
+                             use the source XSD file names to determine the
+                             module name of the generated classes.
     --user-methods= <module>,
     -u <module>              Optional module containing user methods.  See
                              section "User Methods" in the documentation.
@@ -104,6 +108,11 @@ Options:
                                      to XML)
                              Example: "write etree"
                              Default: "write"
+    --disable-generatedssuper-lookup
+                             Disables the generatetion of the  lookup logic for
+                             presence of an external module to load a custom
+                             `GeneratedsSuper` base-class definition from.
+                             be generated.
     --disable-xml            Disables generation of all XML build/export
                              methods and command line interface
     --preserve-cdata-tags    Preserve CDATA tags.  Default: False
