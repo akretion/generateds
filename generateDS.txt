@@ -12,7 +12,7 @@ generateDS -- Generate Data Structures from XML Schema
 
 .. version
 
-:revision: 2.27a
+:revision: 2.28a
 
 .. version
 
@@ -267,6 +267,10 @@ Here is the usage message displayed by ``generateDS.py``::
                                  "new" - Name getters/setters get_var()/set_var().
                                  "none" - Do not generate getter/setter methods.
                                  Default is "new".
+        --use-source-file-as-module-name
+                                 Used in conjunction with --one-file-per-xsd to
+                                 use the source XSD file names to determine the
+                                 module name of the generated classes.
         --user-methods= <module>,
         -u <module>              Optional module containing user methods.  See
                                  section "User Methods" in the documentation.
@@ -326,6 +330,12 @@ Here is the usage message displayed by ``generateDS.py``::
                                          to XML)
                                  Example: "write etree"
                                  Default: "write"
+        --disable-generatedssuper-lookup
+                                 Disables the generatetion of the lookup logic for
+                                 presence of an external module from which to load
+                                 a custom `GeneratedsSuper` base-class definition.
+        --disable-xml            Disables generation of all XML build/export
+                                 methods and command line interface
         --preserve-cdata-tags    Preserve CDATA tags.  Default: False
         --cleanup-name-list=<replacement-map>
                                  Specifies list of 2-tuples used for cleaning
@@ -508,6 +518,13 @@ use-getter-setter
 
     The default is "new".
 
+use-source-file-as-module-name
+    Used in conjunction with and only has an effect when used with
+    ``--one-file-per-xsd``.  The effect of this option is to use the
+    source XML schema file names to determine the module name of the
+    generated classes.  Without this option, the first root element
+    is used to construct module names.  The default is False.
+
 u, user-methods=<module>
     If specified, ``generateDS.py`` will add methods to generated
     classes as specified in the indicated module.  For more
@@ -619,6 +636,29 @@ export
 
     For example: ``--export="write etree"`` and ``--export="write"``.  The
     default is: ``--export="write"``.
+
+disable-generatedssuper-lookup
+    Disables the generation of code implementing the lookup for
+    presence of an external module from which to load a custom
+    replacement for the default ``GeneratedsSuper`` base-class.
+    With this flag, unconditionally uses the built-in implementation
+    of ``GeneratedsSuper``.  (Suggestion: In order to get a picture
+    of what difference this option makes, you might consider
+    generating modules both with and without it, and then comparing
+    the results with ``diff``.)  The default is False.
+
+disable-xml
+    Disables generation of code that enables XML build/export
+    methods and command line interface.  Actually, the code is
+    there, but is commented out.  If you enable this option, the
+    generated modules will *not* contain code for the following: (1)
+    run as a script without explicitly running ``python`` (the
+    ``#!/usr/bin/env python`` line is omitted); (2) import
+    ``lxml.etree``; (3) parse an XML file; (4) export an XML file.
+    (Suggestion: In order to get a picture of what difference this
+    option makes, you might consider generating modules both with
+    and without it, and then comparing the results with ``diff``.)
+    The default is False.
 
 preserve-cdata-tags
     Preserve CDATA tags.  Normally, CDATA tags ("<![CDATA[ ... ]]>")

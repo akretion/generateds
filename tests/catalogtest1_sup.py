@@ -580,7 +580,8 @@ class MixedContainer:
         return self.value
     def getName(self):
         return self.name
-    def export(self, outfile, level, name, namespace, pretty_print=True):
+    def export(self, outfile, level, name, namespace,
+               pretty_print=True):
         if self.category == MixedContainer.CategoryText:
             # Prevent exporting empty content as empty lines.
             if self.value.strip():
@@ -589,7 +590,8 @@ class MixedContainer:
             self.exportSimple(outfile, level, name)
         else:    # category == MixedContainer.CategoryComplex
             self.value.export(
-                outfile, level, namespace, name, pretty_print=pretty_print)
+                outfile, level, namespace, name,
+                pretty_print=pretty_print)
     def exportSimple(self, outfile, level, name):
         if self.content_type == MixedContainer.TypeString:
             outfile.write('<%s>%s</%s>' % (
@@ -607,7 +609,9 @@ class MixedContainer:
                 self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeBase64:
             outfile.write('<%s>%s</%s>' % (
-                self.name, base64.b64encode(self.value), self.name))
+                self.name,
+                base64.b64encode(self.value),
+                self.name))
     def to_etree(self, element):
         if self.category == MixedContainer.CategoryText:
             # Prevent exporting empty content as empty lines.
@@ -623,7 +627,8 @@ class MixedContainer:
                     else:
                         element.text += self.value
         elif self.category == MixedContainer.CategorySimple:
-            subelement = etree_.SubElement(element, '%s' % self.name)
+            subelement = etree_.SubElement(
+                element, '%s' % self.name)
             subelement.text = self.to_etree_simple()
         else:    # category == MixedContainer.CategoryComplex
             self.value.to_etree(element)
@@ -646,12 +651,14 @@ class MixedContainer:
             showIndent(outfile, level)
             outfile.write(
                 'model_.MixedContainer(%d, %d, "%s", "%s"),\n' % (
-                    self.category, self.content_type, self.name, self.value))
+                    self.category, self.content_type,
+                    self.name, self.value))
         elif self.category == MixedContainer.CategorySimple:
             showIndent(outfile, level)
             outfile.write(
                 'model_.MixedContainer(%d, %d, "%s", "%s"),\n' % (
-                    self.category, self.content_type, self.name, self.value))
+                    self.category, self.content_type,
+                    self.name, self.value))
         else:    # category == MixedContainer.CategoryComplex
             showIndent(outfile, level)
             outfile.write(
@@ -663,7 +670,8 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0, optional=0, child_attrs=None, choice=None):
+    def __init__(self, name='', data_type='', container=0,
+            optional=0, child_attrs=None, choice=None):
         self.name = name
         self.data_type = data_type
         self.container = container
