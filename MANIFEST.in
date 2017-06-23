@@ -81,7 +81,7 @@ include tests/abstract_type.xsd
 include tests/abstract_type1_sup.py tests/abstract_type1_sub.py
 include tests/abstract_type2_sup.py tests/abstract_type2_sub.py
 include tests/simpletypes_other.xsd
-include tests/simpletypes_other1_sub.py tests/simpletypes1_other_sup.py
+include tests/simpletypes_other1_sub.py tests/simpletypes_other1_sup.py
 include tests/simpletypes_other2_sub.py tests/simpletypes_other2_sup.py
 include tests/attr_groups.xsd
 include tests/attr_groups1_sup.py tests/attr_groups1_sub.py
@@ -121,6 +121,17 @@ include tests/validate_simpletypes1_sub.py tests/validate_simpletypes1_sup.py
 include tests/validate_simpletypes1_warnings.txt
 include tests/validate_simpletypes2_sub.py tests/validate_simpletypes2_sup.py
 include tests/validate_simpletypes.xml tests/validate_simpletypes.xsd
+include tests/disable_xml_super.xsd
+include tests/disable_xml_super1_sup.py
+include tests/disable_xml_super1_sub.py
+include tests/rem_dup_elems.xsd
+include tests/rem_dup_elems.xml
+include tests/rem_dup_elems1_out.xml
+include tests/rem_dup_elems1_sup.py
+include tests/rem_dup_elems1_sub.py
+include tests/reference_simpletype.xsd
+include tests/reference_simpletype1_sup.py
+include tests/reference_simpletype1_sub.py
 
 include gui/generateds_gui.py
 include gui/generateds_gui.glade
@@ -146,4 +157,7 @@ include tutorial/Code/people_appl1.py
 include tutorial/Code/upcase_names.py
 include tutorial/Code/upcase_names_appl.py  
 
-
+include utils/batch_generate.py*
+include utils/collect_schema_locations.py*
+include utils/README.txt
+include utils/show_schema_hierarchy.py*

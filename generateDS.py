@@ -109,10 +109,9 @@ Options:
                              Example: "write etree"
                              Default: "write"
     --disable-generatedssuper-lookup
-                             Disables the generatetion of the  lookup logic for
-                             presence of an external module to load a custom
-                             `GeneratedsSuper` base-class definition from.
-                             be generated.
+                             Disables the generatetion of the lookup logic for
+                             presence of an external module from which to load
+                             a custom `GeneratedsSuper` base-class definition.
     --disable-xml            Disables generation of all XML build/export
                              methods and command line interface
     --preserve-cdata-tags    Preserve CDATA tags.  Default: False
@@ -228,7 +227,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.27a'
+VERSION = '2.28a'
 ##VERSION##
 
 if sys.version_info.major == 2:
@@ -1805,7 +1804,7 @@ class XschemaHandler(handler.ContentHandler):
                     self.stack[-1].setSimpleType(1)
                 element = SimpleTypeElement(stName)
                 SimpleTypeDict[stName] = element
-                SimpleTypeDict[Targetnamespace+":"+stName] = element
+                SimpleTypeDict[Targetnamespace + ":" + stName] = element
                 self.stack.append(element)
             self.inSimpleType += 1
         elif name == RestrictionType:
@@ -4797,10 +4796,12 @@ def generateMemberSpec(wrt, element):
         item4 = 1 if attrDef.getUse() == 'optional' else 0
         if generateDict:
             item = "        '%s': MemberSpec_('%s', '%s', %d, %d, %s)," % (
-                item1, item1, item2, item3, item4, repr({'use':attrDef.getUse()}))
+                item1, item1, item2, item3, item4, repr(
+                    {'use': attrDef.getUse()}))
         else:
             item = "        MemberSpec_('%s', '%s', %d, %d, %s)," % (
-                item1, item2, item3, item4, repr({'use':attrDef.getUse()}))
+                item1, item2, item3, item4, repr(
+                    {'use': attrDef.getUse()}))
         add(item)
     for child in element.getChildren():
         name = cleanupName(child.getCleanName())
@@ -5260,7 +5261,8 @@ class MixedContainer:
         return self.value
     def getName(self):
         return self.name
-#xmldisable#    def export(self, outfile, level, name, namespace, pretty_print=True):
+#xmldisable#    def export(self, outfile, level, name, namespace,
+#xmldisable#               pretty_print=True):
 #xmldisable#        if self.category == MixedContainer.CategoryText:
 #xmldisable#            # Prevent exporting empty content as empty lines.
 #xmldisable#            if self.value.strip():
@@ -5269,7 +5271,8 @@ class MixedContainer:
 #xmldisable#            self.exportSimple(outfile, level, name)
 #xmldisable#        else:    # category == MixedContainer.CategoryComplex
 #xmldisable#            self.value.export(
-#xmldisable#                outfile, level, namespace, name, pretty_print=pretty_print)
+#xmldisable#                outfile, level, namespace, name,
+#xmldisable#                pretty_print=pretty_print)
 #xmldisable#    def exportSimple(self, outfile, level, name):
 #xmldisable#        if self.content_type == MixedContainer.TypeString:
 #xmldisable#            outfile.write('<%s>%s</%s>' % (
@@ -5287,7 +5290,9 @@ class MixedContainer:
 #xmldisable#                self.name, self.value, self.name))
 #xmldisable#        elif self.content_type == MixedContainer.TypeBase64:
 #xmldisable#            outfile.write('<%s>%s</%s>' % (
-#xmldisable#                self.name, base64.b64encode(self.value), self.name))
+#xmldisable#                self.name,
+#xmldisable#                base64.b64encode(self.value),
+#xmldisable#                self.name))
 #xmldisable#    def to_etree(self, element):
 #xmldisable#        if self.category == MixedContainer.CategoryText:
 #xmldisable#            # Prevent exporting empty content as empty lines.
@@ -5303,7 +5308,8 @@ class MixedContainer:
 #xmldisable#                    else:
 #xmldisable#                        element.text += self.value
 #xmldisable#        elif self.category == MixedContainer.CategorySimple:
-#xmldisable#            subelement = etree_.SubElement(element, '%s' % self.name)
+#xmldisable#            subelement = etree_.SubElement(
+#xmldisable#                element, '%s' % self.name)
 #xmldisable#            subelement.text = self.to_etree_simple()
 #xmldisable#        else:    # category == MixedContainer.CategoryComplex
 #xmldisable#            self.value.to_etree(element)
@@ -5326,12 +5332,14 @@ class MixedContainer:
 #xmldisable#            showIndent(outfile, level)
 #xmldisable#            outfile.write(
 #xmldisable#                'model_.MixedContainer(%d, %d, "%s", "%s"),\\n' % (
-#xmldisable#                    self.category, self.content_type, self.name, self.value))
+#xmldisable#                    self.category, self.content_type,
+#xmldisable#                    self.name, self.value))
 #xmldisable#        elif self.category == MixedContainer.CategorySimple:
 #xmldisable#            showIndent(outfile, level)
 #xmldisable#            outfile.write(
 #xmldisable#                'model_.MixedContainer(%d, %d, "%s", "%s"),\\n' % (
-#xmldisable#                    self.category, self.content_type, self.name, self.value))
+#xmldisable#                    self.category, self.content_type,
+#xmldisable#                    self.name, self.value))
 #xmldisable#        else:    # category == MixedContainer.CategoryComplex
 #xmldisable#            showIndent(outfile, level)
 #xmldisable#            outfile.write(
@@ -5343,7 +5351,8 @@ class MixedContainer:
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0, optional=0, child_attrs=None, choice=None):
+    def __init__(self, name='', data_type='', container=0,
+            optional=0, child_attrs=None, choice=None):
         self.name = name
         self.data_type = data_type
         self.container = container
@@ -5801,8 +5810,12 @@ def generateHeader(wrt, prefix, options, args, externalImports):
     from generatedssuper import GeneratedsSuper
 except ImportError as exp:
 """
-        for line in StringIO.StringIO(import_string).readlines():
-            s0 += "    "+line
+        if sys.version_info.major == 2:
+            outfile = StringIO.StringIO
+        else:
+            outfile = io.StringIO
+        for line in outfile(import_string).readlines():
+            s0 += "    " + line
         import_string = s0
 
     s1 = TEMPLATE_HEADER.format(
@@ -6617,9 +6630,9 @@ def getImportsForExternalXsds(root):
                     type = schemaElement.getType()
                     if type == "xs:string":
                         type = schemaElement.getName()
-                    externalImports.add("from %s%s import %s" %
-                                           (moduleName, ModuleSuffix,
-                                            type))
+                    externalImports.add(
+                        "from %s%s import %s" % (
+                            moduleName, ModuleSuffix, type))
             if child.getBase():
                 parentName, parentObj = getParentName(child)
                 if parentObj.targetNamespace and \
@@ -7047,6 +7060,7 @@ def fixXmlDisable(txt, disabled):
     else:
         txt = txt.replace('#xmldisable#', '')
     return txt
+
 
 def capture_cleanup_name_list(option):
     cleanupNameList = []

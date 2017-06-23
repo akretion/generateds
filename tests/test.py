@@ -823,6 +823,29 @@ class GenTest(unittest.TestCase):
         self.remove('{}2_sub.py'.format(t_))
         self.remove('{}2_out.xml'.format(t_))
 
+    def test_033_disable_xml_super(self):
+        cmdTempl = (
+            'python generateDS.py --no-dates --no-versions '
+            '--disable-xml --disable-generatedssuper-lookup '
+            '--member-specs=list -f -a "xsd:" '
+            '-o tests/%s2_sup.py -s tests/%s2_sub.py '
+            '--super=%s2_sup --no-warnings '
+            'tests/%s.xsd'
+        )
+        t_ = 'disable_xml_super'
+        cmd = cmdTempl % (t_, t_, t_, t_, )
+        self.executeClean(cmd, cwd='..')
+        self.compareFiles(
+            '{}1_sup.py'.format(t_),
+            '{}2_sup.py'.format(t_),
+            ('sys.stdout.write',))
+        self.compareFiles('{}1_sub.py'.format(t_), '{}2_sub.py'.format(t_))
+        # Need to preserve generated files for next command, cleanup at end
+        # cleanup generated files
+        #self.remove('{}2_sup.py'.format(t_))
+        #self.remove('{}2_sub.py'.format(t_))
+        #self.remove('{}2_out.xml'.format(t_))
+
     def compareFiles(self, left, right, ignore=None):
         with open(left) as left_file:
             with open(right) as right_file:

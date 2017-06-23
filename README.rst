@@ -141,6 +141,37 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.28a (06/23/2017)
+
+Significant work by Alim Gokkaya.  Thank you, Alim.
+
+Here's a summary of what's been changed:
+
+- Added new command-line options:
+
+  - ``--disable-xml``: Toggles the generation of XML serialization
+    related code
+  - ``--disable-generatedssuper-lookup``: Disables generation of the
+    try-except lookup for a `generatedssuper` module
+  - ``--use-source-file-as-module-name``: Sets the source XSD file name as
+    the target module name in the one file per XSD mode
+
+- Retained ``xsd:choice`` related information in the generated class
+  ``MemberSpec``.
+- Retained the original XML schema attribute definitions in the generated
+  class members.
+- Fixed generation of ``import`` statements for the base classes.
+- Fixed class not being generated when parent class is defined in
+  another XML schema file.
+- Fixed fqn-module mapping being unavailable for the classes defined
+  in imported XML schema files.
+- Fixed attribute names are sometimes not cleaned-up from the prefix
+- Fixed ``xsd:simpleType`` validations methods are not being generated in
+  ``one-file-per-xsd`` mode.
+- Fixed equality check against objects defining extra attributes.
+- Added unit test for command line options ``--disable-xml`` and
+  ``--disable-generatedssuper-lookup``.
+
 Version 2.27b (06/09/2017)
 
 - Fixed a bug that occurred when an element definition contains a
@@ -329,7 +360,7 @@ Version 2.21a (04/01/2016)
   The GUI front end must be run under Python 3, and you must install
   Python support for Gtk.
   Aleksandr has also provided a Russian translation of the labels
-  etc in the user interface.  You can run that with:
+  etc in the user interface.  You can run that with::
 
       $ cd /path/to/generateds/gui
       $ python3 generateds_gui.py --impl-gui=generateds_gui_ru.glade
