@@ -227,7 +227,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.28a'
+VERSION = '2.28b'
 ##VERSION##
 
 if sys.version_info.major == 2:
@@ -5031,6 +5031,7 @@ TEMPLATE_HEADER = """\
 
 #
 # Generated {tstamp} by generateDS.py{version}.
+# Python {pyversion}
 #
 # Command line options:
 {options1}
@@ -5821,6 +5822,7 @@ except ImportError as exp:
     s1 = TEMPLATE_HEADER.format(
         tstamp=tstamp,
         version=version,
+        pyversion=sys.version.replace('\n', ' '),
         options1=options1,
         args1=args1,
         command_line=command_line,
@@ -6252,6 +6254,7 @@ TEMPLATE_SUBCLASS_HEADER = """\
 
 #
 # Generated %s by generateDS.py%s.
+# Python %s
 #
 # Command line options:
 %s
@@ -6507,6 +6510,7 @@ def generateSubclasses(root, subclassFilename, behaviorFilename,
         options1, args1, command_line = format_options_args(options, args)
         current_working_directory = os.path.split(os.getcwd())[1]
         wrt(TEMPLATE_SUBCLASS_HEADER % (tstamp, version,
+            sys.version.replace('\n', ' '),
             options1, args1,
             command_line, current_working_directory,
             superModule, ExternalEncoding, ))

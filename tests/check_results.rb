@@ -69,6 +69,8 @@ $commands = [
   "diff -u nested_def1_sup.py nested_def2_sup.py",
   "diff -u catalogtest1_sub.py catalogtest2_sub.py",
   "diff -u catalogtest1_sup.py catalogtest2_sup.py",
+  "diff -u disable_xml_super1_sub.py disable_xml_super2_sub.py",
+  "diff -u disable_xml_super1_sup.py disable_xml_super2_sup.py",
 ]
 
 def check
