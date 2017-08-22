@@ -57,3 +57,5 @@ cp catalogtest2_sup.py catalogtest1_sup.py
 cp catalogtest2_sub.py catalogtest1_sub.py
 cp rem_dup_elems2_sup.py rem_dup_elems1_sup.py
 cp rem_dup_elems2_sub.py rem_dup_elems1_sub.py
+cp disable_xml_super2_sup.py disable_xml_super1_sup.py
+cp disable_xml_super2_sub.py disable_xml_super1_sub.py

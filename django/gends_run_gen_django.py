@@ -18,6 +18,9 @@ Options:
     -v, --verbose   Display additional information while running.
     -s, --script    Write out (display) the command lines used.  Can
                     be captured and used in a shell script, for example.
+    --no-class-suffixes
+                    Do not add suffix "_model" and _form" to
+                    generated class names.
 Examples:
     python gends_run_gen_django.py my_schema.xsd
     python gends_run_gen_django.py -f -p ../generateDS.py my_other_schema.xsd
@@ -93,10 +96,16 @@ def generate(options, schema_file_name):
     )
     if not run_cmd(options, args):
         return
-    args = (
-        './gends_generate_django.py', '-f',
-        bindings_file_stem,
-    )
+    if options['class_suffixes']:
+        args = (
+            './gends_generate_django.py', '-f',
+            bindings_file_stem,
+        )
+    else:
+        args = (
+            './gends_generate_django.py', '-f', '--no-class-suffixes',
+            bindings_file_stem,
+        )
     if not run_cmd(options, args):
         return
 
@@ -153,6 +162,7 @@ def main():
         opts, args = getopt.getopt(args, 'hvfp:s', [
             'help', 'verbose', 'script',
             'force', 'path-to-generateDS-script=',
+            'no-class-suffixes',
         ])
     except:
         usage()
@@ -161,6 +171,7 @@ def main():
     options['verbose'] = False
     options['script'] = False
     options['path'] = './generateDS.py'
+    options['class_suffixes'] = True
     for opt, val in opts:
         if opt in ('-h', '--help'):
             usage()
@@ -172,6 +183,8 @@ def main():
             options['script'] = True
         elif opt in ('-p', '--path-to-generateDS-script'):
             options['path'] = val
+        elif opt == '--no-class-suffixes':
+            options['class_suffixes'] = False
     if not os.path.exists(options['path']):
         sys.exit(
             '\n*** error: Cannot find generateDS.py.  '
@@ -184,4 +197,5 @@ def main():
 
 if __name__ == '__main__':
     #import pdb; pdb.set_trace()
+    #import ipdb; ipdb.set_trace()
     main()

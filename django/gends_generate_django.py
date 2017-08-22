@@ -8,6 +8,8 @@ Usage:
 Options:
     -f, --force
             Overwrite models.py and forms.py without asking.
+    --no-class-suffixes
+            Do not add suffix "_model" and _form" to generated class names.
     -h, --help
             Show this help message.
 """
@@ -110,7 +112,8 @@ def generate_model(options, module_name):
     for class_name in supermod.__all__:
         if hasattr(supermod, class_name):
             cls = getattr(supermod, class_name)
-            cls.generate_model_(wrtmodels, wrtforms, unique_name_map)
+            cls.generate_model_(
+                wrtmodels, wrtforms, unique_name_map, options.class_suffixes)
         else:
             sys.stderr.write('class %s not defined\n' % (class_name, ))
     wrtadmin('from django.contrib import admin\n')
@@ -172,16 +175,19 @@ def main():
         opts, args = getopt.getopt(
             args, 'hfs:', [
                 'help', 'force',
-                'suffix=', ])
+                'no-class-suffixes', ])
     except:
         usage()
     options = ProgramOptions()
     options.force = False
+    options.class_suffixes = True
     for opt, val in opts:
         if opt in ('-h', '--help'):
             usage()
         elif opt in ('-f', '--force'):
             options.force = True
+        elif opt == '--no-class-suffixes':
+            options.class_suffixes = False
     if len(args) != 1:
         usage()
     module_name = args[0]

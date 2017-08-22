@@ -141,6 +141,20 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.28b (08/22/2017)
+
+- Fix for Django models and forms generation -- "float" data type
+  was being mapped and was not treated as a simple data type.
+  Thanks to Sriram Sundar for catching and reporting this.
+- Sriram also requested that in the Django models and forms
+  generation, we be able to omit the "_model" and "_form" suffix on
+  generated class names.  There is now a "--no-class-suffixes"
+  command line option accepted by both gends_run_gen_django.py
+  and gends_generate_django.py to do that.  Thanks to Sriram for
+  this suggestion.
+- Added Python version to the information in the comments at the top
+  of generated modules.
+
 Version 2.28a (06/23/2017)
 
 Significant work by Alim Gokkaya.  Thank you, Alim.

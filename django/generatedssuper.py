@@ -154,10 +154,19 @@ class GeneratedsSuper(object):
         return prefix, name
 
     @classmethod
-    def generate_model_(cls, wrtmodels, wrtforms, unique_name_map):
+    def generate_model_(
+            cls, wrtmodels, wrtforms, unique_name_map, class_suffixes):
+        if class_suffixes:
+            model_suffix = '_model'
+            form_suffix = '_form'
+        else:
+            model_suffix = ''
+            form_suffix = ''
         class_name = unique_name_map.get(cls.__name__)
-        wrtmodels('\nclass %s_model(models.Model):\n' % (class_name, ))
-        wrtforms('\nclass %s_form(forms.Form):\n' % (class_name, ))
+        wrtmodels('\nclass %s%s(models.Model):\n' % (
+            class_name, model_suffix, ))
+        wrtforms('\nclass %s%s(forms.Form):\n' % (
+            class_name, form_suffix, ))
         if cls.superclass is not None:
             wrtmodels('    %s = models.ForeignKey("%s_model")\n' % (
                 cls.superclass.__name__, cls.superclass.__name__, ))
@@ -175,7 +184,7 @@ class GeneratedsSuper(object):
                 name += 'x'
             elif name.endswith('_') and not name == AnyTypeIdentifier:
                 name += 'x'
-            data_type = mapName(cleanupName(data_type))
+            clean_data_type = mapName(cleanupName(data_type))
             if data_type == AnyTypeIdentifier:
                 data_type = 'string'
             if data_type in Simple_type_table:
@@ -224,15 +233,15 @@ class GeneratedsSuper(object):
                     sys.stderr.write('Unhandled simple type: %s %s\n' % (
                         name, data_type, ))
             else:
-                mapped_type = unique_name_map.get(data_type)
+                mapped_type = unique_name_map.get(clean_data_type)
                 if mapped_type is not None:
-                    data_type = mapped_type
+                    clean_data_type = mapped_type
                 wrtmodels(
                     '    %s = models.ForeignKey(\n        "%s_model",\n' % (
-                        name, data_type, ))
+                        name, clean_data_type, ))
                 wrtmodels(
                     '        related_name="{}_{}_{}",\n'.format(
-                        class_name, name, data_type, ))
+                        class_name, name, clean_data_type, ))
                 if is_optional:
                     wrtmodels(
                         '        blank=True, null=True,\n')
@@ -240,7 +249,7 @@ class GeneratedsSuper(object):
                 wrtforms(
                     '    %s = forms.MultipleChoiceField(%s_model.objects'
                     '.all())\n' % (
-                        name, data_type, ))
+                        name, clean_data_type, ))
         wrtmodels('\n')
         wrtmodels('    def __unicode__(self):\n')
         wrtmodels('        return "id: %s" % (self.id, )\n')
