@@ -2789,57 +2789,56 @@ def generateExportChildren(wrt, element, hasChildren, namespace):
             wrt("%s    for item_ in self.content_:\n" % (fill, ))
             wrt("%s        item_.export(outfile, level, item_.name, "
                 "namespace_, pretty_print=pretty_print)\n" % (fill, ))
-        else:
-            wrt('%sif pretty_print:\n' % (fill, ))
-            wrt("%s    eol_ = '\\n'\n" % (fill, ))
-            wrt('%selse:\n' % (fill, ))
-            wrt("%s    eol_ = ''\n" % (fill, ))
-            any_type_child = None
-            for child in element.getChildren():
-                unmappedName = child.getName()
-                name = child.getCleanName()
-                # fix_abstract
-                type_element = None
-                abstract_child = False
-                type_name = child.getAttrs().get('type')
-                if type_name:
-                    type_element = ElementDict.get(type_name)
-                if type_element and type_element.isAbstract():
-                    abstract_child = True
-                if child.getType() == AnyTypeIdentifier:
-                    any_type_child = child
+        wrt('%sif pretty_print:\n' % (fill, ))
+        wrt("%s    eol_ = '\\n'\n" % (fill, ))
+        wrt('%selse:\n' % (fill, ))
+        wrt("%s    eol_ = ''\n" % (fill, ))
+        any_type_child = None
+        for child in element.getChildren():
+            unmappedName = child.getName()
+            name = child.getCleanName()
+            # fix_abstract
+            type_element = None
+            abstract_child = False
+            type_name = child.getAttrs().get('type')
+            if type_name:
+                type_element = ElementDict.get(type_name)
+            if type_element and type_element.isAbstract():
+                abstract_child = True
+            if child.getType() == AnyTypeIdentifier:
+                any_type_child = child
+            else:
+                if abstract_child and child.getMaxOccurs() > 1:
+                    wrt("%sfor %s_ in self.%s:\n" % (
+                        fill, name, name,))
+                    wrt("%s    %s_.export(outfile, level, namespace_, "
+                        "name_='%s', pretty_print=pretty_print)\n" % (
+                            fill, name, unmappedName, ))
+                elif abstract_child:
+                    wrt("%sif self.%s is not None:\n" % (fill, name, ))
+                    wrt("%s    self.%s.export(outfile, level, "
+                        "namespace_, name_='%s', "
+                        "pretty_print=pretty_print)\n" % (
+                            fill, name, unmappedName, ))
+                elif child.getMaxOccurs() > 1:
+                    generateExportFn_2(
+                        wrt, child, unmappedName, namespace, '    ')
                 else:
-                    if abstract_child and child.getMaxOccurs() > 1:
-                        wrt("%sfor %s_ in self.%s:\n" % (
-                            fill, name, name,))
-                        wrt("%s    %s_.export(outfile, level, namespace_, "
-                            "name_='%s', pretty_print=pretty_print)\n" % (
-                                fill, name, unmappedName, ))
-                    elif abstract_child:
-                        wrt("%sif self.%s is not None:\n" % (fill, name, ))
-                        wrt("%s    self.%s.export(outfile, level, "
-                            "namespace_, name_='%s', "
-                            "pretty_print=pretty_print)\n" % (
-                                fill, name, unmappedName, ))
-                    elif child.getMaxOccurs() > 1:
-                        generateExportFn_2(
-                            wrt, child, unmappedName, namespace, '    ')
+                    if (child.getOptional()):
+                        generateExportFn_3(
+                            wrt, child, unmappedName, namespace, '')
                     else:
-                        if (child.getOptional()):
-                            generateExportFn_3(
-                                wrt, child, unmappedName, namespace, '')
-                        else:
-                            generateExportFn_1(
-                                wrt, child, unmappedName, namespace, '')
-            if any_type_child is not None:
-                if any_type_child.getMaxOccurs() > 1:
-                    wrt('        for obj_ in self.anytypeobjs_:\n')
-                    wrt("            obj_.export(outfile, level, "
-                        "namespace_, pretty_print=pretty_print)\n")
-                else:
-                    wrt('        if self.anytypeobjs_ is not None:\n')
-                    wrt("            self.anytypeobjs_.export(outfile, "
-                        "level, namespace_, pretty_print=pretty_print)\n")
+                        generateExportFn_1(
+                            wrt, child, unmappedName, namespace, '')
+        if any_type_child is not None:
+            if any_type_child.getMaxOccurs() > 1:
+                wrt('        for obj_ in self.anytypeobjs_:\n')
+                wrt("            obj_.export(outfile, level, "
+                    "namespace_, pretty_print=pretty_print)\n")
+            else:
+                wrt('        if self.anytypeobjs_ is not None:\n')
+                wrt("            self.anytypeobjs_.export(outfile, "
+                    "level, namespace_, pretty_print=pretty_print)\n")
     return hasChildren
 # end generateExportChildren
 
@@ -2903,6 +2902,8 @@ def generateExportFn(wrt, prefix, element, namespace, nameSpacesDef):
         wrt("        outfile.write('>')\n")
         wrt("        self.exportChildren(outfile, level + 1, "
             "namespace_, name_, pretty_print=pretty_print)\n")
+        wrt("        outfile.write(self.convert_unicode("
+            "self.valueOf_))\n")
         wrt("        outfile.write('</%s%s>%s' % (namespace_, name_, eol_))\n")
     else:
         wrt("        if self.hasContent_():\n")
@@ -4915,8 +4916,8 @@ def generateHascontentMethod(wrt, prefix, element):
         if not firstTime:
             wrt(' or\n')
         firstTime = False
-        wrt('            1 if type(self.valueOf_) '
-            'in [int,float] else self.valueOf_')
+        wrt('            (1 if type(self.valueOf_) '
+            'in [int,float] else self.valueOf_)')
     parentName, parent = getParentName(element)
     if parentName:
         elName = element.getCleanName()
