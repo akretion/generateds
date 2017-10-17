@@ -141,6 +141,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.28c (10/17/2017)
+
+- Fix for generation of GDSClassesMapping dictionary.  Formerly, we
+  were generating entries in this dictionary for some xs:element
+  items that were not at top level.  Fixed so that only xs:element
+  items at top level (immediately under the root/schema node) are
+  included in this dictionary.  Thanks to Christin Gunning for
+  reporting this and for guiding me on this change.
+
 Version 2.28b (08/22/2017)
 
 - Fix for Django models and forms generation -- "float" data type

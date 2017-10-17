@@ -3,7 +3,7 @@
 
 #
 # Generated  by generateDS.py.
-# Python 2.7.13 (default, May  2 2017, 14:07:15)  [GCC 6.3.0 20170406]
+# Python 2.7.13 (default, Jan 19 2017, 14:48:08)  [GCC 6.3.0 20170118]
 #
 # Command line options:
 #   ('--no-dates', '')
@@ -1223,11 +1223,6 @@ class dataTypeNNNMNNN(GeneratedsSuper):
 
 GDSClassesMapping = {
     'data': dataKind,
-    'data1': data1Kind,
-    'data2': MlassData2,
-    'data3': RealTypeData3,
-    'data4': MMMMMMdataKind,
-    'data5': dataTypeNNNMNNN,
 }
 
 

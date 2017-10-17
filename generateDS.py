@@ -227,7 +227,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.28b'
+VERSION = '2.28c'
 ##VERSION##
 
 if sys.version_info.major == 2:
@@ -5967,11 +5967,32 @@ if __name__ == '__main__':
 
 def generateMain(outfile, prefix, root, generatedClasses):
     lines = []
-    for classType in MappingTypes:
-        mappedName = mapName(cleanupName(MappingTypes[classType]))
-        if mappedName in generatedClasses:
-            lines.append("    '%s': %s%s,\n" % (
-                classType, prefix, mappedName, ))
+    nsmap = SchemaLxmlTree.nsmap.copy()
+    if None in nsmap:
+        ns_prefix = nsmap.get(None)
+        del nsmap[None]
+        if 'xs' not in nsmap:
+            nsmap['xs'] = ns_prefix
+    if 'xs' not in nsmap and 'xsd' in nsmap:
+        nsmap['xs'] = nsmap['xsd']
+    top_lvl_elements = SchemaLxmlTree.xpath(
+        './xs:element', namespaces=nsmap)
+    for element in top_lvl_elements:
+        if 'ref' in element.attrib:
+            classType = element.attrib.get('ref')
+            name = classType
+        else:
+            classType = element.attrib.get('type')
+            name = element.attrib.get('name')
+        if classType is not None and name is not None:
+            _, classType = get_prefix_and_value(classType)
+            _, name = get_prefix_and_value(name)
+            mappedClassType = mapName(cleanupName(classType))
+            mappedName = mapName(name)
+            if (mappedClassType and mappedName and
+                    mappedClassType in generatedClasses):
+                lines.append("    '%s': %s%s,\n" % (
+                    mappedName, prefix, mappedClassType, ))
     lines.sort()
     exportDictLine = "GDSClassesMapping = {{\n{}}}\n\n\n".format(
         ''.join(lines))
@@ -6680,8 +6701,6 @@ def generate(outfileName, subclassFilename, behaviorFilename,
     generatedClasses = set()
     outfile = None
     outfile = makeFile(outfileName)
-    if not outfile:
-        outfile = os.tmpfile()
     wrt = outfile.write
     processed = []
     externalImports = getImportsForExternalXsds(root)
@@ -6747,7 +6766,7 @@ def makeFile(outFileName):
             sys.stderr.write(
                 'File %s exists.  Change output file or use -f (force).\n' %
                 outFileName)
-            sys.exit(1)
+            sys.exit('Exiting.  No output file.')
         else:
             if sys.version_info.major == 2:
                 reply = raw_input(
@@ -6757,6 +6776,8 @@ def makeFile(outFileName):
                     'File %s exists.  Overwrite? (y/n): ' % outFileName)
             if reply == 'y':
                 outFile = open(outFileName, 'w')
+            else:
+                sys.exit('Exiting.  No output file.')
     else:
         outFile = open(outFileName, 'w')
     return outFile

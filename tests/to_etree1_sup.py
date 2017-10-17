@@ -3,7 +3,7 @@
 
 #
 # Generated  by generateDS.py.
-# Python 2.7.13 (default, May  2 2017, 14:07:15)  [GCC 6.3.0 20170406]
+# Python 2.7.13 (default, Jan 19 2017, 14:48:08)  [GCC 6.3.0 20170118]
 #
 # Command line options:
 #   ('--no-dates', '')
@@ -2937,16 +2937,13 @@ class client_handlerType(GeneratedsSuper):
 GDSClassesMapping = {
     'agent': agentType,
     'booster': boosterType,
-    'client-handler': client_handlerType,
     'comments': commentsType,
-    'elparam': paramType,
     'info': infoType,
     'java-programmer': java_programmerType,
     'param': paramType,
     'people': peopleType,
     'person': personType,
     'programmer': programmerType,
-    'promoter': boosterType,
     'python-programmer': python_programmerType,
     'special-agent': special_agentType,
     'vehicle': vehicleType,

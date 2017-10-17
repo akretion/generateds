@@ -1,5 +1,5 @@
 <xsd:schema
-    xmlns:xsd="http://www.w3.org/2000/10/XMLSchema"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     >
 
     <xsd:element name="authors" type="authorsType" />
