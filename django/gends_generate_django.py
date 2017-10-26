@@ -69,6 +69,14 @@ class Writer(object):
 #
 
 def generate_model(options, module_name):
+
+    if options.class_suffixes:
+        model_suffix = '_model'
+        form_suffix = '_form'
+    else:
+        model_suffix = ''
+        form_suffix = ''
+
     global supermod
     try:
         import generatedssuper
@@ -122,14 +130,14 @@ def generate_model(options, module_name):
     for class_name in supermod.__all__:
         class_name = unique_name_map.get(class_name)
         if first_time:
-            wrtadmin('    %s_model' % (class_name, ))
+            wrtadmin('    %s%s' % (class_name, model_suffix ))
             first_time = False
         else:
-            wrtadmin(', \\\n    %s_model' % (class_name, ))
+            wrtadmin(', \\\n    %s%s' % (class_name, model_suffix ))
     wrtadmin('\n\n')
     for class_name in supermod.__all__:
         class_name = unique_name_map.get(class_name)
-        wrtadmin('admin.site.register(%s_model)\n' % (class_name, ))
+        wrtadmin('admin.site.register(%s%s)\n' % (class_name, model_suffix ))
     wrtadmin('\n')
     models_writer.close()
     forms_writer.close()

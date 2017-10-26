@@ -227,7 +227,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.28c'
+VERSION = '2.28d'
 ##VERSION##
 
 if sys.version_info.major == 2:
@@ -3795,6 +3795,10 @@ def generateBuildStandard_1(
         type_element = None
         abstract_child = False
         type_name = child.getAttrs().get('type')
+        elementDef = ElementDict.get(name)
+        if elementDef is not None:
+            if elementDef.getName() != elementDef.getType():
+                type_name = elementDef.getType()
         if type_name:
             type_element = ElementDict.get(type_name)
         if type_element and type_element.isAbstract():
