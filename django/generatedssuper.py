@@ -168,8 +168,8 @@ class GeneratedsSuper(object):
         wrtforms('\nclass %s%s(forms.Form):\n' % (
             class_name, form_suffix, ))
         if cls.superclass is not None:
-            wrtmodels('    %s = models.ForeignKey("%s_model")\n' % (
-                cls.superclass.__name__, cls.superclass.__name__, ))
+            wrtmodels('    %s = models.ForeignKey("%s%s")\n' % (
+                cls.superclass.__name__, cls.superclass.__name__, model_suffix, ))
         for spec in cls.member_data_items_:
             name = spec.get_name()
             prefix, name = cls.get_prefix_name(name)
@@ -237,8 +237,8 @@ class GeneratedsSuper(object):
                 if mapped_type is not None:
                     clean_data_type = mapped_type
                 wrtmodels(
-                    '    %s = models.ForeignKey(\n        "%s_model",\n' % (
-                        name, clean_data_type, ))
+                    '    %s = models.ForeignKey(\n        "%s%s",\n' % (
+                        name, clean_data_type, model_suffix, ))
                 wrtmodels(
                     '        related_name="{}_{}_{}",\n'.format(
                         class_name, name, clean_data_type, ))
@@ -247,9 +247,9 @@ class GeneratedsSuper(object):
                         '        blank=True, null=True,\n')
                 wrtmodels('    )\n')
                 wrtforms(
-                    '    %s = forms.MultipleChoiceField(%s_model.objects'
+                    '    %s = forms.MultipleChoiceField(%s%s.objects'
                     '.all())\n' % (
-                        name, clean_data_type, ))
+                        name, clean_data_type, model_suffix, ))
         wrtmodels('\n')
         wrtmodels('    def __unicode__(self):\n')
         wrtmodels('        return "id: %s" % (self.id, )\n')

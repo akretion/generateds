@@ -141,6 +141,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.28d (10/25/2017)
+
+- Fix for incorrect resolution of type for a child element type
+  defined with <xs:element ref="Abc"/>.  The ref= can refer to a
+  global (top level) xs:element rather than an xs:complexType, in
+  which case we need to use the type= to determine the
+  xs:complexType.  Thanks to Bob Barcklay and Olof Kindgren for
+  reporting this issue and for working with me on this and helping
+  to track down the fix.
+
 Version 2.28c (10/17/2017)
 
 - Fix for generation of GDSClassesMapping dictionary.  Formerly, we
