@@ -141,6 +141,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.28.2 (10/27/2017)
+
+- Changed name/version number scheme to all numeric with dots.
+  Required by setuptools or the Python Package Index.
+- Accepted and merged pull request by Eugene Petkevich that fixes
+  export of elements with mixed content.  Thank you Eugene.
+
 Version 2.28d (10/25/2017)
 
 - Fix for incorrect resolution of type for a child element type
