@@ -33,6 +33,7 @@
       </vehicle>
       <vehicle>
         <wheelcount>48</wheelcount>
+        <pilotname>Felicity Flygirl</pilotname>
       </vehicle>
     </agent>
     <range>25</range>

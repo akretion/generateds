@@ -2111,9 +2111,22 @@ class agentType(GeneratedsSuper):
             self.info = obj_
             obj_.original_tagname_ = 'info'
         elif nodeName_ == 'vehicle':
-            class_obj_ = self.get_class_obj_(child_, vehicleType)
-            obj_ = class_obj_.factory()
-            obj_.build(child_)
+            type_name_ = child_.attrib.get(
+                '{http://www.w3.org/2001/XMLSchema-instance}type')
+            if type_name_ is None:
+                type_name_ = child_.attrib.get('type')
+            if type_name_ is not None:
+                type_names_ = type_name_.split(':')
+                if len(type_names_) == 1:
+                    type_name_ = type_names_[0]
+                else:
+                    type_name_ = type_names_[1]
+                class_ = globals()[type_name_]
+                obj_ = class_.factory()
+                obj_.build(child_)
+            else:
+                raise NotImplementedError(
+                    'Class not implemented for <vehicle> element')
             self.vehicle.append(obj_)
             obj_.original_tagname_ = 'vehicle'
 # end class agentType

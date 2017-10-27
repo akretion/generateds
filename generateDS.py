@@ -3575,6 +3575,9 @@ def generateBuildMixed_1(wrt, prefix, child, headChild, keyword, delayed):
             wrt(TEMPLATE_ABSTRACT_CHILD % (mappedName, ))
         else:
             type_obj = ElementDict.get(childType)
+            if type_obj is not None:
+                if type_obj.getName() != type_obj.getType():
+                    childType = type_obj.getType()
             if type_obj is not None and type_obj.getExtended():
                 wrt("            class_obj_ = self.get_class_obj_("
                     "child_, %s%s)\n" % (
