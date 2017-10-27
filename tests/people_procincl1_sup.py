@@ -941,7 +941,7 @@ class comments(GeneratedsSuper):
         if (
             self.emp or
             self.bold or
-            1 if type(self.valueOf_) in [int,float] else self.valueOf_
+            (1 if type(self.valueOf_) in [int,float] else self.valueOf_)
         ):
             return True
         else:
@@ -973,6 +973,16 @@ class comments(GeneratedsSuper):
         if not fromsubclass_:
             for item_ in self.content_:
                 item_.export(outfile, level, item_.name, namespace_, pretty_print=pretty_print)
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for emp_ in self.emp:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%semp>%s</%semp>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(emp_), input_name='emp')), namespace_, eol_))
+        for bold_ in self.bold:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sbold>%s</%sbold>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(bold_), input_name='bold')), namespace_, eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1353,7 +1363,7 @@ class param(GeneratedsSuper):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            1 if type(self.valueOf_) in [int,float] else self.valueOf_
+            (1 if type(self.valueOf_) in [int,float] else self.valueOf_)
         ):
             return True
         else:

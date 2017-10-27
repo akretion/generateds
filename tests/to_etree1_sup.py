@@ -922,7 +922,7 @@ class commentsType(GeneratedsSuper):
         if (
             self.emp or
             self.bold or
-            1 if type(self.valueOf_) in [int,float] else self.valueOf_
+            (1 if type(self.valueOf_) in [int,float] else self.valueOf_)
         ):
             return True
         else:
@@ -1660,7 +1660,7 @@ class paramType(GeneratedsSuper):
             pass
     def hasContent_(self):
         if (
-            1 if type(self.valueOf_) in [int,float] else self.valueOf_
+            (1 if type(self.valueOf_) in [int,float] else self.valueOf_)
         ):
             return True
         else:

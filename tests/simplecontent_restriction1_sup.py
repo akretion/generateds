@@ -765,7 +765,7 @@ class IdentifierType(GeneratedsSuper):
     def set_extensiontype_(self, extensiontype_): self.extensiontype_ = extensiontype_
     def hasContent_(self):
         if (
-            1 if type(self.valueOf_) in [int,float] else self.valueOf_
+            (1 if type(self.valueOf_) in [int,float] else self.valueOf_)
         ):
             return True
         else:
@@ -890,7 +890,7 @@ class BillOfResourcesIDType(IdentifierType):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            1 if type(self.valueOf_) in [int,float] else self.valueOf_ or
+            (1 if type(self.valueOf_) in [int,float] else self.valueOf_) or
             super(BillOfResourcesIDType, self).hasContent_()
         ):
             return True
@@ -962,7 +962,7 @@ class BillOfMaterialIDType(IdentifierType):
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def hasContent_(self):
         if (
-            1 if type(self.valueOf_) in [int,float] else self.valueOf_ or
+            (1 if type(self.valueOf_) in [int,float] else self.valueOf_) or
             super(BillOfMaterialIDType, self).hasContent_()
         ):
             return True
