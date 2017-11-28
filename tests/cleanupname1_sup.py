@@ -3,7 +3,7 @@
 
 #
 # Generated  by generateDS.py.
-# Python 2.7.13 (default, Jan 19 2017, 14:48:08)  [GCC 6.3.0 20170118]
+# Python 2.7.14 (default, Sep 23 2017, 22:06:14)  [GCC 7.2.0]
 #
 # Command line options:
 #   ('--no-dates', '')
@@ -895,7 +895,7 @@ class data1Kind(GeneratedsSuper):
             eol_ = ''
         if self.content1 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scontent1>%s</%scontent1>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.content1), input_name='content1')), namespace_, eol_))
+            outfile.write('<content1>%s</content1>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.content1), input_name='content1')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -972,7 +972,7 @@ class MlassData2(GeneratedsSuper):
             eol_ = ''
         if self.content1 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scontent1>%s</%scontent1>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.content1), input_name='content1')), namespace_, eol_))
+            outfile.write('<content1>%s</content1>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.content1), input_name='content1')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1049,7 +1049,7 @@ class RealTypeData3(GeneratedsSuper):
             eol_ = ''
         if self.content1 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scontent1>%s</%scontent1>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.content1), input_name='content1')), namespace_, eol_))
+            outfile.write('<content1>%s</content1>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.content1), input_name='content1')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1126,7 +1126,7 @@ class MMMMMMdataKind(GeneratedsSuper):
             eol_ = ''
         if self.content1 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scontent1>%s</%scontent1>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.content1), input_name='content1')), namespace_, eol_))
+            outfile.write('<content1>%s</content1>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.content1), input_name='content1')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1203,7 +1203,7 @@ class dataTypeNNNMNNN(GeneratedsSuper):
             eol_ = ''
         if self.content1 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scontent1>%s</%scontent1>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.content1), input_name='content1')), namespace_, eol_))
+            outfile.write('<content1>%s</content1>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.content1), input_name='content1')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

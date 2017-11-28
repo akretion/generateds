@@ -3,7 +3,7 @@
 
 #
 # Generated  by generateDS.py.
-# Python 2.7.13 (default, Jan 19 2017, 14:48:08)  [GCC 6.3.0 20170118]
+# Python 2.7.14 (default, Sep 23 2017, 22:06:14)  [GCC 7.2.0]
 #
 # Command line options:
 #   ('--no-dates', '')
@@ -853,7 +853,7 @@ class cdataType(GeneratedsSuper):
             eol_ = ''
         if self.script is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sscript>%s</%sscript>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.script), input_name='script')), namespace_, eol_))
+            outfile.write('<script>%s</script>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.script), input_name='script')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

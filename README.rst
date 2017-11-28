@@ -141,6 +141,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.29.0 (11/28/2017)
+
+- Fixes to export of namespace prefixes for schemas that are
+  imported.  Thanks to Bob Barcklay for reporting this and for
+  advise on fixes.
+
 Version 2.28.2 (10/27/2017)
 
 - Changed name/version number scheme to all numeric with dots.

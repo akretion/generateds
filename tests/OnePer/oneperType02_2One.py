@@ -3,7 +3,7 @@
 
 #
 # Generated  by generateDS.py.
-# Python 2.7.13 (default, Jan 19 2017, 14:48:08)  [GCC 6.3.0 20170118]
+# Python 2.7.14 (default, Sep 23 2017, 22:06:14)  [GCC 7.2.0]
 #
 # Command line options:
 #   ('--no-dates', '')
@@ -775,7 +775,7 @@ class oneperType02_1(GeneratedsSuper):
             eol_ = ''
         if self.clientname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sclientname>%s</%sclientname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.clientname), input_name='clientname')), namespace_, eol_))
+            outfile.write('<clientname>%s</clientname>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.clientname), input_name='clientname')), eol_))
         if self.inner01 is not None:
             self.inner01.export(outfile, level, namespace_, name_='inner01', pretty_print=pretty_print)
     def build(self, node):
@@ -859,7 +859,7 @@ class oneperType02_2(GeneratedsSuper):
             eol_ = ''
         if self.clientdescription is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sclientdescription>%s</%sclientdescription>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.clientdescription), input_name='clientdescription')), namespace_, eol_))
+            outfile.write('<clientdescription>%s</clientdescription>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.clientdescription), input_name='clientdescription')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

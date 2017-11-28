@@ -8,18 +8,17 @@
 # Command line options:
 #   ('--no-dates', '')
 #   ('--no-versions', '')
-#   ('--silence', '')
 #   ('--member-specs', 'list')
 #   ('-f', '')
-#   ('-o', 'tests/recursive_simpletype2_sup.py')
-#   ('-s', 'tests/recursive_simpletype2_sub.py')
-#   ('--super', 'recursive_simpletype2_sup')
+#   ('-o', 'tests/mixedcontent2_sup.py')
+#   ('-s', 'tests/mixedcontent2_sub.py')
+#   ('--super', 'mixedcontent2_sup')
 #
 # Command line arguments:
-#   tests/recursive_simpletype.xsd
+#   tests/mixedcontent.xsd
 #
 # Command line:
-#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/recursive_simpletype2_sup.py" -s "tests/recursive_simpletype2_sub.py" --super="recursive_simpletype2_sup" tests/recursive_simpletype.xsd
+#   generateDS.py --no-dates --no-versions --member-specs="list" -f -o "tests/mixedcontent2_sup.py" -s "tests/mixedcontent2_sub.py" --super="mixedcontent2_sup" tests/mixedcontent.xsd
 #
 # Current working directory (os.getcwd()):
 #   generateds
@@ -710,47 +709,43 @@ def _cast(typ, value):
 #
 
 
-class PersonType(GeneratedsSuper):
+class rootType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('personId', 'xs:integer', 0, 0, {u'maxOccurs': u'1', 'type': u'personId', u'ref': u'personId', 'name': u'personId', u'minOccurs': u'1'}, None),
-        MemberSpec_('fname', 'xs:string', 0, 0, {u'type': u'xs:string', u'name': u'fname'}, None),
-        MemberSpec_('lname', 'xs:string', 0, 0, {u'type': u'xs:string', u'name': u'lname'}, None),
+        MemberSpec_('markup', 'markupType', 1, 0, {u'maxOccurs': u'unbounded', u'type': u'markupType', u'name': u'markup'}, None),
     ]
     subclass = None
     superclass = None
-    def __init__(self, personId=None, fname=None, lname=None):
+    def __init__(self, markup=None):
         self.original_tagname_ = None
-        self.personId = personId
-        self.fname = fname
-        self.lname = lname
+        if markup is None:
+            self.markup = []
+        else:
+            self.markup = markup
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:
             subclass = getSubclassFromModule_(
-                CurrentSubclassModule_, PersonType)
+                CurrentSubclassModule_, rootType)
             if subclass is not None:
                 return subclass(*args_, **kwargs_)
-        if PersonType.subclass:
-            return PersonType.subclass(*args_, **kwargs_)
+        if rootType.subclass:
+            return rootType.subclass(*args_, **kwargs_)
         else:
-            return PersonType(*args_, **kwargs_)
+            return rootType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_personId(self): return self.personId
-    def set_personId(self, personId): self.personId = personId
-    def get_fname(self): return self.fname
-    def set_fname(self, fname): self.fname = fname
-    def get_lname(self): return self.lname
-    def set_lname(self, lname): self.lname = lname
+    def get_markup(self): return self.markup
+    def set_markup(self, markup): self.markup = markup
+    def add_markup(self, value): self.markup.append(value)
+    def insert_markup_at(self, index, value): self.markup.insert(index, value)
+    def replace_markup_at(self, index, value): self.markup[index] = value
     def hasContent_(self):
         if (
-            self.personId is not None or
-            self.fname is not None or
-            self.lname is not None
+            self.markup
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='PersonType', namespacedef_='', pretty_print=True):
-        imported_ns_def_ = GenerateDSNamespaceDefs_.get('PersonType')
+    def export(self, outfile, level, namespace_='', name_='rootType', namespacedef_='', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('rootType')
         if imported_ns_def_ is not None:
             namespacedef_ = imported_ns_def_
         if pretty_print:
@@ -762,30 +757,23 @@ class PersonType(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='PersonType')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='rootType')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='PersonType', pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='rootType', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='PersonType'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='rootType'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='PersonType', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='rootType', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
-        if self.personId is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<personId>%s</personId>%s' % (self.gds_format_integer(self.personId, input_name='personId'), eol_))
-        if self.fname is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<fname>%s</fname>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.fname), input_name='fname')), eol_))
-        if self.lname is not None:
-            showIndent(outfile, level, pretty_print)
-            outfile.write('<lname>%s</lname>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.lname), input_name='lname')), eol_))
+        for markup_ in self.markup:
+            markup_.export(outfile, level, namespace_, name_='markup', pretty_print=pretty_print)
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -796,27 +784,474 @@ class PersonType(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'personId':
+        if nodeName_ == 'markup':
+            obj_ = markupType.factory()
+            obj_.build(child_)
+            self.markup.append(obj_)
+            obj_.original_tagname_ = 'markup'
+# end class rootType
+
+
+class markupType(GeneratedsSuper):
+    member_data_items_ = [
+        MemberSpec_('embedded', 'xs:string', 1, 1, {u'maxOccurs': u'unbounded', u'type': u'xs:string', u'name': u'embedded', u'minOccurs': u'0'}, None),
+        MemberSpec_('nested', 'nestedType', 1, 1, {u'maxOccurs': u'unbounded', u'type': u'nestedType', u'name': u'nested', u'minOccurs': u'0'}, None),
+        MemberSpec_('valueOf_', [], 0),
+    ]
+    subclass = None
+    superclass = None
+    def __init__(self, embedded=None, nested=None, valueOf_=None, mixedclass_=None, content_=None):
+        self.original_tagname_ = None
+        if embedded is None:
+            self.embedded = []
+        else:
+            self.embedded = embedded
+        if nested is None:
+            self.nested = []
+        else:
+            self.nested = nested
+        self.valueOf_ = valueOf_
+        if mixedclass_ is None:
+            self.mixedclass_ = MixedContainer
+        else:
+            self.mixedclass_ = mixedclass_
+        if content_ is None:
+            self.content_ = []
+        else:
+            self.content_ = content_
+        self.valueOf_ = valueOf_
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, markupType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if markupType.subclass:
+            return markupType.subclass(*args_, **kwargs_)
+        else:
+            return markupType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_embedded(self): return self.embedded
+    def set_embedded(self, embedded): self.embedded = embedded
+    def add_embedded(self, value): self.embedded.append(value)
+    def insert_embedded_at(self, index, value): self.embedded.insert(index, value)
+    def replace_embedded_at(self, index, value): self.embedded[index] = value
+    def get_nested(self): return self.nested
+    def set_nested(self, nested): self.nested = nested
+    def add_nested(self, value): self.nested.append(value)
+    def insert_nested_at(self, index, value): self.nested.insert(index, value)
+    def replace_nested_at(self, index, value): self.nested[index] = value
+    def get_valueOf_(self): return self.valueOf_
+    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+    def hasContent_(self):
+        if (
+            self.embedded or
+            self.nested or
+            (1 if type(self.valueOf_) in [int,float] else self.valueOf_)
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='markupType', namespacedef_='', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('markupType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='markupType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='markupType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='markupType'):
+        pass
+    def exportChildren(self, outfile, level, namespace_='', name_='markupType', fromsubclass_=False, pretty_print=True):
+        if not fromsubclass_:
+            for item_ in self.content_:
+                item_.export(outfile, level, item_.name, namespace_, pretty_print=pretty_print)
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for embedded_ in self.embedded:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<embedded>%s</embedded>%s' % (self.gds_encode(self.gds_format_string(quote_xml(embedded_), input_name='embedded')), eol_))
+        for nested_ in self.nested:
+            nested_.export(outfile, level, namespace_, name_='nested', pretty_print=pretty_print)
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        self.valueOf_ = get_all_text_(node)
+        if node.text is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', node.text)
+            self.content_.append(obj_)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        if nodeName_ == 'embedded' and child_.text is not None:
+            valuestr_ = child_.text
+            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
+                MixedContainer.TypeString, 'embedded', valuestr_)
+            self.content_.append(obj_)
+        elif nodeName_ == 'nested':
+            obj_ = nestedType.factory()
+            obj_.build(child_)
+            obj_ = self.mixedclass_(MixedContainer.CategoryComplex,
+                MixedContainer.TypeNone, 'nested', obj_)
+            self.content_.append(obj_)
+            if hasattr(self, 'add_nested'):
+              self.add_nested(obj_.value)
+            elif hasattr(self, 'set_nested'):
+              self.set_nested(obj_.value)
+        if not fromsubclass_ and child_.tail is not None:
+            obj_ = self.mixedclass_(MixedContainer.CategoryText,
+                MixedContainer.TypeNone, '', child_.tail)
+            self.content_.append(obj_)
+# end class markupType
+
+
+class nestedType(GeneratedsSuper):
+    member_data_items_ = [
+        MemberSpec_('nested1', 'nested1Type', 1, 1, {u'maxOccurs': u'unbounded', u'type': u'nested1Type', u'name': u'nested1', u'minOccurs': u'0'}, None),
+        MemberSpec_('nested2', 'xs:string', 1, 1, {u'maxOccurs': u'unbounded', u'type': u'xs:string', u'name': u'nested2', u'minOccurs': u'0'}, None),
+        MemberSpec_('nested3', 'xs:integer', 1, 1, {u'maxOccurs': u'unbounded', u'type': u'xs:integer', u'name': u'nested3', u'minOccurs': u'0'}, None),
+    ]
+    subclass = None
+    superclass = None
+    def __init__(self, nested1=None, nested2=None, nested3=None):
+        self.original_tagname_ = None
+        if nested1 is None:
+            self.nested1 = []
+        else:
+            self.nested1 = nested1
+        if nested2 is None:
+            self.nested2 = []
+        else:
+            self.nested2 = nested2
+        if nested3 is None:
+            self.nested3 = []
+        else:
+            self.nested3 = nested3
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, nestedType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if nestedType.subclass:
+            return nestedType.subclass(*args_, **kwargs_)
+        else:
+            return nestedType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_nested1(self): return self.nested1
+    def set_nested1(self, nested1): self.nested1 = nested1
+    def add_nested1(self, value): self.nested1.append(value)
+    def insert_nested1_at(self, index, value): self.nested1.insert(index, value)
+    def replace_nested1_at(self, index, value): self.nested1[index] = value
+    def get_nested2(self): return self.nested2
+    def set_nested2(self, nested2): self.nested2 = nested2
+    def add_nested2(self, value): self.nested2.append(value)
+    def insert_nested2_at(self, index, value): self.nested2.insert(index, value)
+    def replace_nested2_at(self, index, value): self.nested2[index] = value
+    def get_nested3(self): return self.nested3
+    def set_nested3(self, nested3): self.nested3 = nested3
+    def add_nested3(self, value): self.nested3.append(value)
+    def insert_nested3_at(self, index, value): self.nested3.insert(index, value)
+    def replace_nested3_at(self, index, value): self.nested3[index] = value
+    def hasContent_(self):
+        if (
+            self.nested1 or
+            self.nested2 or
+            self.nested3
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='nestedType', namespacedef_='', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('nestedType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='nestedType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='nestedType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='nestedType'):
+        pass
+    def exportChildren(self, outfile, level, namespace_='', name_='nestedType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for nested1_ in self.nested1:
+            nested1_.export(outfile, level, namespace_, name_='nested1', pretty_print=pretty_print)
+        for nested2_ in self.nested2:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<nested2>%s</nested2>%s' % (self.gds_encode(self.gds_format_string(quote_xml(nested2_), input_name='nested2')), eol_))
+        for nested3_ in self.nested3:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<nested3>%s</nested3>%s' % (self.gds_format_integer(nested3_, input_name='nested3'), eol_))
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        if nodeName_ == 'nested1':
+            obj_ = nested1Type.factory()
+            obj_.build(child_)
+            self.nested1.append(obj_)
+            obj_.original_tagname_ = 'nested1'
+        elif nodeName_ == 'nested2':
+            nested2_ = child_.text
+            nested2_ = self.gds_validate_string(nested2_, node, 'nested2')
+            self.nested2.append(nested2_)
+        elif nodeName_ == 'nested3':
             sval_ = child_.text
             try:
                 ival_ = int(sval_)
             except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires integer: %s' % exp)
-            ival_ = self.gds_validate_integer(ival_, node, 'personId')
-            self.personId = ival_
-        elif nodeName_ == 'fname':
-            fname_ = child_.text
-            fname_ = self.gds_validate_string(fname_, node, 'fname')
-            self.fname = fname_
-        elif nodeName_ == 'lname':
-            lname_ = child_.text
-            lname_ = self.gds_validate_string(lname_, node, 'lname')
-            self.lname = lname_
-# end class PersonType
+            ival_ = self.gds_validate_integer(ival_, node, 'nested3')
+            self.nested3.append(ival_)
+# end class nestedType
+
+
+class nested1Type(GeneratedsSuper):
+    member_data_items_ = [
+        MemberSpec_('nestedA1', 'nested1AType', 1, 1, {u'maxOccurs': u'unbounded', u'type': u'nested1AType', u'name': u'nestedA1', u'minOccurs': u'0'}, None),
+        MemberSpec_('nestedA2', 'nested1AType', 1, 1, {u'maxOccurs': u'unbounded', u'type': u'nested1AType', u'name': u'nestedA2', u'minOccurs': u'0'}, None),
+    ]
+    subclass = None
+    superclass = None
+    def __init__(self, nestedA1=None, nestedA2=None):
+        self.original_tagname_ = None
+        if nestedA1 is None:
+            self.nestedA1 = []
+        else:
+            self.nestedA1 = nestedA1
+        if nestedA2 is None:
+            self.nestedA2 = []
+        else:
+            self.nestedA2 = nestedA2
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, nested1Type)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if nested1Type.subclass:
+            return nested1Type.subclass(*args_, **kwargs_)
+        else:
+            return nested1Type(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_nestedA1(self): return self.nestedA1
+    def set_nestedA1(self, nestedA1): self.nestedA1 = nestedA1
+    def add_nestedA1(self, value): self.nestedA1.append(value)
+    def insert_nestedA1_at(self, index, value): self.nestedA1.insert(index, value)
+    def replace_nestedA1_at(self, index, value): self.nestedA1[index] = value
+    def get_nestedA2(self): return self.nestedA2
+    def set_nestedA2(self, nestedA2): self.nestedA2 = nestedA2
+    def add_nestedA2(self, value): self.nestedA2.append(value)
+    def insert_nestedA2_at(self, index, value): self.nestedA2.insert(index, value)
+    def replace_nestedA2_at(self, index, value): self.nestedA2[index] = value
+    def hasContent_(self):
+        if (
+            self.nestedA1 or
+            self.nestedA2
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='nested1Type', namespacedef_='', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('nested1Type')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='nested1Type')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='nested1Type', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='nested1Type'):
+        pass
+    def exportChildren(self, outfile, level, namespace_='', name_='nested1Type', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for nestedA1_ in self.nestedA1:
+            nestedA1_.export(outfile, level, namespace_, name_='nestedA1', pretty_print=pretty_print)
+        for nestedA2_ in self.nestedA2:
+            nestedA2_.export(outfile, level, namespace_, name_='nestedA2', pretty_print=pretty_print)
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        if nodeName_ == 'nestedA1':
+            obj_ = nested1AType.factory()
+            obj_.build(child_)
+            self.nestedA1.append(obj_)
+            obj_.original_tagname_ = 'nestedA1'
+        elif nodeName_ == 'nestedA2':
+            obj_ = nested1AType.factory()
+            obj_.build(child_)
+            self.nestedA2.append(obj_)
+            obj_.original_tagname_ = 'nestedA2'
+# end class nested1Type
+
+
+class nested1AType(GeneratedsSuper):
+    member_data_items_ = [
+        MemberSpec_('nestedB1', 'xs:string', 1, 0, {u'maxOccurs': u'unbounded', u'type': u'xs:string', u'name': u'nestedB1'}, None),
+        MemberSpec_('nestedB2', 'xs:string', 1, 0, {u'maxOccurs': u'unbounded', u'type': u'xs:string', u'name': u'nestedB2'}, None),
+    ]
+    subclass = None
+    superclass = None
+    def __init__(self, nestedB1=None, nestedB2=None):
+        self.original_tagname_ = None
+        if nestedB1 is None:
+            self.nestedB1 = []
+        else:
+            self.nestedB1 = nestedB1
+        if nestedB2 is None:
+            self.nestedB2 = []
+        else:
+            self.nestedB2 = nestedB2
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, nested1AType)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if nested1AType.subclass:
+            return nested1AType.subclass(*args_, **kwargs_)
+        else:
+            return nested1AType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_nestedB1(self): return self.nestedB1
+    def set_nestedB1(self, nestedB1): self.nestedB1 = nestedB1
+    def add_nestedB1(self, value): self.nestedB1.append(value)
+    def insert_nestedB1_at(self, index, value): self.nestedB1.insert(index, value)
+    def replace_nestedB1_at(self, index, value): self.nestedB1[index] = value
+    def get_nestedB2(self): return self.nestedB2
+    def set_nestedB2(self, nestedB2): self.nestedB2 = nestedB2
+    def add_nestedB2(self, value): self.nestedB2.append(value)
+    def insert_nestedB2_at(self, index, value): self.nestedB2.insert(index, value)
+    def replace_nestedB2_at(self, index, value): self.nestedB2[index] = value
+    def hasContent_(self):
+        if (
+            self.nestedB1 or
+            self.nestedB2
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespace_='', name_='nested1AType', namespacedef_='', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('nested1AType')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None:
+            name_ = self.original_tagname_
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='nested1AType')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespace_='', name_='nested1AType', pretty_print=pretty_print)
+            showIndent(outfile, level, pretty_print)
+            outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='nested1AType'):
+        pass
+    def exportChildren(self, outfile, level, namespace_='', name_='nested1AType', fromsubclass_=False, pretty_print=True):
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        for nestedB1_ in self.nestedB1:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<nestedB1>%s</nestedB1>%s' % (self.gds_encode(self.gds_format_string(quote_xml(nestedB1_), input_name='nestedB1')), eol_))
+        for nestedB2_ in self.nestedB2:
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<nestedB2>%s</nestedB2>%s' % (self.gds_encode(self.gds_format_string(quote_xml(nestedB2_), input_name='nestedB2')), eol_))
+    def build(self, node):
+        already_processed = set()
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        if nodeName_ == 'nestedB1':
+            nestedB1_ = child_.text
+            nestedB1_ = self.gds_validate_string(nestedB1_, node, 'nestedB1')
+            self.nestedB1.append(nestedB1_)
+        elif nodeName_ == 'nestedB2':
+            nestedB2_ = child_.text
+            nestedB2_ = self.gds_validate_string(nestedB2_, node, 'nestedB2')
+            self.nestedB2.append(nestedB2_)
+# end class nested1AType
 
 
 GDSClassesMapping = {
-    'person': PersonType,
+    'root': rootType,
 }
 
 
@@ -844,18 +1279,18 @@ def parse(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'PersonType'
-        rootClass = PersonType
+        rootTag = 'rootType'
+        rootClass = rootType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('<?xml version="1.0" ?>\n')
-##         rootObj.export(
-##             sys.stdout, 0, name_=rootTag,
-##             namespacedef_='',
-##             pretty_print=True)
+    if not silence:
+        sys.stdout.write('<?xml version="1.0" ?>\n')
+        rootObj.export(
+            sys.stdout, 0, name_=rootTag,
+            namespacedef_='',
+            pretty_print=True)
     return rootObj
 
 
@@ -865,8 +1300,8 @@ def parseEtree(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'PersonType'
-        rootClass = PersonType
+        rootTag = 'rootType'
+        rootClass = rootType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -874,12 +1309,12 @@ def parseEtree(inFileName, silence=False):
     mapping = {}
     rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
     reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
-##     if not silence:
-##         content = etree_.tostring(
-##             rootElement, pretty_print=True,
-##             xml_declaration=True, encoding="utf-8")
-##         sys.stdout.write(content)
-##         sys.stdout.write('\n')
+    if not silence:
+        content = etree_.tostring(
+            rootElement, pretty_print=True,
+            xml_declaration=True, encoding="utf-8")
+        sys.stdout.write(content)
+        sys.stdout.write('\n')
     return rootObj, rootElement, mapping, reverse_mapping
 
 
@@ -893,17 +1328,17 @@ def parseString(inString, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'PersonType'
-        rootClass = PersonType
+        rootTag = 'rootType'
+        rootClass = rootType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('<?xml version="1.0" ?>\n')
-##         rootObj.export(
-##             sys.stdout, 0, name_=rootTag,
-##             namespacedef_='')
+    if not silence:
+        sys.stdout.write('<?xml version="1.0" ?>\n')
+        rootObj.export(
+            sys.stdout, 0, name_=rootTag,
+            namespacedef_='')
     return rootObj
 
 
@@ -913,18 +1348,18 @@ def parseLiteral(inFileName, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'PersonType'
-        rootClass = PersonType
+        rootTag = 'rootType'
+        rootClass = rootType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('#from recursive_simpletype2_sup import *\n\n')
-##         sys.stdout.write('import recursive_simpletype2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootClass(\n')
-##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
-##         sys.stdout.write(')\n')
+    if not silence:
+        sys.stdout.write('#from mixedcontent2_sup import *\n\n')
+        sys.stdout.write('import mixedcontent2_sup as model_\n\n')
+        sys.stdout.write('rootObj = model_.rootClass(\n')
+        rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
+        sys.stdout.write(')\n')
     return rootObj
 
 
@@ -942,5 +1377,9 @@ if __name__ == '__main__':
 
 
 __all__ = [
-    "PersonType"
+    "markupType",
+    "nested1AType",
+    "nested1Type",
+    "nestedType",
+    "rootType"
 ]

@@ -3,7 +3,7 @@
 
 #
 # Generated  by generateDS.py.
-# Python 2.7.13 (default, Jan 19 2017, 14:48:08)  [GCC 6.3.0 20170118]
+# Python 2.7.14 (default, Sep 23 2017, 22:06:14)  [GCC 7.2.0]
 #
 # Command line options:
 #   ('--no-dates', '')
@@ -878,7 +878,7 @@ class FooType1(GeneratedsSuper):
             eol_ = ''
         if self.FooType is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sFooType>%s</%sFooType>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.FooType), input_name='FooType')), namespace_, eol_))
+            outfile.write('<FooType>%s</FooType>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.FooType), input_name='FooType')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -965,7 +965,7 @@ class BarType2(GeneratedsSuper):
             eol_ = ''
         if self.BarType is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sBarType>%s</%sBarType>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.BarType), input_name='BarType')), namespace_, eol_))
+            outfile.write('<BarType>%s</BarType>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.BarType), input_name='BarType')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1052,7 +1052,7 @@ class BazType3(GeneratedsSuper):
             eol_ = ''
         if self.BazType is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sBazType>%s</%sBazType>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.BazType), input_name='BazType')), namespace_, eol_))
+            outfile.write('<BazType>%s</BazType>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.BazType), input_name='BazType')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

@@ -3,7 +3,7 @@
 
 #
 # Generated  by generateDS.py.
-# Python 2.7.13 (default, Jan 19 2017, 14:48:08)  [GCC 6.3.0 20170118]
+# Python 2.7.14 (default, Sep 23 2017, 22:06:14)  [GCC 7.2.0]
 #
 # Command line options:
 #   ('--no-dates', '')
@@ -831,7 +831,7 @@ class GetUserReq(GeneratedsSuper):
             eol_ = ''
         if self.returnedTags is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sreturnedTags>%s</%sreturnedTags>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.returnedTags), input_name='returnedTags')), namespace_, eol_))
+            outfile.write('<returnedTags>%s</returnedTags>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.returnedTags), input_name='returnedTags')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

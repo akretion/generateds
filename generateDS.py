@@ -227,7 +227,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.28.2'
+VERSION = '2.29.0'
 ##VERSION##
 
 if sys.version_info.major == 2:
@@ -2001,6 +2001,10 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
     cleanName = cleanupName(name)
     mappedName = mapName(cleanName)
     child_type = child.getType()
+    if child.prefix and 'ref' in child.attrs:
+        child_ns = "%s:" % child.prefix
+    else:
+        child_ns = namespace
     if child_type == DateTimeType:
         default = child.getDefault()
         if default is None:
@@ -2009,10 +2013,10 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
             wrt('%s        if self.%s != "%s":\n' % (
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
-        s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-            "(namespace_, self.gds_format_datetime(self.%s, " \
-            "input_name='%s'), namespace_, eol_))\n" % \
-            (fill, name, name, mappedName, name, )
+        s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+            "(self.gds_format_datetime(self.%s, " \
+            "input_name='%s'), eol_))\n" % \
+            (fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     elif child_type == DateType:
         default = child.getDefault()
@@ -2022,10 +2026,10 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
             wrt('%s        if self.%s != "%s":\n' % (
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
-        s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-            "(namespace_, self.gds_format_date(self.%s, " \
-            "input_name='%s'), namespace_, eol_))\n" % \
-            (fill, name, name, mappedName, name, )
+        s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+            "(self.gds_format_date(self.%s, " \
+            "input_name='%s'), eol_))\n" % \
+            (fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     elif child_type == TimeType:
         default = child.getDefault()
@@ -2035,10 +2039,10 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
             wrt('%s        if self.%s != "%s":\n' % (
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
-        s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-            "(namespace_, self.gds_format_time(self.%s, " \
-            "input_name='%s'), namespace_, eol_))\n" % \
-            (fill, name, name, mappedName, name, )
+        s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+            "(self.gds_format_time(self.%s, " \
+            "input_name='%s'), eol_))\n" % \
+            (fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     elif (child_type in StringType or
             child_type == TokenType or
@@ -2053,23 +2057,23 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
         # fixlist
         if (child.getSimpleType() in SimpleTypeDict and
                 SimpleTypeDict[child.getSimpleType()].isListType()):
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_encode(self.gds_format_string(" \
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_encode(self.gds_format_string(" \
                 "quote_xml" \
                 "(' '.join(self.%s)), " \
-                "input_name='%s')), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+                "input_name='%s')), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         else:
             namespace = 'namespace_'
             if child.prefix and 'ref' in child.attrs:
                 namespace = "'%s:'" % child.prefix
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(%s, self.gds_encode(self.gds_format_string(" \
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_encode(self.gds_format_string(" \
                 "quote_xml(self.%s), " \
                 "input_name='%s')), " \
-                "%s, eol_))\n" % \
-                (fill, name, name, namespace, mappedName,
-                    name, namespace, )
+                "eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName,
+                    name, )
         wrt(s1)
     elif (child_type in IntegerType or
             child_type == PositiveIntegerType or
@@ -2084,15 +2088,15 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_integer_list(self.%s, " \
-                "input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_integer_list(self.%s, " \
+                "input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         else:
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_integer(self.%s, " \
-                "input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_integer(self.%s, " \
+                "input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     elif child_type == BooleanType:
         default = child.getDefault()
@@ -2108,16 +2112,16 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
                     fill, mappedName, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean_list(" \
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_boolean_list(" \
                 "self.%s, input_name='%s'), " \
-                "namespace_, eol_))\n" % (
-                    fill, name, name, mappedName, name, )
+                "eol_))\n" % (
+                    fill, child_ns, name, child_ns, name, mappedName, name, )
         else:
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean(" \
-                "self.%s, input_name='%s'), namespace_, eol_))\n" % (
-                    fill, name, name, mappedName, name, )
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_boolean(" \
+                "self.%s, input_name='%s'), eol_))\n" % (
+                    fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     elif (child_type == FloatType or
             child_type == DecimalType):
@@ -2129,15 +2133,15 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_float_list(self.%s, " \
-                "input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_float_list(self.%s, " \
+                "input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         else:
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_float(self.%s, " \
-                "input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_float(self.%s, " \
+                "input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     elif child_type == DoubleType:
         default = child.getDefault()
@@ -2148,23 +2152,23 @@ def generateExportFn_1(wrt, child, name, namespace, fill):
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_double_list(self.%s, " \
-                "input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_double_list(self.%s, " \
+                "input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         else:
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_double(self.%s, " \
-                "input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_double(self.%s, " \
+                "input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     elif child_type == Base64Type:
         wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
-        s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-            "(namespace_, self.gds_format_base64(self.%s, input_name='%s'), " \
-            "namespace_, eol_))\n" % \
-            (fill, name, name, mappedName, name, )
+        s1 = ("%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% "
+              "(self.gds_format_base64(self.%s, input_name='%s'), "
+              "eol_))\n" % (
+                  fill, child_ns, name, child_ns, name, mappedName, name, ))
         wrt(s1)
     else:
         wrt("%s        if self.%s is not None:\n" % (fill, mappedName))
@@ -2188,38 +2192,42 @@ def generateExportFn_2(wrt, child, name, namespace, fill):
     cleanName = cleanupName(name)
     mappedName = mapName(cleanName)
     child_type = child.getType()
+    if child.prefix and 'ref' in child.attrs:
+        child_ns = "%s:" % child.prefix
+    else:
+        child_ns = namespace
     # fix_simpletype
     wrt("%s    for %s_ in self.%s:\n" % (fill, cleanName, mappedName, ))
     if child_type == DateTimeType:
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
-        s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-            "(namespace_, self.gds_format_datetime(%s_, input_name='%s')" \
-            ", namespace_, eol_))\n" % \
-            (fill, name, name, cleanName, name, )
+        s1 = "%s        outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+            "(self.gds_format_datetime(%s_, input_name='%s')" \
+            ", eol_))\n" % \
+            (fill, child_ns, name, child_ns, name, cleanName, name, )
         wrt(s1)
     elif child_type == DateType:
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
-        s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-            "(namespace_, self.gds_format_date(%s_, input_name='%s'), " \
-            "namespace_, eol_))\n" % \
-            (fill, name, name, cleanName, name, )
+        s1 = "%s        outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+            "(self.gds_format_date(%s_, input_name='%s'), " \
+            "eol_))\n" % \
+            (fill, child_ns, name, child_ns, name, cleanName, name, )
         wrt(s1)
     elif child_type == TimeType:
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
-        s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-            "(namespace_, self.gds_format_time(%s_, input_name='%s'), " \
-            "namespace_, eol_))\n" % \
-            (fill, name, name, cleanName, name, )
+        s1 = "%s        outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+            "(self.gds_format_time(%s_, input_name='%s'), " \
+            "eol_))\n" % \
+            (fill, child_ns, name, child_ns, name, cleanName, name, )
         wrt(s1)
     elif (child_type in StringType or
             child_type == TokenType or
             child_type in DateTimeGroupType):
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
-        wrt("%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% "
-            "(namespace_, self.gds_encode(self.gds_format_string("
+        wrt("%s        outfile.write('<%s%s>%%s</%s%s>%%s' %% "
+            "(self.gds_encode(self.gds_format_string("
             "quote_xml(%s_), "
-            "input_name='%s')), namespace_, eol_))\n" %
-            (fill, name, name, cleanName, name,))
+            "input_name='%s')), eol_))\n" %
+            (fill, child_ns, name, child_ns, name, cleanName, name,))
     elif (child_type in IntegerType or
             child_type == PositiveIntegerType or
             child_type == NonPositiveIntegerType or
@@ -2227,64 +2235,64 @@ def generateExportFn_2(wrt, child, name, namespace, fill):
             child_type == NonNegativeIntegerType):
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
-            s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_integer_list(" \
-                "%s_, input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, cleanName, name, )
+            s1 = "%s        outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_integer_list(" \
+                "%s_, input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, cleanName, name, )
         else:
-            s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_integer(%s_, " \
-                "input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, cleanName, name, )
+            s1 = "%s        outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_integer(%s_, " \
+                "input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, cleanName, name, )
         wrt(s1)
     elif child_type == BooleanType:
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
-            s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean_list(" \
+            s1 = "%s        outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_boolean_list(" \
                 "%s_, input_name='%s'), " \
-                "namespace_, eol_))\n" % \
-                (fill, name, name, cleanName, name, )
+                "eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, cleanName, name, )
         else:
-            s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean(" \
+            s1 = "%s        outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_boolean(" \
                 "%s_, input_name='%s'), " \
-                "namespace_, eol_))\n" % \
-                (fill, name, name, cleanName, name, )
+                "eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, cleanName, name, )
         wrt(s1)
     elif (child_type == FloatType or
             child_type == DecimalType):
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
-            s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_float_list(%s_, " \
-                "input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, cleanName, name, )
+            s1 = "%s        outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_float_list(%s_, " \
+                "input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, cleanName, name, )
         else:
-            s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_float(" \
-                "%s_, input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, cleanName, name, )
+            s1 = "%s        outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_float(" \
+                "%s_, input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, cleanName, name, )
         wrt(s1)
     elif child_type == DoubleType:
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
-            s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_double_list(" \
-                "%s_, input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, cleanName, name, )
+            s1 = "%s        outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_double_list(" \
+                "%s_, input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, cleanName, name, )
         else:
-            s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_double(%s_, input_name='%s'), " \
-                "namespace_, eol_))\n" % \
-                (fill, name, name, cleanName, name, )
+            s1 = "%s        outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_double(%s_, input_name='%s'), " \
+                "eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, cleanName, name, )
         wrt(s1)
     elif child_type == Base64Type:
         wrt('%s        showIndent(outfile, level, pretty_print)\n' % fill)
-        s1 = "%s        outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-            "(namespace_, self.gds_format_base64(%s_, input_name='%s'), " \
-            "namespace_, eol_))\n" % \
-            (fill, name, name, cleanName, name, )
+        s1 = "%s        outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+            "(self.gds_format_base64(%s_, input_name='%s'), " \
+            "eol_))\n" % \
+            (fill, child_ns, name, child_ns, name, cleanName, name, )
         wrt(s1)
     else:
         # name_type_problem
@@ -2306,6 +2314,10 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
     cleanName = cleanupName(name)
     mappedName = mapName(cleanName)
     child_type = child.getType()
+    if child.prefix and 'ref' in child.attrs:
+        child_ns = "%s:" % child.prefix
+    else:
+        child_ns = namespace
     # fix_simpletype
     if child_type == DateTimeType:
         default = child.getDefault()
@@ -2315,10 +2327,10 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
             wrt('%s        if self.%s != "%s":\n' % (
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
-        s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-            "(namespace_, self.gds_format_datetime(" \
-            "self.%s, input_name='%s'), namespace_, eol_))\n" % \
-            (fill, name, name, mappedName, name, )
+        s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+            "(self.gds_format_datetime(" \
+            "self.%s, input_name='%s'), eol_))\n" % \
+            (fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     elif child_type == DateType:
         default = child.getDefault()
@@ -2328,10 +2340,10 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
             wrt('%s        if self.%s != "%s":\n' % (
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
-        s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-            "(namespace_, self.gds_format_date(" \
-            "self.%s, input_name='%s'), namespace_, eol_))\n" % \
-            (fill, name, name, mappedName, name, )
+        s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+            "(self.gds_format_date(" \
+            "self.%s, input_name='%s'), eol_))\n" % \
+            (fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     elif child_type == TimeType:
         default = child.getDefault()
@@ -2341,10 +2353,10 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
             wrt('%s        if self.%s != "%s":\n' % (
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
-        s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-            "(namespace_, self.gds_format_time(" \
-            "self.%s, input_name='%s'), namespace_, eol_))\n" % \
-            (fill, name, name, mappedName, name, )
+        s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+            "(self.gds_format_time(" \
+            "self.%s, input_name='%s'), eol_))\n" % \
+            (fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     elif (child_type in StringType or
             child_type == TokenType or
@@ -2359,17 +2371,17 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
         # fixlist
         if (child.getSimpleType() in SimpleTypeDict and
                 SimpleTypeDict[child.getSimpleType()].isListType()):
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_encode(self.gds_format_string(" \
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_encode(self.gds_format_string(" \
                 "quote_xml(' '.join(self.%s)), " \
-                "input_name='%s')), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+                "input_name='%s')), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         else:
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_encode(self.gds_format_string(" \
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_encode(self.gds_format_string(" \
                 "quote_xml(self.%s), " \
-                "input_name='%s')), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+                "input_name='%s')), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     elif (child_type in IntegerType or
             child_type == PositiveIntegerType or
@@ -2384,15 +2396,15 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_integer_list(" \
-                "self.%s, input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_integer_list(" \
+                "self.%s, input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         else:
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_integer(" \
-                "self.%s, input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_integer(" \
+                "self.%s, input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     elif child_type == BooleanType:
         default = child.getDefault()
@@ -2408,16 +2420,17 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
                     fill, mappedName, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean_list(" \
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_boolean_list(" \
                 "self.%s, input_name='%s'), " \
-                "namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name)
+                "eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name)
         else:
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_boolean(" \
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_boolean(" \
                 "self.%s, input_name='%s'), " \
-                "namespace_, eol_))\n" % (fill, name, name, mappedName, name)
+                "eol_))\n" % (
+                fill, child_ns, name, child_ns, name, mappedName, name)
         wrt(s1)
     elif (child_type == FloatType or
             child_type == DecimalType):
@@ -2429,15 +2442,15 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_float_list(" \
-                "self.%s, input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_float_list(" \
+                "self.%s, input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         else:
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_float(" \
-                "self.%s, input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_float(" \
+                "self.%s, input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     elif child_type == DoubleType:
         default = child.getDefault()
@@ -2448,23 +2461,23 @@ def generateExportFn_3(wrt, child, name, namespace, fill):
                 fill, mappedName, default, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
         if child.isListType():
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_double_list(" \
-                "self.%s, input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_double_list(" \
+                "self.%s, input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         else:
-            s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-                "(namespace_, self.gds_format_double(" \
-                "self.%s, input_name='%s'), namespace_, eol_))\n" % \
-                (fill, name, name, mappedName, name, )
+            s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+                "(self.gds_format_double(" \
+                "self.%s, input_name='%s'), eol_))\n" % \
+                (fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     elif child_type == Base64Type:
         wrt('%s        if self.%s is not None:\n' % (fill, mappedName, ))
         wrt('%s            showIndent(outfile, level, pretty_print)\n' % fill)
-        s1 = "%s            outfile.write('<%%s%s>%%s</%%s%s>%%s' %% " \
-            "(namespace_, self.gds_format_base64(" \
-            "self.%s, input_name='%s'), namespace_, eol_))\n" % \
-            (fill, name, name, mappedName, name, )
+        s1 = "%s            outfile.write('<%s%s>%%s</%s%s>%%s' %% " \
+            "(self.gds_format_base64(" \
+            "self.%s, input_name='%s'), eol_))\n" % \
+            (fill, child_ns, name, child_ns, name, mappedName, name, )
         wrt(s1)
     else:
         wrt("%s        if self.%s is not None:\n" % (fill, mappedName))
