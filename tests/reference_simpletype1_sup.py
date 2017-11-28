@@ -3,7 +3,7 @@
 
 #
 # Generated  by generateDS.py.
-# Python 2.7.13 (default, Jan 19 2017, 14:48:08)  [GCC 6.3.0 20170118]
+# Python 2.7.14 (default, Sep 23 2017, 22:06:14)  [GCC 7.2.0]
 #
 # Command line options:
 #   ('--no-dates', '')
@@ -788,10 +788,10 @@ class dummy(GeneratedsSuper):
             eol_ = ''
         if self.test_ref_element is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%stest_ref_element>%s</%stest_ref_element>%s' % (namespace_, self.gds_format_integer(self.test_ref_element, input_name='test_ref_element'), namespace_, eol_))
+            outfile.write('<test_ref_element>%s</test_ref_element>%s' % (self.gds_format_integer(self.test_ref_element, input_name='test_ref_element'), eol_))
         if self.test_normal_element is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%stest_normal_element>%s</%stest_normal_element>%s' % (namespace_, self.gds_format_integer(self.test_normal_element, input_name='test_normal_element'), namespace_, eol_))
+            outfile.write('<test_normal_element>%s</test_normal_element>%s' % (self.gds_format_integer(self.test_normal_element, input_name='test_normal_element'), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

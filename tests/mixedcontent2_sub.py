@@ -7,18 +7,17 @@
 # Command line options:
 #   ('--no-dates', '')
 #   ('--no-versions', '')
-#   ('--silence', '')
 #   ('--member-specs', 'list')
 #   ('-f', '')
-#   ('-o', 'tests/anysimpletype2_sup.py')
-#   ('-s', 'tests/anysimpletype2_sub.py')
-#   ('--super', 'anysimpletype2_sup')
+#   ('-o', 'tests/mixedcontent2_sup.py')
+#   ('-s', 'tests/mixedcontent2_sub.py')
+#   ('--super', 'mixedcontent2_sup')
 #
 # Command line arguments:
-#   tests/anysimpletype.xsd
+#   tests/mixedcontent.xsd
 #
 # Command line:
-#   generateDS.py --no-dates --no-versions --silence --member-specs="list" -f -o "tests/anysimpletype2_sup.py" -s "tests/anysimpletype2_sub.py" --super="anysimpletype2_sup" tests/anysimpletype.xsd
+#   generateDS.py --no-dates --no-versions --member-specs="list" -f -o "tests/mixedcontent2_sup.py" -s "tests/mixedcontent2_sub.py" --super="mixedcontent2_sup" tests/mixedcontent.xsd
 #
 # Current working directory (os.getcwd()):
 #   generateds
@@ -27,7 +26,7 @@
 import sys
 from lxml import etree as etree_
 
-import anysimpletype2_sup as supermod
+import mixedcontent2_sup as supermod
 
 def parsexml_(infile, parser=None, **kwargs):
     if parser is None:
@@ -48,18 +47,39 @@ ExternalEncoding = 'ascii'
 #
 
 
-class test1elementSub(supermod.test1element):
-    def __init__(self, test1attribute=None, test1member=None):
-        super(test1elementSub, self).__init__(test1attribute, test1member, )
-supermod.test1element.subclass = test1elementSub
-# end class test1elementSub
+class rootTypeSub(supermod.rootType):
+    def __init__(self, markup=None):
+        super(rootTypeSub, self).__init__(markup, )
+supermod.rootType.subclass = rootTypeSub
+# end class rootTypeSub
 
 
-class cimAnySimpleTypeSub(supermod.cimAnySimpleType):
-    def __init__(self, valueOf_=None):
-        super(cimAnySimpleTypeSub, self).__init__(valueOf_, )
-supermod.cimAnySimpleType.subclass = cimAnySimpleTypeSub
-# end class cimAnySimpleTypeSub
+class markupTypeSub(supermod.markupType):
+    def __init__(self, embedded=None, nested=None, valueOf_=None, mixedclass_=None, content_=None):
+        super(markupTypeSub, self).__init__(embedded, nested, valueOf_, mixedclass_, content_, )
+supermod.markupType.subclass = markupTypeSub
+# end class markupTypeSub
+
+
+class nestedTypeSub(supermod.nestedType):
+    def __init__(self, nested1=None, nested2=None, nested3=None):
+        super(nestedTypeSub, self).__init__(nested1, nested2, nested3, )
+supermod.nestedType.subclass = nestedTypeSub
+# end class nestedTypeSub
+
+
+class nested1TypeSub(supermod.nested1Type):
+    def __init__(self, nestedA1=None, nestedA2=None):
+        super(nested1TypeSub, self).__init__(nestedA1, nestedA2, )
+supermod.nested1Type.subclass = nested1TypeSub
+# end class nested1TypeSub
+
+
+class nested1ATypeSub(supermod.nested1AType):
+    def __init__(self, nestedB1=None, nestedB2=None):
+        super(nested1ATypeSub, self).__init__(nestedB1, nestedB2, )
+supermod.nested1AType.subclass = nested1ATypeSub
+# end class nested1ATypeSub
 
 
 def get_root_tag(node):
@@ -77,18 +97,18 @@ def parse(inFilename, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'test1element'
-        rootClass = supermod.test1element
+        rootTag = 'rootType'
+        rootClass = supermod.rootType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('<?xml version="1.0" ?>\n')
-##         rootObj.export(
-##             sys.stdout, 0, name_=rootTag,
-##             namespacedef_='',
-##             pretty_print=True)
+    if not silence:
+        sys.stdout.write('<?xml version="1.0" ?>\n')
+        rootObj.export(
+            sys.stdout, 0, name_=rootTag,
+            namespacedef_='',
+            pretty_print=True)
     return rootObj
 
 
@@ -98,8 +118,8 @@ def parseEtree(inFilename, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'test1element'
-        rootClass = supermod.test1element
+        rootTag = 'rootType'
+        rootClass = supermod.rootType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
@@ -107,12 +127,12 @@ def parseEtree(inFilename, silence=False):
     mapping = {}
     rootElement = rootObj.to_etree(None, name_=rootTag, mapping_=mapping)
     reverse_mapping = rootObj.gds_reverse_node_mapping(mapping)
-##     if not silence:
-##         content = etree_.tostring(
-##             rootElement, pretty_print=True,
-##             xml_declaration=True, encoding="utf-8")
-##         sys.stdout.write(content)
-##         sys.stdout.write('\n')
+    if not silence:
+        content = etree_.tostring(
+            rootElement, pretty_print=True,
+            xml_declaration=True, encoding="utf-8")
+        sys.stdout.write(content)
+        sys.stdout.write('\n')
     return rootObj, rootElement, mapping, reverse_mapping
 
 
@@ -123,17 +143,17 @@ def parseString(inString, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'test1element'
-        rootClass = supermod.test1element
+        rootTag = 'rootType'
+        rootClass = supermod.rootType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('<?xml version="1.0" ?>\n')
-##         rootObj.export(
-##             sys.stdout, 0, name_=rootTag,
-##             namespacedef_='')
+    if not silence:
+        sys.stdout.write('<?xml version="1.0" ?>\n')
+        rootObj.export(
+            sys.stdout, 0, name_=rootTag,
+            namespacedef_='')
     return rootObj
 
 
@@ -143,18 +163,18 @@ def parseLiteral(inFilename, silence=False):
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)
     if rootClass is None:
-        rootTag = 'test1element'
-        rootClass = supermod.test1element
+        rootTag = 'rootType'
+        rootClass = supermod.rootType
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     if not silence:
-##         sys.stdout.write('#from anysimpletype2_sup import *\n\n')
-##         sys.stdout.write('import anysimpletype2_sup as model_\n\n')
-##         sys.stdout.write('rootObj = model_.rootClass(\n')
-##         rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
-##         sys.stdout.write(')\n')
+    if not silence:
+        sys.stdout.write('#from mixedcontent2_sup import *\n\n')
+        sys.stdout.write('import mixedcontent2_sup as model_\n\n')
+        sys.stdout.write('rootObj = model_.rootClass(\n')
+        rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
+        sys.stdout.write(')\n')
     return rootObj
 
 

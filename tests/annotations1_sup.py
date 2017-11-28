@@ -3,7 +3,7 @@
 
 #
 # Generated  by generateDS.py.
-# Python 2.7.13 (default, Jan 19 2017, 14:48:08)  [GCC 6.3.0 20170118]
+# Python 2.7.14 (default, Sep 23 2017, 22:06:14)  [GCC 7.2.0]
 #
 # Command line options:
 #   ('--no-dates', '')
@@ -777,7 +777,7 @@ class document1Type(GeneratedsSuper):
             eol_ = ''
         if self.comments is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scomments>%s</%scomments>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.comments), input_name='comments')), namespace_, eol_))
+            outfile.write('<comments>%s</comments>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.comments), input_name='comments')), eol_))
         if self.otherdoc is not None:
             self.otherdoc.export(outfile, level, namespace_, name_='otherdoc', pretty_print=pretty_print)
     def build(self, node):
@@ -874,10 +874,10 @@ class document2Type(GeneratedsSuper):
             eol_ = ''
         if self.comments is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scomments>%s</%scomments>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.comments), input_name='comments')), namespace_, eol_))
+            outfile.write('<comments>%s</comments>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.comments), input_name='comments')), eol_))
         if self.rating is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%srating>%s</%srating>%s' % (namespace_, self.gds_format_integer(self.rating, input_name='rating'), namespace_, eol_))
+            outfile.write('<rating>%s</rating>%s' % (self.gds_format_integer(self.rating, input_name='rating'), eol_))
         if self.anotherdoc is not None:
             self.anotherdoc.export(outfile, level, namespace_, name_='anotherdoc', pretty_print=pretty_print)
     def build(self, node):
@@ -975,10 +975,10 @@ class document3Type(GeneratedsSuper):
             eol_ = ''
         if self.comments is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scomments>%s</%scomments>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.comments), input_name='comments')), namespace_, eol_))
+            outfile.write('<comments>%s</comments>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.comments), input_name='comments')), eol_))
         if self.rating is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%srating>%s</%srating>%s' % (namespace_, self.gds_format_integer(self.rating, input_name='rating'), namespace_, eol_))
+            outfile.write('<rating>%s</rating>%s' % (self.gds_format_integer(self.rating, input_name='rating'), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

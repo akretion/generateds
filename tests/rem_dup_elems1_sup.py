@@ -3,7 +3,7 @@
 
 #
 # Generated  by generateDS.py.
-# Python 2.7.13 (default, Jan 19 2017, 14:48:08)  [GCC 6.3.0 20170118]
+# Python 2.7.14 (default, Sep 23 2017, 22:06:14)  [GCC 7.2.0]
 #
 # Command line options:
 #   ('--no-dates', '')
@@ -789,7 +789,7 @@ class authorsType(GeneratedsSuper):
             author_.export(outfile, level, namespace_, name_='author', pretty_print=pretty_print)
         for cooperation_ in self.cooperation:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scooperation>%s</%scooperation>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(cooperation_), input_name='cooperation')), namespace_, eol_))
+            outfile.write('<cooperation>%s</cooperation>%s' % (self.gds_encode(self.gds_format_string(quote_xml(cooperation_), input_name='cooperation')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -871,7 +871,7 @@ class author(GeneratedsSuper):
             eol_ = ''
         if self.description is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdescription>%s</%sdescription>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.description), input_name='description')), namespace_, eol_))
+            outfile.write('<description>%s</description>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.description), input_name='description')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

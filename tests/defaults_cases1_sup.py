@@ -3,7 +3,7 @@
 
 #
 # Generated  by generateDS.py.
-# Python 2.7.13 (default, Jan 19 2017, 14:48:08)  [GCC 6.3.0 20170118]
+# Python 2.7.14 (default, Sep 23 2017, 22:06:14)  [GCC 7.2.0]
 #
 # Command line options:
 #   ('--no-dates', '')
@@ -904,28 +904,28 @@ class DefaultType1(GeneratedsSuper):
             eol_ = ''
         if self.normal01 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%snormal01>%s</%snormal01>%s' % (namespace_, self.gds_format_integer(self.normal01, input_name='normal01'), namespace_, eol_))
+            outfile.write('<normal01>%s</normal01>%s' % (self.gds_format_integer(self.normal01, input_name='normal01'), eol_))
         if self.normal02 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%snormal02>%s</%snormal02>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.normal02), input_name='normal02')), namespace_, eol_))
+            outfile.write('<normal02>%s</normal02>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.normal02), input_name='normal02')), eol_))
         if self.default01 != 23:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdefault01>%s</%sdefault01>%s' % (namespace_, self.gds_format_integer(self.default01, input_name='default01'), namespace_, eol_))
+            outfile.write('<default01>%s</default01>%s' % (self.gds_format_integer(self.default01, input_name='default01'), eol_))
         if self.default02 != "Peach":
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdefault02>%s</%sdefault02>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.default02), input_name='default02')), namespace_, eol_))
+            outfile.write('<default02>%s</default02>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.default02), input_name='default02')), eol_))
         if self.normal03 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%snormal03>%s</%snormal03>%s' % (namespace_, self.gds_format_float(self.normal03, input_name='normal03'), namespace_, eol_))
+            outfile.write('<normal03>%s</normal03>%s' % (self.gds_format_float(self.normal03, input_name='normal03'), eol_))
         if self.normal04 is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%snormal04>%s</%snormal04>%s' % (namespace_, self.gds_format_double(self.normal04, input_name='normal04'), namespace_, eol_))
+            outfile.write('<normal04>%s</normal04>%s' % (self.gds_format_double(self.normal04, input_name='normal04'), eol_))
         if self.default03 != 23.45:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdefault03>%s</%sdefault03>%s' % (namespace_, self.gds_format_float(self.default03, input_name='default03'), namespace_, eol_))
+            outfile.write('<default03>%s</default03>%s' % (self.gds_format_float(self.default03, input_name='default03'), eol_))
         if self.default04 != 54.32:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdefault04>%s</%sdefault04>%s' % (namespace_, self.gds_format_double(self.default04, input_name='default04'), namespace_, eol_))
+            outfile.write('<default04>%s</default04>%s' % (self.gds_format_double(self.default04, input_name='default04'), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)

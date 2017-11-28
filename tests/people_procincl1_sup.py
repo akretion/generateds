@@ -3,7 +3,7 @@
 
 #
 # Generated  by generateDS.py.
-# Python 2.7.13 (default, Jan 19 2017, 14:48:08)  [GCC 6.3.0 20170118]
+# Python 2.7.14 (default, Sep 23 2017, 22:06:14)  [GCC 7.2.0]
 #
 # Command line options:
 #   ('--no-dates', '')
@@ -979,10 +979,10 @@ class comments(GeneratedsSuper):
             eol_ = ''
         for emp_ in self.emp:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%semp>%s</%semp>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(emp_), input_name='emp')), namespace_, eol_))
+            outfile.write('<emp>%s</emp>%s' % (self.gds_encode(self.gds_format_string(quote_xml(emp_), input_name='emp')), eol_))
         for bold_ in self.bold:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sbold>%s</%sbold>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(bold_), input_name='bold')), namespace_, eol_))
+            outfile.write('<bold>%s</bold>%s' % (self.gds_encode(self.gds_format_string(quote_xml(bold_), input_name='bold')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1161,20 +1161,20 @@ class person(GeneratedsSuper):
             eol_ = ''
         if self.name is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sname>%s</%sname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.name), input_name='name')), namespace_, eol_))
+            outfile.write('<name>%s</name>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.name), input_name='name')), eol_))
         for interest_ in self.interest:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sinterest>%s</%sinterest>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(interest_), input_name='interest')), namespace_, eol_))
+            outfile.write('<interest>%s</interest>%s' % (self.gds_encode(self.gds_format_string(quote_xml(interest_), input_name='interest')), eol_))
         if self.category is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%scategory>%s</%scategory>%s' % (namespace_, self.gds_format_integer(self.category, input_name='category'), namespace_, eol_))
+            outfile.write('<category>%s</category>%s' % (self.gds_format_integer(self.category, input_name='category'), eol_))
         for agent_ in self.agent:
             agent_.export(outfile, level, namespace_, name_='agent', pretty_print=pretty_print)
         for promoter_ in self.promoter:
             promoter_.export(outfile, level, namespace_, name_='promoter', pretty_print=pretty_print)
         if self.description is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdescription>%s</%sdescription>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.description), input_name='description')), namespace_, eol_))
+            outfile.write('<description>%s</description>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.description), input_name='description')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -1534,13 +1534,13 @@ class agent(GeneratedsSuper):
             eol_ = ''
         if self.firstname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.firstname), input_name='firstname')), namespace_, eol_))
+            outfile.write('<firstname>%s</firstname>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.firstname), input_name='firstname')), eol_))
         if self.lastname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.lastname), input_name='lastname')), namespace_, eol_))
+            outfile.write('<lastname>%s</lastname>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.lastname), input_name='lastname')), eol_))
         if self.priority is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%spriority>%s</%spriority>%s' % (namespace_, self.gds_format_float(self.priority, input_name='priority'), namespace_, eol_))
+            outfile.write('<priority>%s</priority>%s' % (self.gds_format_float(self.priority, input_name='priority'), eol_))
         if self.info is not None:
             self.info.export(outfile, level, namespace_, name_='info', pretty_print=pretty_print)
         for vehicle_ in self.vehicle:
@@ -1674,13 +1674,13 @@ class special_agent(GeneratedsSuper):
             eol_ = ''
         if self.firstname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.firstname), input_name='firstname')), namespace_, eol_))
+            outfile.write('<firstname>%s</firstname>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.firstname), input_name='firstname')), eol_))
         if self.lastname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.lastname), input_name='lastname')), namespace_, eol_))
+            outfile.write('<lastname>%s</lastname>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.lastname), input_name='lastname')), eol_))
         if self.priority is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%spriority>%s</%spriority>%s' % (namespace_, self.gds_format_float(self.priority, input_name='priority'), namespace_, eol_))
+            outfile.write('<priority>%s</priority>%s' % (self.gds_format_float(self.priority, input_name='priority'), eol_))
         if self.info is not None:
             self.info.export(outfile, level, namespace_, name_='info', pretty_print=pretty_print)
     def build(self, node):
@@ -1830,22 +1830,22 @@ class booster(GeneratedsSuper):
             eol_ = ''
         if self.firstname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfirstname>%s</%sfirstname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.firstname), input_name='firstname')), namespace_, eol_))
+            outfile.write('<firstname>%s</firstname>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.firstname), input_name='firstname')), eol_))
         if self.lastname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%slastname>%s</%slastname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.lastname), input_name='lastname')), namespace_, eol_))
+            outfile.write('<lastname>%s</lastname>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.lastname), input_name='lastname')), eol_))
         if self.other_name is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sother-name>%s</%sother-name>%s' % (namespace_, self.gds_format_float(self.other_name, input_name='other-name'), namespace_, eol_))
+            outfile.write('<other-name>%s</other-name>%s' % (self.gds_format_float(self.other_name, input_name='other-name'), eol_))
         if self.class_ is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sclass>%s</%sclass>%s' % (namespace_, self.gds_format_float(self.class_, input_name='class'), namespace_, eol_))
+            outfile.write('<class>%s</class>%s' % (self.gds_format_float(self.class_, input_name='class'), eol_))
         for other_value_ in self.other_value:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sother-value>%s</%sother-value>%s' % (namespace_, self.gds_format_float(other_value_, input_name='other-value'), namespace_, eol_))
+            outfile.write('<other-value>%s</other-value>%s' % (self.gds_format_float(other_value_, input_name='other-value'), eol_))
         for type_ in self.type_:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%stype>%s</%stype>%s' % (namespace_, self.gds_format_float(type_, input_name='type'), namespace_, eol_))
+            outfile.write('<type>%s</type>%s' % (self.gds_format_float(type_, input_name='type'), eol_))
         for client_handler_ in self.client_handler:
             client_handler_.export(outfile, level, namespace_, name_='client-handler', pretty_print=pretty_print)
     def build(self, node):
@@ -2075,7 +2075,7 @@ class vehicle(GeneratedsSuper):
             eol_ = ''
         if self.wheelcount is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%swheelcount>%s</%swheelcount>%s' % (namespace_, self.gds_format_integer(self.wheelcount, input_name='wheelcount'), namespace_, eol_))
+            outfile.write('<wheelcount>%s</wheelcount>%s' % (self.gds_format_integer(self.wheelcount, input_name='wheelcount'), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -2162,7 +2162,7 @@ class automobile(vehicle):
             eol_ = ''
         if self.drivername is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sdrivername>%s</%sdrivername>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.drivername), input_name='drivername')), namespace_, eol_))
+            outfile.write('<drivername>%s</drivername>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.drivername), input_name='drivername')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -2243,7 +2243,7 @@ class airplane(vehicle):
             eol_ = ''
         if self.pilotname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%spilotname>%s</%spilotname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.pilotname), input_name='pilotname')), namespace_, eol_))
+            outfile.write('<pilotname>%s</pilotname>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.pilotname), input_name='pilotname')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -2442,36 +2442,36 @@ class programmer(person):
             eol_ = ''
         if self.email is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%semail>%s</%semail>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.email), input_name='email')), namespace_, eol_))
+            outfile.write('<email>%s</email>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.email), input_name='email')), eol_))
         if self.elposint is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%selposint>%s</%selposint>%s' % (namespace_, self.gds_format_integer(self.elposint, input_name='elposint'), namespace_, eol_))
+            outfile.write('<elposint>%s</elposint>%s' % (self.gds_format_integer(self.elposint, input_name='elposint'), eol_))
         if self.elnonposint is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%selnonposint>%s</%selnonposint>%s' % (namespace_, self.gds_format_integer(self.elnonposint, input_name='elnonposint'), namespace_, eol_))
+            outfile.write('<elnonposint>%s</elnonposint>%s' % (self.gds_format_integer(self.elnonposint, input_name='elnonposint'), eol_))
         if self.elnegint is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%selnegint>%s</%selnegint>%s' % (namespace_, self.gds_format_integer(self.elnegint, input_name='elnegint'), namespace_, eol_))
+            outfile.write('<elnegint>%s</elnegint>%s' % (self.gds_format_integer(self.elnegint, input_name='elnegint'), eol_))
         if self.elnonnegint is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%selnonnegint>%s</%selnonnegint>%s' % (namespace_, self.gds_format_integer(self.elnonnegint, input_name='elnonnegint'), namespace_, eol_))
+            outfile.write('<elnonnegint>%s</elnonnegint>%s' % (self.gds_format_integer(self.elnonnegint, input_name='elnonnegint'), eol_))
         if self.eldate is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%seldate>%s</%seldate>%s' % (namespace_, self.gds_format_date(self.eldate, input_name='eldate'), namespace_, eol_))
+            outfile.write('<eldate>%s</eldate>%s' % (self.gds_format_date(self.eldate, input_name='eldate'), eol_))
         if self.eltoken is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%seltoken>%s</%seltoken>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.eltoken), input_name='eltoken')), namespace_, eol_))
+            outfile.write('<eltoken>%s</eltoken>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.eltoken), input_name='eltoken')), eol_))
         if self.elshort is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%selshort>%s</%selshort>%s' % (namespace_, self.gds_format_integer(self.elshort, input_name='elshort'), namespace_, eol_))
+            outfile.write('<elshort>%s</elshort>%s' % (self.gds_format_integer(self.elshort, input_name='elshort'), eol_))
         if self.ellong is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sellong>%s</%sellong>%s' % (namespace_, self.gds_format_integer(self.ellong, input_name='ellong'), namespace_, eol_))
+            outfile.write('<ellong>%s</ellong>%s' % (self.gds_format_integer(self.ellong, input_name='ellong'), eol_))
         if self.elparam is not None:
             self.elparam.export(outfile, level, namespace_, name_='elparam', pretty_print=pretty_print)
         if self.elarraytypes is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%selarraytypes>%s</%selarraytypes>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.elarraytypes), input_name='elarraytypes')), namespace_, eol_))
+            outfile.write('<elarraytypes>%s</elarraytypes>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.elarraytypes), input_name='elarraytypes')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -2681,10 +2681,10 @@ class client_handlerType(GeneratedsSuper):
             eol_ = ''
         if self.fullname is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfullname>%s</%sfullname>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.fullname), input_name='fullname')), namespace_, eol_))
+            outfile.write('<fullname>%s</fullname>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.fullname), input_name='fullname')), eol_))
         if self.refid is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%srefid>%s</%srefid>%s' % (namespace_, self.gds_format_integer(self.refid, input_name='refid'), namespace_, eol_))
+            outfile.write('<refid>%s</refid>%s' % (self.gds_format_integer(self.refid, input_name='refid'), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -2789,7 +2789,7 @@ class java_programmer(programmer):
             eol_ = ''
         if self.favorite_editor is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfavorite-editor>%s</%sfavorite-editor>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.favorite_editor), input_name='favorite-editor')), namespace_, eol_))
+            outfile.write('<favorite-editor>%s</favorite-editor>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.favorite_editor), input_name='favorite-editor')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
@@ -2887,7 +2887,7 @@ class python_programmer(programmer):
             eol_ = ''
         if self.favorite_editor is not None:
             showIndent(outfile, level, pretty_print)
-            outfile.write('<%sfavorite-editor>%s</%sfavorite-editor>%s' % (namespace_, self.gds_encode(self.gds_format_string(quote_xml(self.favorite_editor), input_name='favorite-editor')), namespace_, eol_))
+            outfile.write('<favorite-editor>%s</favorite-editor>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.favorite_editor), input_name='favorite-editor')), eol_))
     def build(self, node):
         already_processed = set()
         self.buildAttributes(node, node.attrib, already_processed)
