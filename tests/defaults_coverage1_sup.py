@@ -1295,52 +1295,52 @@ class DefaultType2(GeneratedsSuper):
             eol_ = '\n'
         else:
             eol_ = ''
-        if self.default01 != 23:
+        if self.default01 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<default01>%s</default01>%s' % (self.gds_format_integer(self.default01, input_name='default01'), eol_))
         if self.normal01 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<normal01>%s</normal01>%s' % (self.gds_format_integer(self.normal01, input_name='normal01'), eol_))
-        if self.default02 != "Peach":
+        if self.default02 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<default02>%s</default02>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.default02), input_name='default02')), eol_))
         if self.normal02 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<normal02>%s</normal02>%s' % (self.gds_encode(self.gds_format_string(quote_xml(self.normal02), input_name='normal02')), eol_))
-        if self.default03 != 23.45:
+        if self.default03 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<default03>%s</default03>%s' % (self.gds_format_float(self.default03, input_name='default03'), eol_))
         if self.normal03 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<normal03>%s</normal03>%s' % (self.gds_format_float(self.normal03, input_name='normal03'), eol_))
-        if self.default04 != 54.32:
+        if self.default04 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<default04>%s</default04>%s' % (self.gds_format_double(self.default04, input_name='default04'), eol_))
         if self.normal04 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<normal04>%s</normal04>%s' % (self.gds_format_double(self.normal04, input_name='normal04'), eol_))
-        if not self.default05a:
+        if self.default05a is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<default05a>%s</default05a>%s' % (self.gds_format_boolean(self.default05a, input_name='default05a'), eol_))
-        if self.default05b:
+        if self.default05b is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<default05b>%s</default05b>%s' % (self.gds_format_boolean(self.default05b, input_name='default05b'), eol_))
         if self.normal05 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<normal05>%s</normal05>%s' % (self.gds_format_boolean(self.normal05, input_name='normal05'), eol_))
-        if self.default06 != "2015-06-21":
+        if self.default06 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<default06>%s</default06>%s' % (self.gds_format_date(self.default06, input_name='default06'), eol_))
         if self.normal06 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<normal06>%s</normal06>%s' % (self.gds_format_date(self.normal06, input_name='normal06'), eol_))
-        if self.default07 != "11:10:09":
+        if self.default07 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<default07>%s</default07>%s' % (self.gds_format_time(self.default07, input_name='default07'), eol_))
         if self.normal07 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<normal07>%s</normal07>%s' % (self.gds_format_date(self.normal07, input_name='normal07'), eol_))
-        if self.default08 != "2015-06-21T14:13:12":
+        if self.default08 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<default08>%s</default08>%s' % (self.gds_format_datetime(self.default08, input_name='default08'), eol_))
         if self.normal08 is not None:
