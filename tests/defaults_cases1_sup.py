@@ -920,10 +920,10 @@ class DefaultType1(GeneratedsSuper):
         if self.normal04 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<normal04>%s</normal04>%s' % (self.gds_format_double(self.normal04, input_name='normal04'), eol_))
-        if self.default03 != 23.45:
+        if self.default03 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<default03>%s</default03>%s' % (self.gds_format_float(self.default03, input_name='default03'), eol_))
-        if self.default04 != 54.32:
+        if self.default04 is not None:
             showIndent(outfile, level, pretty_print)
             outfile.write('<default04>%s</default04>%s' % (self.gds_format_double(self.default04, input_name='default04'), eol_))
     def build(self, node):
