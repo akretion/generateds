@@ -141,6 +141,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.29.2 (12/07/2017)
+
+- Fix for use of StringIO in generated subclass modules.  Thanks to
+  Rohan Dsa for alerting me on this.
+
 Version 2.29.1 (12/07/2017)
 
 - Fix to generation of code to export child elements that have
