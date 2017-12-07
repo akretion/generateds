@@ -922,7 +922,7 @@ def main():
     args = sys.argv[1:]
     try:
         opts, args = getopt.getopt(args, 'h', ['help'])
-    except:
+    except getopt.GetoptError:
         usage()
     for opt, val in opts:
         if opt in ('-h', '--help'):

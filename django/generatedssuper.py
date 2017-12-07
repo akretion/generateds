@@ -218,9 +218,9 @@ class GeneratedsSuper(object):
                     wrtforms('    %s = forms.TimeField(%s)\n' % (
                         name, options, ))
                 elif data_type in Boolean_type_table:
-                    wrtmodels('    %s = models.BooleanField(%s)\n' % (
+                    wrtmodels('    %s = models.NullBooleanField(%s)\n' % (
                         name, options, ))
-                    wrtforms('    %s = forms.BooleanField(%s)\n' % (
+                    wrtforms('    %s = forms.NullBooleanField(%s)\n' % (
                         name, options, ))
                 elif data_type in String_type_table:
                     wrtmodels(

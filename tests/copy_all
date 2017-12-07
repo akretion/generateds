@@ -59,3 +59,5 @@ cp rem_dup_elems2_sup.py rem_dup_elems1_sup.py
 cp rem_dup_elems2_sub.py rem_dup_elems1_sub.py
 cp disable_xml_super2_sup.py disable_xml_super1_sup.py
 cp disable_xml_super2_sub.py disable_xml_super1_sub.py
+cp defaults_cases_export2_sub.py defaults_cases_export1_sub.py
+cp defaults_cases_export2_sup.py defaults_cases_export1_sup.py

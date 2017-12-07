@@ -141,6 +141,21 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.29.1 (12/07/2017)
+
+- Fix to generation of code to export child elements that have
+  default values.  When the element's value is equal to the default
+  value, the export of the element should be omitted only if the
+  element is optional (i.e. minOccurs=0).  Thanks to Andrii Iudin
+  for reporting this.
+- Several modifications to use the `six` module as a cleaner way to
+  smooth over differences between Python 2 and Python 3.
+- Added file generateds/django/README.txt containing instructions on
+  running the Django code generation support.  Thanks to Christian
+  González for reporting problems with this and for providing
+  information that helped understanding the source of the
+  difficulties.
+
 Version 2.29.0 (11/28/2017)
 
 - Fixes to export of namespace prefixes for schemas that are
