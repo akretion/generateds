@@ -229,7 +229,7 @@ logging.disable(logging.INFO)
 # Do not modify the following VERSION comments.
 # Used by updateversion.py.
 ##VERSION##
-VERSION = '2.29.1'
+VERSION = '2.29.2'
 ##VERSION##
 
 BaseStrTypes = six.string_types
@@ -6337,7 +6337,10 @@ def parseEtree(inFilename, silence=False):
 
 
 def parseString(inString, silence=False):
-    from StringIO import StringIO
+    if sys.version_info.major == 2:
+        from StringIO import StringIO
+    else:
+        from io import BytesIO as StringIO
 %(preserve_cdata_tags)s    doc = parsexml_(StringIO(inString), parser)
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)

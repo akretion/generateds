@@ -61,3 +61,5 @@ cp disable_xml_super2_sup.py disable_xml_super1_sup.py
 cp disable_xml_super2_sub.py disable_xml_super1_sub.py
 cp defaults_cases_export2_sub.py defaults_cases_export1_sub.py
 cp defaults_cases_export2_sup.py defaults_cases_export1_sup.py
+cp mixedcontent2_sub.py mixedcontent1_sub.py
+cp mixedcontent2_sup.py mixedcontent1_sup.py
