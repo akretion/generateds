@@ -71,6 +71,8 @@ $commands = [
   "diff -u catalogtest1_sup.py catalogtest2_sup.py",
   "diff -u disable_xml_super1_sub.py disable_xml_super2_sub.py",
   "diff -u disable_xml_super1_sup.py disable_xml_super2_sup.py",
+  "diff -u defaults_cases_export1_sub.py defaults_cases_export2_sub.py",
+  "diff -u defaults_cases_export1_sup.py defaults_cases_export2_sup.py",
 ]
 
 def check
