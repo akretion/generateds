@@ -1132,27 +1132,7 @@ class XschemaElement(XschemaElementBase):
                 else:
                     self.complex = 1
             elif type_val in SimpleTypeDict:
-                count = 0
-                type_val1 = type_val
-                while True:
-                    element = SimpleTypeDict[type_val1]
-                    type_val1 = element.getBase()
-                    if type_val1 and not is_builtin_simple_type(type_val1):
-                        type_val1 = strip_namespace(type_val1)
-                    if type_val1 is None:
-                        # Something seems wrong.  Can't find base simple type.
-                        #   Give up and use default.
-                        type_val = StringType[0]
-                        break
-                    if type_val1 in SimpleTypeDict:
-                        count += 1
-                        if count > 10:
-                            # Give up.  We're in a loop.  Use default.
-                            type_val = StringType[0]
-                            break
-                    else:
-                        type_val = type_val1
-                        break
+                type_val = resolveBaseTypeForSimpleType(type_val)
                 # Add the namespace prefix to the simple type if needed.
                 if len(type_val.split(':')) == 1:
                     type_val = CurrentNamespacePrefix + type_val
@@ -4183,7 +4163,10 @@ def generateCtor(wrt, prefix, element):
             wrt("            initvalue_ = %s\n" % (mbrname, ))
             wrt("        self.%s = initvalue_\n" % (name, ))
         else:
-            pythonType = SchemaToPythonTypeMap.get(attrDef.getType())
+            attrType = attrDef.getType()
+            if attrType in SimpleTypeDict:
+                attrType = resolveBaseTypeForSimpleType(attrType)
+            pythonType = SchemaToPythonTypeMap.get(attrType)
             attrVal = "_cast(%s, %s)" % (pythonType, mbrname, )
             wrt('        self.%s = %s\n' % (name, attrVal, ))
     # Generate member initializers in ctor.
@@ -4302,6 +4285,31 @@ def find_simple_type_def(tree, stName, element, child, ns, base):
                     path2,
                     namespaces=ns, typeName=typeName, childName=childName)
     return st
+
+
+def resolveBaseTypeForSimpleType(type_val):
+    count = 0
+    type_val1 = type_val
+    while True:
+        element = SimpleTypeDict[type_val1]
+        type_val1 = element.getBase()
+        if type_val1 and not is_builtin_simple_type(type_val1):
+            type_val1 = strip_namespace(type_val1)
+        if type_val1 is None:
+            # Something seems wrong.  Can't find base simple type.
+            #   Give up and use default.
+            type_val = StringType[0]
+            break
+        if type_val1 in SimpleTypeDict:
+            count += 1
+            if count > 10:
+                # Give up.  We're in a loop.  Use default.
+                type_val = StringType[0]
+                break
+        else:
+            type_val = type_val1
+            break
+    return type_val
 
 
 def get_target_value(default, stName):

@@ -15,7 +15,7 @@
 
     <xs:complexType name="simpleOneType" mixed="0">
         <xs:sequence>
-            <xs:element name="integer_range_1_value" type="integer_range_1_st"/>
+            <xs:element name="integer_range_1_value" type="integer_range_1_st" default="5"/>
             <xs:element name="pattern_value" type="pattern_st"/>
             <xs:element name="token_enum_value" type="token_enum_st"/>
             <xs:element name="integer_range_incl_value" type="integer_range_incl_st"/>
@@ -50,6 +50,7 @@
             <xs:element name="primative_integer" type="xs:integer"/>
             <xs:element name="primative_float" type="xs:float"/>
         </xs:sequence>
+        <xs:attribute name="integer_range_1_value_with_default" type="integer_range_1_st" default="6"/>
     </xs:complexType>
     <!-- Test for use of an anonymous simple type inside an anonymous complexType. -->
     <xs:element name="simpleTypeData" type="simpleTwoType"/>
