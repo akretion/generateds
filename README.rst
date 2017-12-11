@@ -141,6 +141,19 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Change history
 --------------
 
+Version 2.29.3 (12/11/2017)
+
+- Resolved an issue with a type casting problem that occurs when a
+  numeric default value is provided as default for an xsd:attribute.
+  Normally attributes were being type casted at the constructor to a
+  Python type if the types are one of the builtins. However
+  attributes derived from a builtin type via xsd:simpleType
+  definitions couldn't be casted to a base type and were being
+  treated as strings.  Refactored out the simple type resolution
+  from the XsdElement class to a function so that we can reuse the
+  same code for both elements and attributes.  Thanks to
+  Alim Gokkaya for fixing this and for providing a pull request.
+
 Version 2.29.2 (12/07/2017)
 
 - Fix for use of StringIO in generated subclass modules.  Thanks to

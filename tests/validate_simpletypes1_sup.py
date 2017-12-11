@@ -866,7 +866,8 @@ class containerType(GeneratedsSuper):
 
 class simpleOneType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('integer_range_1_value', ['integer_range_1_st', 'integer_range_2_st', 'xs:integer'], 0, 0, {u'type': u'xs:integer', u'name': u'integer_range_1_value'}, None),
+        MemberSpec_('integer_range_1_value_with_default', 'integer_range_1_st', 0, 1, {'use': 'optional'}),
+        MemberSpec_('integer_range_1_value', ['integer_range_1_st', 'integer_range_2_st', 'xs:integer'], 0, 0, {u'default': u'5', u'type': u'xs:integer', u'name': u'integer_range_1_value'}, None),
         MemberSpec_('pattern_value', ['pattern_st', 'pattern_1_st', 'min_length_st', 'xs:string'], 0, 0, {u'type': u'xs:string', u'name': u'pattern_value'}, None),
         MemberSpec_('token_enum_value', ['token_enum_st', 'xs:NMTOKEN'], 0, 0, {u'type': u'xs:NMTOKEN', u'name': u'token_enum_value'}, None),
         MemberSpec_('integer_range_incl_value', ['integer_range_incl_st', 'xs:integer'], 0, 0, {u'type': u'xs:integer', u'name': u'integer_range_incl_value'}, None),
@@ -893,8 +894,9 @@ class simpleOneType(GeneratedsSuper):
     ]
     subclass = None
     superclass = None
-    def __init__(self, integer_range_1_value=None, pattern_value=None, token_enum_value=None, integer_range_incl_value=None, integer_range_excl_value=None, min_max_length_value=None, length_value=None, totalDigits_value=None, date_minincl_value=None, date_maxincl_value=None, date_minexcl_value=None, date_maxexcl_value=None, time_minincl_value=None, time_maxincl_value=None, time_minexcl_value=None, time_maxexcl_value=None, datetime_minincl_value=None, datetime_maxincl_value=None, datetime_minexcl_value=None, datetime_maxexcl_value=None, vbar_pattern_value=None, anonymous_float_value=None, primative_integer=None, primative_float=None):
+    def __init__(self, integer_range_1_value_with_default='6', integer_range_1_value=5, pattern_value=None, token_enum_value=None, integer_range_incl_value=None, integer_range_excl_value=None, min_max_length_value=None, length_value=None, totalDigits_value=None, date_minincl_value=None, date_maxincl_value=None, date_minexcl_value=None, date_maxexcl_value=None, time_minincl_value=None, time_maxincl_value=None, time_minexcl_value=None, time_maxexcl_value=None, datetime_minincl_value=None, datetime_maxincl_value=None, datetime_minexcl_value=None, datetime_maxexcl_value=None, vbar_pattern_value=None, anonymous_float_value=None, primative_integer=None, primative_float=None):
         self.original_tagname_ = None
+        self.integer_range_1_value_with_default = _cast(int, integer_range_1_value_with_default)
         self.integer_range_1_value = integer_range_1_value
         self.validate_integer_range_1_st(self.integer_range_1_value)
         self.pattern_value = pattern_value
@@ -1036,6 +1038,8 @@ class simpleOneType(GeneratedsSuper):
     def set_primative_integer(self, primative_integer): self.primative_integer = primative_integer
     def get_primative_float(self): return self.primative_float
     def set_primative_float(self, primative_float): self.primative_float = primative_float
+    def get_integer_range_1_value_with_default(self): return self.integer_range_1_value_with_default
+    def set_integer_range_1_value_with_default(self, integer_range_1_value_with_default): self.integer_range_1_value_with_default = integer_range_1_value_with_default
     def validate_integer_range_1_st(self, value):
         # Validate type integer_range_1_st, a restriction on integer_range_2_st.
         if value is not None and Validate_simpletypes_:
@@ -1171,7 +1175,7 @@ class simpleOneType(GeneratedsSuper):
                 warnings_.warn('Value "%(value)s" does not match xsd maxInclusive restriction on anonymous_float_valueType' % {"value" : value} )
     def hasContent_(self):
         if (
-            self.integer_range_1_value is not None or
+            self.integer_range_1_value != 5 or
             self.pattern_value is not None or
             self.token_enum_value is not None or
             self.integer_range_incl_value is not None or
@@ -1221,7 +1225,9 @@ class simpleOneType(GeneratedsSuper):
         else:
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='simpleOneType'):
-        pass
+        if self.integer_range_1_value_with_default != "6" and 'integer_range_1_value_with_default' not in already_processed:
+            already_processed.add('integer_range_1_value_with_default')
+            outfile.write(' integer_range_1_value_with_default=%s' % (quote_attrib(self.integer_range_1_value_with_default), ))
     def exportChildren(self, outfile, level, namespace_='', name_='simpleOneType', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -1307,7 +1313,11 @@ class simpleOneType(GeneratedsSuper):
             self.buildChildren(child, node, nodeName_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
-        pass
+        value = find_attr_value_('integer_range_1_value_with_default', node)
+        if value is not None and 'integer_range_1_value_with_default' not in already_processed:
+            already_processed.add('integer_range_1_value_with_default')
+            self.integer_range_1_value_with_default = value
+            self.validate_integer_range_1_st(self.integer_range_1_value_with_default)    # validate type integer_range_1_st
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'integer_range_1_value':
             sval_ = child_.text

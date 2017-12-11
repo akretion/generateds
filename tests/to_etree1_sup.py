@@ -1625,7 +1625,7 @@ class paramType(GeneratedsSuper):
         self.id = _cast(None, id)
         self.name = _cast(None, name)
         self.sid = _cast(None, sid)
-        self.flow = _cast(None, flow)
+        self.flow = _cast(int, flow)
         self.semantic = _cast(None, semantic)
         self.type_ = _cast(None, type_)
         self.valueOf_ = valueOf_
