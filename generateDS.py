@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Synopsis:
     Generate Python classes from XML schema definition.
@@ -206,7 +206,7 @@ logging.basicConfig(
     #filename='generateDS.log'  # uncomment to send messages to file
 )
 # Disable logging messages level INFO and below (includes DEBUG).
-logging.disable(logging.INFO)
+# logging.disable(logging.INFO)
 
 ## import warnings
 ## warnings.warn('importing IPShellEmbed', UserWarning)
