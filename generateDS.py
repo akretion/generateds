@@ -4795,15 +4795,23 @@ def generateMemberSpec(wrt, element):
         else:
             item3 = 0
         item4 = 1 if child.getOptional() else 0
+        if child.__dict__.get('documentation'):
+            doc = str.replace((child.__dict__['documentation']), '"', '')
+        else:
+            doc = ""
         if generateDict:
-            item = "        '%s': MemberSpec_('%s', %s, %d, %d, %s, %s)," % (
+            item = """        "%s": MemberSpec_("%s", %s, %d, %d,
+                    %s, %s,
+                    \"\"\"%s\"\"\"),""" % (
                 item1, item1, item2, item3, item4, repr(child.getAttrs()),
-                child.choice.getChoiceGroup() if child.choice else None)
+                child.choice.getChoiceGroup() if child.choice else None, doc)
         else:
             #item = "        ('%s', '%s', %d)," % (item1, item2, item3, )
-            item = "        MemberSpec_('%s', %s, %d, %d, %s, %s)," % (
+            item = """        MemberSpec_("%s", %s, %d, %d,
+                    %s, %s,
+                    \"\"\"%s\"\"\"),""" % (
                 item1, item2, item3, item4, repr(child.getAttrs()),
-                child.choice.getChoiceGroup() if child.choice else None)
+                child.choice.getChoiceGroup() if child.choice else None, doc)
         add(item)
     simplebase = element.getSimpleBase()
     if element.getSimpleContent() or element.isMixed():
@@ -4954,10 +4962,10 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     elem = tree.xpath("//xs:element[@name='%s']" % (name.replace("Type", "")),
                       namespaces=ns)
     documentation = None
-    if len(elem) > 0:
+    if elem:
         descriptions = elem[0].xpath("./xs:annotation/xs:documentation/text()",
                                      namespaces=ns)
-        if len(descriptions) > 0:
+        if descriptions:
             documentation = descriptions[0]
 
     elif element.documentation:
@@ -5343,13 +5351,15 @@ class MixedContainer:
 
 class MemberSpec_(object):
     def __init__(self, name='', data_type='', container=0,
-            optional=0, child_attrs=None, choice=None):
+                 optional=0, child_attrs=None, choice=None,
+                 documentation=""):
         self.name = name
         self.data_type = data_type
         self.container = container
         self.child_attrs = child_attrs
         self.choice = choice
         self.optional = optional
+        self.documentation = documentation
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -5370,6 +5380,7 @@ class MemberSpec_(object):
     def get_choice(self): return self.choice
     def set_optional(self, optional): self.optional = optional
     def get_optional(self): return self.optional
+    def get_documentation(self): return self.documentation
 
 
 def _cast(typ, value):
