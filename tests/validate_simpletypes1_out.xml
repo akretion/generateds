@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <container>
-    <sample1>
+    <sample1 integer_range_1_value_with_default="6">
         <integer_range_1_value>5</integer_range_1_value>
         <pattern_value>bbbmn456opxxx</pattern_value>
         <token_enum_value>float</token_enum_value>
@@ -25,7 +25,7 @@
         <primative_integer>765</primative_integer>
         <primative_float>54.320999999999998</primative_float>
     </sample1>
-    <sample2_bad>
+    <sample2_bad integer_range_1_value_with_default="6">
         <integer_range_1_value>2</integer_range_1_value>
         <pattern_value>mmaaa1234mnopzzz</pattern_value>
         <token_enum_value>floatxx</token_enum_value>
@@ -36,7 +36,7 @@
         <vbar_pattern_value>efgh</vbar_pattern_value>
         <anonymous_float_value>0.2</anonymous_float_value>
     </sample2_bad>
-    <sample3_bad>
+    <sample3_bad integer_range_1_value_with_default="6">
         <integer_range_1_value>9</integer_range_1_value>
         <pattern_value>aaa1234mnopzzzbcd</pattern_value>
         <integer_range_incl_value>-50</integer_range_incl_value>
@@ -56,7 +56,8 @@
         <datetime_maxexcl_value>2015-11-01T14:20:10</datetime_maxexcl_value>
         <anonymous_float_value>6.6</anonymous_float_value>
     </sample3_bad>
-    <sample4_bad>
+    <sample4_bad integer_range_1_value_with_default="6">
+        <integer_range_1_value>5</integer_range_1_value>
         <pattern_value>aaa12zzz</pattern_value>
     </sample4_bad>
     <sample2>
