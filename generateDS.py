@@ -4943,10 +4943,33 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     else:
         s1 = 'class %s%s(GeneratedsSuper):\n' % (prefix, name)
     wrt(s1)
+
     # If this element has documentation, generate a doc-string.
-    if element.documentation:
-        s2 = ' '.join(element.documentation.strip().split())
-        s2 = textwrap.fill(s2, width=68, subsequent_indent='    ')
+    # patched by Akretion as for some reason GenerateDS was sometimes failing
+    # to find the right element in
+    # https://github.com/akretion/nfelib/blob/generated/
+    # schemas/v3_10/leiauteNFe_v3.10.xsd#L1233
+    ns = {'xs': 'http://www.w3.org/2001/XMLSchema'}
+    tree = SchemaLxmlTree
+    elem = tree.xpath("//xs:element[@name='%s']" % (name.replace("Type", "")),
+                      namespaces=ns)
+    documentation = None
+    if len(elem) > 0:
+        descriptions = elem[0].xpath("./xs:annotation/xs:documentation/text()",
+                                     namespaces=ns)
+        if len(descriptions) > 0:
+            documentation = descriptions[0]
+
+    elif element.documentation:
+        documentation = element.documentation
+
+    if documentation:
+        wrapped_lines = []
+        for l in documentation.strip().splitlines():
+            wrapped_lines.append(textwrap.fill(l, width=71,
+                                               subsequent_indent='    ',
+                                               replace_whitespace=False))
+        s2 = "\n    ".join(wrapped_lines)
         if sys.version_info.major == 2:
             s2 = s2.encode('utf-8')
         if len(s2) > 1:
