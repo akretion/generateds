@@ -293,7 +293,7 @@ class GeneratedsSuper(object):
                                 enum_type.get_descr_())
                             wrtmodels(
                                 '    %s = fields.Selection(%s,\n        %s)\n' % (
-                                field_name, name, options, ))
+                                field_name, original_st, options, ))
                     else:
                         wrtmodels(
                             '    %s = fields.Char(%s)\n' % (
