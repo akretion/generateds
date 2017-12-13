@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Synopsis:
     Generate Python classes from XML schema definition.
@@ -206,7 +206,7 @@ logging.basicConfig(
     #filename='generateDS.log'  # uncomment to send messages to file
 )
 # Disable logging messages level INFO and below (includes DEBUG).
-logging.disable(logging.INFO)
+# logging.disable(logging.INFO)
 
 ## import warnings
 ## warnings.warn('importing IPShellEmbed', UserWarning)
@@ -4803,15 +4803,23 @@ def generateMemberSpec(wrt, element):
         else:
             item3 = 0
         item4 = 1 if child.getOptional() else 0
+        if child.__dict__.get('documentation'):
+            doc = str.replace((child.__dict__['documentation']), '"', '')
+        else:
+            doc = ""
         if generateDict:
-            item = "        '%s': MemberSpec_('%s', %s, %d, %d, %s, %s)," % (
+            item = """        "%s": MemberSpec_("%s", %s, %d, %d,
+                    %s, %s,
+                    \"\"\"%s\"\"\"),""" % (
                 item1, item1, item2, item3, item4, repr(child.getAttrs()),
-                child.choice.getChoiceGroup() if child.choice else None)
+                child.choice.getChoiceGroup() if child.choice else None, doc)
         else:
             #item = "        ('%s', '%s', %d)," % (item1, item2, item3, )
-            item = "        MemberSpec_('%s', %s, %d, %d, %s, %s)," % (
+            item = """        MemberSpec_("%s", %s, %d, %d,
+                    %s, %s,
+                    \"\"\"%s\"\"\"),""" % (
                 item1, item2, item3, item4, repr(child.getAttrs()),
-                child.choice.getChoiceGroup() if child.choice else None)
+                child.choice.getChoiceGroup() if child.choice else None, doc)
         add(item)
     simplebase = element.getSimpleBase()
     if element.getSimpleContent() or element.isMixed():
@@ -4951,10 +4959,33 @@ def generateClasses(wrt, prefix, element, delayed, nameSpacesDef=''):
     else:
         s1 = 'class %s%s(GeneratedsSuper):\n' % (prefix, name)
     wrt(s1)
+
     # If this element has documentation, generate a doc-string.
-    if element.documentation:
-        s2 = ' '.join(element.documentation.strip().split())
-        s2 = textwrap.fill(s2, width=68, subsequent_indent='    ')
+    # patched by Akretion as for some reason GenerateDS was sometimes failing
+    # to find the right element in
+    # https://github.com/akretion/nfelib/blob/generated/
+    # schemas/v3_10/leiauteNFe_v3.10.xsd#L1233
+    ns = {'xs': 'http://www.w3.org/2001/XMLSchema'}
+    tree = SchemaLxmlTree
+    elem = tree.xpath("//xs:element[@name='%s']" % (name.replace("Type", "")),
+                      namespaces=ns)
+    documentation = None
+    if elem:
+        descriptions = elem[0].xpath("./xs:annotation/xs:documentation/text()",
+                                     namespaces=ns)
+        if descriptions:
+            documentation = descriptions[0]
+
+    elif element.documentation:
+        documentation = element.documentation
+
+    if documentation:
+        wrapped_lines = []
+        for l in documentation.strip().splitlines():
+            wrapped_lines.append(textwrap.fill(l, width=71,
+                                               subsequent_indent='    ',
+                                               replace_whitespace=False))
+        s2 = "\n    ".join(wrapped_lines)
         if sys.version_info.major == 2:
             s2 = s2.encode('utf-8')
         if len(s2) > 1:
@@ -5328,13 +5359,15 @@ class MixedContainer:
 
 class MemberSpec_(object):
     def __init__(self, name='', data_type='', container=0,
-            optional=0, child_attrs=None, choice=None):
+                 optional=0, child_attrs=None, choice=None,
+                 documentation=""):
         self.name = name
         self.data_type = data_type
         self.container = container
         self.child_attrs = child_attrs
         self.choice = choice
         self.optional = optional
+        self.documentation = documentation
     def set_name(self, name): self.name = name
     def get_name(self): return self.name
     def set_data_type(self, data_type): self.data_type = data_type
@@ -5355,6 +5388,7 @@ class MemberSpec_(object):
     def get_choice(self): return self.choice
     def set_optional(self, optional): self.optional = optional
     def get_optional(self): return self.optional
+    def get_documentation(self): return self.documentation
 
 
 def _cast(typ, value):
