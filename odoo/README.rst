@@ -1,8 +1,9 @@
 ============================================
-Instructions on running the Django support
+Instructions on running the Odoo support
 ============================================
 
-Also see:
+This plugin has been created by Akretion and is
+heavily inspired from the Django plugin, so you can see:
 http://www.davekuhlman.org/generateDS.html#django-generating-models-and-forms
 
 Although, there are likely other configurations that will work, one
@@ -11,20 +12,15 @@ reasonably simple way is the following:
 1. Download the source distribution of generateDS with the
    following::
 
-       $ hg clone https://dkuhlman@bitbucket.org/dkuhlman/generateds
+       $ hg clone https://dkuhlman@bitbucket.org/rvalyi/generateds
 
    Alternatively, you can download a Zip file from here:
-   https://bitbucket.org/dkuhlman/generateds/downloads/
+   https://bitbucket.org/rvalyi/generateds/downloads/
 
-   Or, a tar file from here:
-   https://pypi.python.org/pypi/generateDS
-
-   And, then unroll it.
-
-2. Change directory to the ``django`` directory (i.e. the directory
+2. Change directory to the ``odoo`` directory (i.e. the directory
    containing this file)::
 
-       $ cd generateds/django
+       $ cd generateds/odoo
 
 3. In that directory, either, (a) create, a symbolic link to
    ``generateDS.py``::
@@ -35,17 +31,15 @@ reasonably simple way is the following:
 
        $ cp ../generateDS.py .
 
-4. In that directory, Run ``gends_run_gen_django.py``.  For
+4. In that directory, Run ``gends_run_gen_odoo.py``.  For
    example::
 
        $ cp ../tests/people.xsd .
-       $ ./gends_run_gen_django.py -f -v people.xsd
+       $ ./gends_run_gen_odoo.py -f -v people.xsd
 
-If the above ran successfully, it should have created these files::
+If the above ran successfully, it should have created this file:
 
     models.py
-    forms.py
-    admin.py
 
 
 .. vim:ft=rst:
