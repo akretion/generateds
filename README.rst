@@ -2,6 +2,26 @@
 generateDS.py -- Generate Python Data Structures
 ================================================
 
+
+---------------------------------------------------
+Akretion's fork of generateDS with Odoo ERP support
+---------------------------------------------------
+
+This is a fork of the generateDS project by Akretion to support
+the generation of Odoo ERP models from XSD files. This branch
+may eventually be merged into the generateDS project but meanwhile
+you can use it directly. More specifically we created this
+plugin to support the very complex fiscal requirements in Brazil
+which all come with complete XSD schemas so the fiscal features can
+be written and maintained automatically with little effort instead
+of a very costly manual code with an unknown amount of drift against
+the fiscal specification in a given point of time.
+
+You can see how to use it
+`in the odoo/README.rst
+<odoo/README.rst>`_.
+
+
 ----------
 What is it
 ----------
@@ -32,7 +52,7 @@ How to build and install it
 
 De-compress the generateDS distribution file.  Use something like
 the following:
- 
+
     tar xzvf generateDS-1.5a.tar.gz
 
 Then, the regular Distutils commands should work:
@@ -348,7 +368,7 @@ Version 2.24b (01/02/2017)
   this.
 - Modified the Django support (in ./django/) so that it will run
   under Python 3.  Thanks to Shane Rigby for reporting this problem.
-- Fixed an error in encoding unicode ``valueOf_`` for  <xs:complexType 
+- Fixed an error in encoding unicode ``valueOf_`` for  <xs:complexType
   <xs:simpleContent> <xs:extension base="xs:string">.  Thanks to
   Andrii Iudin for catching this.
 
@@ -422,7 +442,7 @@ Version 2.21a (04/01/2016)
 
 - The GUI (graphical) front end to generateDS.py has been
   resuscitated and is now working again thanks to Aleksandr
-  Dragunkin.  
+  Dragunkin.
   The GUI front end must be run under Python 3, and you must install
   Python support for Gtk.
   Aleksandr has also provided a Russian translation of the labels
@@ -642,9 +662,9 @@ Version 2.12e (06/16/2014)
   substitutionGroup (but in a different namespace?).  Added a test
   to stop the recursion when this occurs.  Thanks to Stuart Chalk
   for finding and reporting this.
-- Added explanation to the documentation explaining how the source                  
-  distribution (generateDS-x.xxy.tar.gz or Bitbucket) is needed for                 
-  use of the Django model generation capability.                                    
+- Added explanation to the documentation explaining how the source
+  distribution (generateDS-x.xxy.tar.gz or Bitbucket) is needed for
+  use of the Django model generation capability.
 
 Version 2.12d (04/02/2014)
 
@@ -1157,14 +1177,14 @@ Version 2.3a (12/02/2010)
     were not being cleaned/mapped.  Reported by Koen Smets; thanks.
   * To do:
 
-    - In a restriction, inherited attributes can be "prohibited". 
+    - In a restriction, inherited attributes can be "prohibited".
       It would be nice if gDS would do something to block their
       use.
     - When:
 
           AbstractElement mixed=false and
           Element1 mixed=true base=AbstractElement and
-          Element2 mixed=FALSE base=AbstractElement 
+          Element2 mixed=FALSE base=AbstractElement
 
       Incorrect parse code is generated for Element2.
       Reported by Jaime Cepas.
@@ -1242,12 +1262,12 @@ Version 2.2a (9/14/2010)
   * Fixes to building (capturing) attribute values for elements with
     anyAttribute="..." -- Eliminated capture of duplicate attribute
     values.
-        
+
 Version 2.1d (8/23/2010)
 
   * Fix to indentation of generated code in the build method for
     type checking of NonNegativeIntegerType.
-  * Fix to generation parameters in call to superclass constructor. 
+  * Fix to generation parameters in call to superclass constructor.
     Count of children was incorrect, triggering generation of
     ``valueOf_``.
   * Known issue -- If type B extends type A, and type A declares
@@ -1274,7 +1294,7 @@ Version 2.1c (8/8/2010)
   * Added a comment to the generated superclass module at the top
     that specifies the utf-8 source code encoding:
 
-        # -*- coding: utf-8 -*- 
+        # -*- coding: utf-8 -*-
 
 Version 2.1b (8/2/2010)
 
@@ -1298,7 +1318,7 @@ Version 2.0b (6/24/2010)
 
 Version 2.0a (6/21/2010)
 
-  * Switched to use of lxml/ElementTree in generated files. 
+  * Switched to use of lxml/ElementTree in generated files.
     Thanks to Biswanath Patel and Jaime Huerta Cepas for
     encouraging me to implement the switch to lxml/ElementTree.
   * Modified the generation of functions parse(), parseString(),
@@ -1359,7 +1379,7 @@ Version 1.20d (2/3/2010)
 
 Version 1.20c (1/1/2010)
 
-  * Replaced symbolic links in the distribution with hard links. 
+  * Replaced symbolic links in the distribution with hard links.
     Symbolic links do not work on MS Windows.
   * Fix to the use of the subprocess module in generateds_gui.py,
     which had caused a problem on MS Windows.
@@ -1385,7 +1405,7 @@ Version 1.20b (12/14/2009)
     that can be read/imported by Python.
   * Added unit test for generation of Python literal representation.
   * With the help of Erica Tolbert, generateDS.py can now generate
-    bindings for gcdml (Genomic Contextual Data Markup Language. 
+    bindings for gcdml (Genomic Contextual Data Markup Language.
     See http://gensc.org).  Thank you, Erica.
   * generateDS.py can now generate bindings for the following
     (rather large) schemas:
@@ -1407,14 +1427,14 @@ Version 1.20a (12/01/2009)
 Version 1.19a (10/21/2009)
 
   * Enhancement to the table of information generated in each class
-    when the --member-specs=list|dict command line option is used. 
+    when the --member-specs=list|dict command line option is used.
     For a complexType defined as a simpleType, we now generate a
     list of the simpleType and the simpleTypes it is based on using
     name ``valueOf_``.  Thanks to Ryan Leslie for much help and
     guidance with these changes.
     Example::
 
-        'valueOf_': MemberSpec_('valueOf_', [u'RelationType', 
+        'valueOf_': MemberSpec_('valueOf_', [u'RelationType',
             u'RelationType2', u'xs:string'], 0),
 
     Note the following incompatible changes:
@@ -1432,7 +1452,7 @@ Version 1.19a (10/21/2009)
     The new tutorial (see tutorial/tutorial.html in the
     distribution) has an example of the use of the MemberSpec
     feature.
-  * Fix to DecimalType -- In some cases treated as an integer. 
+  * Fix to DecimalType -- In some cases treated as an integer.
     Should be a float.  Thanks Ryan Leslie for catching this.
   * Removed last bits of the generation of a SAX parser.  It no
     longer worked and is not needed.
@@ -1466,7 +1486,7 @@ Version 1.18e (9/1/2009)
     groups.  Also added Mihai's unit test for groups.  Thank you,
     Mihai.
   * Added patch, also from Mihai, that passes the node's text to
-    the super-class constructor.  
+    the super-class constructor.
   * Added patch that implements a --no-dates command line flag
     which, when used, tells generateDS.py not to insert the
     time-stamp in generated files.  This is useful when you want to
@@ -1501,12 +1521,12 @@ Version 1.18c (8/11/2009)
 
 Version 1.18b (7/29/2009)
 
-  * Fix for exception with simpleType that is an extension of 
+  * Fix for exception with simpleType that is an extension of
     another simpleType.
   * Change to mixed extension chain -- Will now generate class.
   * Fix to generation of constructors -- Will now initialize to
     default value for simpleTypes.
-  * Fixed generations of validator methods, validator bodies, 
+  * Fixed generations of validator methods, validator bodies,
     and call to validator bodies for attributes.
   * Command line option "--validator-bodies" now triggers check for
     option value is an existing directory.
@@ -1545,7 +1565,7 @@ Version 1.17c (6/24/2009)
 
 Version 1.17b (6/10/2009)
 
-  * Fix so that generateDS.py will still work with Python 2.4. 
+  * Fix so that generateDS.py will still work with Python 2.4.
     Thanks to Dave Sugar for that.
 
 Version 1.17a (5/20/2009)
@@ -1587,7 +1607,7 @@ Version 1.16e (4/28/2009)
 Version 1.16d (3/25/2009)
 
   * Fixes to generation of the exportLiteral functions.  We
-    can now do exportLiteral, then import the resulting file 
+    can now do exportLiteral, then import the resulting file
     in Python.  See generated parseLiteral() for an example.
   * Added an additional parameter to the export() methods.
     Now, you can call export() as follows:
@@ -1623,7 +1643,7 @@ Version 1.16b (3/9/2009)
 
 Version 1.16a (2/16/2009)
 
-  * Generated export methods now check for empty content and 
+  * Generated export methods now check for empty content and
     write out <xx ... /> rather than <xx ...></xx> if empty.
   * All generated constructors (__init__()) now initialize
     instance variables to None.
@@ -1709,7 +1729,7 @@ Version 1.14a (06/03/2008):
 Version 1.13a (05/26/2008):
   * Added support for generating namespace prefix during export
     if the XML Schema specifies the targetNamespace.  Thanks to
-    Andre Adrian for implementing this feature. 
+    Andre Adrian for implementing this feature.
 
 Version 1.12b (05/20/2008):
   * Patches to escape special XML characters (entities) in valueOf
@@ -1769,7 +1789,7 @@ Version 1.9a (01/30/2007, again)
     <xs:element>.
 
 Version 1.9a (12/04/2006, again)
-  * Fixed errors (occuring on import of superclass module) when 
+  * Fixed errors (occuring on import of superclass module) when
     an element is defined as an extension of an element that is
     defined as a simpleType restriction on an xs:string.
 
@@ -1808,7 +1828,7 @@ Version 1.8d (7/19/2006, again)
     children and no attributes.  Formerly, they were ignored due
     to a quirk in logic.
 
-Version 1.8d (4/13/2006) 
+Version 1.8d (4/13/2006)
   * Added support for the following simple types: duration, anyURI
     and unsignedShort.  They are coerced to (and treated the same
     as) xs:string, xs:string, and xs:integer, respectively
