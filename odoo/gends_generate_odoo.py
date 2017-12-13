@@ -104,7 +104,8 @@ def generate_model(options, module_name):
     wrtmodels('from odoo import fields\n')
     wrtmodels('from . import sped\n\n\n') # FIXME parametrable?
 
-    for type_name, descr in Defined_simple_type_table.items():
+    for type_name in sorted(Defined_simple_type_table.keys()):
+        descr = Defined_simple_type_table[type_name]
         if descr.get_enumeration_():
             enum = descr.get_enumeration_()
 
@@ -113,7 +114,7 @@ def generate_model(options, module_name):
                 wrtmodels("# %s" % (descr,))
 
             wrtmodels('\n%s = %s\n' % (type_name, enum))
-#    wrtmodels('\n')
+    wrtmodels('\n')
 
     # collect implicit m2o related to explicit o2m:
     implicit_many2ones = {}
